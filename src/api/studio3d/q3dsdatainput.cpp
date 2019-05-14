@@ -290,13 +290,6 @@ QString Q3DSDataInput::metadata(const QString &key) const
 
     \sa metadata
  */
-/*!
-    \qmlmethod var DataInput::metadataKeys
-    Returns the metadata keys defined for this datainput.
-
-    \note Datainput metadata is read-only.
-    \sa metadata
- */
 QStringList Q3DSDataInput::metadataKeys() const
 {
     if (!d_ptr->m_presentation)
@@ -444,6 +437,14 @@ void Q3DSDataInputPrivate::setCommandQueue(CommandQueue *queue)
 
     This property is applicable only to data input type \e {Ranged Number}. For other
     types, value returned is zero.
+
+    \note This value is read-only.
+*/
+
+/*!
+    \qmlproperty list<string> DataInput::metadataKeys
+
+    Contains the metadata keys specified for this datainput.
 
     \note This value is read-only.
 */
