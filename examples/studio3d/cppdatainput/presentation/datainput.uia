@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<application>
+    <assets initial="datainput">
+        <presentation id="datainput" src="datainput.uip"/>
+        <dataInput name="colorInput" type="Vector3"/>
+        <dataInput metadata="metadata1$Controls rotation" max="360" name="rangeInput" min="0" type="Ranged Number"/>
+    </assets>
+    <statemachine ref="#logic">
+        <visual-states>
+            <state ref="Initial">
+                <enter>
+                    <goto-slide element="main:Scene" rel="next"/>
+                </enter>
+            </state>
+        </visual-states>
+    </statemachine>
+</application>

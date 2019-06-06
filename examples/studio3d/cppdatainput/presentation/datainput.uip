@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="6" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="800" presentationHeight="480" maintainAspect="False" preferKtx="False" >
+			<CustomColors count="16" >#ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff</CustomColors>
+		</ProjectSettings>
+		<Graph >
+			<Scene id="Scene" controlledproperty="$rangeInput @timeline" >
+				<Layer id="Layer" >
+					<Camera id="Camera" />
+					<Light id="Light" />
+					<Text id="Text" />
+					<Text id="Text2" />
+					<Model id="Cylinder" >
+						<Material id="Default_002" name="Default" />
+					</Model>
+					<Text id="Text4" />
+					<Model id="Rectangle" >
+						<Material id="Default_001" name="Default" />
+					</Model>
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene" >
+				<Add ref="#Layer" multisampleaa="SSAA" progressiveaa="8x" />
+				<Add ref="#Camera" controlledproperty="" pivot="0 0 0" position="0 0 -800" rotation="0 0 0" />
+				<Add ref="#Light" castshadow="True" controlledproperty="$colorInput lightdiffuse" lightdiffuse="1 0 0" lighttype="Point" position="-300.444 70.829 -30" shdwfactor="11.89" shdwfilter="6.94" shdwmapres="11" />
+				<State id="Scene-Slide1" name="Slide1" initialplaystate="Pause" >
+					<Add ref="#Text" name="Text" controlledproperty="$rangeInput textstring" font="TitilliumWeb-Regular" position="216.513 76.6172 -113.498" scale="1 1 1" size="24" textstring="0" >
+						<AnimationTrack property="rotation.x" type="EaseInOut" >0 0 0 0 10 0 0 0</AnimationTrack>
+						<AnimationTrack property="rotation.y" type="EaseInOut" >0 0 0 0 10 0 0 0</AnimationTrack>
+						<AnimationTrack property="rotation.z" type="EaseInOut" >0 0 0 0 10 -360 0 0</AnimationTrack>
+					</Add>
+					<Add ref="#Text2" name="Text2" controlledproperty="" font="TitilliumWeb-Regular" position="259.808 217.95 0" scale="1 1 1" size="16" textstring="Text control&#10;Rotation animation control via datainput timeline control" />
+					<Add ref="#Cylinder" name="Cylinder" controlledproperty="" position="15.877 -141.932 0" sourcepath="#Cylinder" />
+					<Add ref="#Default_002" diffuse="0.666667 1 0.498039" />
+					<Add ref="#Text4" name="Text4" font="TitilliumWeb-Regular" position="-373.353 201.004 0" size="18" textstring="Directional light color control" />
+					<Add ref="#Rectangle" name="Rectangle" position="0 -400 20" rotation="90.5 0 0" scale="11.0468 7.99191 9.12813" sourcepath="#Rectangle" />
+					<Add ref="#Default_001" diffuse="0.623529 0.623529 0.623529" />
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>

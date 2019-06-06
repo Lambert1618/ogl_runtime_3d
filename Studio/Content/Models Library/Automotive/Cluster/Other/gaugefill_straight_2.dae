@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>tetammin</author>
+      <authoring_tool>OpenCOLLADA2017;  Version: 1.6;  Revision: 61</authoring_tool>
+      <comments>
+			ColladaMaya export options: 
+			bakeTransforms=1;relativePaths=1;preserveSourceTree=0;copyTextures=0;exportTriangles=1;exportCgfxFileReferences=1;
+			isSampling=0;curveConstrainSampling=0;removeStaticCurves=1;exportPhysics=0;exportConvexMeshGeometries=1;exportPolygonMeshes=1;exportLights=1;
+			exportCameras=1;exportAnimationsOnly=0;exportSeparateFile=0;modelNameDAE=;exportJoints=1;exportSkin=1;exportAnimations=1;exportOptimizedBezierAnimation=0;exportInvisibleNodes=0;exportDefaultCameras=0;
+			exportTexCoords=1;exportNormals=1;exportNormalsPerVertex=1;exportVertexColors=1;exportVertexColorsPerVertex=1;
+			exportTexTangents=1;exportTangents=1;exportReferencedMaterials=0;exportMaterialsOnly=0;
+			exportXRefs=1;dereferenceXRefs=1;exportCameraAsLookat=0;cameraXFov=0;cameraYFov=1;encodedNames=1;doublePrecision=0
+		</comments>
+      <source_data>file:///C:/Users/tetammin/Dropbox%20(Qt)/Qt%203D%20Team/3D%20Models/Automotive/ClusterTemplateMaya/qt_cluster_template.mb</source_data>
+    </contributor>
+    <created>2018-03-08T09:53:27</created>
+    <modified>2018-03-08T09:53:27</modified>
+    <unit name="centimeter" meter="0.01"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_materials>
+    <material id="Default_white" name="Default_white">
+      <instance_effect url="#Default_white-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="Default_white-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.8 0.8 0.8 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId" type="string">Default_white</originalMayaNodeId>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="qt_straightfill_Shape2" name="qt_straightfill_Shape2">
+      <mesh>
+        <source id="qt_straightfill_Shape2-positions" name="qt_straightfill_Shape2-positions">
+          <float_array id="qt_straightfill_Shape2-positions-array" count="120">-12 0 2 12 0 2 -12 0 -2 12 0 -2 -9.360024 0 2 -9.839976 0 2 -9.839976 0 -2 -9.360024 0 -2 -6.960024 0 2 -7.439976 0 2 -7.439976 0 -2 -6.960024 0 -2 -4.560024 0 2 -5.039976 0 2 -5.039976 0 -2 -4.560024 0 -2 -2.160024 0 2 -2.639976 0 2 -2.639976 0 -2 -2.160024 0 -2 0.239976 0 2 -0.239976 0 2 -0.239976 0 -2 0.239976 0 -2 2.639977 0 2 2.160025 0 2 2.160025 0 -2 2.639977 0 -2 5.039977 0 2 4.560025 0 2 4.560025 0 -2 5.039977 0 -2 7.439977 0 2 6.960025 0 2 6.960025 0 -2 7.439977 0 -2 9.839976 0 2 9.360024 0 2 9.360024 0 -2 9.839976 0 -2</float_array>
+          <technique_common>
+            <accessor source="#qt_straightfill_Shape2-positions-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_straightfill_Shape2-normals" name="qt_straightfill_Shape2-normals">
+          <float_array id="qt_straightfill_Shape2-normals-array" count="120">0 1 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#qt_straightfill_Shape2-normals-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_straightfill_Shape2-tangents" name="qt_straightfill_Shape2-tangents">
+          <float_array id="qt_straightfill_Shape2-tangents-array" count="120">1 0 0 0 0 -1 0 0 1 -1 0 0 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#qt_straightfill_Shape2-tangents-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_straightfill_Shape2-binormals" name="qt_straightfill_Shape2-binormals">
+          <float_array id="qt_straightfill_Shape2-binormals-array" count="120">0 0 -1 -1 0 0 1 0 0 0 0 1 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0 0 0 -1 -1 0 0 0 0 1 1 0 0</float_array>
+          <technique_common>
+            <accessor source="#qt_straightfill_Shape2-binormals-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_straightfill_Shape2-map1" name="qt_straightfill_Shape2-map1">
+          <float_array id="qt_straightfill_Shape2-map1-array" count="80">0.005893201 0 0.0948334 0.08333334 0.005893201 0.08333334 0.1145957 0 0.1936548 0.08333334 0.2134171 0 0.2924761 0.08333334 0.3122385 0 0.3912975 0.08333334 0.4110598 0 0.4901188 0.08333334 0.5098811 0 0.5889403 0.08333334 0.6087025 0 0.6877616 0.08333334 0.7075239 0 0.7865829 0.08333334 0.8063452 0 0.8854043 0.08333334 0.9051666 0 0.9941068 0 0.9941068 0.08333334 0.09483339 0 0.1145957 0.08333334 0.1936548 0 0.2134171 0.08333334 0.2924761 0 0.3122384 0.08333334 0.3912975 0 0.4110598 0.08333334 0.4901188 0 0.5098811 0.08333334 0.5889403 0 0.6087025 0.08333334 0.6877616 0 0.7075239 0.08333334 0.7865829 0 0.8063452 0.08333334 0.8854043 0 0.9051666 0.08333334</float_array>
+          <technique_common>
+            <accessor source="#qt_straightfill_Shape2-map1-array" count="40" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_straightfill_Shape2-textangents">
+          <float_array id="qt_straightfill_Shape2-textangents-array" count="120">0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0</float_array>
+          <technique_common>
+            <accessor source="#qt_straightfill_Shape2-textangents-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_straightfill_Shape2-texbinormals">
+          <float_array id="qt_straightfill_Shape2-texbinormals-array" count="120">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1</float_array>
+          <technique_common>
+            <accessor source="#qt_straightfill_Shape2-texbinormals-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="qt_straightfill_Shape2-vertices" name="qt_straightfill_Shape2-vertices">
+          <input semantic="POSITION" source="#qt_straightfill_Shape2-positions"/>
+          <input semantic="NORMAL" source="#qt_straightfill_Shape2-normals"/>
+          <input semantic="TANGENT" source="#qt_straightfill_Shape2-tangents"/>
+          <input semantic="BINORMAL" source="#qt_straightfill_Shape2-binormals"/>
+        </vertices>
+        <triangles material="lambert3SG" count="20">
+          <input semantic="VERTEX" source="#qt_straightfill_Shape2-vertices" offset="0"/>
+          <input semantic="TEXCOORD" source="#qt_straightfill_Shape2-map1" offset="1" set="0"/>
+          <input semantic="TEXTANGENT" source="#qt_straightfill_Shape2-textangents" offset="2" set="0"/>
+          <input semantic="TEXBINORMAL" source="#qt_straightfill_Shape2-texbinormals" offset="2" set="0"/>
+          <p>0 0 0 5 22 1 2 2 3 2 2 3 5 22 1 6 1 2 7 23 4 4 3 5 10 4 7 10 4 7 4 3 5 9 24 6 11 25 8 8 5 9 14 6 11 14 6 11 8 5 9 13 26 10 15 27 12 12 7 13 18 8 15 18 8 15 12 7 13 17 28 14 19 29 16 16 9 17 22 10 19 22 10 19 16 9 17 21 30 18 23 31 20 20 11 21 26 12 23 26 12 23 20 11 21 25 32 22 27 33 24 24 13 25 30 14 27 30 14 27 24 13 25 29 34 26 31 35 28 28 15 29 34 16 31 34 16 31 28 15 29 33 36 30 35 37 32 32 17 33 38 18 35 38 18 35 32 17 33 37 38 34 39 39 36 36 19 37 3 21 39 3 21 39 36 19 37 1 20 38</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId">qt_straightfill_Shape2</originalMayaNodeId>
+          <double_sided sid="double_sided">1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="qt_cluster_template">
+      <node id="_qt_straightfill_2" name="qt_straightfill_2" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#qt_straightfill_Shape2">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert3SG" target="#Default_white"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+        <extra>
+          <technique profile="OpenCOLLADAMaya">
+            <originalMayaNodeId sid="originalMayaNodeId" type="string">qt_straightfill_2</originalMayaNodeId>
+          </technique>
+        </extra>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+  <extra>
+    <technique profile="COLLADA">
+      <source_data_base_uri>file:///C:/Users/tetammin/Documents/maya/projects/default/</source_data_base_uri>
+    </technique>
+  </extra>
+</COLLADA>

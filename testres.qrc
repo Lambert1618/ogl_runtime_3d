@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="aluminium.shader">Content/Material Library/aluminum.shader</file>
+        <file alias="asphalt.shader">Content/Material Library/asphalt.shader</file>
+        <file alias="concrete.shader">Content/Material Library/concrete.shader</file>
+        <file alias="copper.shader">Content/Material Library/copper.shader</file>
+        <file alias="porcelain.shader">Content/Material Library/porcelain.shader</file>
+        <file alias="simple_glass.shader">Content/Material Library/simple_glass.shader</file>
+        <file alias="Desaturate.effect">Content/Effect Library/Desaturate.effect</file>
+        <file alias="Gaussian Blur.effect">Content/Effect Library/Gaussian Blur.effect</file>
+        <file alias="Sepia.effect">Content/Effect Library/Sepia.effect</file>
+        <file alias="Bloom.effect">Content/Effect Library/Bloom.effect</file>
+    </qresource>
+</RCC>

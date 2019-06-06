@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<application>
+    <assets initial="datainput">
+        <presentation id="datainput" src="datainput.uip"/>
+        <dataInput name="cameraRotInput" type="Vector3"/>
+        <dataInput name="colorInput" type="Vector3"/>
+        <dataInput name="queriedInput" type="String"/>
+        <dataInput name="rangeInput" type="Ranged Number" min="0" max="360"/>
+        <dataInput name="scaleInput" type="Vector3"/>
+        <dataInput name="stringInput" type="String"/>
+        <dataInput name="variantInput" type="Variant" metadata="usage$opacity$datasource$speedgauge_visibility"/>
+    </assets>
+    <statemachine ref="#logic">
+        <visual-states>
+            <state ref="Initial">
+                <enter>
+                    <goto-slide rel="next" element="main:Scene"/>
+                </enter>
+            </state>
+        </visual-states>
+    </statemachine>
+</application>

@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>presentation/barrel.uip</file>
+        <file>presentation/barrel.uia</file>
+        <file>presentation/barrel_no_background.uip</file>
+        <file>presentation/barrel/meshes/Barrel.mesh</file>
+        <file>presentation/fonts/Arimo-Regular.ttf</file>
+        <file>presentation/maps/barrel_barrel_Diffuse.png</file>
+        <file>presentation/maps/barrel_barrel_Emissive.png</file>
+        <file>presentation/maps/barrel_barrel_Normal.png</file>
+        <file>presentation/maps/barrel_barrel_Specular.png</file>
+    </qresource>
+</RCC>

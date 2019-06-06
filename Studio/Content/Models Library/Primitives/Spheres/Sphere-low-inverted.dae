@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>jgiles</author>
+      <authoring_tool>Maya8.5 | ColladaMaya v3.04E</authoring_tool>
+      <comments>SSKK Patch3
+ColladaMaya export options: bakeTransforms=0;exportPolygonMeshes=1;bakeLighting=0;isSampling=0;
+curveConstrainSampling=0;removeStaticCurves=1;exportCameraAsLookat=0;
+exportLights=1;exportCameras=1;exportJointsAndSkin=1;
+exportAnimations=1;exportTriangles=1;exportInvisibleNodes=0;
+exportNormals=1;exportTexCoords=1;
+exportVertexColors=1;exportVertexColorsAnimation=0;exportTangents=0;
+exportTexTangents=0;exportConstraints=1;exportPhysics=1;exportXRefs=1;
+dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
+      <source_data>file:///C:/Jason/RESOURCES/UI%20Composer%20RAW%20sample%20assets/models/primitives/spheres/Sphere-low-inverted.mb</source_data>
+    </contributor>
+    <created>2008-09-19T21:52:39Z</created>
+    <modified>2008-09-19T21:52:39Z</modified>
+    <unit meter="0.01" name="centimeter"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_physics_scenes>
+    <physics_scene id="MayaNativePhysicsScene">
+      <technique_common>
+        <gravity>0 -980 0</gravity>
+        <time_step>0.083</time_step>
+      </technique_common>
+    </physics_scene>
+  </library_physics_scenes>
+  <library_materials>
+    <material id="lambert1" name="lambert1">
+      <instance_effect url="#lambert1-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="lambert1-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>1 1 1 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+          <extra>
+            <technique profile="FCOLLADA"/>
+          </extra>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="Sphere" name="Sphere">
+      <mesh>
+        <source id="Sphere-positions" name="position">
+          <float_array id="Sphere-positions-array" count="126">0 50 0 25 42.5325 8.12299 0 42.5325 26.2866 42.5325 22.3607 13.8197 25 26.2866 34.4095 0 22.3607 44.7214 15.4509 42.5325 -21.2663 26.2866 22.3607 -36.1803 40.4509 26.2866 -13.1433 -15.4509 42.5325 -21.2663 -26.2866 22.3607 -36.1803 0 26.2866 -42.5325 -25 42.5325 8.12299 -42.5325 22.3607 13.8197 -40.4509 26.2866 -13.1433 -25 26.2866 34.4095 0 -50 0 15.4509 -42.5325 21.2663 25 -42.5325 -8.12299 26.2866 -22.3607 36.1803 40.4509 -26.2866 13.1433 42.5325 -22.3607 -13.8197 0 -42.5325 -26.2866 25 -26.2866 -34.4095 0 -22.3607 -44.7214 -25 -42.5325 -8.12299 -25 -26.2866 -34.4095 -42.5325 -22.3607 -13.8197 -15.4509 -42.5325 21.2663 -40.4509 -26.2866 13.1433 -26.2866 -22.3607 36.1803 0 -26.2866 42.5325 15.4509 0 47.5528 40.4509 0 29.3893 50 0 0 40.4509 0 -29.3893 15.4509 0 -47.5528 -15.4509 0 -47.5528 -40.4509 0 -29.3893 -50 0 0 -40.4509 0 29.3893 -15.4509 0 47.5528</float_array>
+          <technique_common>
+            <accessor source="#Sphere-positions-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Sphere-normals" name="normal">
+          <float_array id="Sphere-normals-array" count="126">0 -1 0 -0.5 -0.850651 -0.16246 0 -0.850651 -0.525731 -0.850651 -0.447214 -0.276393 -0.5 -0.525731 -0.688191 0 -0.447214 -0.894427 -0.309017 -0.850651 0.425325 -0.525731 -0.447214 0.723607 -0.809017 -0.525731 0.262866 0.309017 -0.850651 0.425325 0.525731 -0.447214 0.723607 0 -0.525731 0.850651 0.5 -0.850651 -0.16246 0.850651 -0.447214 -0.276393 0.809017 -0.525731 0.262866 0.5 -0.525731 -0.688191 0 1 0 -0.309017 0.850651 -0.425325 -0.5 0.850651 0.16246 -0.525731 0.447214 -0.723607 -0.809017 0.525731 -0.262866 -0.850651 0.447214 0.276393 0 0.850651 0.525731 -0.5 0.525731 0.688191 0 0.447214 0.894427 0.5 0.850651 0.16246 0.5 0.525731 0.688191 0.850651 0.447214 0.276393 0.309017 0.850651 -0.425325 0.809017 0.525731 -0.262866 0.525731 0.447214 -0.723607 0 0.525731 -0.850651 -0.309017 0 -0.951057 -0.809017 0 -0.587785 -1 0 0 -0.809017 0 0.587785 -0.309017 0 0.951057 0.309017 0 0.951057 0.809017 0 0.587785 1 0 0 0.809017 0 -0.587785 0.309017 0 -0.951057</float_array>
+          <technique_common>
+            <accessor source="#Sphere-normals-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Sphere-Texture" name="Texture">
+          <float_array id="Sphere-Texture-array" count="176">0.136364 0.833333 0.045454 0.833333 0.090909 1 0.181818 0.666667 0.090909 0.666667 0 0.666667 0.318182 0.833333 0.227273 0.833333 0.272727 1 0.363636 0.666667 0.272727 0.666667 0.227273 0.833333 0.227273 0.833333 0.5 0.833333 0.409091 0.833333 0.454545 1 0.545455 0.666667 0.454545 0.666667 0.409091 0.833333 0.409091 0.833333 0.681818 0.833333 0.590909 0.833333 0.636364 1 0.727273 0.666667 0.636364 0.666667 0.590909 0.833333 0.590909 0.833333 0.863636 0.833333 0.772727 0.833333 0.818182 1 0.909091 0.666667 0.818182 0.666667 0.863636 0.833333 0.772727 0.833333 0.772727 0.833333 0.863636 0.833333 0.136364 0.166667 0.227273 0.166667 0.181818 0 0.090909 0.333333 0.181818 0.333333 0.272727 0.333333 0.318182 0.166667 0.409091 0.166667 0.363636 0 0.363636 0.333333 0.318182 0.166667 0.454545 0.333333 0.318182 0.166667 0.5 0.166667 0.590909 0.166667 0.545455 0 0.545455 0.333333 0.5 0.166667 0.636364 0.333333 0.5 0.166667 0.681818 0.166667 0.772727 0.166667 0.727273 0 0.727273 0.333333 0.681818 0.166667 0.818182 0.333333 0.681818 0.166667 0.863636 0.166667 0.954545 0.166667 0.909091 0 0.909091 0.333333 0.863636 0.166667 1 0.333333 0.954545 0.166667 0.954545 0.166667 0.863636 0.166667 0.045454 0.5 0.136364 0.5 0.227273 0.5 0.318182 0.5 0.409091 0.5 0.5 0.5 0.590909 0.5 0.681818 0.5 0.772727 0.5 0.909091 0.666667 0.863636 0.5 0.954545 0.5 1 0.333333 0.909091 0.666667 0.954545 0.5 0.954545 0.5</float_array>
+          <technique_common>
+            <accessor source="#Sphere-Texture-array" count="88" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Sphere-vertices">
+          <input semantic="POSITION" source="#Sphere-positions"/>
+          <input semantic="NORMAL" source="#Sphere-normals"/>
+        </vertices>
+        <triangles material="initialShadingGroup" count="80">
+          <input semantic="VERTEX" source="#Sphere-vertices" offset="0"/>
+          <input semantic="TEXCOORD" source="#Sphere-Texture" offset="1" set="1"/>
+          <p>1 0 2 1 0 2 3 3 4 4 1 0 4 4 5 5 2 1 2 1 1 0 4 4 6 6 1 7 0 8 7 9 8 10 6 6 8 10 3 3 1 11 1 12 6 6 8 10 9 13 6 14 0 15 10 16 11 17 9 13 11 17 7 9 6 18 6 19 9 13 11 17 12 20 9 21 0 22 13 23 14 24 12 20 14 24 10 16 9 25 9 26 12 20 14 24 2 27 12 28 0 29 5 30 15 31 2 32 15 31 13 23 12 33 12 34 2 35 15 31 17 36 18 37 16 38 19 39 20 40 17 36 20 40 21 41 18 37 18 37 17 36 20 40 18 42 22 43 16 44 21 41 23 45 18 46 23 45 24 47 22 43 22 43 18 48 23 45 22 49 25 50 16 51 24 47 26 52 22 53 26 52 27 54 25 50 25 50 22 55 26 52 25 56 28 57 16 58 27 54 29 59 25 60 29 59 30 61 28 57 28 57 25 62 29 59 28 63 17 64 16 65 30 61 31 66 28 67 31 66 19 68 17 69 17 70 28 71 31 66 4 4 32 72 5 5 3 3 33 73 4 4 33 73 19 39 32 72 32 72 4 4 33 73 8 10 34 74 3 3 7 9 35 75 8 10 35 75 21 41 34 74 34 74 8 10 35 75 11 17 36 76 7 9 10 16 37 77 11 17 37 77 24 47 36 76 36 76 11 17 37 77 14 24 38 78 10 16 13 23 39 79 14 24 39 79 27 54 38 78 38 78 14 24 39 79 15 31 40 80 13 23 5 81 41 82 15 31 41 82 30 61 40 80 40 80 15 31 41 82 20 40 34 74 21 41 19 39 33 73 20 40 33 73 3 3 34 74 34 74 20 40 33 73 23 45 36 76 24 47 21 41 35 75 23 45 35 75 7 9 36 76 36 76 23 45 35 75 26 52 38 78 27 54 24 47 37 77 26 52 37 77 10 16 38 78 38 78 26 52 37 77 29 59 40 80 30 61 27 54 39 79 29 59 39 79 13 23 40 80 40 80 29 59 39 79 31 66 32 83 19 84 30 61 41 82 31 66 41 82 5 85 32 86 32 87 31 66 41 82</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="Sphere-low-inverted">
+      <node id="_Sphere" name="Sphere" type="NODE">
+        <rotate sid="rotateY">0 1 0 0</rotate>
+        <rotate sid="rotateX">1 0 0 0</rotate>
+        <rotate sid="rotateZ">0 0 1 0</rotate>
+        <instance_geometry url="#Sphere">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="initialShadingGroup" target="#lambert1"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <extra>
+        <technique profile="FCOLLADA">
+          <start_time>0</start_time>
+          <end_time>2</end_time>
+        </technique>
+      </extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_physics_scene url="#MayaNativePhysicsScene"/>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+</COLLADA>

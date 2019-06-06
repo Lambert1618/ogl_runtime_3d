@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>jgiles</author>
+      <authoring_tool>Maya8.5 | ColladaMaya v3.04E</authoring_tool>
+      <comments>SSKK Patch3
+ColladaMaya export options: bakeTransforms=0;exportPolygonMeshes=1;bakeLighting=0;isSampling=0;
+curveConstrainSampling=0;removeStaticCurves=1;exportCameraAsLookat=0;
+exportLights=1;exportCameras=1;exportJointsAndSkin=1;
+exportAnimations=1;exportTriangles=1;exportInvisibleNodes=0;
+exportNormals=1;exportTexCoords=1;
+exportVertexColors=1;exportVertexColorsAnimation=0;exportTangents=0;
+exportTexTangents=0;exportConstraints=1;exportPhysics=1;exportXRefs=1;
+dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
+      <source_data>file:///C:/Jason/RESOURCES/UI%20Composer%20RAW%20sample%20assets/models/primitives/planes/Plane-SingleSided-2X2.mb</source_data>
+    </contributor>
+    <created>2008-09-19T17:32:28Z</created>
+    <modified>2008-09-19T17:32:28Z</modified>
+    <unit meter="0.01" name="centimeter"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_physics_scenes>
+    <physics_scene id="MayaNativePhysicsScene">
+      <technique_common>
+        <gravity>0 -980 0</gravity>
+        <time_step>0.083</time_step>
+      </technique_common>
+    </physics_scene>
+  </library_physics_scenes>
+  <library_materials>
+    <material id="lambert2" name="lambert2">
+      <instance_effect url="#lambert2-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="lambert2-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>1 1 1 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+          <extra>
+            <technique profile="FCOLLADA"/>
+          </extra>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="Plane2X2" name="Plane2X2">
+      <mesh>
+        <source id="Plane2X2-positions" name="position">
+          <float_array id="Plane2X2-positions-array" count="27">50 -50 0 -50 -50 0 50 50 0 -50 50 0 0 50 0 -50 0 0 0 -50 0 50 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#Plane2X2-positions-array" count="9" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane2X2-normals" name="normal">
+          <float_array id="Plane2X2-normals-array" count="27">0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Plane2X2-normals-array" count="9" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane2X2-Rectangle-UV" name="Rectangle-UV">
+          <float_array id="Plane2X2-Rectangle-UV-array" count="18">0 1 0 0.5 0.5 1 0.5 0.5 1 0 1 0.5 0.5 0 1 1 0 0</float_array>
+          <technique_common>
+            <accessor source="#Plane2X2-Rectangle-UV-array" count="9" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Plane2X2-vertices">
+          <input semantic="POSITION" source="#Plane2X2-positions"/>
+          <input semantic="NORMAL" source="#Plane2X2-normals"/>
+        </vertices>
+        <triangles material="lambert2SG" count="8">
+          <input semantic="VERTEX" source="#Plane2X2-vertices" offset="0"/>
+          <input semantic="TEXCOORD" source="#Plane2X2-Rectangle-UV" offset="1" set="1"/>
+          <p>3 0 5 1 4 2 8 3 4 2 5 1 0 4 7 5 6 6 8 3 6 6 7 5 2 7 4 2 7 5 8 3 7 5 4 2 1 8 6 6 5 1 8 3 5 1 6 6</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="Plane-SingleSided-2X2">
+      <node id="Plane" name="Plane" type="NODE">
+        <rotate sid="rotateY">0 1 0 0</rotate>
+        <rotate sid="rotateX">1 0 0 0</rotate>
+        <rotate sid="rotateZ">0 0 1 0</rotate>
+        <instance_geometry url="#Plane2X2">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert2SG" target="#lambert2"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <extra>
+        <technique profile="FCOLLADA">
+          <start_time>0.041666</start_time>
+          <end_time>2</end_time>
+        </technique>
+      </extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_physics_scene url="#MayaNativePhysicsScene"/>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+</COLLADA>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<application>
+	<assets initial="barrel">
+		<dataInput name="di_text" type="String"/>
+		<presentation id="barrel" src="barrel.uip"/>
+	</assets>
+	<statemachine ref="#logic">
+		<visual-states>
+			<state ref="Initial">
+				<enter>
+					<goto-slide element="main:Scene" rel="next"/>
+				</enter>
+			</state>
+		</visual-states>
+	</statemachine>
+</application>

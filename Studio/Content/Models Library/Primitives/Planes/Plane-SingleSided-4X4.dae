@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>jgiles</author>
+      <authoring_tool>Maya8.5 | ColladaMaya v3.04E</authoring_tool>
+      <comments>SSKK Patch3
+ColladaMaya export options: bakeTransforms=0;exportPolygonMeshes=1;bakeLighting=0;isSampling=0;
+curveConstrainSampling=0;removeStaticCurves=1;exportCameraAsLookat=0;
+exportLights=1;exportCameras=1;exportJointsAndSkin=1;
+exportAnimations=1;exportTriangles=1;exportInvisibleNodes=0;
+exportNormals=1;exportTexCoords=1;
+exportVertexColors=1;exportVertexColorsAnimation=0;exportTangents=0;
+exportTexTangents=0;exportConstraints=1;exportPhysics=1;exportXRefs=1;
+dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
+      <source_data>file:///C:/Jason/RESOURCES/UI%20Composer%20RAW%20sample%20assets/models/primitives/planes/Plane-SingleSided-4X4.mb</source_data>
+    </contributor>
+    <created>2008-09-19T17:34:40Z</created>
+    <modified>2008-09-19T17:34:40Z</modified>
+    <unit meter="0.01" name="centimeter"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_physics_scenes>
+    <physics_scene id="MayaNativePhysicsScene">
+      <technique_common>
+        <gravity>0 -980 0</gravity>
+        <time_step>0.083</time_step>
+      </technique_common>
+    </physics_scene>
+  </library_physics_scenes>
+  <library_materials>
+    <material id="lambert2" name="lambert2">
+      <instance_effect url="#lambert2-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="lambert2-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>1 1 1 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+          <extra>
+            <technique profile="FCOLLADA"/>
+          </extra>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="Plane4X4" name="Plane4X4">
+      <mesh>
+        <source id="Plane4X4-positions" name="position">
+          <float_array id="Plane4X4-positions-array" count="75">50 -50 0 -50 -50 0 50 50 0 -50 50 0 0 50 0 -50 0 0 0 -50 0 50 0 0 0 0 0 25 50 0 0 25 0 25 0 0 50 25 0 25 25 0 -50 25 0 -25 0 0 -25 50 0 -25 25 0 -25 -50 0 0 -25 0 -50 -25 0 -25 -25 0 50 -25 0 25 -50 0 25 -25 0</float_array>
+          <technique_common>
+            <accessor source="#Plane4X4-positions-array" count="25" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane4X4-normals" name="normal">
+          <float_array id="Plane4X4-normals-array" count="75">0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Plane4X4-normals-array" count="25" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane4X4-Rectangle-UV" name="Rectangle-UV">
+          <float_array id="Plane4X4-Rectangle-UV-array" count="50">0.5 1 0.5 0.75 0.75 1 0.75 0.75 1 0.5 1 0.75 0.75 0.5 0 0.5 0.25 0.5 0 0.75 0.25 0.75 0.25 1 0.5 0 0.5 0.25 0.25 0 0.25 0.25 0 0.25 1 0.25 0.75 0.25 0.75 0 1 1 0.5 0.5 0 1 0 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#Plane4X4-Rectangle-UV-array" count="25" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Plane4X4-vertices">
+          <input semantic="POSITION" source="#Plane4X4-positions"/>
+          <input semantic="NORMAL" source="#Plane4X4-normals"/>
+        </vertices>
+        <triangles material="lambert2SG" count="32">
+          <input semantic="VERTEX" source="#Plane4X4-vertices" offset="0"/>
+          <input semantic="TEXCOORD" source="#Plane4X4-Rectangle-UV" offset="1" set="1"/>
+          <p>4 0 10 1 9 2 13 3 9 2 10 1 7 4 12 5 11 6 13 3 11 6 12 5 5 7 15 8 14 9 17 10 14 9 15 8 4 0 16 11 10 1 17 10 10 1 16 11 6 12 19 13 18 14 21 15 18 14 19 13 5 7 20 16 15 8 21 15 15 8 20 16 7 4 11 6 22 17 24 18 22 17 11 6 6 12 23 19 19 13 24 18 19 13 23 19 2 20 9 2 12 5 13 3 12 5 9 2 8 21 11 6 10 1 13 3 10 1 11 6 3 22 14 9 16 11 17 10 16 11 14 9 8 21 10 1 15 8 17 10 15 8 10 1 1 23 18 14 20 16 21 15 20 16 18 14 8 21 15 8 19 13 21 15 19 13 15 8 0 24 22 17 23 19 24 18 23 19 22 17 8 21 19 13 11 6 24 18 11 6 19 13</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="Plane-SingleSided-4X4">
+      <node id="Plane" name="Plane" type="NODE">
+        <rotate sid="rotateY">0 1 0 0</rotate>
+        <rotate sid="rotateX">1 0 0 0</rotate>
+        <rotate sid="rotateZ">0 0 1 0</rotate>
+        <instance_geometry url="#Plane4X4">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert2SG" target="#lambert2"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <extra>
+        <technique profile="FCOLLADA">
+          <start_time>0.041666</start_time>
+          <end_time>2</end_time>
+        </technique>
+      </extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_physics_scene url="#MayaNativePhysicsScene"/>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+</COLLADA>

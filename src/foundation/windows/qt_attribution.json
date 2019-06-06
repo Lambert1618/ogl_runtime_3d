@@ -1,0 +1,10 @@
+{
+    "Id": "qt3dswindowsaos",
+    "Name": "Qt3DSWindowsAoS",
+    "QDocModule": "qt3dstudio",
+    "QtUsage": "Used by Qt3DStudio, Runtime component.",
+
+    "License": "Other",
+    "LicenseFile": "LICENSE.TXT",
+    "Copyright": "Copyright (c) 2001 Intel Corporation."
+}

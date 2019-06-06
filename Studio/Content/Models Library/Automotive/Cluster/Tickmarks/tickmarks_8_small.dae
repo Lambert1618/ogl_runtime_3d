@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>tetammin</author>
+      <authoring_tool>OpenCOLLADA2017;  Version: 1.6;  Revision: 61</authoring_tool>
+      <comments>
+			ColladaMaya export options: 
+			bakeTransforms=1;relativePaths=1;preserveSourceTree=0;copyTextures=0;exportTriangles=1;exportCgfxFileReferences=1;
+			isSampling=0;curveConstrainSampling=0;removeStaticCurves=1;exportPhysics=0;exportConvexMeshGeometries=1;exportPolygonMeshes=1;exportLights=1;
+			exportCameras=1;exportAnimationsOnly=0;exportSeparateFile=0;modelNameDAE=;exportJoints=1;exportSkin=1;exportAnimations=1;exportOptimizedBezierAnimation=0;exportInvisibleNodes=0;exportDefaultCameras=0;
+			exportTexCoords=1;exportNormals=1;exportNormalsPerVertex=1;exportVertexColors=1;exportVertexColorsPerVertex=1;
+			exportTexTangents=1;exportTangents=1;exportReferencedMaterials=0;exportMaterialsOnly=0;
+			exportXRefs=1;dereferenceXRefs=1;exportCameraAsLookat=0;cameraXFov=0;cameraYFov=1;encodedNames=1;doublePrecision=0
+		</comments>
+      <source_data>file:///C:/Users/tetammin/Dropbox%20(Qt)/Qt%203D%20Team/3D%20Models/Automotive/ClusterTemplateMaya/qt_cluster_template.mb</source_data>
+    </contributor>
+    <created>2018-03-08T09:30:15</created>
+    <modified>2018-03-08T09:30:15</modified>
+    <unit name="centimeter" meter="0.01"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_materials>
+    <material id="Default_white" name="Default_white">
+      <instance_effect url="#Default_white-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="Default_white-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.8 0.8 0.8 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId" type="string">Default_white</originalMayaNodeId>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="qt_gauge_tickmarks_8_smallShape" name="qt_gauge_tickmarks_8_smallShape">
+      <mesh>
+        <source id="qt_gauge_tickmarks_8_smallShape-positions" name="qt_gauge_tickmarks_8_smallShape-positions">
+          <float_array id="qt_gauge_tickmarks_8_smallShape-positions-array" count="96">-2.556742 0 -6.940895 -2.328636 0 -7.020713 -2.955829 0 -8.081421 -2.727724 0 -8.161238 -6.326518 0 -3.832508 -6.197944 0 -4.037133 -7.349644 0 -4.47538 -7.221069 0 -4.680005 -7.335801 0 0.9481444 -7.362859 0 0.7079973 -8.536537 0 1.083435 -8.563595 0 0.8432878 -5.144202 0 5.315086 -5.315086 0 5.144202 -5.998623 0 6.169507 -6.169507 0 5.998623 5.315086 0 5.144202 5.144202 0 5.315086 6.169507 0 5.998623 5.998623 0 6.169507 7.362859 0 0.7079973 7.335801 0 0.9481444 8.563595 0 0.8432878 8.536537 0 1.083435 6.197944 0 -4.037133 6.326518 0 -3.832508 7.221068 0 -4.680005 7.349643 0 -4.47538 2.328636 0 -7.020713 2.556742 0 -6.940895 2.727724 0 -8.161238 2.955829 0 -8.081421</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmarks_8_smallShape-positions-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmarks_8_smallShape-normals" name="qt_gauge_tickmarks_8_smallShape-normals">
+          <float_array id="qt_gauge_tickmarks_8_smallShape-normals-array" count="96">0 1 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmarks_8_smallShape-normals-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmarks_8_smallShape-tangents" name="qt_gauge_tickmarks_8_smallShape-tangents">
+          <float_array id="qt_gauge_tickmarks_8_smallShape-tangents-array" count="96">0.9438834 0 -0.3302788 -0.3302798 0 -0.9438831 0.3302769 0 0.9438841 -0.9438832 0 0.3302794 0.5320317 0 -0.8467244 -0.8467244 0 -0.5320317 0.8467235 0 0.5320331 -0.5320319 0 0.8467243 -0.1119646 0 -0.9937122 -0.9937122 0 0.1119646 0.9937124 0 -0.1119626 0.1119646 0 0.9937122 -0.7071068 0 -0.7071068 -0.7071058 0 0.7071078 0.7071058 0 -0.7071078 0.7071068 0 0.7071068 -0.7071068 0 0.7071068 0.7071058 0 0.7071078 -0.7071058 0 -0.7071078 0.7071068 0 -0.7071068 -0.1119646 0 0.9937122 0.9937122 0 0.1119646 -0.9937124 0 -0.1119626 0.1119646 0 -0.9937122 0.5320324 0 0.846724 0.8467241 0 -0.5320322 -0.8467235 0 0.5320331 -0.532032 0 -0.8467242 0.9438832 0 0.3302794 0.3302798 0 -0.9438831 -0.3302769 0 0.9438841 -0.9438834 0 -0.3302788</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmarks_8_smallShape-tangents-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmarks_8_smallShape-binormals" name="qt_gauge_tickmarks_8_smallShape-binormals">
+          <float_array id="qt_gauge_tickmarks_8_smallShape-binormals-array" count="96">-0.3302788 0 -0.9438834 -0.9438831 0 0.3302798 0.9438842 0 -0.3302769 0.3302795 0 0.9438833 -0.8467245 0 -0.5320317 -0.5320317 0 0.8467245 0.5320331 0 -0.8467236 0.8467243 0 0.5320319 -0.9937122 0 0.1119646 0.1119646 0 0.9937122 -0.1119626 0 -0.9937124 0.9937122 0 -0.1119646 -0.7071068 0 0.7071068 0.7071078 0 0.7071058 -0.7071078 0 -0.7071058 0.7071068 0 -0.7071068 0.7071068 0 0.7071068 0.7071078 0 -0.7071058 -0.7071078 0 0.7071058 -0.7071068 0 -0.7071068 0.9937122 0 0.1119646 0.1119646 0 -0.9937122 -0.1119626 0 0.9937124 -0.9937123 0 -0.1119646 0.8467241 0 -0.5320324 -0.5320322 0 -0.8467242 0.5320331 0 0.8467236 -0.8467242 0 0.532032 0.3302794 0 -0.9438832 -0.9438832 0 -0.3302798 0.9438842 0 0.3302769 -0.3302788 0 0.9438834</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmarks_8_smallShape-binormals-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmarks_8_smallShape-map1" name="qt_gauge_tickmarks_8_smallShape-map1">
+          <float_array id="qt_gauge_tickmarks_8_smallShape-map1-array" count="64">0 0 1 0 0 1 1 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmarks_8_smallShape-map1-array" count="32" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmarks_8_smallShape-textangents">
+          <float_array id="qt_gauge_tickmarks_8_smallShape-textangents-array" count="96">0.9438831 0 -0.3302798 0.9438835 0 -0.3302783 0.9438841 0 -0.3302768 0.9438835 0 -0.3302783 0.5320317 0 -0.8467244 0.5320323 0 -0.8467239 0.5320331 0 -0.8467235 0.5320323 0 -0.8467239 -0.1119646 0 -0.9937122 -0.1119636 0 -0.9937122 -0.1119626 0 -0.9937124 -0.1119636 0 -0.9937122 -0.7071077 0 -0.7071058 -0.7071077 0 -0.7071058 -0.7071077 0 -0.7071058 -0.7071077 0 -0.7071058 -0.7071077 0 0.7071058 -0.7071077 0 0.7071058 -0.7071077 0 0.7071058 -0.7071077 0 0.7071058 -0.1119646 0 0.9937122 -0.1119636 0 0.9937122 -0.1119626 0 0.9937124 -0.1119636 0 0.9937122 0.5320321 0 0.8467241 0.5320326 0 0.8467238 0.5320331 0 0.8467235 0.5320326 0 0.8467238 0.9438831 0 0.3302798 0.9438835 0 0.3302783 0.9438841 0 0.3302768 0.9438835 0 0.3302783</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmarks_8_smallShape-textangents-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmarks_8_smallShape-texbinormals">
+          <float_array id="qt_gauge_tickmarks_8_smallShape-texbinormals-array" count="96">-0.3302798 0 -0.9438832 -0.3302783 0 -0.9438837 -0.3302769 0 -0.9438842 -0.3302783 0 -0.9438837 -0.8467245 0 -0.5320317 -0.846724 0 -0.5320324 -0.8467236 0 -0.5320331 -0.846724 0 -0.5320324 -0.9937122 0 0.1119646 -0.9937123 0 0.1119636 -0.9937124 0 0.1119626 -0.9937124 0 0.1119636 -0.7071058 0 0.7071078 -0.7071058 0 0.7071078 -0.7071058 0 0.7071078 -0.7071058 0 0.7071078 0.7071058 0 0.7071078 0.7071058 0 0.7071078 0.7071058 0 0.7071078 0.7071058 0 0.7071078 0.9937122 0 0.1119646 0.9937124 0 0.1119636 0.9937125 0 0.1119627 0.9937124 0 0.1119636 0.8467242 0 -0.5320321 0.8467239 0 -0.5320327 0.8467236 0 -0.5320331 0.8467239 0 -0.5320327 0.3302798 0 -0.9438831 0.3302783 0 -0.9438837 0.3302769 0 -0.9438842 0.3302783 0 -0.9438837</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmarks_8_smallShape-texbinormals-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="qt_gauge_tickmarks_8_smallShape-vertices" name="qt_gauge_tickmarks_8_smallShape-vertices">
+          <input semantic="POSITION" source="#qt_gauge_tickmarks_8_smallShape-positions"/>
+          <input semantic="NORMAL" source="#qt_gauge_tickmarks_8_smallShape-normals"/>
+          <input semantic="TANGENT" source="#qt_gauge_tickmarks_8_smallShape-tangents"/>
+          <input semantic="BINORMAL" source="#qt_gauge_tickmarks_8_smallShape-binormals"/>
+        </vertices>
+        <triangles material="lambert3SG" count="16">
+          <input semantic="VERTEX" source="#qt_gauge_tickmarks_8_smallShape-vertices" offset="0"/>
+          <input semantic="TEXCOORD" source="#qt_gauge_tickmarks_8_smallShape-map1" offset="1" set="0"/>
+          <input semantic="TEXTANGENT" source="#qt_gauge_tickmarks_8_smallShape-textangents" offset="2" set="0"/>
+          <input semantic="TEXBINORMAL" source="#qt_gauge_tickmarks_8_smallShape-texbinormals" offset="2" set="0"/>
+          <p>0 0 0 1 1 1 2 2 3 2 2 3 1 1 1 3 3 2 4 4 4 5 5 5 6 7 7 6 7 7 5 5 5 7 6 6 8 8 8 9 9 9 10 11 11 10 11 11 9 9 9 11 10 10 12 12 12 13 13 13 14 15 15 14 15 15 13 13 13 15 14 14 16 16 16 17 17 17 18 19 19 18 19 19 17 17 17 19 18 18 20 20 20 21 21 21 22 23 23 22 23 23 21 21 21 23 22 22 24 24 24 25 25 25 26 27 27 26 27 27 25 25 25 27 26 26 28 28 28 29 29 29 30 31 31 30 31 31 29 29 29 31 30 30</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId">qt_gauge_tickmarks_8_smallShape</originalMayaNodeId>
+          <double_sided sid="double_sided">1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="qt_cluster_template">
+      <node id="_qt_gauge_tickmarks_8_small" name="qt_gauge_tickmarks_8_small" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#qt_gauge_tickmarks_8_smallShape">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert3SG" target="#Default_white"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+        <extra>
+          <technique profile="OpenCOLLADAMaya">
+            <originalMayaNodeId sid="originalMayaNodeId" type="string">qt_gauge_tickmarks_8_small</originalMayaNodeId>
+          </technique>
+        </extra>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+  <extra>
+    <technique profile="COLLADA">
+      <source_data_base_uri>file:///C:/Users/tetammin/Documents/maya/projects/default/</source_data_base_uri>
+    </technique>
+  </extra>
+</COLLADA>

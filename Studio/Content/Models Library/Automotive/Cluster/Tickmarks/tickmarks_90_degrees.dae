@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>tetammin</author>
+      <authoring_tool>OpenCOLLADA2017;  Version: 1.6;  Revision: 61</authoring_tool>
+      <comments>
+			ColladaMaya export options: 
+			bakeTransforms=1;relativePaths=1;preserveSourceTree=0;copyTextures=0;exportTriangles=1;exportCgfxFileReferences=1;
+			isSampling=0;curveConstrainSampling=0;removeStaticCurves=1;exportPhysics=0;exportConvexMeshGeometries=1;exportPolygonMeshes=1;exportLights=1;
+			exportCameras=1;exportAnimationsOnly=0;exportSeparateFile=0;modelNameDAE=;exportJoints=1;exportSkin=1;exportAnimations=1;exportOptimizedBezierAnimation=0;exportInvisibleNodes=0;exportDefaultCameras=0;
+			exportTexCoords=1;exportNormals=1;exportNormalsPerVertex=1;exportVertexColors=1;exportVertexColorsPerVertex=1;
+			exportTexTangents=1;exportTangents=1;exportReferencedMaterials=0;exportMaterialsOnly=0;
+			exportXRefs=1;dereferenceXRefs=1;exportCameraAsLookat=0;cameraXFov=0;cameraYFov=1;encodedNames=1;doublePrecision=0
+		</comments>
+      <source_data>file:///C:/Users/tetammin/Dropbox%20(Qt)/Qt%203D%20Team/3D%20Models/Automotive/ClusterTemplateMaya/qt_cluster_template.mb</source_data>
+    </contributor>
+    <created>2018-03-08T10:02:29</created>
+    <modified>2018-03-08T10:02:29</modified>
+    <unit name="centimeter" meter="0.01"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_materials>
+    <material id="Default_white" name="Default_white">
+      <instance_effect url="#Default_white-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="Default_white-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.8 0.8 0.8 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId" type="string">Default_white</originalMayaNodeId>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="qt_gauge_tickmars_90_degreesShape" name="qt_gauge_tickmars_90_degreesShape">
+      <mesh>
+        <source id="qt_gauge_tickmars_90_degreesShape-positions" name="qt_gauge_tickmars_90_degreesShape-positions">
+          <float_array id="qt_gauge_tickmars_90_degreesShape-positions-array" count="144">3.293105 0 -8.815125 3.47788 0 -8.738586 3.675788 0 -9.739004 3.860564 0 -9.662466 4.94477 0 -7.954519 5.111064 0 -7.843405 5.50034 0 -8.785989 5.666634 0 -8.674873 1.50528 0 -9.336969 1.701437 0 -9.297951 1.70037 0 -10.31775 1.896527 0 -10.27874 9.25 0 -0.0999999 9.25 0 0.1000004 10.25 0 -0.09999943 10.25 0 0.1000004 8.25 0 -0.0999999 8.25 0 0.0999999 9.25 0 -0.0999999 9.25 0 0.1000004 5.689697 0 -6.081118 5.831119 0 -5.939696 6.396803 0 -6.788224 6.538225 0 -6.646803 -0.35 0 -8.5 -0.15 0 -8.5 -0.35 0 -9.5 -0.15 0 -9.5 -0.35 0 -9.5 -0.15 0 -9.5 -0.35 0 -10.5 -0.15 0 -10.5 6.396803 0 -6.788224 6.538225 0 -6.646803 7.10391 0 -7.495331 7.245332 0 -7.35391 7.593405 0 -5.361065 7.704518 0 -5.19477 8.424873 0 -5.916635 8.535988 0 -5.750341 9.047951 0 -1.951436 9.086969 0 -1.755279 10.02874 0 -2.146526 10.06775 0 -1.950369 8.488587 0 -3.72788 8.565125 0 -3.543104 9.412466 0 -4.110563 9.489004 0 -3.925788</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmars_90_degreesShape-positions-array" count="48" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmars_90_degreesShape-normals" name="qt_gauge_tickmars_90_degreesShape-normals">
+          <float_array id="qt_gauge_tickmars_90_degreesShape-normals-array" count="144">0 0.9999999 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmars_90_degreesShape-normals-array" count="48" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmars_90_degreesShape-tangents" name="qt_gauge_tickmars_90_degreesShape-tangents">
+          <float_array id="qt_gauge_tickmars_90_degreesShape-tangents-array" count="144">0.9238795 0 0.3826835 0.3826895 0 -0.923877 -0.3826891 0 0.9238772 -0.9238794 0 -0.3826837 0.8314698 0 0.55557 0.5555709 0 -0.8314692 -0.5555758 0 0.8314659 -0.8314693 0 -0.5555706 0.9807853 0 0.1950903 0.195093 0 -0.9807847 -0.1950884 0 0.9807857 -0.9807853 0 -0.1950902 0 0 1 1 0 0 -1 0 0 0 0 -1 0 0 1 1 0 0 -1 0 0 0 0 -1 0.7071068 0 0.7071068 0.707108 0 -0.7071056 -0.7071044 0 0.7071092 -0.707107 0 -0.7071065 1 0 0 0 0 -1 0 0 1 -1 0 0 1 0 0 0 0 -1 0 0 1 -1 0 0 0.7071068 0 0.7071068 0.7071044 0 -0.7071092 -0.7071056 0 0.707108 -0.707107 0 -0.7071065 0.5555706 0 0.8314693 0.8314725 0 -0.5555659 -0.8314688 0 0.5555714 -0.5555709 0 -0.8314692 0.1950899 0 0.9807854 0.9807847 0 -0.1950931 -0.9807857 0 0.1950881 -0.1950896 0 -0.9807854 0.3826832 0 0.9238796 0.9238789 0 -0.382685 -0.9238763 0 0.3826912 -0.3826839 0 -0.9238793</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmars_90_degreesShape-tangents-array" count="48" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmars_90_degreesShape-binormals" name="qt_gauge_tickmars_90_degreesShape-binormals">
+          <float_array id="qt_gauge_tickmars_90_degreesShape-binormals-array" count="144">0.3826835 0 -0.9238796 -0.923877 0 -0.3826895 0.9238772 0 0.3826891 -0.3826837 0 0.9238794 0.5555699 0 -0.8314698 -0.8314693 0 -0.5555709 0.8314659 0 0.5555758 -0.5555707 0 0.8314694 0.1950904 0 -0.9807853 -0.9807848 0 -0.195093 0.9807857 0 0.1950884 -0.1950902 0 0.9807854 1 0 0 0 0 -1 0 0 1 -1 0 0 1 0 0 0 0 -1 0 0 1 -1 0 0 0.7071068 0 -0.7071068 -0.7071056 0 -0.707108 0.7071092 0 0.7071044 -0.7071066 0 0.7071071 0 0 -1 -1 0 0 1 0 0 0 0 1 0 0 -1 -1 0 0 1 0 0 0 0 1 0.7071068 0 -0.7071068 -0.7071092 0 -0.7071044 0.707108 0 0.7071056 -0.7071066 0 0.7071071 0.8314694 0 -0.5555707 -0.5555659 0 -0.8314726 0.5555714 0 0.8314689 -0.8314693 0 0.5555709 0.9807854 0 -0.1950899 -0.1950931 0 -0.9807848 0.1950881 0 0.9807858 -0.9807854 0 0.1950896 0.9238797 0 -0.3826832 -0.3826851 0 -0.923879 0.3826913 0 0.9238763 -0.9238794 0 0.3826839</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmars_90_degreesShape-binormals-array" count="48" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmars_90_degreesShape-map1" name="qt_gauge_tickmars_90_degreesShape-map1">
+          <float_array id="qt_gauge_tickmars_90_degreesShape-map1-array" count="96">0 0 1 0 0 1 1 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmars_90_degreesShape-map1-array" count="48" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmars_90_degreesShape-textangents">
+          <float_array id="qt_gauge_tickmars_90_degreesShape-textangents-array" count="144">0.9238769 0 0.3826895 0.9238771 0 0.3826893 0.9238771 0 0.3826891 0.9238771 0 0.3826893 0.8314692 0 0.5555708 0.8314674 0 0.5555733 0.8314658 0 0.5555757 0.8314674 0 0.5555733 0.9807846 0 0.195093 0.9807851 0 0.1950907 0.9807856 0 0.1950884 0.9807851 0 0.1950907 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0.7071055 0 0.7071079 0.7071073 0 0.7071061 0.7071092 0 0.7071044 0.7071073 0 0.7071061 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.7071092 0 0.7071044 0.7071085 0 0.7071049 0.7071079 0 0.7071055 0.7071085 0 0.7071049 0.5555658 0 0.8314725 0.5555686 0 0.8314706 0.5555714 0 0.8314688 0.5555686 0 0.8314706 0.1950931 0 0.9807847 0.1950906 0 0.9807852 0.1950881 0 0.9807857 0.1950906 0 0.9807852 0.382685 0 0.9238788 0.3826881 0 0.9238775 0.3826912 0 0.9238762 0.3826881 0 0.9238775</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmars_90_degreesShape-textangents-array" count="48" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_tickmars_90_degreesShape-texbinormals">
+          <float_array id="qt_gauge_tickmars_90_degreesShape-texbinormals-array" count="144">0.3826896 0 -0.9238771 0.3826894 0 -0.9238772 0.3826891 0 -0.9238772 0.3826893 0 -0.9238771 0.5555708 0 -0.8314692 0.5555733 0 -0.8314676 0.5555758 0 -0.831466 0.5555733 0 -0.8314676 0.195093 0 -0.9807848 0.1950907 0 -0.9807853 0.1950884 0 -0.9807857 0.1950907 0 -0.9807853 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.707108 0 -0.7071056 0.7071062 0 -0.7071074 0.7071044 0 -0.7071092 0.7071062 0 -0.7071074 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0.7071044 0 -0.7071092 0.707105 0 -0.7071086 0.7071056 0 -0.707108 0.707105 0 -0.7071086 0.8314726 0 -0.5555659 0.8314707 0 -0.5555686 0.8314689 0 -0.5555714 0.8314707 0 -0.5555686 0.9807848 0 -0.1950931 0.9807853 0 -0.1950906 0.9807858 0 -0.1950881 0.9807853 0 -0.1950906 0.923879 0 -0.3826851 0.9238777 0 -0.3826882 0.9238764 0 -0.3826913 0.9238776 0 -0.3826881</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_tickmars_90_degreesShape-texbinormals-array" count="48" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="qt_gauge_tickmars_90_degreesShape-vertices" name="qt_gauge_tickmars_90_degreesShape-vertices">
+          <input semantic="POSITION" source="#qt_gauge_tickmars_90_degreesShape-positions"/>
+          <input semantic="NORMAL" source="#qt_gauge_tickmars_90_degreesShape-normals"/>
+          <input semantic="TANGENT" source="#qt_gauge_tickmars_90_degreesShape-tangents"/>
+          <input semantic="BINORMAL" source="#qt_gauge_tickmars_90_degreesShape-binormals"/>
+        </vertices>
+        <triangles material="lambert3SG" count="24">
+          <input semantic="VERTEX" source="#qt_gauge_tickmars_90_degreesShape-vertices" offset="0"/>
+          <input semantic="TEXCOORD" source="#qt_gauge_tickmars_90_degreesShape-map1" offset="1" set="0"/>
+          <input semantic="TEXTANGENT" source="#qt_gauge_tickmars_90_degreesShape-textangents" offset="2" set="0"/>
+          <input semantic="TEXBINORMAL" source="#qt_gauge_tickmars_90_degreesShape-texbinormals" offset="2" set="0"/>
+          <p>0 0 0 1 1 1 2 2 3 2 2 3 1 1 1 3 3 2 4 4 4 5 5 5 6 7 7 6 7 7 5 5 5 7 6 6 8 8 8 9 9 9 10 11 11 10 11 11 9 9 9 11 10 10 12 12 12 13 13 13 14 15 15 14 15 15 13 13 13 15 14 14 16 16 16 17 17 17 18 19 19 18 19 19 17 17 17 19 18 18 20 20 20 21 21 21 22 23 23 22 23 23 21 21 21 23 22 22 24 24 24 25 25 25 26 27 27 26 27 27 25 25 25 27 26 26 28 28 28 29 29 29 30 31 31 30 31 31 29 29 29 31 30 30 32 32 32 33 33 33 34 35 35 34 35 35 33 33 33 35 34 34 36 36 36 37 37 37 38 39 39 38 39 39 37 37 37 39 38 38 40 40 40 41 41 41 42 43 43 42 43 43 41 41 41 43 42 42 44 44 44 45 45 45 46 47 47 46 47 47 45 45 45 47 46 46</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId">qt_gauge_tickmars_90_degreesShape</originalMayaNodeId>
+          <double_sided sid="double_sided">1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="qt_cluster_template">
+      <node id="_qt_gauge_tickmars_90_degrees" name="qt_gauge_tickmars_90_degrees" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#qt_gauge_tickmars_90_degreesShape">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert3SG" target="#Default_white"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+        <extra>
+          <technique profile="OpenCOLLADAMaya">
+            <originalMayaNodeId sid="originalMayaNodeId" type="string">qt_gauge_tickmars_90_degrees</originalMayaNodeId>
+          </technique>
+        </extra>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+  <extra>
+    <technique profile="COLLADA">
+      <source_data_base_uri>file:///C:/Users/tetammin/Documents/maya/projects/default/</source_data_base_uri>
+    </technique>
+  </extra>
+</COLLADA>

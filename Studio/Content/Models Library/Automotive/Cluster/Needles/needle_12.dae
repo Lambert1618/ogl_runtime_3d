@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>tetammin</author>
+      <authoring_tool>OpenCOLLADA2017;  Version: 1.6;  Revision: 61</authoring_tool>
+      <comments>
+			ColladaMaya export options: 
+			bakeTransforms=1;relativePaths=1;preserveSourceTree=0;copyTextures=0;exportTriangles=1;exportCgfxFileReferences=1;
+			isSampling=0;curveConstrainSampling=0;removeStaticCurves=1;exportPhysics=0;exportConvexMeshGeometries=1;exportPolygonMeshes=1;exportLights=1;
+			exportCameras=1;exportAnimationsOnly=0;exportSeparateFile=0;modelNameDAE=;exportJoints=1;exportSkin=1;exportAnimations=1;exportOptimizedBezierAnimation=0;exportInvisibleNodes=0;exportDefaultCameras=0;
+			exportTexCoords=1;exportNormals=1;exportNormalsPerVertex=1;exportVertexColors=1;exportVertexColorsPerVertex=1;
+			exportTexTangents=1;exportTangents=1;exportReferencedMaterials=0;exportMaterialsOnly=0;
+			exportXRefs=1;dereferenceXRefs=1;exportCameraAsLookat=0;cameraXFov=0;cameraYFov=1;encodedNames=1;doublePrecision=0
+		</comments>
+      <source_data>file:///C:/Users/tetammin/Dropbox%20(Qt)/Qt%203D%20Team/3D%20Models/Automotive/ClusterTemplateMaya/qt_cluster_template.mb</source_data>
+    </contributor>
+    <created>2018-03-08T09:56:46</created>
+    <modified>2018-03-08T09:56:46</modified>
+    <unit name="centimeter" meter="0.01"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_materials>
+    <material id="solidWhite" name="solidWhite">
+      <instance_effect url="#solidWhite-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="solidWhite-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.6931298 0.6931298 0.6931298 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId" type="string">solidWhite</originalMayaNodeId>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="qt_gauge_needles_Shape12" name="qt_gauge_needles_Shape12">
+      <mesh>
+        <source id="qt_gauge_needles_Shape12-positions" name="qt_gauge_needles_Shape12-positions">
+          <float_array id="qt_gauge_needles_Shape12-positions-array" count="33">0 0 -12 0 0 2 -0.8000219 0 0.3999598 -0.9401233 0 -0.005423307 -0.9648963 0 -0.4212524 0 0.725308 0.3999596 0 0.8524873 -0.005407381 0 0.874786 -0.4212525 0.9648944 0 -0.4212522 0.9401219 0 -0.005423248 0.8000226 0 0.39996</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_needles_Shape12-positions-array" count="11" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_needles_Shape12-normals" name="qt_gauge_needles_Shape12-normals">
+          <float_array id="qt_gauge_needles_Shape12-normals-array" count="48">0.6708431 0.7399448 -0.04950791 0.6666873 0.7352953 0.1219376 0.6668238 0.735446 0.1202718 0.6708435 0.7399452 -0.04949641 0.6448936 0.7112988 0.2795822 0.6451954 0.7116304 0.2780379 0.6706148 0.7396976 -0.0558845 0.6367156 0.7023111 0.3183587 -0.6706194 0.7396935 -0.05588498 -0.6708481 0.7399411 -0.04949713 -0.6708476 0.7399406 -0.04950865 -0.6367219 0.702304 0.3183617 -0.6448998 0.7112917 0.2795862 -0.6452016 0.7116232 0.2780418 -0.6668301 0.7354403 0.1202717 -0.6666936 0.7352895 0.1219375</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_needles_Shape12-normals-array" count="16" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_needles_Shape12-tangents" name="qt_gauge_needles_Shape12-tangents">
+          <float_array id="qt_gauge_needles_Shape12-tangents-array" count="48">0.03325251 0.03667839 0.9987738 0.7432966 -0.6680025 -0.03581536 0.08078128 0.08910488 -0.992741 -0.7415988 0.6693873 -0.04417967 0.7634813 -0.616213 -0.1933336 0.1867478 0.2059862 -0.9605702 -0.7371424 0.6729393 0.06142846 0.7710987 -0.5799136 -0.2628821 -0.7418016 -0.6687137 0.05052155 0.7374002 0.672655 0.06145005 0.03325333 -0.03667865 -0.9987737 0.6281595 0.7118771 -0.3140805 -0.7638521 -0.5878181 -0.2664578 0.1867523 -0.2059874 0.960569 0.7365232 0.6749877 -0.04387823 -0.08190107 0.09033816 -0.9925378</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_needles_Shape12-tangents-array" count="16" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_needles_Shape12-binormals" name="qt_gauge_needles_Shape12-binormals">
+          <float_array id="qt_gauge_needles_Shape12-binormals-array" count="48">0.7408534 -0.6716668 0 0.05511975 0.1145134 -0.9918914 -0.7408242 0.671699 0 4.41738e-4 0.06634413 0.9977968 0.0347642 0.3381354 -0.9404552 -0.7408429 0.6716784 0 0.08304538 0 0.9965458 0 0.4128672 -0.9107913 0 0.0753363 0.9971583 0.07876394 0.004724455 -0.9968822 -0.7408493 -0.6716715 0 -0.4472145 0 -0.8944268 -0.02518338 -0.3854011 0.9224055 0.7408363 0.6716856 0 -0.1134517 0.05932354 -0.9917709 -0.7408184 -0.6717055 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_needles_Shape12-binormals-array" count="16" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_needles_Shape12-map1" name="qt_gauge_needles_Shape12-map1">
+          <float_array id="qt_gauge_needles_Shape12-map1-array" count="28">0 0.19998 0 1 0.9648957 1 0.4000132 0.19998 0 0.9999951 0 0 0.9648956 0.482444 1 1 1 0.1999799 0.9648957 0 1 0 1 0.499996 0.500004 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_needles_Shape12-map1-array" count="14" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_needles_Shape12-textangents">
+          <float_array id="qt_gauge_needles_Shape12-textangents-array" count="84">-0.506285 0.5057392 0.6985008 0.02417128 -0.1848438 0.9824706 -0.5860678 0.4178563 0.6942049 -0.7363028 0.6566054 -0.163485 -0.740824 0.671699 0 -0.7408434 0.6716777 0 -0.740842 0.6716793 0 -0.7408241 0.6716989 0 0.08304536 0 0.9965457 0.07877133 -0.004716144 0.9968815 0.07876363 -0.004724652 0.9968821 -0.740842 0.6716793 0 -0.7408434 0.6716777 0 -0.7408576 0.6716621 0 -0.08304548 0 0.9965457 -0.03965843 0.03085357 0.9987368 -0.07269639 8.23624e-4 0.9973538 -0.7408509 -0.6716694 0 -0.7408368 -0.671685 0 -0.7408353 -0.6716865 0 -0.03965843 0.03085357 0.9987368 -0.2872816 -0.4026141 0.8691208 -0.02417607 -0.1848495 0.9824694 -0.07269639 8.23624e-4 0.9973538 -0.2872816 -0.4026141 0.8691208 -0.7408353 -0.6716865 0 -0.7408368 -0.671685 0 -0.7408183 -0.6717055 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_needles_Shape12-textangents-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_needles_Shape12-texbinormals">
+          <float_array id="qt_gauge_needles_Shape12-texbinormals-array" count="84">-0.5418902 0.4435194 -0.7138947 -0.7449455 0.6520534 0.141006 -0.4602939 0.5333998 -0.7096578 0.08847036 -0.1461172 -0.9853034 -0.08190077 -0.09033849 0.9925379 -0.1877851 -0.2071302 0.9601218 -0.1867514 -0.205983 0.9605701 -0.08078128 -0.08910488 0.9927411 0.7371425 -0.6729394 -0.06142846 0.737404 -0.6726511 -0.06145024 0.7374044 -0.6726505 -0.06145028 -0.1867514 -0.205983 0.9605701 -0.1877851 -0.2071302 0.9601218 -0.2138299 -0.2358581 0.9479703 0.7371385 0.6729439 0.06142817 0.7405336 0.6719637 0.008646843 0.7380235 0.6726717 0.05323849 0.2138342 -0.2358583 0.9479693 0.1877898 -0.2071314 0.9601207 0.186756 -0.2059842 0.960569 0.7405336 0.6719637 0.008646843 0.6876096 0.5450041 0.4797537 0.7449397 0.6520582 0.1410144 0.7380235 0.6726717 0.05323849 0.6876096 0.5450041 0.4797537 0.186756 -0.2059842 0.960569 0.1877898 -0.2071314 0.9601207 0.08190157 -0.09033771 0.9925379</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_needles_Shape12-texbinormals-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="qt_gauge_needles_Shape12-vertices" name="qt_gauge_needles_Shape12-vertices">
+          <input semantic="POSITION" source="#qt_gauge_needles_Shape12-positions"/>
+        </vertices>
+        <triangles material="lambert4SG" count="12">
+          <input semantic="VERTEX" source="#qt_gauge_needles_Shape12-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#qt_gauge_needles_Shape12-normals" offset="1"/>
+          <input semantic="TANGENT" source="#qt_gauge_needles_Shape12-tangents" offset="1"/>
+          <input semantic="BINORMAL" source="#qt_gauge_needles_Shape12-binormals" offset="1"/>
+          <input semantic="TEXCOORD" source="#qt_gauge_needles_Shape12-map1" offset="2" set="0"/>
+          <input semantic="TEXTANGENT" source="#qt_gauge_needles_Shape12-textangents" offset="3" set="0"/>
+          <input semantic="TEXBINORMAL" source="#qt_gauge_needles_Shape12-texbinormals" offset="3" set="0"/>
+          <p>6 1 11 1 9 2 13 2 7 0 6 0 7 0 6 0 9 2 13 2 8 3 2 3 5 4 3 5 10 5 0 6 6 1 12 4 6 1 12 4 10 5 0 6 9 2 13 7 0 6 1 8 7 0 6 9 8 3 2 10 10 5 0 11 5 4 3 12 1 7 4 13 0 8 5 14 4 9 9 15 7 10 6 16 1 11 7 17 5 12 3 18 2 13 8 19 4 9 9 20 3 14 10 21 7 10 6 23 7 10 6 23 3 14 10 21 6 15 11 22 3 14 10 24 2 13 8 25 6 15 12 27 6 15 12 27 2 13 8 25 5 12 3 26</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId">qt_gauge_needles_Shape12</originalMayaNodeId>
+          <double_sided sid="double_sided">1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="qt_cluster_template">
+      <node id="_qt_gauge_needles_12" name="qt_gauge_needles_12" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#qt_gauge_needles_Shape12">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert4SG" target="#solidWhite"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+        <extra>
+          <technique profile="OpenCOLLADAMaya">
+            <originalMayaNodeId sid="originalMayaNodeId" type="string">qt_gauge_needles_12</originalMayaNodeId>
+          </technique>
+        </extra>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+  <extra>
+    <technique profile="COLLADA">
+      <source_data_base_uri>file:///C:/Users/tetammin/Documents/maya/projects/default/</source_data_base_uri>
+    </technique>
+  </extra>
+</COLLADA>

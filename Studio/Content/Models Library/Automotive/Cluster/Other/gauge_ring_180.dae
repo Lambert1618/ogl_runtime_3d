@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>tetammin</author>
+      <authoring_tool>OpenCOLLADA2017;  Version: 1.6;  Revision: 61</authoring_tool>
+      <comments>
+			ColladaMaya export options: 
+			bakeTransforms=1;relativePaths=1;preserveSourceTree=0;copyTextures=0;exportTriangles=1;exportCgfxFileReferences=1;
+			isSampling=0;curveConstrainSampling=0;removeStaticCurves=1;exportPhysics=0;exportConvexMeshGeometries=1;exportPolygonMeshes=1;exportLights=1;
+			exportCameras=1;exportAnimationsOnly=0;exportSeparateFile=0;modelNameDAE=;exportJoints=1;exportSkin=1;exportAnimations=1;exportOptimizedBezierAnimation=0;exportInvisibleNodes=0;exportDefaultCameras=0;
+			exportTexCoords=1;exportNormals=1;exportNormalsPerVertex=1;exportVertexColors=1;exportVertexColorsPerVertex=1;
+			exportTexTangents=1;exportTangents=1;exportReferencedMaterials=0;exportMaterialsOnly=0;
+			exportXRefs=1;dereferenceXRefs=1;exportCameraAsLookat=0;cameraXFov=0;cameraYFov=1;encodedNames=1;doublePrecision=0
+		</comments>
+      <source_data>file:///C:/Users/tetammin/Dropbox%20(Qt)/Qt%203D%20Team/3D%20Models/Automotive/ClusterTemplateMaya/qt_cluster_template.mb</source_data>
+    </contributor>
+    <created>2018-03-08T09:48:49</created>
+    <modified>2018-03-08T09:48:49</modified>
+    <unit name="centimeter" meter="0.01"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_materials>
+    <material id="Default_white" name="Default_white">
+      <instance_effect url="#Default_white-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="Default_white-fx">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.8 0.8 0.8 1</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color>0 0 0 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId" type="string">Default_white</originalMayaNodeId>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="qt_gauge_ring_Shape180" name="qt_gauge_ring_Shape180">
+      <mesh>
+        <source id="qt_gauge_ring_Shape180-positions" name="qt_gauge_ring_Shape180-positions">
+          <float_array id="qt_gauge_ring_Shape180-positions-array" count="126">-9.580339 0.0025 0 -9.46239 0.0025 -1.498695 -9.111445 0.0025 -2.960488 -8.536146 0.0025 -4.349383 -7.750659 0.0025 -5.631183 -6.774324 0.0025 -6.774324 -5.631183 0.0025 -7.750659 -4.349384 0.0025 -8.536146 -2.960488 0.0025 -9.111445 -1.498696 0.0025 -9.462391 0 0.0025 -9.58034 1.498695 0.0025 -9.462391 2.960488 0.0025 -9.111445 4.349384 0.0025 -8.536146 5.631184 0.0025 -7.750659 6.774325 0.0025 -6.774324 7.750659 0.0025 -5.631183 8.536147 0.0025 -4.349383 9.111446 0.0025 -2.960487 9.462392 0.0025 -1.498695 9.580341 0.0025 0 -11.18034 0.0025 0 -11.04269 0.0025 -1.748991 -10.63313 0.0025 -3.454916 -9.961756 0.0025 -5.075768 -9.045085 0.0025 -6.57164 -7.905694 0.0025 -7.905695 -6.571639 0.0025 -9.045086 -5.075768 0.0025 -9.961758 -3.454915 0.0025 -10.63314 -1.74899 0.0025 -11.04269 0 0.0025 -11.18034 1.748992 0.0025 -11.04269 3.454917 0.0025 -10.63314 5.075771 0.0025 -9.961759 6.571642 0.0025 -9.045088 7.905698 0.0025 -7.905697 9.04509 0.0025 -6.571641 9.961761 0.0025 -5.075769 10.63314 0.0025 -3.454916 11.0427 0.0025 -1.74899 11.18035 0.0025 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_ring_Shape180-positions-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_ring_Shape180-normals" name="qt_gauge_ring_Shape180-normals">
+          <float_array id="qt_gauge_ring_Shape180-normals-array" count="126">0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 1 0 0 0.9999999 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 1 0 0 1 0 0 1 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999999 0 0 0.9999998 0 0 0.9999999 0 0 0.9999999 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_ring_Shape180-normals-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_ring_Shape180-tangents" name="qt_gauge_ring_Shape180-tangents">
+          <float_array id="qt_gauge_ring_Shape180-tangents-array" count="126">0 0 -1 -0.9969174 0 -0.07845883 -0.97237 0 -0.2334449 -0.9238796 0 -0.3826834 -0.8526402 0 -0.5224984 -0.7604059 0 -0.6494481 -0.6494481 0 -0.7604059 -0.5224986 0 -0.8526402 -0.3826834 0 -0.9238796 -0.2334454 0 -0.9723699 -0.07845882 0 -0.9969174 0.07845883 0 -0.9969174 0.2334454 0 -0.9723699 0.3826833 0 -0.9238796 0.5224984 0 -0.8526402 0.6494481 0 -0.7604059 0.7604061 0 -0.6494479 0.8526402 0 -0.5224984 0.9238796 0 -0.3826834 0.9723699 0 -0.2334454 0.9969174 0 -0.07845882 0.9969173 0 0.07845911 0.9723699 0 0.2334454 0.9238796 0 0.3826833 0.8526402 0 0.5224985 0.7604061 0 0.6494479 0.649448 0 0.760406 0.5224989 0 0.85264 0.3826837 0 0.9238794 0.2334454 0 0.9723699 0.0784591 0 0.9969173 -0.0784591 0 0.9969173 -0.2334454 0 0.9723699 -0.3826832 0 0.9238796 -0.5224984 0 0.8526403 -0.6494479 0 0.7604061 -0.760406 0 0.6494481 -0.85264 0 0.5224988 -0.9238795 0 0.3826836 -0.9723699 0 0.2334453 -0.9969173 0 0.07845907 0 0 -1</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_ring_Shape180-tangents-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_ring_Shape180-binormals" name="qt_gauge_ring_Shape180-binormals">
+          <float_array id="qt_gauge_ring_Shape180-binormals-array" count="126">-1 0 0 -0.07845883 0 0.9969174 -0.2334449 0 0.97237 -0.3826834 0 0.9238796 -0.5224984 0 0.8526403 -0.6494481 0 0.760406 -0.760406 0 0.6494481 -0.8526402 0 0.5224985 -0.9238796 0 0.3826834 -0.9723699 0 0.2334454 -0.9969174 0 0.07845882 -0.9969174 0 -0.07845882 -0.9723699 0 -0.2334454 -0.9238796 0 -0.3826833 -0.8526403 0 -0.5224984 -0.760406 0 -0.6494481 -0.6494479 0 -0.7604061 -0.5224984 0 -0.8526403 -0.3826834 0 -0.9238796 -0.2334454 0 -0.97237 -0.07845882 0 -0.9969174 0.07845913 0 -0.9969174 0.2334454 0 -0.97237 0.3826834 0 -0.9238796 0.5224985 0 -0.8526402 0.6494479 0 -0.7604062 0.760406 0 -0.6494482 0.85264 0 -0.5224989 0.9238794 0 -0.3826837 0.9723699 0 -0.2334454 0.9969174 0 -0.07845911 0.9969174 0 0.07845911 0.9723699 0 0.2334454 0.9238796 0 0.3826832 0.8526403 0 0.5224984 0.7604061 0 0.6494479 0.6494482 0 0.760406 0.5224988 0 0.85264 0.3826836 0 0.9238795 0.2334453 0 0.97237 0.07845907 0 0.9969174 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_ring_Shape180-binormals-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_ring_Shape180-map1" name="qt_gauge_ring_Shape180-map1">
+          <float_array id="qt_gauge_ring_Shape180-map1-array" count="84">0.006734773 0.4999999 0.05606559 0.4999999 0.1053964 0.4999999 0.1547272 0.4999999 0.2040581 0.4999999 0.2533889 0.4999999 0.3027197 0.4999999 0.3520505 0.4999999 0.4013813 0.4999999 0.4507122 0.4999999 0.500043 0.4999999 0.5493739 0.4999999 0.5987047 0.4999999 0.6480355 0.4999999 0.6973664 0.4999999 0.7466971 0.4999999 0.7960279 0.4999999 0.8453588 0.4999999 0.8946896 0.4999999 0.9440205 0.4999999 0.9933512 0.4999999 0.006734773 0 0.05606559 0 0.1053964 0 0.1547272 0 0.2040581 0 0.2533889 0 0.3027197 0 0.3520505 0 0.4013813 0 0.4507122 0 0.500043 0 0.5493739 0 0.5987047 0 0.6480355 0 0.6973664 0 0.7466971 0 0.7960279 0 0.8453588 0 0.8946896 0 0.9440205 0 0.9933512 0</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_ring_Shape180-map1-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_ring_Shape180-textangents">
+          <float_array id="qt_gauge_ring_Shape180-textangents-array" count="240">0.1822824 0 -0.9832461 0.1304786 0 -0.9914511 0.07845911 0 -0.9969173 0.07845896 0 -0.9969173 0.3338518 0 -0.9426255 0.2839692 0 -0.9588334 0.1304786 0 -0.9914511 0.1822824 0 -0.9832461 0.4772008 0 -0.8787943 0.4304677 0 -0.902606 0.2839692 0 -0.9588334 0.3338518 0 -0.9426255 0.6087993 0 -0.7933241 0.5663666 0 -0.8241534 0.4304677 0 -0.902606 0.4772008 0 -0.8787943 0.7254073 0 -0.6883197 0.6883197 0 -0.7254074 0.5663666 0 -0.8241534 0.6087993 0 -0.7933241 0.8241532 0 -0.5663669 0.7933241 0 -0.6087995 0.6883197 0 -0.7254074 0.7254073 0 -0.6883197 0.9026058 0 -0.4304679 0.8787941 0 -0.4772011 0.7933241 0 -0.6087995 0.8241532 0 -0.5663669 0.9588333 0 -0.2839694 0.9426254 0 -0.3338521 0.8787941 0 -0.4772011 0.9026058 0 -0.4304679 0.9914511 0 -0.1304786 0.9832461 0 -0.1822827 0.9426254 0 -0.3338521 0.9588333 0 -0.2839694 0.999656 0 0.02622488 0.999656 0 -0.02622479 0.9832461 0 -0.1822827 0.9914511 0 -0.1304786 0.9832461 0 0.1822826 0.9914511 0 0.1304786 0.999656 0 -0.02622479 0.999656 0 0.02622488 0.9426255 0 0.3338519 0.9588333 0 0.2839693 0.9914511 0 0.1304786 0.9832461 0 0.1822826 0.8787943 0 0.4772007 0.902606 0 0.4304677 0.9588333 0 0.2839693 0.9426255 0 0.3338519 0.7933241 0 0.6087993 0.8241534 0 0.5663665 0.902606 0 0.4304677 0.8787943 0 0.4772007 0.6883197 0 0.7254074 0.7254073 0 0.6883197 0.8241534 0 0.5663665 0.7933241 0 0.6087993 0.5663667 0 0.8241533 0.6087995 0 0.7933241 0.7254073 0 0.6883197 0.6883197 0 0.7254074 0.4304678 0 0.9026058 0.477201 0 0.8787941 0.6087995 0 0.7933241 0.5663667 0 0.8241533 0.2839693 0 0.9588333 0.3338521 0 0.9426254 0.477201 0 0.8787941 0.4304678 0 0.9026058 0.1304786 0 0.9914511 0.1822827 0 0.9832461 0.3338521 0 0.9426254 0.2839693 0 0.9588333 0.07845882 0 0.9969173 0.07845894 0 0.9969173 0.1822827 0 0.9832461 0.1304786 0 0.9914511</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_ring_Shape180-textangents-array" count="80" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="qt_gauge_ring_Shape180-texbinormals">
+          <float_array id="qt_gauge_ring_Shape180-texbinormals-array" count="240">0.9832463 0 0.1822824 0.9914511 0 0.1304786 0.9969174 0 0.07845913 0.9969174 0 0.07845897 0.9426256 0 0.3338518 0.9588335 0 0.2839692 0.9914511 0 0.1304786 0.9832463 0 0.1822824 0.8787943 0 0.4772008 0.9026061 0 0.4304677 0.9588335 0 0.2839692 0.9426256 0 0.3338518 0.7933242 0 0.6087994 0.8241535 0 0.5663666 0.9026061 0 0.4304677 0.8787943 0 0.4772008 0.6883198 0 0.7254074 0.7254074 0 0.6883197 0.8241535 0 0.5663666 0.7933242 0 0.6087994 0.5663669 0 0.8241534 0.6087995 0 0.7933241 0.7254074 0 0.6883197 0.6883198 0 0.7254074 0.4304679 0 0.9026059 0.4772011 0 0.8787942 0.6087995 0 0.7933241 0.5663669 0 0.8241534 0.2839694 0 0.9588335 0.3338522 0 0.9426255 0.4772011 0 0.8787942 0.4304679 0 0.9026059 0.1304786 0 0.9914512 0.1822827 0 0.9832463 0.3338522 0 0.9426255 0.2839694 0 0.9588335 -0.02622488 0 0.9996561 0.02622479 0 0.9996561 0.1822827 0 0.9832463 0.1304786 0 0.9914512 -0.1822826 0 0.9832463 -0.1304786 0 0.9914512 0.02622479 0 0.9996561 -0.02622488 0 0.9996561 -0.333852 0 0.9426256 -0.2839693 0 0.9588335 -0.1304786 0 0.9914512 -0.1822826 0 0.9832463 -0.4772007 0 0.8787944 -0.4304677 0 0.9026061 -0.2839693 0 0.9588335 -0.333852 0 0.9426256 -0.6087994 0 0.7933242 -0.5663666 0 0.8241535 -0.4304677 0 0.9026061 -0.4772007 0 0.8787944 -0.7254074 0 0.6883197 -0.6883199 0 0.7254074 -0.5663666 0 0.8241535 -0.6087994 0 0.7933242 -0.8241534 0 0.5663667 -0.7933242 0 0.6087995 -0.6883199 0 0.7254074 -0.7254074 0 0.6883197 -0.902606 0 0.4304678 -0.8787942 0 0.477201 -0.7933242 0 0.6087995 -0.8241534 0 0.5663667 -0.9588335 0 0.2839694 -0.9426256 0 0.3338521 -0.8787942 0 0.477201 -0.902606 0 0.4304678 -0.9914511 0 0.1304786 -0.9832462 0 0.1822827 -0.9426256 0 0.3338521 -0.9588335 0 0.2839694 -0.9969174 0 0.07845882 -0.9969174 0 0.07845896 -0.9832462 0 0.1822827 -0.9914511 0 0.1304786</float_array>
+          <technique_common>
+            <accessor source="#qt_gauge_ring_Shape180-texbinormals-array" count="80" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="qt_gauge_ring_Shape180-vertices" name="qt_gauge_ring_Shape180-vertices">
+          <input semantic="POSITION" source="#qt_gauge_ring_Shape180-positions"/>
+          <input semantic="NORMAL" source="#qt_gauge_ring_Shape180-normals"/>
+          <input semantic="TANGENT" source="#qt_gauge_ring_Shape180-tangents"/>
+          <input semantic="BINORMAL" source="#qt_gauge_ring_Shape180-binormals"/>
+        </vertices>
+        <triangles material="lambert3SG" count="40">
+          <input semantic="VERTEX" source="#qt_gauge_ring_Shape180-vertices" offset="0"/>
+          <input semantic="TEXCOORD" source="#qt_gauge_ring_Shape180-map1" offset="1" set="0"/>
+          <input semantic="TEXTANGENT" source="#qt_gauge_ring_Shape180-textangents" offset="2" set="0"/>
+          <input semantic="TEXBINORMAL" source="#qt_gauge_ring_Shape180-texbinormals" offset="2" set="0"/>
+          <p>1 1 0 22 22 1 0 0 3 0 0 3 22 22 1 21 21 2 2 2 4 23 23 5 1 1 7 1 1 7 23 23 5 22 22 6 3 3 8 24 24 9 2 2 11 2 2 11 24 24 9 23 23 10 4 4 12 25 25 13 3 3 15 3 3 15 25 25 13 24 24 14 5 5 16 26 26 17 4 4 19 4 4 19 26 26 17 25 25 18 6 6 20 27 27 21 5 5 23 5 5 23 27 27 21 26 26 22 7 7 24 28 28 25 6 6 27 6 6 27 28 28 25 27 27 26 8 8 28 29 29 29 7 7 31 7 7 31 29 29 29 28 28 30 9 9 32 30 30 33 8 8 35 8 8 35 30 30 33 29 29 34 10 10 36 31 31 37 9 9 39 9 9 39 31 31 37 30 30 38 11 11 40 32 32 41 10 10 43 10 10 43 32 32 41 31 31 42 12 12 44 33 33 45 11 11 47 11 11 47 33 33 45 32 32 46 13 13 48 34 34 49 12 12 51 12 12 51 34 34 49 33 33 50 14 14 52 35 35 53 13 13 55 13 13 55 35 35 53 34 34 54 15 15 56 36 36 57 14 14 59 14 14 59 36 36 57 35 35 58 16 16 60 37 37 61 15 15 63 15 15 63 37 37 61 36 36 62 17 17 64 38 38 65 16 16 67 16 16 67 38 38 65 37 37 66 18 18 68 39 39 69 17 17 71 17 17 71 39 39 69 38 38 70 19 19 72 40 40 73 18 18 75 18 18 75 40 40 73 39 39 74 20 20 76 41 41 77 19 19 79 19 19 79 41 41 77 40 40 78</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADAMaya">
+          <originalMayaNodeId sid="originalMayaNodeId">qt_gauge_ring_Shape180</originalMayaNodeId>
+          <double_sided sid="double_sided">1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="VisualSceneNode" name="qt_cluster_template">
+      <node id="_qt_gauge_ring_180" name="qt_gauge_ring_180" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#qt_gauge_ring_Shape180">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert3SG" target="#Default_white"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+        <extra>
+          <technique profile="OpenCOLLADAMaya">
+            <originalMayaNodeId sid="originalMayaNodeId" type="string">qt_gauge_ring_180</originalMayaNodeId>
+          </technique>
+        </extra>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#VisualSceneNode"/>
+  </scene>
+  <extra>
+    <technique profile="COLLADA">
+      <source_data_base_uri>file:///C:/Users/tetammin/Documents/maya/projects/default/</source_data_base_uri>
+    </technique>
+  </extra>
+</COLLADA>

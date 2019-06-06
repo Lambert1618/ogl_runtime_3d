@@ -1,0 +1,9 @@
+{
+    "module": "3dstudioruntimeopengl",
+    "condition": "!config.wasm && !config.ios && !config.integrity && !config.tvos && !config.watchos && !config.winrt && !config.qnx",
+    "summary": [
+        {
+            "section": "Qt 3D Studio OpenGL Runtime"
+        }
+    ]
+}
