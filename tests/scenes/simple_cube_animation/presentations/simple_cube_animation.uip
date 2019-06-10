@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="6" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="600" presentationHeight="600" maintainAspect="False" preferKtx="False" >
+			<CustomColors count="16" >#7391ff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff</CustomColors>
+		</ProjectSettings>
+		<Graph >
+			<Scene id="Scene" >
+				<Layer id="Layer" variants="" >
+					<Camera id="Camera" />
+					<Light id="Light" >
+						<Model id="Sphere" variants="" >
+							<Material id="Default_animatable" />
+						</Model>
+					</Light>
+					<Model id="Cube" variants="" >
+						<Material id="Basic Green_animatable" />
+					</Model>
+					<Model id="Cube2" variants="" >
+						<Material id="Basic Red_animatable" />
+					</Model>
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene" >
+				<Add ref="#Layer" background="SolidColor" backgroundcolor="0.584314 0.0941176 0.34902 1" />
+				<Add ref="#Camera" />
+				<Add ref="#Light" brightness="400" lighttype="Point" >
+					<AnimationTrack property="position.x" type="EaseInOut" >0 -341.785 100 100 5 269.972 100 100</AnimationTrack>
+					<AnimationTrack property="position.y" type="EaseInOut" >0 0 100 100 5 0 100 100</AnimationTrack>
+					<AnimationTrack property="position.z" type="EaseInOut" >0 0 100 100 5 0 100 100</AnimationTrack>
+				</Add>
+				<State id="Scene-Slide1" name="Slide1" playmode="Play Through To..." >
+					<Set ref="#Layer" endtime="5000" >
+						<Action id="Layer-Action" eyeball="True" triggerObject="#Scene" event="onPressureDown" targetObject="#Scene" handler="Next Slide" />
+					</Set>
+					<Set ref="#Camera" endtime="5000" />
+					<Set ref="#Light" endtime="5000" />
+					<Add ref="#Sphere" name="Sphere" endtime="5000" scale="0.1 0.1 0.1" sourcepath="#Sphere" />
+					<Add ref="#Default_animatable" name="Default_animatable" blendmode="Normal" bumpamount="0.5" diffuse="1 1 0 1" diffuselightwrap="0" displaceamount="20" emissivecolor="1 1 1 1" emissivepower="0" fresnelPower="0" importfile="" importid="" ior="1.5" opacity="100" shaderlighting="None" sourcepath="" specularamount="0" specularmodel="Default" specularroughness="0" speculartint="1 1 1 1" translucentfalloff="1" type="Material" vertexcolors="False" />
+					<Add ref="#Cube" name="Cube" endtime="5000" position="-458.877 -70.3589 600" sourcepath="#Cube" >
+						<AnimationTrack property="rotation.x" type="EaseInOut" >0 0 100 100 1 0 100 100 4 0 100 100 5 90 100 100 7 90 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="rotation.y" type="EaseInOut" >0 0 100 100 1 0 100 100 4 90 100 100 5 0 100 100 7 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="rotation.z" type="EaseInOut" >0 0 100 100 1 -90 100 100 4 -90 100 100 5 -90 100 100 7 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="scale.x" type="EaseInOut" >0 1 100 100 2 1.5 100 100 3 1.5 100 100 6 2 100 100 7 1 100 100 8 1 100 100 9 1 100 100</AnimationTrack>
+						<AnimationTrack property="scale.y" type="EaseInOut" >0 1 100 100 2 1.5 100 100 3 1.5 100 100 6 2 100 100 7 2 100 100 8 1 100 100 9 1 100 100</AnimationTrack>
+						<AnimationTrack property="scale.z" type="EaseInOut" >0 1 100 100 2 1 100 100 3 1.5 100 100 6 2 100 100 7 2 100 100 8 2 100 100 9 1 100 100</AnimationTrack>
+					</Add>
+					<Add ref="#Basic Green_animatable" name="Basic Green_animatable" blendmode="Normal" bumpamount="0.5" diffuse="0.180392 1 0 1" diffuselightwrap="0" displaceamount="20" emissivecolor="1 1 1 1" emissivepower="0" fresnelPower="0" importfile="" importid="" ior="1.5" opacity="100" shaderlighting="Pixel" sourcepath="" specularamount="0" specularmodel="Default" specularroughness="0" speculartint="1 1 1 1" translucentfalloff="1" type="Material" vertexcolors="False" />
+				</State>
+				<State id="Scene-Slide2" name="Slide2" playmode="Play Through To..." playthroughto="Previous" >
+					<Set ref="#Layer" endtime="5000" />
+					<Set ref="#Camera" endtime="5000" />
+					<Set ref="#Light" endtime="5000" />
+					<Add ref="#Cube2" name="Cube2" endtime="5000" position="-401.836 -18.4752 600" scale="3 3 3" sourcepath="#Cube" />
+					<Add ref="#Basic Red_animatable" name="Basic Red_animatable" blendmode="Normal" bumpamount="0.5" diffuse="1 0 0.0156863 1" diffuselightwrap="0" displaceamount="20" emissivecolor="1 1 1 1" emissivepower="0" fresnelPower="0" importfile="" importid="" ior="1.5" opacity="100" shaderlighting="Pixel" sourcepath="" specularamount="0" specularmodel="Default" specularroughness="0" speculartint="1 1 1 1" translucentfalloff="1" type="Material" vertexcolors="False" />
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>

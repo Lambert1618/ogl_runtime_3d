@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="blue.uip">presentation/blue.uip</file>
+        <file alias="red.uip">presentation/red.uip</file>
+        <file alias="mixed.uip">presentation/mixed.uip</file>
+        <file alias="animation.uip">presentation/animation.uip</file>
+        <file alias="mixed_vertical.uip">presentation/mixed_vertical.uip</file>
+        <file alias="settings.uip">presentation/settings.uip</file>
+        <file alias="multislide.uip">presentation/multislide.uip</file>
+        <file alias="mouse.uip">presentation/mouse.uip</file>
+        <file alias="datainput.uip">presentation/datainput.uip</file>
+        <file alias="datainput.uia">presentation/datainput.uia</file>
+        <file alias="datainput_sub.uip">presentation/datainput_sub.uip</file>
+    </qresource>
+</RCC>

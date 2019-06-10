@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="3" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="800" presentationHeight="480" maintainAspect="False" />
+		<Graph >
+			<Scene id="Scene" backgroundcolor="1 1 0" >
+				<Layer id="Layer" >
+					<Camera id="Camera" />
+					<Light id="Light" />
+					<Model id="Rectangle1" >
+						<Material id="Material" />
+					</Model>
+					<Model id="Rectangle2" >
+						<Material id="Material_001" />
+					</Model>
+					<Model id="Rectangle2_003" >
+						<Material id="Material_006" />
+					</Model>
+					<Component id="Component" >
+						<Model id="Rectangle" >
+							<Material id="Material_002" />
+						</Model>
+						<Model id="Rectangle2_001" >
+							<Material id="Material_003" />
+						</Model>
+					</Component>
+					<Component id="Component2" >
+						<Model id="Rectangle_001" >
+							<Material id="Material_004" />
+						</Model>
+						<Model id="Rectangle2_002" >
+							<Material id="Material_005" />
+						</Model>
+					</Component>
+					<Text id="Text" />
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene" >
+				<Add ref="#Layer" />
+				<Add ref="#Camera" />
+				<Add ref="#Light" lighttype="Directional" position="0 0 -500" rotation="0 0 0" />
+				<State id="Scene-S1" name="S1" playmode="Looping" >
+					<Set ref="#Layer" endtime="8000" />
+					<Set ref="#Camera" endtime="8000" />
+					<Set ref="#Light" endtime="8000" />
+					<Add ref="#Rectangle1" name="Rect" position="0 0 0" scale="13.3333 5 1" sourcepath="#Rectangle" />
+					<Add ref="#Material" diffuse="1 0 0" emissivecolor="1 1 1" emissivepower="1" opacity="100" />
+					<Add ref="#Component" name="Component1" endtime="8000" position="400 0 -1" scale="4 3 1" />
+					<Add ref="#Component2" name="Component2" endtime="8000" position="461.548 -5.72538 -5" />
+					<Add ref="#Text" name="Text" endtime="8000" font="TitilliumWeb-Regular" position="-304.552 -193.631 0" size="36" />
+				</State>
+				<State id="Scene-S2" name="S2" initialplaystate="Pause" playmode="Looping" playthroughto="Previous" >
+					<Set ref="#Layer" endtime="8000" />
+					<Set ref="#Camera" endtime="8000" />
+					<Set ref="#Light" endtime="8000" />
+					<Add ref="#Rectangle2" name="Rectangle2" position="0 -15.8771 0" scale="13.3333 9.5252 1" sourcepath="#Rectangle" >
+						<AnimationTrack property="scale.x" type="EaseInOut" >0 11.6 100 100 8 1 100 100</AnimationTrack>
+						<AnimationTrack property="scale.y" type="EaseInOut" >0 9.5252 100 100 8 1 100 100</AnimationTrack>
+						<AnimationTrack property="scale.z" type="EaseInOut" >0 1 100 100 8 1 100 100</AnimationTrack>
+					</Add>
+					<Add ref="#Material_001" diffuse="0 0 1" emissivecolor="1 1 1" emissivepower="1" />
+				</State>
+				<State id="Scene-S3" name="S3" initialplaystate="Pause" playmode="Looping" playthroughto="Previous" >
+					<Set ref="#Layer" endtime="8000" />
+					<Set ref="#Camera" endtime="8000" />
+					<Set ref="#Light" endtime="8000" />
+					<Add ref="#Rectangle2_003" name="Rectangle3" position="0 -15.8771 0" scale="13.3333 9.5252 1" sourcepath="#Rectangle" >
+						<AnimationTrack property="scale.x" type="EaseInOut" >0 11.6 100 100 8 1 100 100</AnimationTrack>
+						<AnimationTrack property="scale.y" type="EaseInOut" >0 9.5252 100 100 8 1 100 100</AnimationTrack>
+						<AnimationTrack property="scale.z" type="EaseInOut" >0 1 100 100 8 1 100 100</AnimationTrack>
+					</Add>
+					<Add ref="#Material_006" diffuse="0 1 0" emissivecolor="1 1 1" emissivepower="1" />
+				</State>
+			</State>
+			<State name="Master Slide" component="#Component" >
+				<State id="Component1-C1S1" name="C1S1" >
+					<Add ref="#Rectangle" name="Rectangle4" position="0 0 -1" scale="2 3 1" sourcepath="#Rectangle" />
+					<Add ref="#Material_002" diffuse="0 1 0" />
+				</State>
+				<State id="Component1-C1S2" name="C1S2" playthroughto="Previous" >
+					<Add ref="#Rectangle2_001" name="Rectangle5" position="0 0 -1" scale="2 3 1" sourcepath="#Rectangle" />
+					<Add ref="#Material_003" diffuse="0 1 1" />
+				</State>
+			</State>
+			<State name="Master Slide" component="#Component2" >
+				<State id="Component2-C2S1" name="C2S1" >
+					<Add ref="#Rectangle_001" name="Rectangle6" scale="3.5 7 3.03591" sourcepath="#Rectangle" />
+					<Add ref="#Material_004" diffuse="1 1 0" />
+				</State>
+				<State id="Component2-C2S2" name="C2S2" playthroughto="Previous" >
+					<Add ref="#Rectangle2_002" name="Rectangle7" scale="3.5 7 3.03591" sourcepath="#Rectangle" />
+					<Add ref="#Material_005" diffuse="1 0 1" />
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>

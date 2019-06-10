@@ -1,0 +1,14 @@
+<MaterialData version="1.0">
+	<Property name="uEnvironmentTexture" type="Texture"><![CDATA[./maps/materials/spherical_checker.png]]></Property>
+	<Property name="uEnvironmentMappingEnabled">True</Property>
+	<Property name="uBakedShadowTexture" type="Texture"><![CDATA[./maps/materials/shadow.png]]></Property>
+	<Property name="uShadowMappingEnabled">False</Property>
+	<Property name="roughness">0</Property>
+	<Property name="metal_color">0.807843 0.45098 0.211765 1</Property>
+	<Property name="sourcepath"><![CDATA[./materials/copper.shader]]></Property>
+	<Property name="importid"></Property>
+	<Property name="importfile"></Property>
+	<Property name="type">CustomMaterial</Property>
+	<Property name="name"><![CDATA[materials/Copper]]></Property>
+	<Property name="path"><![CDATA[C:/dev/qt/NDD/qt3ds2/tests/scenes/simple_cube_animation/materials/Copper.materialdef]]></Property>
+</MaterialData>

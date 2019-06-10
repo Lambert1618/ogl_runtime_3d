@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/NVRenderTestTexture2D.png</file>
+        <file>images/NVRenderTestProgramPipeline.png</file>
+        <file>images/NVRenderTestAttribBuffers.png</file>
+        <file>images/NVRenderTestBackendQuery.png</file>
+        <file>images/NVRenderTestClear.png</file>
+        <file>images/NVRenderTestComputeShader.png</file>
+        <file>images/NVRenderTestDrawIndirectBuffer.png</file>
+        <file>images/NVRenderTestFboMsaa.png</file>
+        <file>images/NVRenderTestGeometryShader.png</file>
+        <file>images/NVRenderTestOcclusionQuery.png</file>
+    </qresource>
+</RCC>
