@@ -778,6 +778,12 @@ void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &va
 
     The element is ready for use once elementsCreated() signal is received for it.
 
+    \note If your application is creating and deleting a lot of elements, it is recommended that
+    you reuse previously deleted element names when creating new elements.
+    This is because the internal string table implementation of Qt 3D Studio ogl-runtime doesn't
+    support removing strings for performance reasons, so always using new unique names
+    will leak memory.
+
     \sa createElements
     \sa createMaterial
     \sa createMesh
@@ -897,6 +903,12 @@ QStringList Q3DSPresentation::createdElements() const
     The material name is specified by the \c name property of the material definition.
 
     The material is ready for use once materialsCreated() signal is received for it.
+
+    \note If your application is creating and deleting a lot of materials, it is recommended that
+    you reuse previously deleted material names when creating new materials.
+    This is because the internal string table implementation of Qt 3D Studio ogl-runtime doesn't
+    support removing strings for performance reasons, so always using new unique names
+    will leak memory.
 
     \note Creating materials that utilise custom shaders with mipmapped textures can in some cases
     corrupt the textures on other elements if the same textures are already used by existing basic
@@ -1030,6 +1042,12 @@ void Q3DSPresentation::createMesh(const QString &meshName, const Q3DSGeometry &g
     pairs. For more details, see createMesh().
 
     The ownership of supplied geometries stays with the caller.
+
+    \note If your application is creating and deleting a lot of meshes, it is recommended that
+    you reuse previously deleted mesh names when creating new materials.
+    This is because the internal string table implementation of Qt 3D Studio ogl-runtime doesn't
+    support removing strings for performance reasons, so always using new unique names
+    will leak memory.
 
     \sa createMesh
     \sa meshesCreated

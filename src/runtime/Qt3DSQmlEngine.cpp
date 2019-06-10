@@ -389,6 +389,9 @@ private:
     QMap<QString, QQmlComponent *> m_components;
     QVector<Q3DSQmlScript *> m_scripts;
 
+    QSet<int> m_availableIds;
+    QHash<TElement *, int> m_elementIdMap;
+
 public:
     CQmlEngineImpl(NVFoundationBase &fnd, ITimeProvider &inTimeProvider);
 
@@ -532,6 +535,8 @@ private:
     void notifyMaterialCreation(const QStringList &materialNames, const QString &error);
     void deleteElements(const QVector<TElement *> &elements,
                         qt3ds::render::IQt3DSRenderer *renderer);
+    int getAvailableId();
+    void releaseId(int id);
 };
 
 CQmlEngineImpl::CQmlEngineImpl(NVFoundationBase &fnd, ITimeProvider &)
@@ -929,8 +934,6 @@ void CQmlEngineImpl::SetDataInputValue(
     }
 }
 
-static int _idCounter = 0;
-
 void CQmlEngineImpl::createElements(const QString &parentElementPath, const QString &slideName,
                                     const QVector<QHash<QString, QVariant>> &properties,
                                     qt3ds::render::IQt3DSRenderer *renderer)
@@ -944,13 +947,15 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
     elementPaths.reserve(properties.size());
     QVector<QHash<QString, QVariant>> theProperties = properties;
     const QString namePropName = QStringLiteral("name");
+    QVector<int> idNumbers(theProperties.size());
 
     for (int i = 0; i < theProperties.size(); ++i) {
         auto &props = theProperties[i];
         QString newElementName = props.value(namePropName).toString();
+        idNumbers[i] = getAvailableId();
         if (newElementName.isEmpty()) {
             // The id number on generated name will match generated graph object identifiers
-            newElementName = QStringLiteral("NewElement_%1").arg(_idCounter + i + 1);
+            newElementName = QStringLiteral("NewElement_%1").arg(idNumbers[i]);
             props.insert(namePropName, newElementName);
         }
         elementPaths << parentElementPath + QLatin1Char('.') + newElementName;
@@ -959,8 +964,11 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
     TElement *parentElement = nullptr;
 
     auto handleError = [&]() {
-        if (!error.isEmpty())
+        if (!error.isEmpty()) {
+            for (int id : qAsConst(idNumbers))
+                releaseId(id);
             deleteElements(createdElements, renderer);
+        }
         notifyElementCreation(elementPaths, error);
     };
 
@@ -1012,8 +1020,8 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
     parentElement->GetAttribute(Q3DStudio::ATTRIBUTE_ENDTIME, attValue);
     const int parentEndTime = int(attValue.m_INT32);
 
-    for (const auto &currentProps : qAsConst(theProperties)) {
-        ++_idCounter;
+    for (int i = 0; i < theProperties.size(); ++i) {
+        const auto &currentProps = theProperties[i];
         ++elementIndex;
 
         // Remove properties requiring custom handling
@@ -1200,7 +1208,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
         NVAllocatorCallback &allocator = presentation->GetScene()->allocator();
         SModel *newObject = QT3DS_NEW(allocator, SModel)();
         newObject->m_Id = strTable.RegisterStr((QByteArrayLiteral("__newObj_")
-                                                + QByteArray::number(_idCounter)).constData());
+                                                + QByteArray::number(idNumbers[i])).constData());
         parentObject.AddChild(*newObject);
 
         Qt3DSTranslator::CreateTranslatorForElement(newElem, *newObject, allocator);
@@ -1210,7 +1218,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
             SReferencedMaterial *newMaterial = QT3DS_NEW(allocator, SReferencedMaterial)();
             newMaterial->m_Id = strTable.RegisterStr(
                         (QByteArrayLiteral("__newMat_")
-                         + QByteArray::number(_idCounter)).constData());
+                         + QByteArray::number(idNumbers[i])).constData());
             newMaterial->m_ReferencedMaterial = referencedMaterial;
             newObject->AddMaterial(*newMaterial);
         }
@@ -1233,6 +1241,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
             newElem.GetActivityZone().UpdateItemInfo(newElem);
 
         createdElements << &newElem;
+        m_elementIdMap.insert(&newElem, idNumbers[i]);
     }
 
     bool isPrimary = presentation == m_Application->GetPrimaryPresentation() ? true : false;
@@ -1311,10 +1320,16 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
     };
     QVector<MaterialInfo *> materialInfos;
     QVector<TElement *> createdElements;
+    QVector<int> idNumbers(materialDefinitions.size());
+    for (int i = 0; i < materialDefinitions.size(); ++i)
+        idNumbers[i] = getAvailableId();
 
     auto handleError = [&]() {
-        if (!error.isEmpty())
+        if (!error.isEmpty()) {
+            for (int id : qAsConst(idNumbers))
+                releaseId(id);
             deleteElements(createdElements, renderer);
+        }
         QStringList materialNames;
         QString prefix;
         if (!subPresId.isEmpty())
@@ -1365,7 +1380,8 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
     if (!container)
         container = createMaterialContainer(rootElement, presentation);
 
-    for (auto &materialInfo : materialInfos) {
+    for (int i = 0; i < materialInfos.size(); ++i) {
+        const auto &materialInfo = materialInfos[i];
         if (materialInfo->materialName.isEmpty() || materialInfo->materialProps.isEmpty()) {
             error = QObject::tr("Invalid material definition: '%1'")
                     .arg(materialInfo->materialDefinition);
@@ -1570,7 +1586,7 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
         // Create render object for the material
         qt3ds::render::SGraphObject *newMaterial = nullptr;
         CRegisteredString newMatId = strTable.RegisterStr(
-                    (QByteArrayLiteral("__newMat_") + QByteArray::number(++_idCounter))
+                    (QByteArrayLiteral("__newMat_") + QByteArray::number(idNumbers[i]))
                     .constData());
         if (isCustomMaterial) {
             newMaterial = customMaterialSystem->CreateCustomMaterial(matClass, allocator);
@@ -1647,15 +1663,18 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
 
                     qt3ds::render::SImage *newImageObj
                             = QT3DS_NEW(allocator, qt3ds::render::SImage)();
+                    const int imageId = getAvailableId();
                     newImageObj->m_Id = strTable.RegisterStr(
                                 (QByteArrayLiteral("__newImage_")
-                                 + QByteArray::number(++_idCounter)).constData());
+                                 + QByteArray::number(imageId)).constData());
                     qt3ds::render::Qt3DSTranslator::CreateTranslatorForElement(
                                 *imageElem, *newImageObj, allocator);
+                    m_elementIdMap.insert(imageElem, imageId);
                 }
             }
-            createdElements << &newMatElem;
         }
+        createdElements << &newMatElem;
+        m_elementIdMap.insert(&newMatElem, idNumbers[i]);
 
         qt3ds::render::Qt3DSTranslator::CreateTranslatorForElement(newMatElem, *newMaterial,
                                                                    allocator);
@@ -2615,6 +2634,9 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
         // Recursive deleter for translators and graph objects
         std::function<void(TElement *)> deleteRenderObjects;
         deleteRenderObjects = [&](TElement *elem)  {
+            if (m_elementIdMap.contains(elem))
+                releaseId(m_elementIdMap.take(elem));
+
             TElement *child = elem->m_Child;
             while (child) {
                 TElement *sibling = child->m_Sibling;
@@ -2664,6 +2686,27 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
     }
     for (auto parentNode : qAsConst(parentNodes))
         renderer->ChildrenUpdated(*parentNode);
+}
+
+int CQmlEngineImpl::getAvailableId()
+{
+    static int _idCounter = 0;
+
+    int id = -1;
+    if (m_availableIds.isEmpty()) {
+        id = ++_idCounter;
+    } else {
+        auto first = m_availableIds.begin();
+        id = *first;
+        m_availableIds.erase(first);
+    }
+
+    return id;
+}
+
+void CQmlEngineImpl::releaseId(int id)
+{
+    m_availableIds.insert(id);
 }
 
 template<typename TDataType>
