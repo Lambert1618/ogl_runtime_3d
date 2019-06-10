@@ -1,9 +1,4 @@
-exists($$PWD/../../commonplatform.pri) {
-#If building as part of Qt 3D Studio, use it's commonplatform.pri
-include($$PWD/../../commonplatform.pri)
-} else {
 include($$PWD/commonplatform.pri)
-}
 
 contains(TEMPLATE, lib) {
     load(qt_helper_lib)
