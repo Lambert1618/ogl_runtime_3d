@@ -1,5 +1,5 @@
 {
-    "module": "3dstudioruntimeopengl",
+    "module": "qtstudio3d",
     "condition": "!config.wasm && !config.ios && !config.integrity && !config.tvos && !config.watchos && !config.winrt && !config.qnx",
     "summary": [
         {
