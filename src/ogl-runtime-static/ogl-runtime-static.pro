@@ -17,6 +17,17 @@ DEFINES += QT3DS_BUILDING_LIBRARY DISABLE_MESH_OPTIMIZATION
 QT += qml
 QT += quick-private
 
+mingw {
+    win32 {
+    LIBS += \
+        -lWs2_32 \
+    }
+    LIBS += \
+        -lEASTL$$qtPlatformTargetSuffix() \
+        -lQT3DSDM$$qtPlatformTargetSuffix() \
+        -lqt3dsqmlstreamer$$qtPlatformTargetSuffix()
+}
+
 # Foundation
 SOURCES += \
     ../foundation/ConvertUTF.cpp \

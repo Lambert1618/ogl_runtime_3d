@@ -48,14 +48,6 @@
 #include <mach-o/dyld.h>
 #endif
 
-namespace qt3ds {
-void Qt3DSAssert(const char *exp, const char *file, int line, bool *ignore)
-{
-    Q_UNUSED(ignore)
-    qCritical() << "Assertion thrown: " << file << " " << line << " " << exp;
-}
-}
-
 #ifndef EASTL_DEBUG_BREAK
 void EASTL_DEBUG_BREAK()
 {

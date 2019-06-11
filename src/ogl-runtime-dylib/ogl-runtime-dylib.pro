@@ -28,7 +28,7 @@ HEADERS += \
     ../viewer/Qt3DSViewerApp.h \
     ../viewer/Qt3DSViewerTimer.h
 
-linux|qnx|mingw {
+linux|qnx {
     BEGIN_ARCHIVE = -Wl,--whole-archive
     END_ARCHIVE = -Wl,--no-whole-archive
 }
@@ -46,9 +46,17 @@ STATICRUNTIME = \
     QMAKE_LFLAGS += $$STATICRUNTIME
     LIBS += -lqt3dsqmlstreamer$$qtPlatformTargetSuffix()
 } else {
-    LIBS += \
-        $$STATICRUNTIME \
-        -lqt3dsqmlstreamer$$qtPlatformTargetSuffix()
+    mingw {
+        LIBS += \
+            -lqt3dsruntimestatic$$qtPlatformTargetSuffix() \
+            -lEASTL$$qtPlatformTargetSuffix() \
+            -lQT3DSDM$$qtPlatformTargetSuffix() \
+            -lqt3dsqmlstreamer$$qtPlatformTargetSuffix()
+    } else {
+        LIBS += \
+            $$STATICRUNTIME \
+            -lqt3dsqmlstreamer$$qtPlatformTargetSuffix()
+    }
 }
 
 win32 {
