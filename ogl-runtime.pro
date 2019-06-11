@@ -5,7 +5,9 @@ requires(!watchos)
 requires(!winrt)
 requires(!wasm)
 
-ios|qnx|tvos|watchos|winrt|wasm|*-icc*|!contains(INTEGRITY_DIR, *int1144$) {
+INTEGRITY_DIR = $$(INTEGRITY_DIR)
+
+ios|qnx|tvos|watchos|winrt|wasm|*-icc*|contains(INTEGRITY_DIR, .*int1144$) {
     message("WARNING, target not supported by ogl-runtime")
     #Exclude non-working cross-compile targets, see:
     # QT3DS-3645 ogl-runtime doesn't compile on INTEGRITY_11_04 in CI
