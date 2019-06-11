@@ -40,6 +40,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtQuick/qquickwindow.h>
+#include <QtQml/qqmlcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -271,7 +272,8 @@ void Q3DSStudio3D::componentComplete()
     m_presentation->d_ptr->setCommandQueue(&m_pendingCommands);
 
     // Ensure qml stream proxy gets created on main thread
-    m_presentation->d_ptr->streamProxy();
+    QQmlContext *ctx = QQmlEngine::contextForObject(this);
+    m_presentation->d_ptr->streamProxy()->setEngine(ctx->engine());
 
     QQuickFramebufferObject::componentComplete();
 }
