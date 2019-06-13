@@ -89,6 +89,11 @@ struct DataInOutAttribute
     QByteArray elementPath;
     QVector<QByteArray> attributeName;
     Q3DStudio::EAttributeType propertyType = Q3DStudio::ATTRIBUTETYPE_NONE;
+
+    bool operator==(const DataInOutAttribute &inOther) const {
+        return (inOther.elementPath == elementPath && inOther.attributeName == attributeName
+                && inOther.propertyType == propertyType);
+    }
 };
 
 enum DataInOutType {

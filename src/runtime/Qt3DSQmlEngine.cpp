@@ -479,6 +479,7 @@ private:
     void initializeDataInputsInPresentation(CPresentation &presentation, bool isPrimary,
                                             QList<TElement *> inElements = QList<TElement *>());
     void initializeDataOutputsInPresentation(CPresentation &presentation, bool isPrimary);
+    void removeDataInputControl(const QVector<TElement *> &inElements);
     // Splits down vector attributes to components as Runtime does not really
     // handle vectors at this level anymore
     bool getAttributeVector3(QVector<QByteArray> &outAttVec, const QByteArray &attName,
@@ -2311,6 +2312,32 @@ void CQmlEngineImpl::initializeDataOutputsInPresentation(CPresentation &presenta
     presentation.AddToDataOutputMap(elementPathToDataOutputDefMap);
 }
 
+// Remove datainput control from listed elements and update internal control map. Should be used
+// when elements having a datainput controller are removed in order to avoid invalid entries.
+void CQmlEngineImpl::removeDataInputControl(const QVector<TElement *> &inElements)
+{
+    const qt3ds::runtime::DataInputMap diMap(m_Application->dataInputMap());
+
+    // Have to do nasty triple-nested search loop as the datainput map is organized around
+    // datainputs for fast lookups in setDataInputValue, not around control targets.
+    QVector<QPair<QString, qt3ds::runtime::DataInOutAttribute>> elemAttrsToRemove;
+    QMapIterator<QString, qt3ds::runtime::DataInputDef> diMapIter(diMap);
+
+    for (const auto &elem : inElements) {
+        while (diMapIter.hasNext()) {
+            diMapIter.next();
+            for (const auto &inOutAttr : qAsConst(diMapIter.value().controlledAttributes)) {
+                if (inOutAttr.elementPath == QByteArray(elem->m_Path))
+                    elemAttrsToRemove.append({diMapIter.key(), inOutAttr});
+            }
+        }
+        diMapIter.toFront();
+    }
+
+    for (const auto &attr : qAsConst(elemAttrsToRemove))
+        m_Application->dataInputMap()[attr.first].controlledAttributes.removeAll(attr.second);
+}
+
 // Bit clumsy way of getting from "position" to "position .x .y .z" and enabling datainput
 // support for vectorized types. UIP parser has already thrown away all vector
 // type attributes and at this point we are operating with scalar components only.
@@ -2686,6 +2713,8 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
     }
     for (auto parentNode : qAsConst(parentNodes))
         renderer->ChildrenUpdated(*parentNode);
+
+    removeDataInputControl(elements);
 }
 
 int CQmlEngineImpl::getAvailableId()

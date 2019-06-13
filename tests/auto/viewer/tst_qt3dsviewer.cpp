@@ -226,7 +226,7 @@ void tst_qt3dsviewer::testCreateElement()
     data.insert(QStringLiteral("position"),
                 QVariant::fromValue<QVector3D>(QVector3D(200, 300, 200)));
     data.insert(QStringLiteral("opacity"), 20.0);
-    data.insert(QStringLiteral("controlledproperty"), QStringLiteral("@newDataInput opacity"));
+    data.insert(QStringLiteral("controlledproperty"), QStringLiteral("$newDataInput opacity"));
 
     createElement(QStringLiteral("Scene.Layer"), QStringLiteral("Slide1"), data);
 
@@ -284,6 +284,8 @@ void tst_qt3dsviewer::testCreateElement()
         data.insert(QStringLiteral("endtime"), 10000);
         data.insert(QStringLiteral("position"),
                     QVariant::fromValue<QVector3D>(QVector3D(-100, -100, 0)));
+        // Test that this datainput control entry is removed at element delete
+        data.insert(QStringLiteral("controlledproperty"), QStringLiteral("$newDataInput opacity"));
 
         createElement(QStringLiteral("Scene.Layer"), QStringLiteral("Slide2"), data);
 
