@@ -94,7 +94,6 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    \sa Q3DSWidget
  */
 
 /*!

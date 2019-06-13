@@ -3,6 +3,8 @@ TARGET = QtStudio3D
 include($$PWD/../../commoninclude.pri)
 QT += opengl widgets qml
 
+include($$PWD/doc/doc.pri)
+
 qtHaveModule(multimedia) {
 DEFINES += PLATFORM_HAS_QT_MULTIMEDIA_LIB
 QT += multimedia

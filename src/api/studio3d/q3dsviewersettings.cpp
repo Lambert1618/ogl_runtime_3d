@@ -40,11 +40,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype ViewerSettings
     \instantiates Q3DSViewerSettings
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Qt 3D Studio presentation viewer settings.
 
-    This type provides properties to define presentation independent viewer settings.
+    This type provides properties to define presentation-independent viewer settings.
 
     \note ViewerSettings are only applicable when \l Studio3D is used in the
     default mode, showing the final, composed image from the Qt 3D Studio
@@ -60,13 +60,12 @@ QT_BEGIN_NAMESPACE
 
     \brief Qt 3D Studio presentation viewer settings.
 
-    Q3DSViewerSettings provides properties to define presentation independent
+    Q3DSViewerSettings provides properties to define presentation-independent
     viewer settings.
 
     \note This class should not be instantiated directly when working with the
-    C++ APIs. Q3DSSurfaceViewer and Q3DSWidget create a Q3DSViewerSettings
-    instance implicitly. This can be queried via Q3DSSurfaceViewer::settings()
-    or Q3DSWidget::settings().
+    C++ APIs. Q3DSSurfaceViewer creates a Q3DSViewerSettings
+    instance implicitly. This can be queried via Q3DSSurfaceViewer::settings().
  */
 
 /*!
@@ -156,11 +155,15 @@ void Q3DSViewerSettings::setShowRenderStats(bool show)
     }
 }
 
-/*!
-    \qmlproperty ViewerSettings::shadeMode
+/*
+    //! TODO
+    \internal
+    \qmlproperty enumeration ViewerSettings::shadeMode
  */
 
-/*!
+/*
+    // TODO
+    \internal
     \property Q3DSViewerSettings::shadeMode
  */
 Q3DSViewerSettings::ShadeMode Q3DSViewerSettings::shadeMode() const
@@ -226,20 +229,15 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
 }
 
 /*!
-    \qmmlmethod ViewerSettings::save
+    \qmlmethod ViewerSettings::save(string group, string organization, string application)
+
     Persistently saves the viewer \l{QSettings}{settings} using \a group, \a organization and
     \a application.
-    \param group
-    \param organization
-    \param application
  */
+
 /*!
- * \brief Q3DSViewerSettings::save  Persistently saves the viewer \l{QSettings}{settings}
     Persistently saves the viewer \l{QSettings}{settings} using \a group, \a organization and
     \a application.
-    \param group
-    \param organization
-    \param application
  */
 void Q3DSViewerSettings::save(const QString &group, const QString &organization,
                                       const QString &application)
@@ -248,20 +246,14 @@ void Q3DSViewerSettings::save(const QString &group, const QString &organization,
 }
 
 /*!
-    \qmlmethod ViewerSettings::load
+    \qmlmethod ViewerSettings::load(string group, string organization, string application)
     Loads previously saved viewer \l{QSettings}{settings} using \a group, \a organization and
     \a application.
-    \param group
-    \param organization
-    \param application
  */
+
 /*!
- * \brief Q3DSViewerSettings::load Loads previously saved viewer \l{QSettings}{settings}
     Loads previously saved viewer \l{QSettings}{settings} using \a group, \a organization and
     \a application.
-    \param group
-    \param organization
-    \param application
  */
 void Q3DSViewerSettings::load(const QString &group, const QString &organization,
                                       const QString &application)

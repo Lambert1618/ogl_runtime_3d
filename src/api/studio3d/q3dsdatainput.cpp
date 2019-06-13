@@ -38,9 +38,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype DataInput
     \instantiates Q3DSDataInput
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Controls a data input entry in a Qt 3D Studio presentation.
+
     This class is a convenience class for controlling a data input in a presentation.
     DataInput provides a clean contract between the presentation design and the code.
     It hides the presentation details from the code while providing a contractual access
@@ -79,8 +80,10 @@ QT_BEGIN_NAMESPACE
     \note There is a performance cost for each registered DataInput, so try to avoid
     creating unnecessary DataInputs.
 
-    \sa Presentation, DataOutput, Presentation::slideExited, Presentation::slideEntered
-    \sa Presentation::customSignalEmitted
+    \sa Presentation, DataOutput
+    \sa {QtStudio3D.OpenGL::Presentation::slideExited()}{Presentation.slideExited()}
+    \sa {QtStudio3D.OpenGL::Presentation::slideEntered()}{Presentation.slideEntered()}
+    \sa {QtStudio3D.OpenGL::Presentation::customSignalEmitted()}{Presentation.customSignalEmitted()}
 */
 
 /*!
@@ -109,6 +112,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \dontdocument QMetaTypeId
+*/
+
+/*!
     \internal
  */
 Q3DSDataInput::Q3DSDataInput(QObject *parent)
@@ -128,6 +135,8 @@ Q3DSDataInput::Q3DSDataInput(const QString &name, QObject *parent)
 }
 
 /*!
+    \fn Q3DSDataInput::Q3DSDataInput(Q3DSPresentation *presentation, const QString &name, QObject *parent)
+
     Constructs a Q3DSDataInput instance and initializes the \a name. The
     constructed instance is automatically associated with the specified \a
     presentation. An optional \a parent object can be specified.
@@ -284,6 +293,8 @@ bool Q3DSDataInput::isValid() const
 }
 
 /*!
+    \qmlmethod string DataInput::metadata(string key)
+
     Returns the metadata defined for this datainput with metadata \a key.
 
     Metadata is user-defined key-value table that can be used, for example, to better describe the
@@ -292,8 +303,8 @@ bool Q3DSDataInput::isValid() const
 
     \note Datainput metadata is read-only.
  */
+
 /*!
-    \qmlmethod string DataInput::metadata
     Returns the metadata defined for this datainput with metadata \a key.
 
     Metadata is user-defined key-value table that can be used, for example, to better describe the

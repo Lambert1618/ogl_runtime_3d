@@ -40,7 +40,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype Element
     \instantiates Q3DSElement
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Control type for elements in a Qt 3D Studio presentation.
 
@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     \inmodule OpenGLRuntime
     \since Qt 3D Studio 2.0
 
-    \brief Controls a scene object (node) in a Qt 3D Studio presentation.
+    \brief Controls a scene object (element) in a Qt 3D Studio presentation.
 
     This class is provided for backwards compatibility. We recommend using
     DataInput and DataOutput APIs for contractual and clean API between
@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     object (such as, model, material, camera, layer) in a Qt 3D Studio
     presentation.
 
-    \sa Q3DSWidget, Q3DSSurfaceViewer, Q3DSSceneElement
+    \sa Q3DSSurfaceViewer, Q3DSSceneElement
  */
 
 /*!

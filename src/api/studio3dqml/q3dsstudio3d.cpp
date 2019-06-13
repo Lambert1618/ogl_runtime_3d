@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype Studio3D
     \instantiates Q3DSStudio3D
-    \inqmlmodule QtStudio3D
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \inherits Item
     \keyword Studio3D

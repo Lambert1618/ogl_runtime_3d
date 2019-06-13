@@ -37,50 +37,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmltype Presentation
-    \instantiates Q3DSPresentationItem
-    \inqmlmodule QtStudio3D
-    \ingroup OpenGLRuntime
-    \inherits Q3DSPresentation
-    \keyword Studio3D
-
-    \brief Represents a Qt 3D Studio presentation.
-
-    This item provides properties and methods for controlling a
-    presentation.
-
-    Qt 3D Studio supports multiple presentations in one project. There
-    is always a main presentation and zero or more
-    sub-presentations. The sub-presentations are composed into the
-    main presentations either as contents of Qt 3D Studio layers or as
-    texture maps.
-
-    In the filesystem each presentation corresponds to one \c{.uip}
-    presentation file. When present, the \c{.uia} project file ties
-    these together by specifying a name for each of the
-    (sub-)presentations and specifies which one is the main one.
-
-    The \c{.uia} project also defines \l{DataInput}s and
-    \l{DataOutput}s that are exported by the presentations.
-    \l{DataInput}s provide a way to provide input to the presentation
-    to e.g. control a timeline of a subpresentation from code.
-    \l{DataOutput}s provide a way to get notified when an attribute
-    is changed in the presentation by animation timeline,
-    by behavior scripts or by a \l{DataInput}.
-
-    The Presentation type handles child objects of the types \l Element, \l
-    SceneElement, \l DataInput, and \l SubPresentationSettings specially. These
-    will get automatically associated with the presentation and can control
-    certain aspects of it from that point on.
-
-    From the API point of view Presentation corresponds to the
-    main presentation. The source property can refer either to a
-    \c{.uia} or \c{.uip} file. When specifying a file with \c{.uip}
-    extension and a \c{.uia} is present with the same name, the
-    \c{.uia} is loaded automatically and thus sub-presentation
-    information is available regardless.
- */
 Q3DSPresentationItem::Q3DSPresentationItem(QObject *parent)
     : Q3DSPresentation(parent)
     , m_subPresentationSettings(nullptr)
