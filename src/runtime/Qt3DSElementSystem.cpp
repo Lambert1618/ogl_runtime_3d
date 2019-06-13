@@ -162,11 +162,17 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
         m_TempPropertyDescs.clear();
         bool participatesInTimeGraph = false;
         GetIgnoredProperties();
+        const bool isImage = inType == m_StringTable.RegisterStr("Image");
         for (QT3DSU32 idx = 0, end = inPropertyDescriptions.size(); idx < end; ++idx) {
             QT3DSU32 nameHash = inPropertyDescriptions[idx].first.GetNameHash();
-            if (nameHash == Q3DStudio::ATTRIBUTE_STARTTIME
-                || nameHash == Q3DStudio::ATTRIBUTE_ENDTIME)
+            // Make image instances explicitly not participate in the timegraph. This way their
+            // default start/end time does not have impact into lifetimes of their parents.
+            // This fixes QT3DS-3669 where image default end time overrode parent endtime when
+            // element active status was considered.
+            if ((nameHash == Q3DStudio::ATTRIBUTE_STARTTIME
+                 || nameHash == Q3DStudio::ATTRIBUTE_ENDTIME) && !isImage) {
                 participatesInTimeGraph = true;
+            }
             if (eastl::find(m_IgnoredProperties.begin(), m_IgnoredProperties.end(),
                             inPropertyDescriptions[idx].first.m_Name)
                 == m_IgnoredProperties.end()) {
