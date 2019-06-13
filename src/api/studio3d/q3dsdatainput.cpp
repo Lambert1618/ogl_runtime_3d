@@ -49,6 +49,33 @@ QT_BEGIN_NAMESPACE
     multiple aspects of the design (e.g. DataInput for speed can change the color of
     the speedometer, angle of the needle).
 
+    As an example:
+
+    \qml
+        Studio3D {
+            ...
+            Presentation {
+                id: presentation
+                ...
+                property string text: ""
+                DataInput {
+                    name: "inputForSomeTextNode"
+                    value: presentation.text
+                }
+            }
+        }
+
+        Button {
+            onClicked: presentation.text = "Hello World"
+        }
+    \endqml
+
+    The example assumes that a data input connection was made in Qt 3D Studio
+    presentation using Qt 3D Studio editor between the \c textstring property of
+    target property and a data input name \c inputForSomeTextNode. As the value
+    is now set via a property, the full set of QML property bindings techniques
+    are available.
+
     \note There is a performance cost for each registered DataInput, so try to avoid
     creating unnecessary DataInputs.
 
@@ -352,50 +379,6 @@ void Q3DSDataInputPrivate::setCommandQueue(CommandQueue *queue)
     if (m_commandQueue && m_value.isValid())
         setValue(m_value);
 }
-
-
-/*!
-    \qmltype DataInput
-    \instantiates Q3DSDataInput
-    \inqmlmodule QtStudio3D
-    \ingroup OpenGLRuntime
-
-    \brief Controls a data input entry in a Qt 3D Studio presentation.
-
-    This type is a convenience for controlling a data in a presentation. Its functionality is
-    equivalent to \c{Presentation::setDataInputValue()}, however it has a big advantage
-    of being able to use QML property bindings, thus avoiding the need to having to resort
-    to a JavaScript function call for every value change.
-
-    As an example:
-
-    \qml
-        Studio3D {
-            ...
-            Presentation {
-                id: presentation
-                ...
-                property string text: ""
-                DataInput {
-                    name: "inputForSomeTextNode"
-                    value: presentation.text
-                }
-            }
-        }
-
-        Button {
-            onClicked: presentation.text = "Hello World"
-        }
-    \endqml
-
-    The example assumes that a data input connection was made in Qt 3D Studio
-    presentation using Qt 3D Studio editor between the \c textstring property of
-    target property and a data input name \c inputForSomeTextNode. As the value
-    is now set via a property, the full set of QML property bindings techniques
-    are available.
-
-    \sa Studio3D, Presentation
-*/
 
 /*!
     \qmlproperty string DataInput::name
