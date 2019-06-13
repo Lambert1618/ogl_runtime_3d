@@ -2682,6 +2682,10 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
                                     model->m_FirstMaterial);
                         QT3DS_FREE(allocator, material);
                     }
+                } else if (type == qt3ds::render::GraphObjectTypes::Image) {
+                    auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
+                    if (image->m_LoadedTextureData)
+                        image->m_LoadedTextureData->m_callbacks.removeOne(image);
                 }
                 QT3DS_FREE(allocator, &translator->RenderObject());
                 QT3DS_FREE(allocator, translator);
