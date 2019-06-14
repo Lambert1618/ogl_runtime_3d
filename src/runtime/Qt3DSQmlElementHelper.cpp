@@ -150,10 +150,11 @@ TElement *CQmlElementHelper::GetElement(qt3ds::runtime::IApplication &inApplicat
 }
 
 bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttName,
-                                     const void *value, bool inDelay)
+                                     const void *value)
 {
     SAttributeKey theAttributeKey;
     theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
+    bool force = false;
 
     // Early out for our single 'read only' attribute
     if (ATTRIBUTE_URI == theAttributeKey.m_Hash) {
@@ -165,7 +166,8 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
     Option<qt3ds::runtime::element::TPropertyDescAndValuePtr> thePropertyInfo =
         theElement->FindProperty(theAttributeKey.m_Hash);
 
-    if (!thePropertyInfo.hasValue()) {
+    // Do not create property for eyeball, it uses the explicit activity flag
+    if (!thePropertyInfo.hasValue() && theAttributeKey.m_Hash != Q3DStudio::ATTRIBUTE_EYEBALL) {
         // if not search in the dynamic properties
         thePropertyInfo = theElement->FindDynamicProperty(theAttributeKey.m_Hash);
         if (!thePropertyInfo.hasValue()) {
@@ -178,10 +180,15 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
                 theElement->GetBelongedPresentation()->GetApplication().GetMetaData();
             thePropertyInfo = theElemAllocator.CreateDynamicProperty(
                 theMetaData, *theElement, theStringTable.RegisterStr(theAttName));
+            force = true;
         }
     }
 
-    if (thePropertyInfo.hasValue()) {
+    if (theAttributeKey.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL) {
+        UVariant theNewValue;
+        theNewValue.m_INT32 = *(INT32 *)value;
+        theElement->SetAttribute(theAttributeKey.m_Hash, theNewValue);
+    } else if (thePropertyInfo.hasValue()) {
         UVariant theNewValue;
         QString name(thePropertyInfo->first.m_Name.c_str());
         EAttributeType theAttributeType = thePropertyInfo->first.m_Type;
@@ -239,15 +246,7 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
             break;
         }
 
-        if (inDelay) {
-            UVariant arg1;
-            arg1.m_INT32 = theAttributeKey.m_Hash;
-            theElement->GetBelongedPresentation()->FireCommand(
-                COMMAND_SETPROPERTY, theElement, &arg1, &theNewValue, ATTRIBUTETYPE_HASH,
-                theAttributeType);
-        } else {
-            theElement->SetAttribute(*thePropertyInfo, theNewValue);
-        }
+        theElement->SetAttribute(*thePropertyInfo, theNewValue, force);
     } else {
         return false;
     }
@@ -266,7 +265,10 @@ bool CQmlElementHelper::GetAttribute(TElement *inElement, const char *inAttribut
     if (!thePropertyInfo.hasValue())
         thePropertyInfo = inElement->FindDynamicProperty(theAttributeKey.m_Hash);
 
-    if (thePropertyInfo.hasValue()) {
+    if (theAttributeKey.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL) {
+        INT32 val = inElement->IsExplicitActive() ? 1 : 0;
+        *(INT32 *)value = val;
+    } else if (thePropertyInfo.hasValue()) {
         UVariant *theValuePtr = thePropertyInfo->second;
         EAttributeType theAttributeType = thePropertyInfo->first.m_Type;
         switch (theAttributeType) {

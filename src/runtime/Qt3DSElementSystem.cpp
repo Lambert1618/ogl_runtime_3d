@@ -637,36 +637,42 @@ void SElement::SetAttribute(const Q3DStudio::TAttributeHash inKey,
                             const Q3DStudio::UVariant inValue)
 {
     Option<TPropertyDescAndValuePtr> existing = FindProperty(inKey);
-    if (existing.hasValue() == false)
+    if (existing.hasValue() == false) {
+        if (Q3DStudio::ATTRIBUTE_EYEBALL == inKey)
+            SetFlag(Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE, inValue.m_INT32 ? true : false);
         return;
+    }
     SetAttribute(*existing, inValue);
 }
 
-void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inValue)
+void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inValue,
+                            bool forceSet)
 {
     Q3DStudio::EAttributeType theType = inKey.first.m_Type;
     Q3DStudio::UVariant *currentValue = inKey.second;
     QT3DSU32 attHash = inKey.first.GetNameHash();
-    switch (theType) {
-    case Q3DStudio::ATTRIBUTETYPE_FLOAT: // Early return
-        if (fabs(currentValue->m_FLOAT - inValue.m_FLOAT) < SmallestDifference())
-            return;
-        break;
-    case Q3DStudio::ATTRIBUTETYPE_FLOAT3: // Early return
-        if (fabs(currentValue->m_FLOAT3[0] - inValue.m_FLOAT3[0]) < SmallestDifference()
-            && fabs(currentValue->m_FLOAT3[1] - inValue.m_FLOAT3[1]) < SmallestDifference()
-            && fabs(currentValue->m_FLOAT3[2] - inValue.m_FLOAT3[2]) < SmallestDifference()) {
-            return;
+    if (!forceSet) {
+        switch (theType) {
+        case Q3DStudio::ATTRIBUTETYPE_FLOAT: // Early return
+            if (fabs(currentValue->m_FLOAT - inValue.m_FLOAT) < SmallestDifference())
+                return;
+            break;
+        case Q3DStudio::ATTRIBUTETYPE_FLOAT3: // Early return
+            if (fabs(currentValue->m_FLOAT3[0] - inValue.m_FLOAT3[0]) < SmallestDifference()
+                && fabs(currentValue->m_FLOAT3[1] - inValue.m_FLOAT3[1]) < SmallestDifference()
+                && fabs(currentValue->m_FLOAT3[2] - inValue.m_FLOAT3[2]) < SmallestDifference()) {
+                return;
+            }
+            break;
+        case Q3DStudio::ATTRIBUTETYPE_STRING:
+            if (currentValue->m_StringHandle == inValue.m_StringHandle)
+                return;
+            break;
+        default: // Early return
+            if (Q3DStudio::ATTRIBUTE_EYEBALL != attHash && currentValue->m_INT32 == inValue.m_INT32)
+                return;
+            break;
         }
-        break;
-    case Q3DStudio::ATTRIBUTETYPE_STRING:
-        if (currentValue->m_StringHandle == inValue.m_StringHandle)
-            return;
-        break;
-    default: // Early return
-        if (currentValue->m_INT32 == inValue.m_INT32)
-            return;
-        break;
     }
     *currentValue = inValue;
 

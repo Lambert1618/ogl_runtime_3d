@@ -322,7 +322,8 @@ namespace runtime {
             void SetAttribute(const Q3DStudio::TAttributeHash inKey,
                               const Q3DStudio::UVariant inValue);
             // Triggers updating various subcomponents without requiring a new property lookup.
-            void SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inNewValue);
+            void SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inNewValue,
+                              bool forceSet = false);
 
             // Q3DStudio::CHash::HashAttribute
             Option<QT3DSU32> FindPropertyIndex(QT3DSU32 inNameHash) const;

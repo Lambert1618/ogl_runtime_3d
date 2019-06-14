@@ -601,7 +601,7 @@ void CQmlEngineImpl::SetAttribute(TElement *target, const char *attName, const c
 {
     QML_ENGINE_MULTITHREAD_PROTECT_METHOD;
     if (target) {
-        bool success = CQmlElementHelper::SetAttribute(target, attName, value, false);
+        bool success = CQmlElementHelper::SetAttribute(target, attName, value);
         if (!success) {
             qCCritical(qt3ds::INVALID_OPERATION)
                     << "CQmlEngineImpl::SetAttribute: "
@@ -617,7 +617,7 @@ void CQmlEngineImpl::SetAttribute(const char *element, const char *attName, cons
 
     TElement *theTarget = getTarget(element);
     if (theTarget) {
-        bool success = CQmlElementHelper::SetAttribute(theTarget, attName, value, false);
+        bool success = CQmlElementHelper::SetAttribute(theTarget, attName, value);
         if (!success) {
             qCCritical(qt3ds::INVALID_OPERATION)
                     << "CQmlEngineImpl::SetAttribute: "
