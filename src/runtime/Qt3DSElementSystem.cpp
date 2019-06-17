@@ -770,10 +770,19 @@ void SElement::SetFlag(Q3DStudio::EElementFlag inFlag, bool inValue)
     bool existing = m_Flags & inFlag;
     if (existing != inValue && HasActivityZone()) {
         m_Flags.clearOrSet(inValue, inFlag);
-        if (inFlag == Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE)
+        if (inFlag == Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE) {
             GetActivityZone().UpdateItemInfo(*this);
-        else if (inFlag == Q3DStudio::ELEMENTFLAG_SCRIPTCALLBACKS)
+            if (IsComponent()) {
+                SElement *parent = m_Parent;
+                // Get out parent component
+                while (parent && parent->m_Parent && !parent->IsComponent())
+                    parent = parent->m_Parent;
+                if (parent)
+                    parent->GetActivityZone().UpdateItemInfo(*parent);
+            }
+        } else if (inFlag == Q3DStudio::ELEMENTFLAG_SCRIPTCALLBACKS) {
             GetActivityZone().UpdateItemScriptStatus(*this);
+        }
         SetDirty();
     }
 }
