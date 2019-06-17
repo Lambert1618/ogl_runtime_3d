@@ -682,12 +682,12 @@ void Q3DSDistanceFieldRenderer::buildShaders()
 Q3DSDistanceFieldMesh Q3DSDistanceFieldRenderer::buildMesh(const GlyphInfo &glyphInfo,
                                                            bool shadow)
 {
-    static NVRenderVertexBufferEntry entries[] = {
+    NVRenderVertexBufferEntry entries[] = {
         NVRenderVertexBufferEntry("vCoord", NVRenderComponentTypes::QT3DSF32, 3),
         NVRenderVertexBufferEntry("tCoord", NVRenderComponentTypes::QT3DSF32, 2, 3 * sizeof(float))
     };
 
-    static NVRenderVertexBufferEntry shadowEntries[] = {
+    NVRenderVertexBufferEntry shadowEntries[] = {
         NVRenderVertexBufferEntry("vCoord", NVRenderComponentTypes::QT3DSF32, 3),
         NVRenderVertexBufferEntry("tCoord", NVRenderComponentTypes::QT3DSF32, 2,
         3 * sizeof(float)),
