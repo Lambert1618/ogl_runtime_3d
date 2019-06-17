@@ -611,6 +611,8 @@ static QVector<T> fillIndexBuffer(uint quadCount)
 
 void Q3DSDistanceFieldRenderer::buildShaders()
 {
+    if (m_shader.program)
+        return;
     IShaderProgramGenerator &gen = m_context->GetShaderProgramGenerator();
     gen.BeginProgram();
     IShaderStageGenerator &vertexGenerator(*gen.GetStage(ShaderGeneratorStages::Vertex));
@@ -961,7 +963,6 @@ void Q3DSDistanceFieldRenderer::setContext(IQt3DSRenderContext &context)
 {
     m_context = &context;
     m_glyphCacheManager.setContext(context);
-    buildShaders();
 }
 
 ITextRendererCore &ITextRendererCore::createDistanceFieldRenderer(NVFoundationBase &fnd)
