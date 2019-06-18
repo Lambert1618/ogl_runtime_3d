@@ -1623,8 +1623,10 @@ struct SApp : public IApplication
             // else assume main presentation and component:slide
         }
         component = presentation->GetRoot();
-        if (!componentName.isNull() && componentName != component->m_Name)
-            component = component->FindChild(CHash::HashString(qPrintable(componentName)));
+        if (!componentName.isNull() && componentName != component->m_Name) {
+            component = CQmlElementHelper::GetElement(*this, presentation,
+                                                      qPrintable(componentName), nullptr);
+        }
         if (!component) {
             qCWarning(WARNING) << "Could not find slide: " << elementPath;
             return false;
