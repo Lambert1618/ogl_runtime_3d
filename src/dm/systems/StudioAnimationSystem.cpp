@@ -128,20 +128,17 @@ bool CStudioAnimationSystem::GetAnimatedInstancePropertyValue(Qt3DSDMSlideHandle
 {
     bool retval = false;
 
-    tuple<bool, size_t> arity = GetVariantAnimatableAndArity(outValue);
-    if (get<0>(arity)) {
+    size_t arity = GetVariantAnimatableArity(outValue);
+    if (arity) {
         for (size_t index = 0; index < m_AnimationFloatPairs.size(); ++index)
             retval |= ApplyIfAnimationMatches(m_AnimationFloatPairs.at(index), inSlide, inInstance,
                                               inProperty, m_AnimationCore, outValue);
     }
 
     if (!retval) {
-        bool animatable;
-        size_t numChannels;
         bool animated = false;
-
-        std::tie(animatable, numChannels) = GetVariantAnimatableAndArity(outValue);
-        if (animatable) {
+        size_t numChannels = GetVariantAnimatableArity(outValue);
+        if (numChannels > 0) {
             TGraphSlidePair theGraphSlidePair = m_SlideGraphCore->GetAssociatedGraph(inInstance);
             float theSeconds = m_SlideCore->GetSlideTime(
                 m_SlideGraphCore->GetGraphActiveSlide(theGraphSlidePair.first));
@@ -275,12 +272,12 @@ void DoKeyframeProperty(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInst
                         TAnimationFloatPairList &inAnimationFloatPairs, float inEaseIn,
                         float inEaseOut)
 {
-    tuple<bool, size_t> arity = GetVariantAnimatableAndArity(inValue);
+    size_t arity = GetVariantAnimatableArity(inValue);
     TAnimationHandleList thePresentAnimations;
     GetPresentAnimations(inSlide, inInstance, inProperty, std::cref(inAnimationFloatPairs),
                          inAnimationCore, thePresentAnimations);
     if (thePresentAnimations.empty())
-        do_times(get<1>(arity), std::bind(CreateAnimationAndAdd, inSlide, inInstance, inProperty,
+        do_times(arity, std::bind(CreateAnimationAndAdd, inSlide, inInstance, inProperty,
                                           std::placeholders::_1,
                                           inAnimationCore, std::ref(thePresentAnimations)));
     if (!inDoDiffValue
@@ -347,8 +344,8 @@ bool CStudioAnimationSystem::SetAnimatedInstancePropertyValue(Qt3DSDMSlideHandle
                                                               Qt3DSDMPropertyHandle inProperty,
                                                               const SValue &inValue)
 {
-    tuple<bool, size_t> arity = GetVariantAnimatableAndArity(inValue);
-    if (get<0>(arity)) {
+    size_t arity = GetVariantAnimatableArity(inValue);
+    if (arity > 0) {
         if (m_AutoKeyframe && IsPropertyAnimated(inInstance, inProperty)) // prerequisite for
                                                                           // autoset-keyframes is
                                                                           // that the property is
@@ -405,8 +402,8 @@ Qt3DSDMSlideHandle CStudioAnimationSystem::GetApplicableGraphAndSlide(
     Qt3DSDMInstanceHandle inInstance, Qt3DSDMPropertyHandle inProperty, const SValue &inValue)
 {
     Qt3DSDMSlideHandle theApplicableSlide;
-    tuple<bool, size_t> arity = GetVariantAnimatableAndArity(inValue);
-    if (get<0>(arity))
+    size_t arity = GetVariantAnimatableArity(inValue);
+    if (arity > 0)
         theApplicableSlide = m_SlideSystem->GetApplicableSlide(inInstance, inProperty);
     return theApplicableSlide;
 }
@@ -443,9 +440,9 @@ void CStudioAnimationSystem::Animate(Qt3DSDMInstanceHandle inInstance,
     if (theApplicableSlide.Valid()) {
         // Check if previously we have set animation & keyframes
         DataModelDataType::Value theDataType = m_PropertySystem->GetDataType(inProperty);
-        std::tuple<bool, size_t> theArity = GetDatatypeAnimatableAndArity(theDataType);
+        size_t theArity = GetDatatypeAnimatableArity(theDataType);
         bool theFound = false;
-        for (size_t i = 0; i < std::get<1>(theArity); ++i) {
+        for (size_t i = 0; i < theArity; ++i) {
             TAnimationKeyframesPairList::iterator theAnimationKeyframeIter =
                 m_DeletedAnimationData.begin();
             for (; theAnimationKeyframeIter < m_DeletedAnimationData.end();
@@ -482,8 +479,8 @@ void CStudioAnimationSystem::Deanimate(Qt3DSDMInstanceHandle inInstance,
                                        Qt3DSDMPropertyHandle inProperty)
 {
     DataModelDataType::Value theDataType = m_PropertySystem->GetDataType(inProperty);
-    std::tuple<bool, size_t> theArity = GetDatatypeAnimatableAndArity(theDataType);
-    for (size_t i = 0; i < std::get<1>(theArity); ++i) {
+    size_t theArity = GetDatatypeAnimatableArity(theDataType);
+    for (size_t i = 0; i < theArity; ++i) {
         Qt3DSDMAnimationHandle theAnimationHandle =
             GetControllingAnimation(inInstance, inProperty, i);
 
@@ -524,8 +521,8 @@ void CStudioAnimationSystem::SetOrCreateKeyframe(Qt3DSDMInstanceHandle inInstanc
 {
     qt3dsdm::DataModelDataType::Value thePropertyType = m_PropertySystem->GetDataType(inProperty);
     Qt3DSDMSlideHandle theApplicableSlide;
-    std::tuple<bool, size_t> arity = GetDatatypeAnimatableAndArity(thePropertyType);
-    if (std::get<0>(arity)) {
+    size_t arity = GetDatatypeAnimatableArity(thePropertyType);
+    if (arity) {
         theApplicableSlide = m_SlideSystem->GetApplicableSlide(inInstance, inProperty);
         if (theApplicableSlide.Valid()) {
 
@@ -533,7 +530,7 @@ void CStudioAnimationSystem::SetOrCreateKeyframe(Qt3DSDMInstanceHandle inInstanc
             GetPresentAnimations(theApplicableSlide, inInstance, inProperty,
                                  std::cref(m_AnimationFloatPairs), m_AnimationCore,
                                  thePresentAnimations);
-            size_t numIterations = std::min(inNumInfos, get<1>(arity));
+            size_t numIterations = std::min(inNumInfos, arity);
             if (thePresentAnimations.empty()) {
                 for (size_t idx = 0, end = numIterations; idx < end; ++idx) {
                     CreateAnimationAndAdd(theApplicableSlide, inInstance, inProperty, idx,
@@ -579,9 +576,9 @@ Qt3DSDMAnimationHandle CStudioAnimationSystem::GetControllingAnimation(
 bool CStudioAnimationSystem::IsPropertyAnimatable(Qt3DSDMInstanceHandle inInstance,
                                                   Qt3DSDMPropertyHandle inProperty) const
 {
-    DataModelDataType::Value theDataType = m_PropertySystem->GetDataType(inProperty);
-    std::tuple<bool, size_t> theArity = GetDatatypeAnimatableAndArity(theDataType);
-    if (std::get<0>(theArity))
+    DataModelDataType::Value dataType = m_PropertySystem->GetDataType(inProperty);
+    size_t arity = GetDatatypeAnimatableArity(dataType);
+    if (arity)
         return m_SlideGraphCore->GetAssociatedGraph(inInstance).first.Valid();
     return false;
 }
@@ -589,9 +586,9 @@ bool CStudioAnimationSystem::IsPropertyAnimatable(Qt3DSDMInstanceHandle inInstan
 bool CStudioAnimationSystem::IsPropertyAnimated(Qt3DSDMInstanceHandle inInstance,
                                                 Qt3DSDMPropertyHandle inProperty) const
 {
-    DataModelDataType::Value theDataType = m_PropertySystem->GetDataType(inProperty);
-    std::tuple<bool, size_t> theArity = GetDatatypeAnimatableAndArity(theDataType);
-    for (size_t i = 0; i < std::get<1>(theArity); ++i) {
+    DataModelDataType::Value dataType = m_PropertySystem->GetDataType(inProperty);
+    size_t arity = GetDatatypeAnimatableArity(dataType);
+    for (size_t i = 0; i < arity; ++i) {
         if (GetControllingAnimation(inInstance, inProperty, i).Valid())
             return true;
     }

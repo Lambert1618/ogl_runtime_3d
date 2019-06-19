@@ -110,12 +110,12 @@ void CopyAnimationIfExist(Qt3DSDMSlideHandle inMaster, Qt3DSDMSlideHandle inTarg
                           TInstancePropertyPair inPropertyPair, TPropertySystemPtr inPropertySystem,
                           TAnimationCorePtr inAnimationCore)
 {
-    DataModelDataType::Value thePropertyType = inPropertySystem->GetDataType(inPropertyPair.second);
-    std::tuple<bool, size_t> theArity = GetDatatypeAnimatableAndArity(thePropertyType);
-    if (std::get<0>(theArity))
-        do_times(std::get<1>(theArity), std::bind(CopySpecificAnimation, inMaster, inTarget,
-                                               inPropertyPair, inAnimationCore,
-                                                  std::placeholders::_1));
+    DataModelDataType::Value propertyType = inPropertySystem->GetDataType(inPropertyPair.second);
+    size_t arity = GetDatatypeAnimatableArity(propertyType);
+    if (arity) {
+        do_times(arity, std::bind(CopySpecificAnimation, inMaster, inTarget, inPropertyPair,
+                                  inAnimationCore, std::placeholders::_1));
+    }
 }
 
 void SetEntryValueIfNotReferenced(const TSlideEntry &inEntry,

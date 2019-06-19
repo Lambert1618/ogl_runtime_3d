@@ -494,67 +494,67 @@ inline EAnimationType GetKeyframeType(const TKeyframe &inKeyframe)
     return inKeyframe.getType();
 }
 
-struct SAnimatableArityVisitor
+struct SAnimArityVisitor
 {
-    std::tuple<bool, size_t> operator()(bool) const
+    size_t operator()(bool) const
     {
-        return std::tuple<bool, size_t>(true, 1);
+        return 1;
     }
-    std::tuple<bool, size_t> operator()(long) const
+    size_t operator()(long) const
     {
-        return std::tuple<bool, size_t>(true, 1);
+        return 1;
     }
-    std::tuple<bool, size_t> operator()(float) const
+    size_t operator()(float) const
     {
-        return std::tuple<bool, size_t>(true, 1);
+        return 1;
     }
-    std::tuple<bool, size_t> operator()(const SFloat2 &) const
+    size_t operator()(const SFloat2 &) const
     {
-        return std::tuple<bool, size_t>(true, 2);
+        return 2;
     }
-    std::tuple<bool, size_t> operator()(const SFloat3 &) const
+    size_t operator()(const SFloat3 &) const
     {
-        return std::tuple<bool, size_t>(true, 3);
+        return 3;
     }
-    std::tuple<bool, size_t> operator()(const SFloat4 &) const
+    size_t operator()(const SFloat4 &) const
     {
-        return std::tuple<bool, size_t>(true, 4);
+        return 4;
     }
     template <typename TDataType>
-    std::tuple<bool, size_t> operator()(const TDataType &) const
+    size_t operator()(const TDataType &) const
     {
-        return std::tuple<bool, size_t>(false, 0);
+        return 0;
     }
-    std::tuple<bool, size_t> operator()()
+    size_t operator()()
     {
         QT3DS_ASSERT(false);
-        return std::tuple<bool, size_t>(false, 0);
+        return 0;
     }
 };
 
-inline std::tuple<bool, size_t> GetVariantAnimatableAndArity(const SValue &inValue)
+inline size_t GetVariantAnimatableArity(const SValue &inValue)
 {
-    return inValue.visit<std::tuple<bool, size_t>>(SAnimatableArityVisitor());
+    return inValue.visit<size_t>(SAnimArityVisitor());
 }
 
-inline std::tuple<bool, size_t> GetDatatypeAnimatableAndArity(DataModelDataType::Value inDataType)
+inline size_t GetDatatypeAnimatableArity(DataModelDataType::Value inDataType)
 {
     switch (inDataType) {
     case DataModelDataType::Long:
     case DataModelDataType::Float:
-        return std::make_tuple(true, 1);
+        return 1;
 
     case DataModelDataType::Float2:
-        return std::make_tuple(true, 2);
+        return 2;
 
     case DataModelDataType::Float3:
-        return std::make_tuple(true, 3);
+        return 3;
 
     case DataModelDataType::Float4:
-        return std::make_tuple(true, 4);
+        return 4;
 
     default:
-        return std::make_tuple(false, 0);
+        return 0;
     }
 }
 
