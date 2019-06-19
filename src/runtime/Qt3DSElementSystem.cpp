@@ -673,6 +673,8 @@ void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVa
         case Q3DStudio::ATTRIBUTETYPE_STRING:
             if (currentValue->m_StringHandle == inValue.m_StringHandle)
                 return;
+            m_BelongedPresentation->GetStringTable().releaseDynamicHandle(
+                        currentValue->m_StringHandle);
             break;
         default: // Early return
             if (Q3DStudio::ATTRIBUTE_EYEBALL != attHash && currentValue->m_INT32 == inValue.m_INT32)

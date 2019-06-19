@@ -153,6 +153,7 @@ private:
     Q3DSDistanceFieldShader m_shader;
     Q3DSDistanceFieldDropShadowShader m_dropShadowShader;
     QVector<size_t> m_renderedGlyphs;
+    QVector<size_t> m_renderedTexts;
 
     QStringList m_systemDirs;
     QStringList m_projectDirs;

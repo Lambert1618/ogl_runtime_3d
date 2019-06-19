@@ -210,8 +210,8 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
 
         case ATTRIBUTETYPE_STRING:
             theNewValue.m_StringHandle =
-                theElement->GetBelongedPresentation()->GetStringTable().GetHandle(
-                    (const char *)value);
+                theElement->GetBelongedPresentation()->GetStringTable().getDynamicHandle(
+                        QByteArray(static_cast<const char *>(value)));
             break;
 
         case ATTRIBUTETYPE_POINTER:

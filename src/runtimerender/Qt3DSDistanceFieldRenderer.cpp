@@ -91,20 +91,32 @@ void Q3DSDistanceFieldRenderer::EndFrame()
     // Remove meshes for glyphs that weren't rendered last frame
     NVAllocatorCallback &alloc = m_context->GetAllocator();
 
-    QHash<size_t, Q3DSDistanceFieldMesh>::const_iterator it = m_meshCache.constBegin();
-    while (it != m_meshCache.constEnd()) {
-        const size_t glyphHash = it.key();
-        const Q3DSDistanceFieldMesh &mesh = it.value();
+    QHash<size_t, QHash<Q3DSDistanceFieldGlyphCache::TextureInfo *, GlyphInfo>>::const_iterator
+            glyphIt = m_glyphCache.constBegin();
+    while (glyphIt != m_glyphCache.constEnd()) {
+        const size_t textHash = glyphIt.key();
+        if (!m_renderedTexts.contains(textHash))
+            m_glyphCache.erase(glyphIt++);
+        else
+            glyphIt++;
+    }
+
+    QHash<size_t, Q3DSDistanceFieldMesh>::const_iterator meshIt = m_meshCache.constBegin();
+    while (meshIt != m_meshCache.constEnd()) {
+        const size_t glyphHash = meshIt.key();
+        const Q3DSDistanceFieldMesh &mesh = meshIt.value();
         if (!m_renderedGlyphs.contains(glyphHash)) {
             NVDelete(alloc, mesh.vertexBuffer);
             NVDelete(alloc, mesh.indexBuffer);
             NVDelete(alloc, mesh.inputAssembler);
-            m_meshCache.erase(it++);
+            m_meshCache.erase(meshIt++);
         } else {
-            it++;
+            meshIt++;
         }
     }
+
     m_renderedGlyphs.clear();
+    m_renderedTexts.clear();
 }
 
 QHash<Q3DSDistanceFieldGlyphCache::TextureInfo *, GlyphInfo>
@@ -949,6 +961,8 @@ void Q3DSDistanceFieldRenderer::renderText(SText &text, const QT3DSMat44 &mvp)
 
         m_renderedGlyphs += glyphHashValue;
     }
+
+    m_renderedTexts += textHashValue;
 
     text.m_Bounds = NVBounds3(minimum, maximum);
 }

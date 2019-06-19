@@ -248,6 +248,8 @@ namespace foundation {
         virtual CRegisteredString RegisterStr(const char32_t *str) = 0;
 
         virtual CStringHandle GetHandle(Qt3DSBCharPtr str) = 0;
+        virtual CStringHandle getDynamicHandle(const QByteArray &str) = 0;
+        virtual void releaseDynamicHandle(QT3DSU32 strHandle) = 0;
         virtual CRegisteredString HandleToStr(QT3DSU32 strHandle) = 0;
 
         virtual CRegisteredString RegisterStr(const wchar_t *str) = 0;
