@@ -45,6 +45,7 @@
 #include "foundation/Qt3DSMutex.h"
 #include "foundation/Qt3DSSync.h"
 #include "Qt3DSRenderThreadPool.h"
+#include "foundation/Qt3DSSimpleTypes.h"
 
 using namespace qt3ds::runtime;
 using namespace qt3ds::runtime::element;
@@ -405,7 +406,9 @@ struct STimeContext
         if (inNode.DoesParticipateInTimeGraph()) {
             UpdateNodeElementInformation(inNode);
             if (inNode.IsUserActive()) {
-                inGlobalMin = NVMax(inNode.m_ActivationManagerNode.m_StartTime, inGlobalMin);
+                // Start time does not get updated if the element doesn't have ATTRIBUTE_STARTTIME.
+                if (inNode.m_ActivationManagerNode.m_StartTime != QT3DS_MAX_U32)
+                    inGlobalMin = NVMax(inNode.m_ActivationManagerNode.m_StartTime, inGlobalMin);
                 inGlobalMax = NVMin(inNode.m_ActivationManagerNode.m_StopTime, inGlobalMax);
                 if (inGlobalMin < inGlobalMax) {
                     GetTimeEventForTime(inGlobalMin, STimeEvent::Start)
