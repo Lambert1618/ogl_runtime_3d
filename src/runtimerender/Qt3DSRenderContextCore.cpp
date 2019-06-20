@@ -708,6 +708,12 @@ struct SRenderContext : public IQt3DSRenderContext
                 theClearColor = m_MatteColor;
             else if (m_SceneColor.hasValue())
                 theClearColor = m_SceneColor;
+            //premultiply the clear color
+            if (theClearColor.w < 1.0f) {
+                theClearColor.x *= theClearColor.w;
+                theClearColor.y *= theClearColor.w;
+                theClearColor.z *= theClearColor.w;
+            }
             m_RenderContext->SetClearColor(theClearColor);
             m_RenderContext->Clear(qt3ds::render::NVRenderClearValues::Color);
         }
@@ -727,7 +733,13 @@ struct SRenderContext : public IQt3DSRenderContext
                     m_RotationDepthBuffer = NULL;
                 }
                 if (m_SceneColor.hasValue() && m_SceneColor.getValue().w != 0.0f) {
-                    m_RenderContext->SetClearColor(m_SceneColor);
+                    QT3DSVec4 theClearColor = m_SceneColor;
+                    if (theClearColor.w < 1.0f) {
+                        theClearColor.x *= theClearColor.w;
+                        theClearColor.y *= theClearColor.w;
+                        theClearColor.z *= theClearColor.w;
+                    }
+                    m_RenderContext->SetClearColor(theClearColor);
                     m_RenderContext->Clear(qt3ds::render::NVRenderClearValues::Color);
                 }
             } else {
@@ -758,7 +770,13 @@ struct SRenderContext : public IQt3DSRenderContext
                 }
                 m_RenderContext->SetRenderTarget(m_RotationFBO);
                 if (m_SceneColor.hasValue()) {
-                    m_RenderContext->SetClearColor(m_SceneColor);
+                    QT3DSVec4 theClearColor = m_SceneColor;
+                    if (theClearColor.w < 1.0f) {
+                        theClearColor.x *= theClearColor.w;
+                        theClearColor.y *= theClearColor.w;
+                        theClearColor.z *= theClearColor.w;
+                    }
+                    m_RenderContext->SetClearColor(theClearColor);
                     m_RenderContext->Clear(qt3ds::render::NVRenderClearValues::Color);
                 }
             }
