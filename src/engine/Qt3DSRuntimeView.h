@@ -143,6 +143,7 @@ public:
     virtual ITegraRenderStateManager &GetTegraRenderStateManager() = 0;
     virtual qt3ds::render::NVRenderContext &GetRenderContext() = 0;
     virtual void SetMatteColor(qt3ds::foundation::Option<qt3ds::QT3DSVec4> inColor) = 0;
+    virtual void setMatteEnabled(bool enable) = 0;
     virtual void EnableRenderRotation(bool inEnable) = 0;
     virtual void SetWriteOutShaderCache(bool inWriteOutShaderCache) = 0;
     virtual void Release() = 0;

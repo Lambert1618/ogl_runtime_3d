@@ -249,6 +249,7 @@ struct SRenderContext : public IQt3DSRenderContext
     bool m_IsInSubPresentation;
     Option<QT3DSVec4> m_SceneColor;
     Option<QT3DSVec4> m_MatteColor;
+    bool m_matteEnabled;
     RenderRotationValues::Enum m_Rotation;
     NVScopedRefCounted<NVRenderFrameBuffer> m_RotationFBO;
     NVScopedRefCounted<NVRenderTexture2D> m_RotationTexture;
@@ -276,14 +277,15 @@ struct SRenderContext : public IQt3DSRenderContext
         , m_ResourceManager(IResourceManager::CreateResourceManager(ctx))
         , m_ShaderCache(IShaderCache::CreateShaderCache(ctx, *m_InputStreamFactory, *m_PerfTimer))
         , m_ThreadPool(inCore.GetThreadPool())
-        , m_RenderList(IRenderList::CreateRenderList(ctx.GetFoundation()))
         , m_PerFrameAllocator(ctx.GetAllocator())
+        , m_RenderList(IRenderList::CreateRenderList(ctx.GetFoundation()))
         , m_FrameCount(0)
         , mRefCount(0)
         , m_WindowDimensions(800, 480)
         , m_ScaleMode(ScaleModes::ExactSize)
         , m_WireframeMode(false)
         , m_IsInSubPresentation(false)
+        , m_matteEnabled(false)
         , m_Rotation(RenderRotationValues::NoRotation)
         , m_ContextRenderTarget(NULL)
         , m_PresentationScale(0, 0)
@@ -420,6 +422,10 @@ struct SRenderContext : public IQt3DSRenderContext
 
     void SetSceneColor(Option<QT3DSVec4> inSceneColor) override { m_SceneColor = inSceneColor; }
     void SetMatteColor(Option<QT3DSVec4> inMatteColor) override { m_MatteColor = inMatteColor; }
+    void setMatteEnabled(bool enable) override
+    {
+        m_matteEnabled = enable;
+    }
 
     void SetWindowDimensions(const QSize &inWindowDimensions) override
     {
@@ -697,10 +703,10 @@ struct SRenderContext : public IQt3DSRenderContext
             m_RenderContext->SetScissorTestEnabled(false);
         }
         {
-            QT3DSVec4 theClearColor;
-            if (m_MatteColor.hasValue())
+            QT3DSVec4 theClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            if (m_MatteColor.hasValue() && m_matteEnabled)
                 theClearColor = m_MatteColor;
-            else
+            else if (m_SceneColor.hasValue())
                 theClearColor = m_SceneColor;
             m_RenderContext->SetClearColor(theClearColor);
             m_RenderContext->Clear(qt3ds::render::NVRenderClearValues::Color);

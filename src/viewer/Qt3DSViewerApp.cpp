@@ -825,6 +825,12 @@ void Q3DSViewerApp::setMatteColor(const QColor &color)
     }
 }
 
+void Q3DSViewerApp::setMatteEnabled(bool enable)
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
+        m_Impl.m_view->GetTegraRenderEngine()->setMatteEnabled(enable);
+}
+
 void Q3DSViewerApp::setShowOnScreenStats(bool inShow)
 {
     if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())

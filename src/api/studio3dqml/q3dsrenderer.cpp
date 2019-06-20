@@ -286,6 +286,8 @@ void Q3DSRenderer::processCommands()
         m_settings->setShowRenderStats(m_commands.m_showRenderStats);
     if (m_commands.m_delayedLoadingChanged)
         this->m_runtime->setDelayedLoading(m_commands.m_delayedLoading);
+    if (m_commands.m_matteEnabledChanged)
+        this->m_runtime->setMatteEnabled(m_commands.m_matteEnabled);
 
     if (m_commands.m_globalAnimationTimeChanged)
         m_presentation->setGlobalAnimationTime(m_commands.m_globalAnimationTime);
