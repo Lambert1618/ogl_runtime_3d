@@ -1851,9 +1851,11 @@ namespace render {
                 ITextTextureAtlas *theTextureAtlas = m_qt3dsContext.GetTextureAtlas();
                 QSize theWindow = m_qt3dsContext.GetWindowDimensions();
 
-                const wchar_t *wText = m_StringTable->GetWideStr(text);
+                // Use dynamic strings to avoid memory leakage
+                QByteArray theText(text);
+                CStringHandle textHandle = m_StringTable->getDynamicHandle(theText);
                 STextRenderInfo theInfo;
-                theInfo.m_Text = m_StringTable->RegisterStr(wText);
+                theInfo.m_Text = m_StringTable->HandleToStr(textHandle);
                 theInfo.m_FontSize = 20;
                 // text scale 2% of screen we don't scale Y though because it becomes unreadable
                 theInfo.m_ScaleX = (theWindow.width() / 100.0f) * 1.5f / (theInfo.m_FontSize);
@@ -1894,6 +1896,7 @@ namespace render {
                     QT3DS_FREE(m_Context->GetAllocator(),
                             theRenderTextDetails.first.m_Vertices.begin());
                 }
+                m_StringTable->releaseDynamicHandle(textHandle);
             }
         }
     }
