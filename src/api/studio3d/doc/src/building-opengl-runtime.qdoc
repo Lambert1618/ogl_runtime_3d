@@ -26,20 +26,19 @@
 ****************************************************************************/
 
 /*!
-\title \RUNTIME
-\page qt3dstudio-opengl-runtime-index.html
 
-\section1 Table of Contents
+\title Building the \RUNTIME
+\page building-opengl-runtime.html
+
+\section1 Build Instructions
 
 \list
-    \li \l {Getting Started}
-    \li \l {System and Application Requirements}
-    \li \l {Building the \RUNTIME}
-    \li \l {\RUNTIME C++ Classes}
-    \li \l {\RUNTIME QML Types}
-    \li \l {Attribute Names}{Scene Object Attribute List}
-    \li \l {Examples}
-    \li \l {Copyright Notices}
+  \li
+    \l {Building \RUNTIME for Embedded Linux}
+  \li
+    \l {Building \RUNTIME for GHS Integrity}
+  \li
+    \l {Building \RUNTIME for QNX}
 \endlist
 
 */

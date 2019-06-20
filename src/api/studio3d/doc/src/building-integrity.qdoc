@@ -26,20 +26,46 @@
 ****************************************************************************/
 
 /*!
-\title \RUNTIME
-\page qt3dstudio-opengl-runtime-index.html
 
-\section1 Table of Contents
+\title Building \RUNTIME for GHS Integrity
+\page building-opengl-runtime-integrity.html
 
-\list
-    \li \l {Getting Started}
-    \li \l {System and Application Requirements}
-    \li \l {Building the \RUNTIME}
-    \li \l {\RUNTIME C++ Classes}
-    \li \l {\RUNTIME QML Types}
-    \li \l {Attribute Names}{Scene Object Attribute List}
-    \li \l {Examples}
-    \li \l {Copyright Notices}
+Before you build the \RUNTIME for Integrity, you will need to build
+\l{https://doc.qt.io/qt-5/integrity.html}{Qt for Integrity}.
+Then, follow the steps below:
+
+\list 1
+  \li
+    Clone the OpenGL Runtime repository from
+    \l {https://code.qt.io/cgit/qt3dstudio/ogl-runtime.git/}. You can clone the repo with the git
+    clone command:
+
+    \badcode
+    git clone git://code.qt.io/qt3dstudio/ogl-runtime.git
+    \endcode
+
+    \note If you want to use the HTTPS protocol, you can clone the \RUNTIME repo with the
+    following command:
+    \badcode
+    git clone https://code.qt.io/qt3dstudio/ogl-runtime.git
+    \endcode
+  \li
+    Run the following \c{git submodule} command:
+    \badcode
+    git submodule update --init --recursive
+    \endcode
+  \li
+    In the root folder of the cloned repo, run the \c qmake command:
+    \badcode
+    qmake
+    \endcode
+  \li
+    Next, run the \c make command:
+    \badcode
+    make
+    \endcode
 \endlist
+
+For deployment, see the \l {https://doc.qt.io/qt-5/integrity.html}{Qt for Integrity} documentation.
 
 */
