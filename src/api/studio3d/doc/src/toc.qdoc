@@ -35,6 +35,6 @@ This file is used for generating a TOC in a .qch file.
 \endomit
 
 \list
-    \li \l {index.html}{Overview}
+    \li \l {\RUNTIME}{Overview}
 \endlist
 */

@@ -1,4 +1,4 @@
-project                 = Qt3DStudioOpenGLRuntime
+project                 = QtStudio3D
 description             = Qt 3D Studio OpenGL Runtime Reference
 version                 = $QT_VERSION
 # url is relative to the parent project
@@ -17,38 +17,35 @@ imagedirs               += ./src/images
 
 depends = qtcore qtgui qtwidgets qtqml qtquick qtquickcontrols qt3dstudio qt3dstudioruntime2 qtdoc qmake
 
-qhp.projects            = Qt3DStudioOpenGLRuntime
+qhp.projects            = QtStudio3D
 
-qhp.Qt3DStudioOpenGLRuntime.file              = qt3dstudio-openglruntime.qhp
-qhp.Qt3DStudioOpenGLRuntime.namespace         = io.qt.qt3dstudio-openglruntime.$QT_VERSION_TAG
-qhp.Qt3DStudioOpenGLRuntime.virtualFolder     = qt3dstudio-openglruntime
-qhp.Qt3DStudioOpenGLRuntime.indexTitle        = Qt 3D Studio OpenGL Runtime
-qhp.Qt3DStudioOpenGLRuntime.indexRoot         =
+qhp.QtStudio3D.file              = qtstudio3d.qhp
+qhp.QtStudio3D.namespace         = io.qt.qtstudio3d.$QT_VERSION_TAG
+qhp.QtStudio3D.virtualFolder     = qtstudio3d
+qhp.QtStudio3D.indexTitle        = Qt 3D Studio OpenGL Runtime
+qhp.QtStudio3D.indexRoot         =
 
-qhp.Qt3DStudioOpenGLRuntime.filterAttributes  = qt3dstudio-openglruntime $QT_VER
-qhp.Qt3DStudioOpenGLRuntime.customFilters.Qt.name = Qt3DStudioOpenGLRuntime $QT_VER
-qhp.Qt3DStudioOpenGLRuntime.customFilters.Qt.filterAttributes = qt3dstudio-openglruntime $QT_VER
+qhp.QtStudio3D.filterAttributes  = qtstudio3d $QT_VER
+qhp.QtStudio3D.customFilters.Qt.name = QtStudio3D $QT_VER
+qhp.QtStudio3D.customFilters.Qt.filterAttributes = qtstudio3d $QT_VER
 
-qhp.Qt3DStudioOpenGLRuntime.subprojects       = manual qmltypes classes
+qhp.QtStudio3D.subprojects       = qmltypes classes
 
-qhp.Qt3DStudioOpenGLRuntime.subprojects.manual.title = Qt 3D Studio OpenGL Runtime
-qhp.Qt3DStudioOpenGLRuntime.subprojects.manual.indexTitle = Qt 3D Studio OpenGL Runtime TOC
-qhp.Qt3DStudioOpenGLRuntime.subprojects.manual.type = manual
+qhp.QtStudio3D.subprojects.qmltypes.title = QML Types
+qhp.QtStudio3D.subprojects.qmltypes.indexTitle = Qt 3D Studio OpenGL Runtime QML Types
+qhp.QtStudio3D.subprojects.qmltypes.selectors = qmltype
+qhp.QtStudio3D.subprojects.qmltypes.sortPages = true
 
-qhp.Qt3DStudioOpenGLRuntime.subprojects.qmltypes.title = QML Types
-qhp.Qt3DStudioOpenGLRuntime.subprojects.qmltypes.indexTitle = Qt 3D Studio OpenGL Runtime QML Types
-qhp.Qt3DStudioOpenGLRuntime.subprojects.qmltypes.selectors = qmltype
-qhp.Qt3DStudioOpenGLRuntime.subprojects.qmltypes.sortPages = true
-
-qhp.Qt3DStudioOpenGLRuntime.subprojects.classes.title      = C++ Classes
-qhp.Qt3DStudioOpenGLRuntime.subprojects.classes.indexTitle = Qt 3D Studio OpenGL Runtime C++ Classes
-qhp.Qt3DStudioOpenGLRuntime.subprojects.classes.selectors  = class namespace doc:headerfile
-qhp.Qt3DStudioOpenGLRuntime.subprojects.classes.sortPages  = true
+qhp.QtStudio3D.subprojects.classes.title      = C++ Classes
+qhp.QtStudio3D.subprojects.classes.indexTitle = Qt 3D Studio OpenGL Runtime C++ Classes
+qhp.QtStudio3D.subprojects.classes.selectors  = class namespace doc:headerfile
+qhp.QtStudio3D.subprojects.classes.sortPages  = true
 
 # Add an .html file with sidebar content, used in the online style
 HTML.stylesheets             += style/qt5-sidebar.html
 
 navigation.homepage            = "Qt 3D Studio OpenGL Runtime"
+navigation.hometitle = "Qt 3D Studio OpenGL Runtime"
 navigation.hometitle           = "OpenGL Runtime"
 navigation.landingpage         = "Qt 3D Studio OpenGL Runtime"
 navigation.landingtitle        = OpenGL Runtime
@@ -63,3 +60,4 @@ macro.RUNTIME                  = Qt 3D Studio OpenGL Runtime
 # exampledirs            += ../examples/studio3d
 
 Cpp.ignoretokens     += Q3DSV_EXPORT Q_STUDIO3D_EXPORT
+depends += qt3d

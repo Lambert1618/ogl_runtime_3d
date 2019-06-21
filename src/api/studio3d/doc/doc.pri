@@ -1,7 +1,7 @@
 build_online_docs: \
-    QMAKE_DOCS = $$PWD/online/qt3dstudio-opengl-runtime.qdocconf
+    QMAKE_DOCS = $$PWD/online/qtstudio3d.qdocconf
 else: \
-    QMAKE_DOCS = $$PWD/qt3dstudio-opengl-runtime.qdocconf
+    QMAKE_DOCS = $$PWD/qtstudio3d.qdocconf
 
 OTHER_FILES += \
     $$PWD/src/*.qdoc \
