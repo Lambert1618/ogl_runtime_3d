@@ -477,6 +477,7 @@ private:
     TElement *getTarget(const char *component);
     void listAllElements(TElement *root, QList<TElement *> &elements);
     void initializeDataInputsInPresentation(CPresentation &presentation, bool isPrimary,
+                                            bool isDynamicAdd = false,
                                             QList<TElement *> inElements = QList<TElement *>());
     void initializeDataOutputsInPresentation(CPresentation &presentation, bool isPrimary);
     void removeDataInputControl(const QVector<TElement *> &inElements);
@@ -1246,7 +1247,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
     }
 
     bool isPrimary = presentation == m_Application->GetPrimaryPresentation() ? true : false;
-    initializeDataInputsInPresentation(*presentation, isPrimary, createdElements.toList());
+    initializeDataInputsInPresentation(*presentation, isPrimary, true, createdElements.toList());
 
     renderer->ChildrenUpdated(parentObject);
 
@@ -2050,7 +2051,7 @@ void CQmlEngineImpl::listAllElements(TElement *root, QList<TElement *> &elements
 // Initializes datainput bindings in the presentation starting by default from the root element.
 // If inElements is specified, only parses the specified elements.
 void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentation,
-                                                        bool isPrimary,
+                                                        bool isPrimary, bool isDynamicAdd,
                                                         QList<TElement *> inElements)
 {
     QList<TElement *> elements;
@@ -2172,41 +2173,46 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                         diDef.controlledAttributes.append(ctrlElem);
 
 // #TODO: Remove below once QT3DS-3510 has been implemented in the editor
-                        // Note, in this temp implementation only the LAST of multiple attributes
-                        // will be notified from the object under the DataInput name..
-                        qt3ds::runtime::DataInputDef inDef   = diMap[controllerName];
-                        qt3ds::runtime::DataOutputDef &doDef = doMap[controllerName];
-                        doDef.observedAttribute = ctrlElem;
-                        doDef.type = inDef.type;
-                        doDef.min  = inDef.min;
-                        doDef.max  = inDef.max;
+                        // Skip data output modification when adding dynamic elements,
+                        // as that would break the previous binding
+                        if (!isDynamicAdd) {
+                            // Note, in this temp implementation only the LAST of multiple attrs
+                            // will be notified from the object under the DataInput name..
+                            qt3ds::runtime::DataInputDef inDef   = diMap[controllerName];
+                            qt3ds::runtime::DataOutputDef &doDef = doMap[controllerName];
+                            doDef.observedAttribute = ctrlElem;
+                            doDef.type = inDef.type;
+                            doDef.min  = inDef.min;
+                            doDef.max  = inDef.max;
 
-                        if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_TIMELINE) {
-                            // Find the TElement for the @timeline attrib
-                            TElement *target = nullptr;
-                            QStringList split
-                                    = QString(ctrlElem.elementPath).split(QLatin1Char(':'));
-                            if (split.size() > 1) {
-                                target = CQmlElementHelper::GetElement(
-                                            *m_Application,
-                                            m_Application->GetPresentationById(
-                                                split.at(0).toStdString().c_str()),
-                                            split.at(1).toStdString().c_str(), nullptr);
+                            if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_TIMELINE) {
+                                // Find the TElement for the @timeline attrib
+                                TElement *target = nullptr;
+                                QStringList split
+                                        = QString(ctrlElem.elementPath).split(QLatin1Char(':'));
+                                if (split.size() > 1) {
+                                    target = CQmlElementHelper::GetElement(
+                                                *m_Application,
+                                                m_Application->GetPresentationById(
+                                                    split.at(0).toStdString().c_str()),
+                                                split.at(1).toStdString().c_str(), nullptr);
+                                } else {
+                                    target = CQmlElementHelper::GetElement(
+                                                *m_Application,
+                                                m_Application->GetPrimaryPresentation(),
+                                                split.at(0).toStdString().c_str(), nullptr);
+                                }
+
+                                doDef.timelineComponent = static_cast<TComponent *>(target);
+                            } else if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_SLIDE) {
+                                // Slide notifications are already done with separate signal
+                                // No need to process
                             } else {
-                                target = CQmlElementHelper::GetElement(
-                                            *m_Application,
-                                            m_Application->GetPrimaryPresentation(),
-                                            split.at(0).toStdString().c_str(), nullptr);
+                                // Other than slide or timeline are handled by CPresentation
+                                CRegisteredString rString = strTable.RegisterStr(
+                                            ctrlElem.elementPath);
+                                elementPathToDataOutputDefMap.insertMulti(rString, doDef);
                             }
-
-                            doDef.timelineComponent = static_cast<TComponent *>(target);
-                        } else if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_SLIDE) {
-                            // Slide notifications are already done with separate signal
-                            // No need to process
-                        } else {
-                            // Other than slide or timeline attributes are handled by CPresentation
-                            CRegisteredString rString = strTable.RegisterStr(ctrlElem.elementPath);
-                            elementPathToDataOutputDefMap.insertMulti(rString, doDef);
                         }
 // #TODO: Remove above once QT3DS-3510 has been implemented in the editor
                     }
@@ -2216,7 +2222,8 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
     }
 
 // #TODO: Remove below once QT3DS-3510 has been implemented in the editor
-    presentation.AddToDataOutputMap(elementPathToDataOutputDefMap);
+    if (!isDynamicAdd)
+        presentation.AddToDataOutputMap(elementPathToDataOutputDefMap);
 // #TODO: Remove above once QT3DS-3510 has been implemented in the editor
 }
 
