@@ -483,6 +483,8 @@ private:
     void removeDataInputControl(const QVector<TElement *> &inElements);
     // Splits down vector attributes to components as Runtime does not really
     // handle vectors at this level anymore
+    bool getAttributeVector4(QVector<QByteArray> &outAttVec, const QByteArray &attName,
+                             TElement *elem);
     bool getAttributeVector3(QVector<QByteArray> &outAttVec, const QByteArray &attName,
                              TElement *elem);
     bool getAttributeVector2(QVector<QByteArray> &outAttVec, const QByteArray &attName,
@@ -2100,6 +2102,24 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                             TElement *component = &element->GetComponentParent();
                             ctrlElem.elementPath.append(component->m_Path);
                         } else if (diMap[controllerName].type
+                                   == qt3ds::runtime::DataInOutTypeVector4) {
+                            // special handling for vector datatype to handle
+                            // expansion from <propertyname> to <propertyname>.x .y .z .w
+                            QVector<QByteArray> attVec;
+                            bool success = getAttributeVector4(
+                                attVec, ctrlElem.attributeName.first().constData(),
+                                element);
+                            if (!attVec.empty() && success) {
+                                ctrlElem.attributeName = attVec;
+                                ctrlElem.elementPath.append(element->m_Path);
+                                ctrlElem.propertyType = ATTRIBUTETYPE_FLOAT4;
+                            } else {
+                                qWarning() << __FUNCTION__ << "Property "
+                                           << ctrlElem.attributeName.first()
+                                           << " was not expanded to vector";
+                                ctrlElem.propertyType = ATTRIBUTETYPE_NONE;
+                            }
+                        } else if (diMap[controllerName].type
                                    == qt3ds::runtime::DataInOutTypeVector3) {
                             // special handling for vector datatype to handle
                             // expansion from <propertyname> to <propertyname>.x .y .z
@@ -2350,6 +2370,30 @@ void CQmlEngineImpl::removeDataInputControl(const QVector<TElement *> &inElement
 // type attributes and at this point we are operating with scalar components only.
 // We check if this element has a property attName.x or attName.r to find out it
 // we should expand property attName to XYZ or RGB vector
+bool CQmlEngineImpl::getAttributeVector4(QVector<QByteArray> &outAttVec,
+                                         const QByteArray &attName,
+                                         TElement *elem)
+{
+    auto hashName = Q3DStudio::CHash::HashAttribute(attName + ".x");
+
+    if (!elem->FindProperty(hashName).isEmpty()) {
+        outAttVec.append(attName + ".x");
+        outAttVec.append(attName + ".y");
+        outAttVec.append(attName + ".z");
+        outAttVec.append(attName + ".w");
+        return true;
+    }
+    hashName = Q3DStudio::CHash::HashAttribute(attName + ".r");
+    if (!elem->FindProperty(hashName).isEmpty()) {
+        outAttVec.append(attName + ".r");
+        outAttVec.append(attName + ".g");
+        outAttVec.append(attName + ".b");
+        outAttVec.append(attName + ".a");
+        return true;
+    }
+    return false;
+}
+
 bool CQmlEngineImpl::getAttributeVector3(QVector<QByteArray> &outAttVec,
                                          const QByteArray &attName,
                                          TElement *elem)
