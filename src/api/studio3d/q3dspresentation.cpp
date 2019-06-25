@@ -1335,25 +1335,48 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
     }
 }
 
-// #TODO: QT3DS-3562 Most Presentation signals missing documentation
 /*!
     \qmlsignal Presentation::slideEntered(string elementPath, int index, string name)
-    //! TODO
+
+    Emitted when a slide in a presentation or component is entered. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the entered slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
  */
 
 /*!
     \fn Q3DSPresentation::slideEntered(const QString &elementPath, unsigned int index, const QString &name)
-    //! TODO
+
+    Emitted when a slide in a presentation or component is entered. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the entered slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
  */
 
 /*!
     \qmlsignal Presentation::slideExited(string elementPath, int index, string name)
-    //! TODO
+
+    Emitted when a slide in a presentation or component is exited. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the exited slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
  */
 
 /*!
     \fn Q3DSPresentation::slideExited(const QString &elementPath, unsigned int index, const QString &name)
-    //! TODO
+
+    Emitted when a slide in a presentation or component is exited. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the exited slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
 */
 
 /*!
@@ -1372,12 +1395,34 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
 /*!
     \qmlsignal Presentation::customSignalEmitted(string elementPath, string name)
-    //! TODO
+
+    Emitted when an action with the \c{Emit Signal}
+    handler is executed in the Qt 3D Studio presentation. \a
+    elementPath specifies \c{Target Object}, and \a name specifies \c{Signal Name}.
+
+    Connecting to this signal offers a way of reacting upon certain
+    events in the Qt 3D Studio presentation.
+
+    \image customsignal.png
+
+    In this example, pressing or tapping on the Cluster object will result in
+    emitting \c{customSignalEmitted("Cluster", "clusterPressed")}.
  */
 
 /*!
     \fn Q3DSPresentation::customSignalEmitted(const QString &elementPath, const QString &name)
-    //! TODO
+
+    Emitted when an action with the \c{Emit Signal}
+    handler is executed in the Qt 3D Studio presentation. \a
+    elementPath specifies \c{Target Object}, and \a name specifies \c{Signal Name}.
+
+    Connecting to this signal offers a way of reacting upon certain
+    events in the Qt 3D Studio presentation.
+
+    \image customsignal.png
+
+    In this example, pressing or tapping on the Cluster object will result in
+    emitting \c{customSignalEmitted("Cluster", "clusterPressed")}.
  */
 
 /*!
