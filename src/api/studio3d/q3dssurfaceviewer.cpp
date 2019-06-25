@@ -258,8 +258,6 @@ bool Q3DSSurfaceViewer::isRunning() const
     return d_ptr->m_viewerApp != nullptr;
 }
 
-//     #TODO QT3DS-3534
-
 /*!
     \property Q3DSSurfaceViewer::presentationId
  */
