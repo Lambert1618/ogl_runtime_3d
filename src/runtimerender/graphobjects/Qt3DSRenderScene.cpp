@@ -37,8 +37,8 @@ using namespace qt3ds::render;
 
 SScene::SScene()
     : SGraphObject(GraphObjectTypes::Scene)
-    , m_Presentation(NULL)
-    , m_FirstChild(NULL)
+    , m_Presentation(nullptr)
+    , m_FirstChild(nullptr)
     , m_ClearColor(0.0f)
     , m_UseClearColor(true)
     , m_Dirty(true)
@@ -47,7 +47,7 @@ SScene::SScene()
 
 void SScene::AddChild(SLayer &inLayer)
 {
-    if (m_FirstChild == NULL)
+    if (m_FirstChild == nullptr)
         m_FirstChild = &inLayer;
     else
         GetLastChild()->m_NextSibling = &inLayer;
@@ -71,6 +71,7 @@ bool SScene::PrepareForRender(const QT3DSVec2 &inViewportDimensions, IQt3DSRende
     // We need to iterate through the layers in reverse order and ask them to render.
     bool wasDirty = m_Dirty;
     m_Dirty = false;
+
     if (m_FirstChild) {
         wasDirty |=
             inContext.GetRenderer().PrepareLayerForRender(*m_FirstChild, inViewportDimensions,

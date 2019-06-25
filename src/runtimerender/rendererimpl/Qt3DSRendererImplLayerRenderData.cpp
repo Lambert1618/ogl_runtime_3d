@@ -1281,9 +1281,8 @@ namespace render {
         // If the user has disabled all layer caching this has the side effect of disabling the
         // progressive AA algorithm.
         if (thePrepResult.m_Flags.WasLayerDataDirty()
-            || thePrepResult.m_Flags.WasDirty()
-            || m_Renderer.IsLayerCachingEnabled() == false
-            || thePrepResult.m_Flags.ShouldRenderToTexture()) {
+                || thePrepResult.m_Flags.WasDirty()
+                || m_Renderer.IsLayerCachingEnabled() == false) {
             m_ProgressiveAAPassIndex = 0;
             m_NonDirtyTemporalAAPassIndex = 0;
             needsRender = true;

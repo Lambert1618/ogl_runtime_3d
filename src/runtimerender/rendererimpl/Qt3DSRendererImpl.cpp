@@ -236,6 +236,20 @@ namespace render {
 
             if (theRenderData) {
                 theRenderData->PrepareForRender();
+                if (id) {
+                    if (m_initialPrepareData.contains(theLayer)) {
+                        // Copy dirty state from the initial since the graph is
+                        // not dirty for subsequent calls
+                        auto &flags = theRenderData->m_LayerPrepResult->m_Flags;
+                        const auto &initialFlags
+                                = m_initialPrepareData[theLayer]->m_LayerPrepResult->m_Flags;
+                        flags.SetWasDirty(flags.WasDirty() || initialFlags.WasDirty());
+                        flags.SetLayerDataDirty(flags.WasLayerDataDirty()
+                                                || initialFlags.WasLayerDataDirty());
+                    } else {
+                        m_initialPrepareData.insert(theLayer, theRenderData);
+                    }
+                }
                 retval = retval || theRenderData->m_LayerPrepResult->m_Flags.WasDirty();
             } else {
                 QT3DS_ASSERT(false);
@@ -495,6 +509,14 @@ namespace render {
         for (QT3DSU32 idx = 0, end = m_LastFrameLayers.size(); idx < end; ++idx)
             m_LastFrameLayers[idx]->ResetForFrame();
         m_LastFrameLayers.clear();
+        m_initialPrepareData.clear();
+        for (auto *obj : qAsConst(m_materialClearDirty)) {
+            if (obj->m_Type == GraphObjectTypes::DefaultMaterial)
+                static_cast<SDefaultMaterial *>(obj)->m_Dirty.UpdateDirtyForFrame();
+            else if (obj->m_Type == GraphObjectTypes::CustomMaterial)
+                static_cast<SCustomMaterial *>(obj)->UpdateDirtyForFrame();
+        }
+        m_materialClearDirty.clear();
         m_BeginFrameViewport = m_qt3dsContext.GetRenderList().GetViewport();
     }
     void Qt3DSRendererImpl::EndFrame()
@@ -1139,6 +1161,11 @@ namespace render {
     {
         if (inImage.m_TextureData.m_Texture && inImage.m_TextureData.m_Texture->GetNumMipmaps() < 1)
             inImage.m_TextureData.m_Texture->GenerateMipmaps();
+    }
+
+    void Qt3DSRendererImpl::addMaterialDirtyClear(SGraphObject *obj)
+    {
+        m_materialClearDirty.insert(obj);
     }
 
     bool NodeContainsBoneRoot(SNode &childNode, QT3DSI32 rootID)
