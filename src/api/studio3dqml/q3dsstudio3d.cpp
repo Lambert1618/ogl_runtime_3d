@@ -172,9 +172,12 @@ Q3DSPresentationItem *Q3DSStudio3D::presentation() const
     return m_presentation;
 }
 
-// #TODO: QT3DS-3566 viewerSettings is missing documentation
 /*!
     \qmlproperty ViewerSettings Studio3D::viewerSettings
+
+    Accessor for the viewerSettings. Applications are expected to create a single
+    ViewerSettings child object for Studio3D. If this is omitted, ViewerSettings
+    is created automatically.
 
     This property is read-only.
 */
