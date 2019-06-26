@@ -271,7 +271,7 @@ public:
                                                     Qt3DSDMPropertyHandle inProperty) const = 0;
     virtual Qt3DSDMInstanceHandle GetPropertyOwner(Qt3DSDMPropertyHandle inProperty) const = 0;
 
-    virtual QVector<Qt3DSDMPropertyHandle> GetControllableProperties(
+    virtual QVector<QPair<QString, QVector<Qt3DSDMPropertyHandle>>> GetControllableProperties(
             Qt3DSDMInstanceHandle inInst) const = 0;
 
 };

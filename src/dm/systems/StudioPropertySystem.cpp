@@ -187,24 +187,32 @@ bool CStudioPropertySystem::IsInstanceOrDerivedFrom(Qt3DSDMInstanceHandle inInst
     return m_DataCore->IsInstanceOrDerivedFrom(inInstance, inParent);
 }
 
-QVector<Qt3DSDMPropertyHandle>
+// Vector of group name and group properties pairs
+// Vector used instead of map/hash to preserve the order
+QVector<QPair<QString, QVector<Qt3DSDMPropertyHandle>>>
 CStudioPropertySystem::GetControllableProperties(Qt3DSDMInstanceHandle inInst) const
 {
     vector<Qt3DSDMMetaDataPropertyHandle> propList;
-    QVector<Qt3DSDMPropertyHandle> outList;
+    QVector<QPair<QString, QVector<Qt3DSDMPropertyHandle>>> outVec;
+    QHash<QString, int> groupIndexMap;
     m_MetaData->GetMetaDataProperties(inInst, propList);
 
-    for (const auto it : qAsConst(propList)) {
+    int groupIndex = 0;
+    for (const auto &it : qAsConst(propList)) {
         auto metadata = m_MetaData->GetMetaDataPropertyInfo(it).getValue();
-
+        const QString groupName = QString::fromStdWString(metadata.m_GroupName.wide_str());
         if ((metadata.m_Controllable
              || (metadata.m_Animatable
                  && m_StudioAnimationSystem->IsPropertyAnimatable(inInst, metadata.m_Property)))
             && !metadata.m_IsHidden) {
-            outList.append(metadata.m_Property);
+            if (!groupIndexMap.contains(groupName)) {
+                groupIndexMap.insert(groupName, groupIndex++);
+                outVec.append({groupName, {}});
+            }
+            outVec[groupIndexMap[groupName]].second.append(metadata.m_Property);
         }
     }
-    return outList;
+    return outVec;
 }
 
 Qt3DSDMPropertyHandle CStudioPropertySystem::AddProperty(Qt3DSDMInstanceHandle inInstance,
