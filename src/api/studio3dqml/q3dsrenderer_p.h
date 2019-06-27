@@ -59,7 +59,8 @@ class Q3DSRenderer : public QObject,
     Q_OBJECT
 
 public:
-    Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisitor);
+    Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisitor,
+                 QElapsedTimer *startupTimer);
     ~Q3DSRenderer();
 
     QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
@@ -102,7 +103,7 @@ protected:
     Q3DSViewerSettings *m_settings;
     Q3DSPresentation *m_presentation;
     QString m_error;
-    QElapsedTimer m_startupTimer;
+    QElapsedTimer *m_startupTimer;
 };
 
 QT_END_NAMESPACE

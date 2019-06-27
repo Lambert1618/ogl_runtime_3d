@@ -45,6 +45,7 @@
 #include <QtStudio3D/private/q3dscommandqueue_p.h>
 #include <QtGui/qopenglframebufferobject.h>
 #include <QtQuick/qquickframebufferobject.h>
+#include <QtCore/qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -128,6 +129,7 @@ protected:
     CommandQueue m_pendingCommands;
     qreal m_pixelRatio;
     QString m_error;
+    QScopedPointer<QElapsedTimer> m_startupTimer;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Q3DSStudio3D::EventIgnoreFlags)
