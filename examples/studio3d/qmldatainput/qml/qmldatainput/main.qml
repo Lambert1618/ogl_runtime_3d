@@ -107,7 +107,7 @@ Item {
         width: 1280
 
         property real inputNumber: 0
-        property vector3d inputColorVec3: Qt.vector3d(0, 0, 0)
+        property vector4d inputColorVec4: Qt.vector4d(0, 0, 0, 1)
         property vector3d inputCamRotVec3: Qt.vector3d(0, 0, 0)
         property vector3d inputScaleVec3: Qt.vector3d(0, 0, 0)
         property string inputString: ""
@@ -136,12 +136,12 @@ Item {
             loops: Animation.Infinite
             running: true
         }
-        Vector3dAnimation {
+        PropertyAnimation {
             target: studio3D
-            property: "inputColorVec3"
+            property: "inputColorVec4"
             duration: 6000
-            from: Qt.vector3d(0.1, 0.1, 0.3)
-            to: Qt.vector3d(1.0, 0.5, 1.0)
+            from: Qt.vector4d(0.1, 0.1, 0.3, 1.0)
+            to: Qt.vector4d(1.0, 0.5, 1.0, 1.0)
             loops: Animation.Infinite
             running: true
         }
@@ -190,7 +190,7 @@ Item {
             }
             DataInput {
                 name: "colorInput"
-                value: studio3D.inputColorVec3
+                value: studio3D.inputColorVec4
             }
             DataInput {
                 name: "cameraRotInput"

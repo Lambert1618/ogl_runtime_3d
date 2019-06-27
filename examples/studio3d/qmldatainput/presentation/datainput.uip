@@ -37,7 +37,7 @@
 			<State name="Master Slide" component="#Scene" >
 				<Add ref="#Layer" multisampleaa="SSAA" progressiveaa="8x" />
 				<Add ref="#Camera" controlledproperty="$cameraRotInput rotation" pivot="0 0 0" position="0 0 -800" rotation="0 0 0" />
-				<Add ref="#Light" castshadow="True" controlledproperty="$colorInput lightdiffuse" lightdiffuse="1 0 0" lighttype="Point" position="-300.444 70.829 -30" shdwfactor="11.89" shdwfilter="6.94" shdwmapres="11" />
+                                <Add ref="#Light" castshadow="True" controlledproperty="$colorInput lightdiffuse" lightdiffuse="1 0 0 1" lighttype="Point" position="-300.444 70.829 -30" shdwfactor="11.89" shdwfilter="6.94" shdwmapres="11" />
 				<State id="Scene-Slide1" name="Slide1" initialplaystate="Pause" >
 					<Add ref="#Text" name="Text" controlledproperty="$stringInput textstring" font="TitilliumWeb-Regular" position="216.513 76.6172 -113.498" scale="1 1 1" size="24" textstring="0" >
 						<AnimationTrack property="rotation.x" type="EaseInOut" >0 0 0 0 10 0 0 0</AnimationTrack>
