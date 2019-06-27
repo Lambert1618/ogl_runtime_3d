@@ -319,6 +319,16 @@ public:
         return theFind->second;
     }
 
+    SCharAndHandle justFindStrDontRegister(SCharAndHash hashCode)
+    {
+        if (isTrivial(hashCode.m_Data))
+            return SCharAndHandle();
+        TMapType::iterator theFind = m_HashToStrMap.find(hashCode);
+        if (theFind == m_HashToStrMap.end())
+            return SCharAndHandle();
+        return theFind->second;
+    }
+
     const CRegisteredString FindStr(SCharAndHash hashCode)
     {
         SCharAndHandle result = DoFindStr(hashCode);
@@ -657,18 +667,23 @@ public:
         DynamicString *theStr = nullptr;
 
         if (!handle) {
-            if (m_dynamicFreeHandlesMap.isEmpty()) {
-                handle = ++m_nextFreeDynamicHandle;
-                theStr = new DynamicString;
+            handle = m_FileData.justFindStrDontRegister(str.constData()).m_Handle;
+            if (!handle) {
+                if (m_dynamicFreeHandlesMap.isEmpty()) {
+                    handle = ++m_nextFreeDynamicHandle;
+                    theStr = new DynamicString;
+                } else {
+                    auto first = m_dynamicFreeHandlesMap.begin();
+                    handle = first.key();
+                    theStr = first.value();
+                    m_dynamicFreeHandlesMap.erase(first);
+                }
+                theStr->str = str;
+                m_dynamicStringToHandleMap.insert(str, handle);
+                m_dynamicUsedHandlesMap.insert(handle, theStr);
             } else {
-                auto first = m_dynamicFreeHandlesMap.begin();
-                handle = first.key();
-                theStr = first.value();
-                m_dynamicFreeHandlesMap.erase(first);
+                return CStringHandle::ISwearThisHasBeenRegistered(handle);
             }
-            theStr->str = str;
-            m_dynamicStringToHandleMap.insert(str, handle);
-            m_dynamicUsedHandlesMap.insert(handle, theStr);
         } else {
             theStr = m_dynamicUsedHandlesMap.value(handle);
         }
