@@ -33,5 +33,6 @@
 The following table lists parts (modules) of \RUNTIME that
 incorporate code licensed under third-party open-source licenses:
 
-\annotatedlist attributions-qt3dstudio-opengl-runtime
+\annotatedlist attributions-qtstudio3d
+
 */
