@@ -477,6 +477,7 @@ public:
     void preloadSlide(const QString &slide);
     void unloadSlide(const QString &slide);
     void setDelayedLoading(bool enable);
+    void setMatteEnabled(bool enabled);
 
 private:
     /*

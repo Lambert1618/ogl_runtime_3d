@@ -48,8 +48,7 @@ public:
                                 IPresentation *inDefaultPresentation, const char *inPath,
                                 TElement *inStartElement = NULL);
 
-    static bool SetAttribute(TElement *inElement, const char *inAttribute, const void *value,
-                             bool inDelay);
+    static bool SetAttribute(TElement *inElement, const char *inAttribute, const void *value);
     static bool GetAttribute(TElement *inElement, const char *inAttribute, void *value);
 };
 }

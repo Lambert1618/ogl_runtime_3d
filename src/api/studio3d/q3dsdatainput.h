@@ -48,6 +48,7 @@ class Q_STUDIO3D_EXPORT Q3DSDataInput : public QObject
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(float max READ max CONSTANT)
     Q_PROPERTY(float min READ min CONSTANT)
+    Q_PROPERTY(QStringList metadataKeys READ metadataKeys CONSTANT)
 public:
     explicit Q3DSDataInput(QObject *parent = nullptr);
     explicit Q3DSDataInput(const QString &name, QObject *parent = nullptr);
@@ -69,7 +70,7 @@ public:
     bool isValid() const;
 
     Q_INVOKABLE QString metadata(const QString &key) const;
-    Q_INVOKABLE QStringList metadataKeys() const;
+    QStringList metadataKeys() const;
 
 public Q_SLOTS:
     void setName(const QString &name);

@@ -142,6 +142,7 @@ public:
     bool m_variantListChanged;
     bool m_globalAnimationTimeChanged;
     bool m_delayedLoadingChanged;
+    bool m_matteEnabledChanged;
 
     bool m_visible;
     Q3DSViewerSettings::ScaleMode m_scaleMode;
@@ -152,6 +153,7 @@ public:
     QStringList m_variantList;
     qint64 m_globalAnimationTime;
     bool m_delayedLoading;
+    bool m_matteEnabled;
 
     void clear(bool deleteCommandData);
     int size() const { return m_size; }

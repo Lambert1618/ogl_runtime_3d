@@ -91,20 +91,32 @@ void Q3DSDistanceFieldRenderer::EndFrame()
     // Remove meshes for glyphs that weren't rendered last frame
     NVAllocatorCallback &alloc = m_context->GetAllocator();
 
-    QHash<size_t, Q3DSDistanceFieldMesh>::const_iterator it = m_meshCache.constBegin();
-    while (it != m_meshCache.constEnd()) {
-        const size_t glyphHash = it.key();
-        const Q3DSDistanceFieldMesh &mesh = it.value();
+    QHash<size_t, QHash<Q3DSDistanceFieldGlyphCache::TextureInfo *, GlyphInfo>>::const_iterator
+            glyphIt = m_glyphCache.constBegin();
+    while (glyphIt != m_glyphCache.constEnd()) {
+        const size_t textHash = glyphIt.key();
+        if (!m_renderedTexts.contains(textHash))
+            m_glyphCache.erase(glyphIt++);
+        else
+            glyphIt++;
+    }
+
+    QHash<size_t, Q3DSDistanceFieldMesh>::const_iterator meshIt = m_meshCache.constBegin();
+    while (meshIt != m_meshCache.constEnd()) {
+        const size_t glyphHash = meshIt.key();
+        const Q3DSDistanceFieldMesh &mesh = meshIt.value();
         if (!m_renderedGlyphs.contains(glyphHash)) {
             NVDelete(alloc, mesh.vertexBuffer);
             NVDelete(alloc, mesh.indexBuffer);
             NVDelete(alloc, mesh.inputAssembler);
-            m_meshCache.erase(it++);
+            m_meshCache.erase(meshIt++);
         } else {
-            it++;
+            meshIt++;
         }
     }
+
     m_renderedGlyphs.clear();
+    m_renderedTexts.clear();
 }
 
 QHash<Q3DSDistanceFieldGlyphCache::TextureInfo *, GlyphInfo>
@@ -611,6 +623,8 @@ static QVector<T> fillIndexBuffer(uint quadCount)
 
 void Q3DSDistanceFieldRenderer::buildShaders()
 {
+    if (m_shader.program)
+        return;
     IShaderProgramGenerator &gen = m_context->GetShaderProgramGenerator();
     gen.BeginProgram();
     IShaderStageGenerator &vertexGenerator(*gen.GetStage(ShaderGeneratorStages::Vertex));
@@ -682,12 +696,12 @@ void Q3DSDistanceFieldRenderer::buildShaders()
 Q3DSDistanceFieldMesh Q3DSDistanceFieldRenderer::buildMesh(const GlyphInfo &glyphInfo,
                                                            bool shadow)
 {
-    static NVRenderVertexBufferEntry entries[] = {
+    NVRenderVertexBufferEntry entries[] = {
         NVRenderVertexBufferEntry("vCoord", NVRenderComponentTypes::QT3DSF32, 3),
         NVRenderVertexBufferEntry("tCoord", NVRenderComponentTypes::QT3DSF32, 2, 3 * sizeof(float))
     };
 
-    static NVRenderVertexBufferEntry shadowEntries[] = {
+    NVRenderVertexBufferEntry shadowEntries[] = {
         NVRenderVertexBufferEntry("vCoord", NVRenderComponentTypes::QT3DSF32, 3),
         NVRenderVertexBufferEntry("tCoord", NVRenderComponentTypes::QT3DSF32, 2,
         3 * sizeof(float)),
@@ -948,6 +962,8 @@ void Q3DSDistanceFieldRenderer::renderText(SText &text, const QT3DSMat44 &mvp)
         m_renderedGlyphs += glyphHashValue;
     }
 
+    m_renderedTexts += textHashValue;
+
     text.m_Bounds = NVBounds3(minimum, maximum);
 }
 
@@ -961,7 +977,6 @@ void Q3DSDistanceFieldRenderer::setContext(IQt3DSRenderContext &context)
 {
     m_context = &context;
     m_glyphCacheManager.setContext(context);
-    buildShaders();
 }
 
 ITextRendererCore &ITextRendererCore::createDistanceFieldRenderer(NVFoundationBase &fnd)

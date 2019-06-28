@@ -31,6 +31,7 @@
 #define QT3DS_IMPORT_STRINGTABLE_H
 
 #include <string>
+#include <memory>
 #include <EABase/eabase.h>
 #include "foundation/Qt3DSPreprocessor.h"
 

@@ -175,29 +175,20 @@ static linking
 no definition - this will allow DLLs and libraries to use the exported API from PhysXCommon
 
 */
+#include <qglobal.h>
 #if defined(QT3DS_WINDOWS) && !defined(__CUDACC__)
 #if defined QT3DS_FOUNDATION_EXPORTS
-#define QT3DS_FOUNDATION_API __declspec(dllexport)
+#define QT3DS_FOUNDATION_API Q_DECL_EXPORT
 #elif defined QT3DS_FOUNDATION_NO_EXPORTS
 #define QT3DS_FOUNDATION_API
 #else
-#define QT3DS_FOUNDATION_API __declspec(dllimport)
+#define QT3DS_FOUNDATION_API Q_DECL_IMPORT
 #endif
 #else
 #define QT3DS_FOUNDATION_API
 #endif
 
-
-#if defined(QT3DS_AUTOTESTS_ENABLED)
-#include <qglobal.h>
-#if defined(QT3DS_BUILDING_LIBRARY)
-#define QT3DS_AUTOTEST_EXPORT Q_DECL_EXPORT
-#else
-#define QT3DS_AUTOTEST_EXPORT Q_DECL_IMPORT
-#endif
-#else
-#define QT3DS_AUTOTEST_EXPORT
-#endif
+#define QT3DS_AUTOTEST_EXPORT QT3DS_FOUNDATION_API
 
 /**
 Calling convention

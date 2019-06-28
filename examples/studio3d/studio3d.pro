@@ -5,5 +5,6 @@ SUBDIRS += \
 
 qtHaveModule(quick) {
     SUBDIRS += simpleqml \
-               qmldatainput
+               qmldatainput \
+               dynamicelement
 }

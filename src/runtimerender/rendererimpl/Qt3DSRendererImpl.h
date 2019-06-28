@@ -292,6 +292,9 @@ namespace render {
         bool m_LayerGPuProfilingEnabled;
         SShaderDefaultMaterialKeyProperties m_DefaultMaterialShaderKeyProperties;
 
+        QHash<SLayer *, SLayerRenderData *> m_initialPrepareData;
+        QSet<SGraphObject *> m_materialClearDirty;
+
     public:
         Qt3DSRendererImpl(IQt3DSRenderContext &ctx);
         virtual ~Qt3DSRendererImpl();
@@ -402,6 +405,7 @@ namespace render {
         void BeginLayerRender(SLayerRenderData &inLayer);
         void EndLayerRender();
         void PrepareImageForIbl(SImage &inImage);
+        void addMaterialDirtyClear(SGraphObject *obj);
 
         NVRenderShaderProgram *CompileShader(CRegisteredString inName, const char8_t *inVert,
                                              const char8_t *inFrame);

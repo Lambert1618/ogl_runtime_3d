@@ -292,10 +292,8 @@ public:
 
     SRenderTextureAtlasDetails RenderText(const STextRenderInfo &inText) override
     {
-        qt3ds::foundation::IStringTable &theStringTable(m_RenderContext->GetStringTable());
-
-        const wchar_t *wText = theStringTable.GetWideStr(inText.m_Text);
-        QT3DSU32 length = (QT3DSU32)wcslen(wText);
+        const QString wText = QString::fromUtf8(inText.m_Text);
+        QT3DSU32 length = QT3DSU32(wText.length());
 
         if (length) {
             STextAtlasFont *pFont = m_TextFont;
@@ -307,13 +305,13 @@ public:
             // we construct triangles here
             // which means character count x 6 vertices x 5 floats
             QT3DSF32 *vertexData =
-                (QT3DSF32 *)QT3DS_ALLOC(m_Foundation.getAllocator(),
-                                        length * 6 * 5 * sizeof(QT3DSF32),
-                                        "Qt3DSOnscreenTextRenderer");
+                    static_cast<QT3DSF32 *>(QT3DS_ALLOC(m_Foundation.getAllocator(),
+                                                        length * 6 * 5 * sizeof(QT3DSF32),
+                                                        "Qt3DSOnscreenTextRenderer"));
             QT3DSF32 *bufPtr = vertexData;
             if (vertexData) {
                 for (size_t i = 0; i < length; ++i) {
-                    pEntry = &pFont->m_AtlasEntries.find(wText[i])->second;
+                    pEntry = &pFont->m_AtlasEntries.find(wText[uint(i)].unicode())->second;
 
                     if (pEntry) {
                         x1 = advance + pEntry->m_xOffset;

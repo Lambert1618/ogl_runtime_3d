@@ -1281,9 +1281,8 @@ namespace render {
         // If the user has disabled all layer caching this has the side effect of disabling the
         // progressive AA algorithm.
         if (thePrepResult.m_Flags.WasLayerDataDirty()
-            || thePrepResult.m_Flags.WasDirty()
-            || m_Renderer.IsLayerCachingEnabled() == false
-            || thePrepResult.m_Flags.ShouldRenderToTexture()) {
+                || thePrepResult.m_Flags.WasDirty()
+                || m_Renderer.IsLayerCachingEnabled() == false) {
             m_ProgressiveAAPassIndex = 0;
             m_NonDirtyTemporalAAPassIndex = 0;
             needsRender = true;
@@ -1490,8 +1489,15 @@ namespace render {
                 theRenderContext, &NVRenderContext::GetViewport, &NVRenderContext::SetViewport,
                 theNewViewport);
             QT3DSVec4 clearColor(0.0f);
-            if (m_Layer.m_Background == LayerBackground::Color)
+            if (m_Layer.m_Background == LayerBackground::Color) {
                 clearColor = m_Layer.m_ClearColor;
+                // Framebuffer holds premultiplied colors so the clearcolor must be premultiplied
+                if (clearColor.w < 1.0f) {
+                    clearColor.x *= clearColor.w;
+                    clearColor.y *= clearColor.w;
+                    clearColor.z *= clearColor.w;
+                }
+            }
 
             NVRenderContextScopedProperty<QT3DSVec4> __clearColor(
                 theRenderContext, &NVRenderContext::GetClearColor, &NVRenderContext::SetClearColor,
@@ -1776,9 +1782,16 @@ namespace render {
             theContext.SetScissorRect(
                 m_LayerPrepResult->GetLayerToPresentationScissorRect().ToIntegerRect());
             if (m_Layer.m_Background == LayerBackground::Color) {
+                QT3DSVec4 clearColor = m_Layer.m_ClearColor;
+                // Framebuffer holds premultiplied colors so the clearcolor must be premultiplied
+                if (clearColor.w < 1.0f) {
+                    clearColor.x *= clearColor.w;
+                    clearColor.y *= clearColor.w;
+                    clearColor.z *= clearColor.w;
+                }
                 NVRenderContextScopedProperty<QT3DSVec4> __clearColor(
                     theContext, &NVRenderContext::GetClearColor, &NVRenderContext::SetClearColor,
-                    m_Layer.m_ClearColor);
+                    clearColor);
                 theContext.Clear(NVRenderClearValues::Color);
             }
             RenderToViewport();

@@ -1,0 +1,162 @@
+/****************************************************************************
+**
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of Qt 3D Studio.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+
+\title Building \RUNTIME for QNX
+\page building-opengl-runtime-qnx.html
+
+Before you build the \RUNTIME for QNX, you will need to install Qt for QNX and Qt 3D Studio.
+
+\section1 Install Qt for QNX
+
+\list 1
+  \li
+    Download and install QNX SDP 7.0 from the \l {http://www.qnx.com}{QNX software center}.
+  \li
+    Run the Qt online installer. You can get it from \l {https://www.qt.io/download}.
+  \li
+    Select the desired prebuilt QNX component, select \uicontrol Next.
+
+    \image qt-installer-qnx-prebuild.png
+  \li
+    Select the folder where your QNX SDP is installed.
+
+    \image qnx-sdp-folder.png
+  \li
+    Press \uicontrol Next, then press \uicontrol Install. The Qt Creator will now run.
+\endlist
+
+\section1 Build Qt 3D Studio
+
+\list 1
+  \li
+    Clone the Qt 3D Studio repository from \l {https://code.qt.io/qt3dstudio/qt3dstudio.git}.
+    You can clone the repo with the \c {git clone} command:
+
+    \badcode
+    git clone git://code.qt.io/qt3dstudio/qt3dstudio.git
+    \endcode
+
+    \note If you want to use the HTTPS protocol, you can clone the Qt 3D Studio with the following
+    command:
+
+    \badcode
+    git clone https://code.qt.io/qt3dstudio/qt3dstudio.
+    \endcode
+  \li
+    Run the following \c{git submodule} command:
+    \badcode
+    git submodule update --init --recursive
+    \endcode
+  \li
+    Open \c {qt3dstudio.pro} in the Qt Creator. \c {qt3dstudio.pro} is located in the root of the
+    cloned repository.
+
+    \image qt3dstudio-pro.png
+  \li
+    Select desired prebuilt QNX Component.
+
+    \image select-prebuilt-qnx-component.png
+  \li
+    Press \uicontrol{Configure Project}.
+  \li
+    Select the \uicontrol Project tab and \uicontrol{Build Settings}.
+  \li
+    Add a build step with the argument \c install.
+
+    \image add-build-step.png
+  \li
+    From the menu, select \uicontrol{Build > Build Project "qt3dstudio"}.
+\endlist
+
+\section1 Build the \RUNTIME
+
+\list 1
+  \li
+    Clone the \RUNTIME repository from
+    \l{https://code.qt.io/cgit/qt3dstudio/ogl-runtime.git}.
+    You can clone the repo with the \c {git clone} command:
+    \badcode
+    git clone git://code.qt.io/qt3dstudio/ogl-runtime.git
+    \endcode
+
+    \note If you want to use the HTTPS protocol, you can clone the \RUNTIME repo with
+    the following command:
+
+    \badcode
+    git clone https://code.qt.io/qt3dstudio/ogl-runtime.git
+    \endcode
+  \li
+    Run the following \ {git submodule} command:
+
+    \badcode
+    git submodule update --init --recursive
+    \endcode
+  \li
+    Open \c {ogl-runtime.pro} in Qt Creator. \c {ogl-runtime.pro} is located in the root of the
+    cloned repository.
+
+    \image ogl-runtime-pro.png
+  \li
+    Select the desired prebuilt QNX component and select \uicontrol{Configure Project}.
+
+    \image qnx-prebuild.png
+  \li
+    Add a build step with argument \c install.
+
+    \image add-build-step-qnx.png
+  \li
+    From the menu, select \uicontrol{Build > Build Project "opengl-runtime"}.
+  \li
+    The \RUNTIME is installed to the same folder where you have installed the QNX prebuilt
+    components. For example \c{~/Qt5.12/5.12.3/qnx7_x86_64/}.
+\endlist
+
+\section1 Deploy the \RUNTIME
+
+To deploy to the target device, follow the steps below:
+
+\list 1
+  \li
+    In Qt Creator, select \uicontrol{Tools > Options} from the menu.
+  \li
+    Select the \uicontrol Devices tab.
+
+    \image devices-tab.png
+  \li
+    Select \uicontrol Add.
+  \li
+    Select QNX Device, then press \uicontrol {Start Wizard}.
+
+    \image add-qnx-device.png
+  \li
+    Select \uicontrol {Deploy Qt Libraries}. This will also deploy Qt and Qt 3D Studio binaries
+    and libraries.
+\endlist
+
+*/

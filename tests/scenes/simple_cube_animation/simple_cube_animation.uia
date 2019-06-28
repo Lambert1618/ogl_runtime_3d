@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<application xmlns="http://qt.io/qt3dstudio/uia">
+    <assets initial="simple_cube_animation">
+        <presentation id="simple_cube_animation" src="presentations/simple_cube_animation.uip"/>
+        <dataInput metadata="" name="newDataInput" type="Float"/>
+    </assets>
+    <statemachine ref="#logic">
+        <visual-states>
+            <state ref="Initial">
+                <enter>
+                    <goto-slide rel="next" element="main:Scene"/>
+                </enter>
+            </state>
+        </visual-states>
+    </statemachine>
+</application>

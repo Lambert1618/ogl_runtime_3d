@@ -338,8 +338,10 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
                 sourcePaths.push_back(m_bufferManager.GetStringTable().RegisterStr(s));
             QT3DSU32 id = m_batchLoader.LoadImageBatch(sourcePaths, CRegisteredString(),
                                                        this, m_type, m_preferKtx, false);
-            if (id)
+            if (id) {
                 m_batches[id] = m_uploadSet;
+                m_uploadSet.clear();
+            }
         }
         if (!m_uploadWaitSet.isEmpty()) {
             nvvector<CRegisteredString> sourcePaths(m_bufferManager.GetStringTable().GetAllocator(),
@@ -351,9 +353,11 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
             if (id) {
                 m_batchLoader.BlockUntilLoaded(id);
                 m_bufferManager.loadSet(m_uploadWaitSet);
+                m_uploadWaitSet.clear();
             }
         }
-        m_bufferManager.unloadSet(m_deleteSet);
+        if (!m_deleteSet.isEmpty())
+            m_bufferManager.unloadSet(m_deleteSet);
     }
     void add(const QSet<QString> &set, bool wait)
     {
@@ -1619,8 +1623,10 @@ struct SApp : public IApplication
             // else assume main presentation and component:slide
         }
         component = presentation->GetRoot();
-        if (!componentName.isNull() && componentName != component->m_Name)
-            component = component->FindChild(CHash::HashString(qPrintable(componentName)));
+        if (!componentName.isNull() && componentName != component->m_Name) {
+            component = CQmlElementHelper::GetElement(*this, presentation,
+                                                      qPrintable(componentName), nullptr);
+        }
         if (!component) {
             qCWarning(WARNING) << "Could not find slide: " << elementPath;
             return false;

@@ -1236,21 +1236,22 @@ struct SDynamicObjectTranslatorContext : public STranslatorContext
     {
     }
     ~SDynamicObjectTranslatorContext() {}
-    void AddEffectExtendedProperty(const qt3ds::render::dynamic::SPropertyDefinition &thePropDef,
-                                   const char *inExtension, Q3DStudio::EAttributeType inType,
-                                   Qt3DSString &ioStringBuilder, QT3DSU32 inOffset, QT3DSU32 dataOffset)
+    void AddEffectExtendedProperty(const QByteArray &baseName,
+                                   const QByteArray &extension, Q3DStudio::EAttributeType inType,
+                                   QByteArray &ioStringBuilder, QT3DSU32 inOffset,
+                                   QT3DSU32 dataOffset)
     {
-        ioStringBuilder.fromUtf8(thePropDef.m_Name.c_str());
-        ioStringBuilder.append(inExtension);
-        Q3DStudio::INT32 theHash = Q3DStudio::CHash::HashAttribute(
-                    ioStringBuilder.toUtf8().constData());
+        ioStringBuilder = baseName;
+        ioStringBuilder.append(extension);
+        Q3DStudio::INT32 theHash = Q3DStudio::CHash::HashAttribute(ioStringBuilder.constData());
         m_PropertyHashes.insert(
             eastl::make_pair(theHash, SEffectPropertyEntry(inType, inOffset, dataOffset)));
     }
     void BuildPropertyHashes(NVConstDataRef<qt3ds::render::dynamic::SPropertyDefinition> inProperties)
     {
         if (m_PropertyHashes.size() == 0) {
-            qt3ds::foundation::Qt3DSString theNameBuilder;
+            QByteArray nameBuilder;
+            QByteArray baseName;
             for (QT3DSU32 idx = 0, end = inProperties.size(); idx < end; ++idx) {
                 const qt3ds::render::dynamic::SPropertyDefinition &thePropDef = inProperties[idx];
                 switch (thePropDef.m_DataType) {
@@ -1276,35 +1277,62 @@ struct SDynamicObjectTranslatorContext : public STranslatorContext
                     }
                     break;
                 case qt3ds::render::NVRenderShaderDataTypes::QT3DSVec2:
-                    AddEffectExtendedProperty(thePropDef, ".x", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 0);
-                    AddEffectExtendedProperty(thePropDef, ".y", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, sizeof(QT3DSF32));
+                    baseName = QString::fromUtf8(thePropDef.m_Name.c_str()).toUtf8();
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".x"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT, nameBuilder, idx, 0);
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".y"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT, nameBuilder, idx,
+                                              sizeof(QT3DSF32));
                     break;
                 case qt3ds::render::NVRenderShaderDataTypes::QT3DSVec3:
-                    AddEffectExtendedProperty(thePropDef, ".x", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 0);
-                    AddEffectExtendedProperty(thePropDef, ".y", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, sizeof(QT3DSF32));
-                    AddEffectExtendedProperty(thePropDef, ".z", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 2 * sizeof(QT3DSF32));
+                    baseName = QString::fromUtf8(thePropDef.m_Name.c_str()).toUtf8();
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".x"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 0);
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".y"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, sizeof(QT3DSF32));
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".z"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 2 * sizeof(QT3DSF32));
 
-                    AddEffectExtendedProperty(thePropDef, ".r", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 0);
-                    AddEffectExtendedProperty(thePropDef, ".g", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, sizeof(QT3DSF32));
-                    AddEffectExtendedProperty(thePropDef, ".b", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 2 * sizeof(QT3DSF32));
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".r"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 0);
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".g"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, sizeof(QT3DSF32));
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".b"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 2 * sizeof(QT3DSF32));
                     break;
                 case qt3ds::render::NVRenderShaderDataTypes::QT3DSVec4:
-                    AddEffectExtendedProperty(thePropDef, ".x", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 0);
-                    AddEffectExtendedProperty(thePropDef, ".y", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, sizeof(QT3DSF32));
-                    AddEffectExtendedProperty(thePropDef, ".z", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 2 * sizeof(QT3DSF32));
-                    AddEffectExtendedProperty(thePropDef, ".w", Q3DStudio::ATTRIBUTETYPE_FLOAT,
-                                              theNameBuilder, idx, 3 * sizeof(QT3DSF32));
+                    baseName = QString::fromUtf8(thePropDef.m_Name.c_str()).toUtf8();
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".x"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 0);
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".y"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, sizeof(QT3DSF32));
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".z"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 2 * sizeof(QT3DSF32));
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".w"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 3 * sizeof(QT3DSF32));
+
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".r"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 0);
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".g"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, sizeof(QT3DSF32));
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".b"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 2 * sizeof(QT3DSF32));
+                    AddEffectExtendedProperty(baseName, QByteArrayLiteral(".a"),
+                                              Q3DStudio::ATTRIBUTETYPE_FLOAT,
+                                              nameBuilder, idx, 3 * sizeof(QT3DSF32));
                     break;
                 case qt3ds::render::NVRenderShaderDataTypes::NVRenderTexture2DPtr:
                 case qt3ds::render::NVRenderShaderDataTypes::NVRenderImage2DPtr:

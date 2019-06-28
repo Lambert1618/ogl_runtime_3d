@@ -40,7 +40,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype SceneElement
     \instantiates Q3DSSceneElement
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Controls the special Scene or Component scene objects in a Qt 3D
     Studio presentation.
@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
     \note The functionality of Q3DSSceneElement is equivalent to
     Q3DSPresentation::goToTime() and Q3DSPresentation::goToSlide().
 
-    \sa Q3DSPresentation, Q3DSWidget, Q3DSSurfaceViewer, Q3DSElement
+    \sa Q3DSPresentation, Q3DSSurfaceViewer, Q3DSElement
  */
 
 /*!
@@ -156,11 +156,10 @@ void Q3DSSceneElement::setCurrentSlideIndex(int currentSlideIndex)
 }
 
 /*!
-    \property int SceneElement::previousSlideIndex
+    \qmlproperty int SceneElement::previousSlideIndex
+    \readonly
 
     Holds the index of the previously active slide of the tracked time context.
-
-    Note: This property is read-only.
 */
 /*!
     \property Q3DSSceneElement::previousSlideIndex
@@ -224,11 +223,10 @@ void Q3DSSceneElement::setCurrentSlideName(const QString &currentSlideName)
 }
 
 /*!
-    \qmlmproperty string SceneElement::previousSlideName
+    \qmlproperty string SceneElement::previousSlideName
+    \readonly
 
     Holds the name of the previously active slide of the tracked time context.
-
-    Note: This property is read-only.
 */
 /*!
     \property Q3DSSceneElement::previousSlideName
@@ -257,7 +255,7 @@ void Q3DSSceneElement::goToSlide(bool next, bool wrap)
 
 /*!
     Moves the timeline for a time context (a Scene or a Component element) to a
-    specific position. The position is given in seconds in \a timeSeconds.
+    specific position. The position is given in seconds in \a time.
  */
 void Q3DSSceneElement::goToTime(float time)
 {

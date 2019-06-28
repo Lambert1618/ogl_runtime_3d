@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>presentation/presentations/presentation.uip</file>
+        <file>presentation/presentation.uia</file>
+        <file>presentation/maps/materials/shadow.png</file>
+        <file>presentation/maps/materials/spherical_checker.png</file>
+        <file>demo.mtl</file>
+        <file>demo.obj</file>
+        <file>presentation/materials/Red.materialdef</file>
+        <file>presentation/materials/Copper.materialdef</file>
+        <file>presentation/materials/copper.shader</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="3" >
+	<Project >
+        <ProjectSettings author="" company="" presentationWidth="800" presentationHeight="600" maintainAspect="False" >
+			<CustomColors count="16" >#ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff</CustomColors>
+		</ProjectSettings>
+		<Graph >
+            <Scene id="Scene" backgroundcolor="0 1 0" controlledproperty="$animationInput @timeline $slideInput @slide" >
+				<Layer id="Layer" >
+					<Camera id="Camera" />
+					<Light id="Light" />
+					<Component id="Component" >
+						<Text id="Text" />
+					</Component>
+					<Model id="Rectangle" >
+						<Material id="Default" name="Default" >
+							<Image id="Default_diffusemap" />
+						</Material>
+					</Model>
+					<Text id="Text_001" />
+					<Model id="Rectangle2" >
+						<Material id="Default_001" name="Default" />
+					</Model>
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene" >
+				<Add ref="#Layer" background="Transparent" sourcepath="" />
+				<Add ref="#Camera" />
+				<Add ref="#Light" />
+				<Add ref="#Rectangle" name="Rectangle" sourcepath="#Rectangle" >
+					<AnimationTrack property="position.x" type="EaseInOut" >0 -327.165 100 100 10 351.542 100 100</AnimationTrack>
+					<AnimationTrack property="position.y" type="EaseInOut" >0 -6.41502 100 100 10 -17.962 100 100</AnimationTrack>
+					<AnimationTrack property="position.z" type="EaseInOut" >0 0 100 100 10 0 100 100</AnimationTrack>
+				</Add>
+				<Add ref="#Default" diffusemap="#Default_diffusemap" />
+				<Add ref="#Default_diffusemap" sourcepath="maps/QT-symbol.png" subpresentation="subpres" />
+				<State id="Scene-Slide1" name="Slide1" initialplaystate="Pause" >
+                                        <Add ref="#Component" name="Component" controlledproperty="$animationInput @timeline" />
+					<Add ref="#Rectangle2" name="Rectangle2" position="0 0 100" scale="9999 9999 99999" sourcepath="#Rectangle" />
+					<Add ref="#Default_001" >
+						<AnimationTrack property="diffuse.x" type="EaseInOut" >0 1 100 100 4.487 1 100 100 5.5 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="diffuse.y" type="EaseInOut" >0 0 100 100 4.487 0 100 100 5.5 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="diffuse.z" type="EaseInOut" >0 0 100 100 4.487 0 100 100 5.5 1 100 100 10 1 100 100</AnimationTrack>
+					</Add>
+				</State>
+				<State id="Scene-Slide2" name="Slide2" initialplaystate="Play" playmode="Stop at end" playthroughto="Previous" >
+					<Add ref="#Text_001" name="Text" font="TitilliumWeb-Regular" position="-442.635 -193.733 0" textstring="Second slide" />
+				</State>
+			</State>
+			<State name="Master Slide" component="#Component" >
+				<State id="Component-Slide1" name="Slide1" initialplaystate="Pause" >
+                                        <Add ref="#Text" name="Text" controlledproperty="$animationInput textstring" font="TitilliumWeb-Regular" position="-5.132 137.281 0" >
+						<AnimationTrack property="rotation.x" type="EaseInOut" >0 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="rotation.y" type="EaseInOut" >0 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="rotation.z" type="EaseInOut" >0 0 100 100 10 -360 100 100</AnimationTrack>
+					</Add>
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>

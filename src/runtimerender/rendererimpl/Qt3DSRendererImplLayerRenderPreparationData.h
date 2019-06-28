@@ -313,12 +313,12 @@ namespace render {
 
         SDefaultMaterialPreparationResult
         PrepareDefaultMaterialForRender(SDefaultMaterial &inMaterial,
-                                        SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity,
-                                        bool inClearMaterialFlags);
+                                        SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity);
 
         SDefaultMaterialPreparationResult
         PrepareCustomMaterialForRender(SCustomMaterial &inMaterial,
-                                       SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity);
+                                       SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity,
+                                       bool alreadyDirty);
 
         bool PrepareModelForRender(SModel &inModel, const QT3DSMat44 &inViewProjection,
                                    const Option<SClippingFrustum> &inClipFrustum,

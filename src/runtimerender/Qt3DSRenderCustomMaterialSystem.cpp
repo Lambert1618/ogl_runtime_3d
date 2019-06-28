@@ -1975,7 +1975,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
     // TODO - return more information, specifically about transparency (object is transparent,
     // object is completely transparent
     bool PrepareForRender(const SModel & /*inModel*/, const SRenderSubset & /*inSubset*/,
-                                  SCustomMaterial &inMaterial, bool clearMaterialDirtyFlags) override
+                          SCustomMaterial &inMaterial) override
     {
         SMaterialClass *theMaterialClass = GetMaterialClass(inMaterial.m_ClassName);
         if (theMaterialClass == NULL) {
@@ -1990,8 +1990,6 @@ struct SMaterialSystem : public ICustomMaterialSystem
         inMaterial.m_hasVolumetricDF = false;
 
         bool wasDirty = inMaterial.IsDirty() || theMaterialClass->m_AlwaysDirty;
-        if (clearMaterialDirtyFlags)
-            inMaterial.UpdateDirtyForFrame();
 
         return wasDirty;
     }

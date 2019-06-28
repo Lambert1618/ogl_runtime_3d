@@ -38,9 +38,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype DataInput
     \instantiates Q3DSDataInput
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Controls a data input entry in a Qt 3D Studio presentation.
+
     This class is a convenience class for controlling a data input in a presentation.
     DataInput provides a clean contract between the presentation design and the code.
     It hides the presentation details from the code while providing a contractual access
@@ -49,11 +50,40 @@ QT_BEGIN_NAMESPACE
     multiple aspects of the design (e.g. DataInput for speed can change the color of
     the speedometer, angle of the needle).
 
+    As an example:
+
+    \qml
+        Studio3D {
+            ...
+            Presentation {
+                id: presentation
+                ...
+                property string text: ""
+                DataInput {
+                    name: "inputForSomeTextNode"
+                    value: presentation.text
+                }
+            }
+        }
+
+        Button {
+            onClicked: presentation.text = "Hello World"
+        }
+    \endqml
+
+    The example assumes that a data input connection was made in Qt 3D Studio
+    presentation using Qt 3D Studio editor between the \c textstring property of
+    target property and a data input name \c inputForSomeTextNode. As the value
+    is now set via a property, the full set of QML property bindings techniques
+    are available.
+
     \note There is a performance cost for each registered DataInput, so try to avoid
     creating unnecessary DataInputs.
 
-    \sa Presentation, DataOutput, Presentation::slideExited, Presentation::slideEntered
-    \sa Presentation::customSignalEmitted
+    \sa Presentation, DataOutput
+    \sa {QtStudio3D.OpenGL::Presentation::slideExited()}{Presentation.slideExited()}
+    \sa {QtStudio3D.OpenGL::Presentation::slideEntered()}{Presentation.slideEntered()}
+    \sa {QtStudio3D.OpenGL::Presentation::customSignalEmitted()}{Presentation.customSignalEmitted()}
 */
 
 /*!
@@ -82,6 +112,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \dontdocument QMetaTypeId
+*/
+
+/*!
     \internal
  */
 Q3DSDataInput::Q3DSDataInput(QObject *parent)
@@ -101,6 +135,8 @@ Q3DSDataInput::Q3DSDataInput(const QString &name, QObject *parent)
 }
 
 /*!
+    \fn Q3DSDataInput::Q3DSDataInput(Q3DSPresentation *presentation, const QString &name, QObject *parent)
+
     Constructs a Q3DSDataInput instance and initializes the \a name. The
     constructed instance is automatically associated with the specified \a
     presentation. An optional \a parent object can be specified.
@@ -257,6 +293,8 @@ bool Q3DSDataInput::isValid() const
 }
 
 /*!
+    \qmlmethod string DataInput::metadata(string key)
+
     Returns the metadata defined for this datainput with metadata \a key.
 
     Metadata is user-defined key-value table that can be used, for example, to better describe the
@@ -265,8 +303,8 @@ bool Q3DSDataInput::isValid() const
 
     \note Datainput metadata is read-only.
  */
+
 /*!
-    \qmlmethod string DataInput::metadata
     Returns the metadata defined for this datainput with metadata \a key.
 
     Metadata is user-defined key-value table that can be used, for example, to better describe the
@@ -288,13 +326,6 @@ QString Q3DSDataInput::metadata(const QString &key) const
 /*!
     Returns the metadata keys defined for this datainput.
 
-    \sa metadata
- */
-/*!
-    \qmlmethod var DataInput::metadataKeys
-    Returns the metadata keys defined for this datainput.
-
-    \note Datainput metadata is read-only.
     \sa metadata
  */
 QStringList Q3DSDataInput::metadataKeys() const
@@ -360,50 +391,6 @@ void Q3DSDataInputPrivate::setCommandQueue(CommandQueue *queue)
         setValue(m_value);
 }
 
-
-/*!
-    \qmltype DataInput
-    \instantiates Q3DSDataInput
-    \inqmlmodule QtStudio3D
-    \ingroup OpenGLRuntime
-
-    \brief Controls a data input entry in a Qt 3D Studio presentation.
-
-    This type is a convenience for controlling a data in a presentation. Its functionality is
-    equivalent to \c{Presentation::setDataInputValue()}, however it has a big advantage
-    of being able to use QML property bindings, thus avoiding the need to having to resort
-    to a JavaScript function call for every value change.
-
-    As an example:
-
-    \qml
-        Studio3D {
-            ...
-            Presentation {
-                id: presentation
-                ...
-                property string text: ""
-                DataInput {
-                    name: "inputForSomeTextNode"
-                    value: presentation.text
-                }
-            }
-        }
-
-        Button {
-            onClicked: presentation.text = "Hello World"
-        }
-    \endqml
-
-    The example assumes that a data input connection was made in Qt 3D Studio
-    presentation using Qt 3D Studio editor between the \c textstring property of
-    target property and a data input name \c inputForSomeTextNode. As the value
-    is now set via a property, the full set of QML property bindings techniques
-    are available.
-
-    \sa Studio3D, Presentation
-*/
-
 /*!
     \qmlproperty string DataInput::name
 
@@ -444,6 +431,14 @@ void Q3DSDataInputPrivate::setCommandQueue(CommandQueue *queue)
 
     This property is applicable only to data input type \e {Ranged Number}. For other
     types, value returned is zero.
+
+    \note This value is read-only.
+*/
+
+/*!
+    \qmlproperty list<string> DataInput::metadataKeys
+
+    Contains the metadata keys specified for this datainput.
 
     \note This value is read-only.
 */

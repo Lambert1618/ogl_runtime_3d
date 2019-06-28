@@ -33,9 +33,9 @@
 /*!
     \qmltype SubPresentationSettings
     \instantiates Q3DSSubPresentationSettings
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
-    \brief
+    \brief Settings for subpresentations.
 
     \sa Studio3D, Presentation, QmlStream
 */
@@ -44,7 +44,6 @@
     \inmodule OpenGLRuntime
     \since Qt 3D Studio 2.0
     \brief Settings for subpresentations.
-    \param parent
 
     \sa Q3DSPresentation, Q3DSQmlStream
  */
@@ -71,6 +70,9 @@ QQmlListProperty<Q3DSQmlStream> Q3DSSubPresentationSettings::qmlStreams()
     return QQmlListProperty<Q3DSQmlStream>(this, m_list);
 }
 
+/*!
+    Returns the list of QML streams to be used as subpresentations.
+*/
 QList<Q3DSQmlStream *> Q3DSSubPresentationSettings::qmlStreamsList()
 {
     return m_list;

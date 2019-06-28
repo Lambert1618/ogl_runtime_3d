@@ -34,9 +34,10 @@
 /*!
     \qmltype DataOutput
     \instantiates Q3DSDataOutput
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Provides notifications from data output entries in Qt 3D Studio presentation.
+
     This class is a convenience class for listening for changes in the Qt 3D Studio
     presentation attributes. DataOutput provides a clean contract between the presentation
     design and the code. It hides the presentation details from the code while providing a
@@ -59,6 +60,7 @@
     \inmodule OpenGLRuntime
     \since Qt 3D Studio 2.4
     \brief Provides notifications from data output entries in Qt 3D Studio presentation.
+
     This class is a convenience class for listening for changes in the Qt 3D Studio
     presentation attributes. DataOutput provides a clean contract between the presentation
     design and the code. It hides the presentation details from the code while providing a
@@ -66,8 +68,8 @@
     (e.g. movement of an element in the presentation due to timeline animation).
 
     DataOutput can be attached to same attributes in the design as DataInput is, including
-    presentation timeline. Only excaption is slide changes Slide changes are already notified
-    through \c{Q3DSPresentation::slideEntered} and \c{Q3DSPresentation::slideExited} signals.
+    presentation timeline. Only exception is slide changes (slide changes are already notified
+    through \c{Q3DSPresentation::slideEntered} and \c{Q3DSPresentation::slideExited} signals).
 
     \note There is a performance cost for each registered DataOutput, so try to avoid
     creating unnecessary DataOutputs.
@@ -135,7 +137,8 @@ void Q3DSDataOutput::setName(const QString &name)
 }
 
 /*!
-    \qmlproperty DataOutput::value
+    \qmlproperty var DataOutput::value
+    \readonly
 
     Contains the read-only value of the controlled data output element in the
     presentation.
@@ -161,17 +164,17 @@ QVariant Q3DSDataOutput::value() const
 }
 
 /*!
- * \qmlsignal DataOutput::valueChanged
-    Emitted when the value of the observed DataOutput has changed in the
-    presentation.
-    \param newValue The new value of the observed DataOutput.
+    \qmlsignal DataOutput::valueChanged(var newValue)
+
+    Emitted when the value of the observed DataOutput has changed to
+    \a newValue in the presentation.
  */
 
 /*!
-    \fn Q3DSDataOutput::valueChanged
-    Emitted when the value of the observed DataOutput has changed in the
-    presentation.
-    \param newValue The new value of the observed DataOutput.
+    \fn Q3DSDataOutput::valueChanged(const QVariant &newValue)
+
+    Emitted when the value of the observed DataOutput has changed to
+    \a newValue in the presentation.
  */
 
 /*!

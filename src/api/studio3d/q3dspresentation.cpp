@@ -79,9 +79,54 @@ QT_BEGIN_NAMESPACE
     information is available regardless.
 
     \note This class should not be instantiated directly when working with the
-    C++ APIs. Q3DSSurfaceViewer and Q3DSWidget create a Q3DSPresentation
+    C++ APIs. Q3DSSurfaceViewer creates a Q3DSPresentation
     instance implicitly. This can be queried via
-    Q3DSSurfaceViewer::presentation() or Q3DSWidget::presentation().
+    Q3DSSurfaceViewer::presentation().
+ */
+
+/*!
+    \qmltype Presentation
+    \instantiates Q3DSPresentationItem
+    \inqmlmodule QtStudio3D.OpenGL
+    \ingroup OpenGLRuntime
+    \inherits Q3DSPresentation
+    \keyword Studio3D
+
+    \brief Represents a Qt 3D Studio presentation.
+
+    This item provides properties and methods for controlling a
+    presentation.
+
+    Qt 3D Studio supports multiple presentations in one project. There
+    is always a main presentation and zero or more
+    sub-presentations. The sub-presentations are composed into the
+    main presentations either as contents of Qt 3D Studio layers or as
+    texture maps.
+
+    In the filesystem each presentation corresponds to one \c{.uip}
+    presentation file. When present, the \c{.uia} project file ties
+    these together by specifying a name for each of the
+    (sub-)presentations and specifies which one is the main one.
+
+    The \c{.uia} project also defines \l{DataInput}s and
+    \l{DataOutput}s that are exported by the presentations.
+    \l{DataInput}s provide a way to provide input to the presentation
+    to e.g. control a timeline of a subpresentation from code.
+    \l{DataOutput}s provide a way to get notified when an attribute
+    is changed in the presentation by animation timeline,
+    by behavior scripts or by a \l{DataInput}.
+
+    The Presentation type handles child objects of the types \l Element, \l
+    SceneElement, \l DataInput, \l DataOutput, and \l SubPresentationSettings specially. These
+    will get automatically associated with the presentation and can control
+    certain aspects of it from that point on.
+
+    From the API point of view Presentation corresponds to the
+    main presentation. The source property can refer either to a
+    \c{.uia} or \c{.uip} file. When specifying a file with \c{.uip}
+    extension and a \c{.uia} is present with the same name, the
+    \c{.uia} is loaded automatically and thus sub-presentation
+    information is available regardless.
  */
 
 /*!
@@ -299,7 +344,7 @@ Q3DSDataOutput *Q3DSPresentation::registeredDataOutput(const QString &name) cons
     interface to set a datainput value using datainput name, or call Q3DSDataInput::setValue
     directly for a specific datainput.
 
-    \sa setDataInputValue
+    \sa setDataInputValue()
     \sa Q3DSDataInput
  */
 QVector<Q3DSDataInput *> Q3DSPresentation::dataInputs() const
@@ -327,7 +372,7 @@ QVector<Q3DSDataInput *> Q3DSPresentation::dataInputs() const
     interface to set a datainput value using datainput name, or call Q3DSDataInput::setValue
     directly for a specific datainput.
 
-    \sa setDataInputValue
+    \sa setDataInputValue()
     \sa Q3DSDataInput
  */
 QVariantList Q3DSPresentation::getDataInputs() const
@@ -342,19 +387,19 @@ QVariantList Q3DSPresentation::getDataInputs() const
 }
 
 /*!
-    Returns a list of datainputs defined for this presentation that have the specified
-    \a metadataKey.
-
-    \sa setDataInputValue
-    \sa Q3DSDataInput
- */
-
-/*!
-    \qmlmethod var Presentation::getDataInputs
+    \qmlmethod var Presentation::getDataInputs(string metadataKey)
     Returns a list of datainputs defined for this presentation that have the specified
     \a metadataKey.
 
     \sa DataInput
+ */
+
+/*!
+    Returns a list of datainputs defined for this presentation that have the specified
+    \a metadataKey.
+
+    \sa setDataInputValue()
+    \sa Q3DSDataInput
  */
 QVariantList Q3DSPresentation::getDataInputs(const QString &metadataKey) const
 {
@@ -371,7 +416,7 @@ QVariantList Q3DSPresentation::getDataInputs(const QString &metadataKey) const
     Returns a list of datainputs defined for this presentation that have the specified
     \a metadataKey.
 
-    \sa setDataInputValue
+    \sa setDataInputValue()
     \sa Q3DSDataInput
  */
 QVector<Q3DSDataInput *> Q3DSPresentation::dataInputs(const QString &metadataKey) const
@@ -405,7 +450,7 @@ QVector<Q3DSDataOutput *> Q3DSPresentation::dataOutputs() const
     \c{valueChanged()} signal in the required \l{DataOutput}s to get notified
     when the value tracked by the DataOutput is changed.
 
-    \sa SDataOutput
+    \sa Q3DSDataOutput
  */
 /*!
  * \brief Q3DSPresentation::getDataOutputs Returns \l{DataOutput}s.
@@ -465,16 +510,44 @@ void Q3DSPresentation::setDelayedLoading(bool enable)
 }
 
 /*!
-    \qmlmethod Presentation::preloadSlide
-    Preloads slide resources to memory. All resources required by the given slide will be
-    loaded in the background. This function has effect only when delayed loading is enabled.
-    \param elementPath
+    \qmlmethod Presentation::preloadSlide(string elementPath)
+
+    Preloads slide resources identified by \a elementPath to memory. All resources required
+    by the given slide will load in the background.
+
+    \a elementPath is the identifier of a slide in a presentation and component.
+
+    The presentation, component and slide are separated by ":", for example
+    My-presentation:Scene.Layer.Speedometer:Main-slide.
+
+    If \a elementPath does not contain any ":", then it specifies the name of a slide in the
+    main presentation and main component. If it contains one ":", it specifies component:slide
+    in the main presentation, and if it contains two ":", it
+    specifies presentation:component:slide.
+
+    If you want to indicate the main slide in a sub-presentation, you will need to specify the
+    full path. For example My-sub-presentation:Scene:Main-slide.
+
+    This function has effect only when delayed loading is enabled.
  */
 /*!
-    \brief Q3DSPresentation::preloadSlide
-    Preloads slide resources to memory. All resources required by the given slide will be
-    loaded in the background. This function has effect only when delayed loading is enabled.
-    \param elementPath
+    Preloads slide resources identified by \a elementPath to memory. All resources required
+    by the given slide will load in the background.
+
+    \a elementPath is the identifier of a slide in a presentation and component.
+
+    The presentation, component and slide are separated by ":", for example
+    My-presentation:Scene.Layer.Speedometer:Main-slide.
+
+    If \a elementPath does not contain any ":", then it specifies the name of a slide in the
+    main presentation and main component. If it contains one ":", it specifies component:slide
+    in the main presentation, and if it contains two ":", it
+    specifies presentation:component:slide.
+
+    If you want to indicate the main slide in a sub-presentation, you will need to specify the
+    full path. For example My-sub-presentation:Scene:Main-slide.
+
+    This function has effect only when delayed loading is enabled.
  */
 void Q3DSPresentation::preloadSlide(const QString &elementPath)
 {
@@ -485,17 +558,45 @@ void Q3DSPresentation::preloadSlide(const QString &elementPath)
 }
 
 /*!
-    \qmlmethod Presentation::unloadSlide
-    Unloads slide resources from memory. If the slide is current, then the resources are unloaded
-    when the slide is changed. This function has effect only when delayed loading is enabled.
-    \param elementPath
+    \qmlmethod Presentation::unloadSlide(string elementPath)
+
+    Unloads slide resources identified by \a elementPath from memory. If the
+    slide is current, the resources are unloaded when the slide is changed.
+
+    \a elementPath is the identifier of a slide in a presentation and component.
+
+    The presentation, component and slide are separated by ":", for example
+    my-presentation:Scene.Layer.Speedometer:Main-slide.
+
+    If \a elementPath does not contain any ":", then it specifies the name of a slide in the
+    main presentation and main component. If it contains one ":", it specifies component:slide
+    in the main presentation, and if it contains two ":", it
+    specifies presentation:component:slide.
+
+    If you want to indicate the main slide in a sub-presentation, you will need to specify the
+    full path. For example My-sub-presentation:Scene:Main-slide.
+
+    This function has effect only when delayed loading is enabled.
  */
 
 /*!
-    \brief Q3DSPresentation::unloadSlide
-    Unloads slide resources from memory. If the slide is current, then the resources are unloaded
-    when the slide is changed. This function has effect only when delayed loading is enabled.
-    \param elementPath
+    Unloads slide resources identified by \a elementPath from memory. If the
+    slide is current, the resources are unloaded when the slide is changed.
+
+    \a elementPath is the identifier of a slide in a presentation and component.
+
+    The presentation, component and slide are separated by ":", for example
+    My-presentation:speedometer:main-slide.
+
+    If \a elementPath does not contain any ":", then it specifies the name of a slide in the
+    main presentation and main component. If it contains one ":", it specifies component:slide
+    in the main presentation, and if it contains two ":", it
+    specifies presentation:Scene.Layer.Speedometer:Main-slide.
+
+    If you want to indicate the main slide in a sub-presentation, you will need to specify the
+    full path. For example My-sub-presentation:Scene:Main-slide.
+
+    This function has effect only when delayed loading is enabled.
  */
 void Q3DSPresentation::unloadSlide(const QString &elementPath)
 {
@@ -506,7 +607,7 @@ void Q3DSPresentation::unloadSlide(const QString &elementPath)
 }
 
 /*!
-    This API is for backwards compatibility. We recommend using \l{DataInput}s to control
+    This function is for backwards compatibility. We recommend using \l{DataInput}s to control
     slide changes. \l{DataInput} provides stronger contract between the design and
     code as it avoids use of elementPath (a reference to design's internal structure).
 
@@ -531,7 +632,7 @@ void Q3DSPresentation::goToSlide(const QString &elementPath, unsigned int index)
 }
 
 /*!
-    This API is for backwards compatibility. We recommend using \l{DataInput}s to control
+    This function is for backwards compatibility. We recommend using \l{DataInput}s to control
     slide changes. \l{DataInput} provides stronger contract between the design and
     code as it avoids use of elementPath (a reference to design's internal structure).
 
@@ -557,7 +658,7 @@ void Q3DSPresentation::goToSlide(const QString &elementPath, const QString &name
 }
 
 /*!
-    This API is for backwards compatibility. We recommend using \l{DataInput}s to control
+    This function is for backwards compatibility. We recommend using \l{DataInput}s to control
     slide changes. \l{DataInput} provides stronger contract between the design and
     code as it avoids use of elementPath (a reference to design's internal structure).
 
@@ -584,12 +685,12 @@ void Q3DSPresentation::goToSlide(const QString &elementPath, bool next, bool wra
 }
 
 /*!
-    This API is for backwards compatibility. We recommend using \l{DataInput}s to control
+    This function is for backwards compatibility. We recommend using \l{DataInput}s to control
     slide changes. \l{DataInput} provides stronger contract between the design and
     code as it avoids use of elementPath (a reference to design's internal structure).
 
     Moves the timeline for a time context (a Scene or a Component element) to a
-    specific position. The position is given in seconds in \a timeSeconds.
+    specific position. The position is given in seconds in \a time.
 
     If \a elementPath points to a time context, that element is
     controlled. For all other element types the time context owning
@@ -624,7 +725,7 @@ void Q3DSPresentation::goToTime(const QString &elementPath, float time)
 }
 
 /*!
-    This API is for backwards compatibility. We recommend using \l{DataInput}s to control
+    This function is for backwards compatibility. We recommend using \l{DataInput}s to control
     attributes in the presentation. \l{DataInput} provides stronger contract between the
     design and code as it avoids use of elementPath (a reference to design's
     internal structure).
@@ -778,12 +879,18 @@ void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &va
 
     The element is ready for use once elementsCreated() signal is received for it.
 
-    \sa createElements
-    \sa createMaterial
-    \sa createMesh
-    \sa elementsCreated
-    \sa setAttribute
-    \sa dataInputs
+    \note If your application is creating and deleting a lot of elements, it is recommended that
+    you reuse previously deleted element names when creating new elements.
+    This is because the internal string table implementation of Qt 3D Studio ogl-runtime doesn't
+    support removing strings for performance reasons, so always using new unique names
+    will leak memory.
+
+    \sa createElements()
+    \sa createMaterial()
+    \sa createMesh()
+    \sa elementsCreated()
+    \sa setAttribute()
+    \sa dataInputs()
  */
 void Q3DSPresentation::createElement(const QString &parentElementPath, const QString &slideName,
                                      const QHash<QString, QVariant> &properties)
@@ -798,8 +905,8 @@ void Q3DSPresentation::createElement(const QString &parentElementPath, const QSt
     specified with \a slideName. Element properties are specified in \a properties.
     For more details, see createElement().
 
-    \sa createElement
-    \sa elementsCreated
+    \sa createElement()
+    \sa elementsCreated()
  */
 void Q3DSPresentation::createElements(const QString &parentElementPath, const QString &slideName,
                                       const QVector<QHash<QString, QVariant>> &properties)
@@ -820,8 +927,8 @@ void Q3DSPresentation::createElements(const QString &parentElementPath, const QS
     Deleting elements is supported only for elements that have been dynamically created with
     createElement() or createElements().
 
-    \sa deleteElements
-    \sa createElement
+    \sa deleteElements()
+    \sa createElement()
  */
 void Q3DSPresentation::deleteElement(const QString &elementPath)
 {
@@ -835,7 +942,7 @@ void Q3DSPresentation::deleteElement(const QString &elementPath)
     Deleting elements is supported only for elements that have been dynamically created with
     createElement() or createElements().
 
-    \sa deleteElement
+    \sa deleteElement()
  */
 void Q3DSPresentation::deleteElements(const QStringList &elementPaths)
 {
@@ -852,6 +959,7 @@ void Q3DSPresentation::deleteElements(const QStringList &elementPaths)
 
 /*!
     \qmlproperty list<string> Presentation::createdElements
+    \readonly
 
     This property contains a list of all dynamically created elements on this presentation.
 
@@ -859,8 +967,8 @@ void Q3DSPresentation::deleteElements(const QStringList &elementPaths)
 
     \note Elements can only be dynamically created via C++ API.
 
-    \sa createElement
-    \sa createElements
+    \sa createElement()
+    \sa createElements()
 */
 
 /*!
@@ -870,8 +978,8 @@ void Q3DSPresentation::deleteElements(const QStringList &elementPaths)
 
     This property is read-only.
 
-    \sa createElement
-    \sa createElements
+    \sa createElement()
+    \sa createElements()
 */
 QStringList Q3DSPresentation::createdElements() const
 {
@@ -898,15 +1006,21 @@ QStringList Q3DSPresentation::createdElements() const
 
     The material is ready for use once materialsCreated() signal is received for it.
 
+    \note If your application is creating and deleting a lot of materials, it is recommended that
+    you reuse previously deleted material names when creating new materials.
+    This is because the internal string table implementation of Qt 3D Studio ogl-runtime doesn't
+    support removing strings for performance reasons, so always using new unique names
+    will leak memory.
+
     \note Creating materials that utilise custom shaders with mipmapped textures can in some cases
     corrupt the textures on other elements if the same textures are already used by existing basic
     materials in the scene, as basic materials do not create mipmaps for their textures.
     Typical symptom of this is black texture on another element after creating a new element using
     the custom material.
 
-    \sa createMaterials
-    \sa createElement
-    \sa materialsCreated
+    \sa createMaterials()
+    \sa createElement()
+    \sa materialsCreated()
  */
 void Q3DSPresentation::createMaterial(const QString &materialDefinition,
                                       const QString &subPresId)
@@ -923,8 +1037,8 @@ void Q3DSPresentation::createMaterial(const QString &materialDefinition,
 
     For more details, see createMaterial().
 
-    \sa createMaterial
-    \sa materialsCreated
+    \sa createMaterial()
+    \sa materialsCreated()
  */
 void Q3DSPresentation::createMaterials(const QStringList &materialDefinitions,
                                        const QString &subPresId)
@@ -947,8 +1061,8 @@ void Q3DSPresentation::createMaterials(const QStringList &materialDefinitions,
     Deleting materials is supported only for materials that have been dynamically created with
     createMaterial() or createMaterials().
 
-    \sa deleteMaterials
-    \sa createMaterial
+    \sa deleteMaterials()
+    \sa createMaterial()
  */
 void Q3DSPresentation::deleteMaterial(const QString &materialName)
 {
@@ -965,7 +1079,7 @@ void Q3DSPresentation::deleteMaterial(const QString &materialName)
     Deleting materials is supported only for materials that have been dynamically created with
     createMaterial() or createMaterials().
 
-    \sa deleteMaterial
+    \sa deleteMaterial()
  */
 void Q3DSPresentation::deleteMaterials(const QStringList &materialNames)
 {
@@ -982,6 +1096,7 @@ void Q3DSPresentation::deleteMaterials(const QStringList &materialNames)
 
 /*!
     \qmlproperty list<string> Presentation::createdMaterials
+    \readonly
 
     This property contains a list of all dynamically created materials on this presentation.
 
@@ -989,8 +1104,8 @@ void Q3DSPresentation::deleteMaterials(const QStringList &materialNames)
 
     \note Materials can only be dynamically created via C++ API.
 
-    \sa createMaterial
-    \sa createMaterials
+    \sa createMaterial()
+    \sa createMaterials()
 */
 
 /*!
@@ -1000,8 +1115,8 @@ void Q3DSPresentation::deleteMaterials(const QStringList &materialNames)
 
     This property is read-only.
 
-    \sa createMaterial
-    \sa createMaterials
+    \sa createMaterial()
+    \sa createMaterials()
 */
 QStringList Q3DSPresentation::createdMaterials() const
 {
@@ -1014,9 +1129,9 @@ QStringList Q3DSPresentation::createdMaterials() const
 
     The mesh is ready for use once meshesCreated() signal is received for it.
 
-    \sa createElement
-    \sa createMeshes
-    \sa meshesCreated
+    \sa createElement()
+    \sa createMeshes()
+    \sa meshesCreated()
 */
 void Q3DSPresentation::createMesh(const QString &meshName, const Q3DSGeometry &geometry)
 {
@@ -1031,8 +1146,14 @@ void Q3DSPresentation::createMesh(const QString &meshName, const Q3DSGeometry &g
 
     The ownership of supplied geometries stays with the caller.
 
-    \sa createMesh
-    \sa meshesCreated
+    \note If your application is creating and deleting a lot of meshes, it is recommended that
+    you reuse previously deleted mesh names when creating new materials.
+    This is because the internal string table implementation of \RUNTIME doesn't
+    support removing strings for performance reasons, so always using new unique names
+    will leak memory.
+
+    \sa createMesh()
+    \sa meshesCreated()
 */
 void Q3DSPresentation::createMeshes(const QHash<QString, const Q3DSGeometry *> &meshData)
 {
@@ -1058,8 +1179,8 @@ void Q3DSPresentation::createMeshes(const QHash<QString, const Q3DSGeometry *> &
     Deleting meshes is supported only for meshes that have been dynamically created with
     createMesh() or createMeshes().
 
-    \sa deleteMeshes
-    \sa createMesh
+    \sa deleteMeshes()
+    \sa createMesh()
  */
 void Q3DSPresentation::deleteMesh(const QString &meshName)
 {
@@ -1073,7 +1194,7 @@ void Q3DSPresentation::deleteMesh(const QString &meshName)
     Deleting meshes is supported only for meshes that have been dynamically created with
     createMesh() or createMeshes().
 
-    \sa deleteMesh
+    \sa deleteMesh()
  */
 void Q3DSPresentation::deleteMeshes(const QStringList &meshNames)
 {
@@ -1090,6 +1211,7 @@ void Q3DSPresentation::deleteMeshes(const QStringList &meshNames)
 
 /*!
     \qmlproperty list<string> Presentation::createdMeshes
+    \readonly
 
     This property contains a list of all dynamically created meshes on this presentation.
 
@@ -1097,8 +1219,8 @@ void Q3DSPresentation::deleteMeshes(const QStringList &meshNames)
 
     \note Meshes can only be dynamically created via C++ API.
 
-    \sa createMesh
-    \sa createMeshes
+    \sa createMesh()
+    \sa createMeshes()
 */
 
 /*!
@@ -1108,8 +1230,8 @@ void Q3DSPresentation::deleteMeshes(const QStringList &meshNames)
 
     This property is read-only.
 
-    \sa createMesh
-    \sa createMeshes
+    \sa createMesh()
+    \sa createMeshes()
 */
 QStringList Q3DSPresentation::createdMeshes() const
 {
@@ -1213,125 +1335,171 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
     }
 }
 
-// #TODO: QT3DS-3562 Most Presentation signals missing documentation
 /*!
- * \qmlsignal Presentation::slideEntered
- * Emitted when
- * \param elementPath
- * \param index
- * \param name
+    \qmlsignal Presentation::slideEntered(string elementPath, int index, string name)
+
+    Emitted when a slide in a presentation or component is entered. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the entered slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
  */
 
 /*!
- * \fn Q3DSPresentation::slideEntered
- * Emitted when
- * \param elementPath
- * \param index
- * \param name
+    \fn Q3DSPresentation::slideEntered(const QString &elementPath, unsigned int index, const QString &name)
+
+    Emitted when a slide in a presentation or component is entered. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the entered slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
  */
 
 /*!
- * \qmlsignal Presentation::slideExited
- * Emitted when
- * \param elementPath
- * \param index
- * \param name
+    \qmlsignal Presentation::slideExited(string elementPath, int index, string name)
+
+    Emitted when a slide in a presentation or component is exited. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the exited slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
  */
 
 /*!
- * \fn Q3DSPresentation::slideExited
- * Emitted when
- * \param elementPath
- * \param index
- * \param name
+    \fn Q3DSPresentation::slideExited(const QString &elementPath, unsigned int index, const QString &name)
+
+    Emitted when a slide in a presentation or component is exited. \a elementPath
+    specifies the slide path. \a index and \a name contain the index and
+    the name of the exited slide.
+
+    This signal is emitted for each component, meaning that it can be emitted multiple
+    times on one slide change.
+*/
+
+/*!
+    \fn Q3DSPresentation::dataInputsReady()
+
+    Emitted when \l{DataInput}s in the Studio project have been parsed and data inputs are available
+    through dataInputs() and getDataInputs() methods.
+*/
+
+/*!
+    \fn Q3DSPresentation::dataOutputsReady()
+
+    Emitted when \l{DataOutput}s in the Studio project have been parsed and data outputs are available
+    through dataOutputs() and getDataOutputs() methods.
  */
 
 /*!
- * \fn Q3DSPresentation::dataInputsReady
- * Emitted when \l{DataInput}s in the Studio project have been parsed and data inputs are available
- * through dataInputs() and getDataInputs() methods.
+    \qmlsignal Presentation::customSignalEmitted(string elementPath, string name)
+
+    Emitted when an action with the \c{Emit Signal}
+    handler is executed in the Qt 3D Studio presentation. \a
+    elementPath specifies \c{Target Object}, and \a name specifies \c{Signal Name}.
+
+    Connecting to this signal offers a way of reacting upon certain
+    events in the Qt 3D Studio presentation.
+
+    \image customsignal.png
+
+    In this example, pressing or tapping on the Cluster object will result in
+    emitting \c{customSignalEmitted("Cluster", "clusterPressed")}.
  */
 
 /*!
- * \fn Q3DSPresentation::dataOutputsReady
- * Emitted when \l{DataOutput}s in the Studio project have been parsed and data outputs are available
- * through dataOutputs() and getDataOutputs() methods.
+    \fn Q3DSPresentation::customSignalEmitted(const QString &elementPath, const QString &name)
+
+    Emitted when an action with the \c{Emit Signal}
+    handler is executed in the Qt 3D Studio presentation. \a
+    elementPath specifies \c{Target Object}, and \a name specifies \c{Signal Name}.
+
+    Connecting to this signal offers a way of reacting upon certain
+    events in the Qt 3D Studio presentation.
+
+    \image customsignal.png
+
+    In this example, pressing or tapping on the Cluster object will result in
+    emitting \c{customSignalEmitted("Cluster", "clusterPressed")}.
  */
 
 /*!
- * \qmlsignal Presentation::customSignalEmitted
- * Emitted when
- * \param elementPath
- * \param name
+    \qmlsignal Presentation::elementsCreated(list<string> elementPaths, string error)
+
+    Emitted when one or more elements have been created in response to createElement()
+    or createElements() calls. The \a elementPaths list contains the element paths of the created
+    elements.
+
+    If creation failed, \a error string indicates the reason.
+
+    \sa createElement()
+    \sa createElements()
  */
 
 /*!
- * \fn Q3DSPresentation::customSignalEmitted
- * Emitted when
- * \param elementPath
- * \param name
- */
+    \fn Q3DSPresentation::elementsCreated(const QStringList &elementPaths, const QString &error)
 
-/*!
-    \qmlsignal Presentation::elementsCreated
     Emitted when one or more elements have been created in response to createElement()
     or createElements() calls. The \a elementPaths list contains the element paths of the created
     elements. If creation failed, \a error string indicates the reason.
 
-    \sa createElement
-    \sa createElements
+    \sa createElement()
+    \sa createElements()
  */
 
 /*!
-    \fn Q3DSPresentation::elementsCreated
-    Emitted when one or more elements have been created in response to createElement()
-    or createElements() calls. The \a elementPaths list contains the element paths of the created
-    elements. If creation failed, \a error string indicates the reason.
+    \qmlsignal Presentation::materialsCreated(list<string> materialNames, string error)
 
-    \sa createElement
-    \sa createElements
- */
-
-/*!
-    \qmlsignal Presentation::materialsCreated
     Emitted when one or more materials have been created in response to createMaterial()
     or createMaterials() calls. The \a materialNames list contains the names of the created
     materials. If the material is created into a subpresentation, the name is prefixed with
     subpresentation ID followed by a colon.
+
     If creation failed, \a error string indicates the reason.
 
-    \sa createMaterial
-    \sa createMaterials
+    \sa createMaterial()
+    \sa createMaterials()
  */
 
 /*!
-    \fn Q3DSPresentation::materialsCreated
+    \fn Q3DSPresentation::materialsCreated(const QStringList &materialNames, const QString &error)
+
     Emitted when one or more materials have been created in response to createMaterial()
     or createMaterials() calls. The \a materialNames list contains the names of the created
-    materials. If creation failed, \a error string indicates the reason.
+    materials.
 
-    \sa createMaterial
-    \sa createMaterials
+    If creation failed, \a error string indicates the reason.
+
+    \sa createMaterial()
+    \sa createMaterials()
  */
 
 /*!
-    \qmlsignal Presentation::meshesCreated
+    \qmlsignal Presentation::meshesCreated(list<string> meshNames, string error)
+
     Emitted when one or more meshes have been created in response to createMesh()
     or createMeshes() calls. The \a meshNames list contains the names of the created
-    meshes. If creation failed, \a error string indicates the reason.
+    meshes.
 
-    \sa createMesh
-    \sa createMeshes
+    If creation failed, \a error string indicates the reason.
+
+    \sa createMesh()
+    \sa createMeshes()
  */
 
 /*!
-    \fn Q3DSPresentation::meshesCreated
+    \fn Q3DSPresentation::meshesCreated(const QStringList &meshNames, const QString &error)
+
     Emitted when one or more meshes have been created in response to createMesh()
     or createMeshes() calls. The \a meshNames list contains the names of the created
-    meshes. If creation failed, \a error string indicates the reason.
+    meshes.
 
-    \sa createMesh
-    \sa createMeshes
+    If creation failed, \a error string indicates the reason.
+
+    \sa createMesh()
+    \sa createMeshes()
  */
 
 /*!

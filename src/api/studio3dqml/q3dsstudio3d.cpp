@@ -40,13 +40,14 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtQuick/qquickwindow.h>
+#include <QtQml/qqmlcontext.h>
 
 QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype Studio3D
     \instantiates Q3DSStudio3D
-    \inqmlmodule QtStudio3D
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \inherits Item
     \keyword Studio3D
@@ -151,6 +152,8 @@ Q3DSStudio3D::Q3DSStudio3D()
     connect(this, &Q3DSStudio3D::visibleChanged, this, &Q3DSStudio3D::handleVisibleChanged);
 
     updateEventMasks();
+    m_startupTimer.reset(new QElapsedTimer());
+    m_startupTimer->restart();
 }
 
 Q3DSStudio3D::~Q3DSStudio3D()
@@ -171,9 +174,12 @@ Q3DSPresentationItem *Q3DSStudio3D::presentation() const
     return m_presentation;
 }
 
-// #TODO: QT3DS-3566 viewerSettings is missing documentation
 /*!
     \qmlproperty ViewerSettings Studio3D::viewerSettings
+
+    Accessor for the viewerSettings. Applications are expected to create a single
+    ViewerSettings child object for Studio3D. If this is omitted, ViewerSettings
+    is created automatically.
 
     This property is read-only.
 */
@@ -271,7 +277,12 @@ void Q3DSStudio3D::componentComplete()
     m_presentation->d_ptr->setCommandQueue(&m_pendingCommands);
 
     // Ensure qml stream proxy gets created on main thread
-    m_presentation->d_ptr->streamProxy();
+    QQmlContext *ctx = QQmlEngine::contextForObject(this);
+    m_presentation->d_ptr->streamProxy()->setEngine(ctx->engine());
+
+    QObject::connect(m_presentation, &Q3DSPresentationItem::sourceChanged, [this]() {
+        m_startupTimer->restart();
+    });
 
     QQuickFramebufferObject::componentComplete();
 }
@@ -291,6 +302,8 @@ void Q3DSStudio3D::handleWindowChanged(QQuickWindow *window)
     connect(window, &QQuickWindow::afterAnimating, this, &Q3DSStudio3D::tick);
     // Call update after the frame is handled to queue another frame
     connect(window, &QQuickWindow::afterSynchronizing, this, &Q3DSStudio3D::update);
+
+    reset();
 }
 
 /*!
@@ -310,9 +323,9 @@ void Q3DSStudio3D::reset()
 {
     // Fake a source change to trigger a reloading of the presentation
     m_pendingCommands.m_sourceChanged = true;
-    m_pendingCommands.m_source = m_presentation->source();
+    m_pendingCommands.m_source = m_presentation ? m_presentation->source() : QString();
     m_pendingCommands.m_variantListChanged = true;
-    m_pendingCommands.m_variantList = m_presentation->variantList();
+    m_pendingCommands.m_variantList = m_presentation ? m_presentation->variantList() : QStringList();
 }
 
 /*!
@@ -366,7 +379,8 @@ QQuickFramebufferObject::Renderer *Q3DSStudio3D::createRenderer() const
     // It is "illegal" to create a connection between the renderer
     // and the plugin, and vice-versa. The only valid time the two
     // may communicate is during Q3DSRenderer::synchronize().
-    Q3DSRenderer *renderer = new Q3DSRenderer(isVisible(), m_presentation->d_ptr->streamProxy());
+    Q3DSRenderer *renderer = new Q3DSRenderer(isVisible(), m_presentation->d_ptr->streamProxy(),
+                                              m_startupTimer.get());
 
     connect(renderer, &Q3DSRenderer::enterSlide,
             m_presentation->d_ptr, &Q3DSPresentationPrivate::handleSlideEntered);

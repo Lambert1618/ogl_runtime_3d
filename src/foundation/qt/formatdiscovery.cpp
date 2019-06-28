@@ -104,22 +104,22 @@ static QSurfaceFormat findIdealGLESVersion()
     return fmt;
 }
 
+static QSurfaceFormat s_f;
+
 QSurfaceFormat surfaceFormat()
 {
-    static const QSurfaceFormat f = [] {
-        QSurfaceFormat fmt;
+    if (s_f.renderableType() == QSurfaceFormat::DefaultRenderableType) {
         // works in dynamic gl builds too because there's a qguiapp already
         // this requirement is also a problem, see QT3DS-3603
         if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL)
-            fmt = findIdealGLVersion();
+            s_f = findIdealGLVersion();
         else
-            fmt = findIdealGLESVersion();
-        fmt.setDepthBufferSize(24);
-        fmt.setStencilBufferSize(8);
+            s_f = findIdealGLESVersion();
+        s_f.setDepthBufferSize(24);
+        s_f.setStencilBufferSize(8);
         // Ignore MSAA here as that is a per-layer setting.
-        return fmt;
-    }();
-    return f;
+    }
+    return s_f;
 }
 } // End namespace Q3DS
 

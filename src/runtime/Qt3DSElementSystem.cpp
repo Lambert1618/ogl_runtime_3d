@@ -162,11 +162,17 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
         m_TempPropertyDescs.clear();
         bool participatesInTimeGraph = false;
         GetIgnoredProperties();
+        const bool isImage = inType == m_StringTable.RegisterStr("Image");
         for (QT3DSU32 idx = 0, end = inPropertyDescriptions.size(); idx < end; ++idx) {
             QT3DSU32 nameHash = inPropertyDescriptions[idx].first.GetNameHash();
-            if (nameHash == Q3DStudio::ATTRIBUTE_STARTTIME
-                || nameHash == Q3DStudio::ATTRIBUTE_ENDTIME)
+            // Make image instances explicitly not participate in the timegraph. This way their
+            // default start/end time does not have impact into lifetimes of their parents.
+            // This fixes QT3DS-3669 where image default end time overrode parent endtime when
+            // element active status was considered.
+            if ((nameHash == Q3DStudio::ATTRIBUTE_STARTTIME
+                 || nameHash == Q3DStudio::ATTRIBUTE_ENDTIME) && !isImage) {
                 participatesInTimeGraph = true;
+            }
             if (eastl::find(m_IgnoredProperties.begin(), m_IgnoredProperties.end(),
                             inPropertyDescriptions[idx].first.m_Name)
                 == m_IgnoredProperties.end()) {
@@ -637,36 +643,44 @@ void SElement::SetAttribute(const Q3DStudio::TAttributeHash inKey,
                             const Q3DStudio::UVariant inValue)
 {
     Option<TPropertyDescAndValuePtr> existing = FindProperty(inKey);
-    if (existing.hasValue() == false)
+    if (existing.hasValue() == false) {
+        if (Q3DStudio::ATTRIBUTE_EYEBALL == inKey)
+            SetFlag(Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE, inValue.m_INT32 ? true : false);
         return;
+    }
     SetAttribute(*existing, inValue);
 }
 
-void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inValue)
+void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inValue,
+                            bool forceSet)
 {
     Q3DStudio::EAttributeType theType = inKey.first.m_Type;
     Q3DStudio::UVariant *currentValue = inKey.second;
     QT3DSU32 attHash = inKey.first.GetNameHash();
-    switch (theType) {
-    case Q3DStudio::ATTRIBUTETYPE_FLOAT: // Early return
-        if (fabs(currentValue->m_FLOAT - inValue.m_FLOAT) < SmallestDifference())
-            return;
-        break;
-    case Q3DStudio::ATTRIBUTETYPE_FLOAT3: // Early return
-        if (fabs(currentValue->m_FLOAT3[0] - inValue.m_FLOAT3[0]) < SmallestDifference()
-            && fabs(currentValue->m_FLOAT3[1] - inValue.m_FLOAT3[1]) < SmallestDifference()
-            && fabs(currentValue->m_FLOAT3[2] - inValue.m_FLOAT3[2]) < SmallestDifference()) {
-            return;
+    if (!forceSet) {
+        switch (theType) {
+        case Q3DStudio::ATTRIBUTETYPE_FLOAT: // Early return
+            if (fabs(currentValue->m_FLOAT - inValue.m_FLOAT) < SmallestDifference())
+                return;
+            break;
+        case Q3DStudio::ATTRIBUTETYPE_FLOAT3: // Early return
+            if (fabs(currentValue->m_FLOAT3[0] - inValue.m_FLOAT3[0]) < SmallestDifference()
+                && fabs(currentValue->m_FLOAT3[1] - inValue.m_FLOAT3[1]) < SmallestDifference()
+                && fabs(currentValue->m_FLOAT3[2] - inValue.m_FLOAT3[2]) < SmallestDifference()) {
+                return;
+            }
+            break;
+        case Q3DStudio::ATTRIBUTETYPE_STRING:
+            if (currentValue->m_StringHandle == inValue.m_StringHandle)
+                return;
+            m_BelongedPresentation->GetStringTable().releaseDynamicHandle(
+                        currentValue->m_StringHandle);
+            break;
+        default: // Early return
+            if (Q3DStudio::ATTRIBUTE_EYEBALL != attHash && currentValue->m_INT32 == inValue.m_INT32)
+                return;
+            break;
         }
-        break;
-    case Q3DStudio::ATTRIBUTETYPE_STRING:
-        if (currentValue->m_StringHandle == inValue.m_StringHandle)
-            return;
-        break;
-    default: // Early return
-        if (currentValue->m_INT32 == inValue.m_INT32)
-            return;
-        break;
     }
     *currentValue = inValue;
 
@@ -764,10 +778,19 @@ void SElement::SetFlag(Q3DStudio::EElementFlag inFlag, bool inValue)
     bool existing = m_Flags & inFlag;
     if (existing != inValue && HasActivityZone()) {
         m_Flags.clearOrSet(inValue, inFlag);
-        if (inFlag == Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE)
+        if (inFlag == Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE) {
             GetActivityZone().UpdateItemInfo(*this);
-        else if (inFlag == Q3DStudio::ELEMENTFLAG_SCRIPTCALLBACKS)
+            if (IsComponent()) {
+                SElement *parent = m_Parent;
+                // Get out parent component
+                while (parent && parent->m_Parent && !parent->IsComponent())
+                    parent = parent->m_Parent;
+                if (parent)
+                    parent->GetActivityZone().UpdateItemInfo(*parent);
+            }
+        } else if (inFlag == Q3DStudio::ELEMENTFLAG_SCRIPTCALLBACKS) {
             GetActivityZone().UpdateItemScriptStatus(*this);
+        }
         SetDirty();
     }
 }

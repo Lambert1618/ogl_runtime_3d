@@ -1,0 +1,63 @@
+project                 = QtStudio3D
+description             = Qt 3D Studio OpenGL Runtime Reference
+version                 = $QT_VERSION
+# url is relative to the parent project
+url                     = openglruntime
+
+moduleheader            = QtStudio3D
+
+sourcedirs              += ./src \
+                           ../.. \
+                           ../../../qmlstreamer
+
+headerdirs              += ../.. \
+                           ../../../qmlstreamer
+
+imagedirs               += ./src/images
+
+depends = qtcore qtgui qtwidgets qtqml qtquick qtquickcontrols qt3dstudio qt3dstudioruntime2 qtdoc qmake
+
+qhp.projects            = QtStudio3D
+
+qhp.QtStudio3D.file              = qtstudio3d.qhp
+qhp.QtStudio3D.namespace         = io.qt.qtstudio3d.$QT_VERSION_TAG
+qhp.QtStudio3D.virtualFolder     = qtstudio3d
+qhp.QtStudio3D.indexTitle        = Qt 3D Studio OpenGL Runtime
+qhp.QtStudio3D.indexRoot         =
+
+qhp.QtStudio3D.filterAttributes  = qtstudio3d $QT_VER
+qhp.QtStudio3D.customFilters.Qt.name = QtStudio3D $QT_VER
+qhp.QtStudio3D.customFilters.Qt.filterAttributes = qtstudio3d $QT_VER
+
+qhp.QtStudio3D.subprojects       = qmltypes classes
+
+qhp.QtStudio3D.subprojects.qmltypes.title = QML Types
+qhp.QtStudio3D.subprojects.qmltypes.indexTitle = Qt 3D Studio OpenGL Runtime QML Types
+qhp.QtStudio3D.subprojects.qmltypes.selectors = qmltype
+qhp.QtStudio3D.subprojects.qmltypes.sortPages = true
+
+qhp.QtStudio3D.subprojects.classes.title      = C++ Classes
+qhp.QtStudio3D.subprojects.classes.indexTitle = Qt 3D Studio OpenGL Runtime C++ Classes
+qhp.QtStudio3D.subprojects.classes.selectors  = class namespace doc:headerfile
+qhp.QtStudio3D.subprojects.classes.sortPages  = true
+
+# Add an .html file with sidebar content, used in the online style
+HTML.stylesheets             += style/qt5-sidebar.html
+
+navigation.homepage            = "Qt 3D Studio OpenGL Runtime"
+navigation.hometitle = "Qt 3D Studio OpenGL Runtime"
+navigation.hometitle           = "OpenGL Runtime"
+navigation.landingpage         = "Qt 3D Studio OpenGL Runtime"
+navigation.landingtitle        = OpenGL Runtime
+navigation.cppclassespage      = Qt 3D Studio OpenGL Runtime C++ Classes
+navigation.qmltypespage        = Qt 3D Studio OpenGL Runtime QML Types
+buildversion                   = "Qt 3D Studio OpenGL Runtime $QT_VER Manual"
+
+macro.RUNTIME                  = Qt 3D Studio OpenGL Runtime
+
+#TODO: adjust these once we have runtime-specific examples
+# examplesinstallpath     = studio3d
+# exampledirs            += ../examples/studio3d
+
+Cpp.ignoretokens     += Q3DSV_EXPORT Q_STUDIO3D_EXPORT
+depends += qt3d

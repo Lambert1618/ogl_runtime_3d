@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="3" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="800" presentationHeight="480" maintainAspect="False" />
+		<Graph >
+			<Scene id="Scene" >
+				<Layer id="Layer" >
+					<Camera id="Camera" />
+					<Light id="Light" />
+					<Model id="Cube" >
+						<Material id="Material" />
+					</Model>
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene" >
+				<Add ref="#Layer" />
+				<Add ref="#Camera" />
+				<Add ref="#Light" lighttype="Directional" position="0 0 -500" rotation="0 0 0" />
+				<State id="Scene-Slide1" name="Slide1" playmode="Looping" >
+					<Set ref="#Layer" endtime="29690" />
+					<Set ref="#Camera" endtime="29690" />
+					<Set ref="#Light" endtime="29690" />
+					<Add ref="#Cube" name="Cube" endtime="29690" position="5.7735 -14.4338 0" sourcepath="#Cube" >
+						<AnimationTrack property="position.x" type="EaseInOut" >0 -457.55 100 100 4.832 -8.66028 100 100 11.174 440.23 100 100 20.037 -64.9519 100 100 29.69 -401.258 100 100</AnimationTrack>
+						<AnimationTrack property="position.y" type="EaseInOut" >0 -1.52588e-05 100 100 4.832 -220.837 100 100 11.174 -18.7639 100 100 20.037 225.167 100 100 29.69 -14.4337 100 100</AnimationTrack>
+						<AnimationTrack property="position.z" type="EaseInOut" >0 0 100 100 4.832 0 100 100 11.174 0 100 100 20.037 0 100 100 29.69 0 100 100</AnimationTrack>
+					</Add>
+					<Add ref="#Material" />
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>
