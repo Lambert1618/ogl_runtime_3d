@@ -32,7 +32,7 @@
 /*!
     \qmltype QmlStream
     \instantiates Q3DSQmlStream
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Allows streaming of QML as subpresentation.
 
@@ -43,12 +43,10 @@
     \inmodule OpenGLRuntime
     \since Qt 3D Studio 2.0
     \brief Allows streaming of QML as subpresentation.
-    \param parent
  */
 
 /*!
- * \brief Q3DSQmlStream::Q3DSQmlStream Constructor
- * \param parent Optional parent object.
+    Constructs a Q3DSQmlStream object with \a parent as parent.
  */
 Q3DSQmlStream::Q3DSQmlStream(QObject *parent)
     : QObject(parent)
@@ -56,9 +54,6 @@ Q3DSQmlStream::Q3DSQmlStream(QObject *parent)
 {
 }
 
-/*!
- * \brief Q3DSQmlStream::~Q3DSQmlStream Destructor.
- */
 Q3DSQmlStream::~Q3DSQmlStream()
 {
 }

@@ -46,9 +46,8 @@ ApplicationWindow {
     property string error
     property int previousVisibility
 
-    property color showMatteColor: Qt.rgba(0.2, 0.2, 0.2, 1)
-    property color hideMatteColor: Qt.rgba(0, 0, 0, 1)
-    property color matteColor: hideMatteColor
+    property bool matteEnabled: false
+    property color matteColor: Qt.rgba(0.2, 0.2, 0.2, 1)
     property bool showRenderStats: false
     property int scaleMode: ViewerSettings.ScaleModeCenter
 
@@ -212,6 +211,7 @@ ApplicationWindow {
 
             focus: true
             ViewerSettings {
+                matteEnabled: window.matteEnabled
                 matteColor: window.matteColor
                 showRenderStats: window.showRenderStats
                 scaleMode: window.scaleMode
@@ -489,14 +489,10 @@ ApplicationWindow {
                         text: qsTr("Show Matte")
                         shortcut: "Ctrl+D"
                         enabled: _viewerHelper.contentView === ViewerHelper.StudioView
-                        showCheckMark: window.matteColor !== window.hideMatteColor
+                        showCheckMark: window.matteEnabled
                         onTriggered: {
-                            if (enabled) {
-                                if (window.matteColor === window.hideMatteColor)
-                                    window.matteColor = window.showMatteColor;
-                                else
-                                    window.matteColor = window.hideMatteColor;
-                            }
+                            if (enabled)
+                                window.matteEnabled = !window.matteEnabled
                         }
                     }
                     StyledMenuItem {

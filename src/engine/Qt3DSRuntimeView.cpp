@@ -260,6 +260,7 @@ CRuntimeView::~CRuntimeView()
 bool CRuntimeView::BeginLoad(const QString &sourcePath, const QStringList &variantList)
 {
     bool theResult = false;
+    m_startupTime = -1;
 
     // boot up the application
     BootupPreGraphicsInitObjects();
@@ -372,7 +373,7 @@ void CRuntimeView::Render()
 
     m_Application->UpdateAndRender();
 
-    if (m_startupTime < 0 && m_startupTimer) {
+    if (m_startupTime < 0 && m_startupTimer && m_startupTimer->isValid()) {
         m_startupTime = m_startupTimer->elapsed();
         m_startupTimer->invalidate();
     }

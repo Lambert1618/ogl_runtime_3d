@@ -388,6 +388,7 @@ namespace render {
             Q3DSDistanceFieldRenderer *distanceFieldText
                     = static_cast<Q3DSDistanceFieldRenderer *>(
                         m_Renderer.GetQt3DSContext().getDistanceFieldRenderer());
+            distanceFieldText->buildShaders();
             theRenderable = RENDER_FRAME_NEW(SDistanceFieldRenderable)(
                         theFlags, inText.GetGlobalPos(), inText, inText.m_Bounds, theMVP,
                         *distanceFieldText);
@@ -500,10 +501,8 @@ namespace render {
 
             if (theMaterial != NULL && theMaterial->m_Type == GraphObjectTypes::DefaultMaterial) {
                 SDefaultMaterial *theDefaultMaterial = static_cast<SDefaultMaterial *>(theMaterial);
-                // Don't clear dirty flags if the material was referenced.
-                bool clearMaterialFlags = theMaterial == inPath.m_Material;
                 SDefaultMaterialPreparationResult prepResult(PrepareDefaultMaterialForRender(
-                    *theDefaultMaterial, theFlags, subsetOpacity, clearMaterialFlags));
+                    *theDefaultMaterial, theFlags, subsetOpacity));
 
                 theFlags = prepResult.m_RenderableFlags;
                 if (inPath.m_PathType == PathTypes::Geometry) {
@@ -545,7 +544,8 @@ namespace render {
                 // Don't clear dirty flags if the material was referenced.
                 // bool clearMaterialFlags = theMaterial == inPath.m_Material;
                 SDefaultMaterialPreparationResult prepResult(
-                    PrepareCustomMaterialForRender(*theCustomMaterial, theFlags, subsetOpacity));
+                    PrepareCustomMaterialForRender(*theCustomMaterial, theFlags, subsetOpacity,
+                                                   retval));
 
                 theFlags = prepResult.m_RenderableFlags;
                 if (inPath.m_PathType == PathTypes::Geometry) {
@@ -660,8 +660,7 @@ namespace render {
     }
 
     SDefaultMaterialPreparationResult SLayerRenderPreparationData::PrepareDefaultMaterialForRender(
-        SDefaultMaterial &inMaterial, SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity,
-        bool inClearDirtyFlags)
+        SDefaultMaterial &inMaterial, SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity)
     {
         SDefaultMaterial *theMaterial = &inMaterial;
         SDefaultMaterialPreparationResult retval(GenerateLightingKey(theMaterial->m_Lighting));
@@ -675,8 +674,6 @@ namespace render {
             renderableFlags |= RenderPreparationResultFlagValues::Dirty;
         }
         subsetOpacity *= theMaterial->m_Opacity;
-        if (inClearDirtyFlags)
-            theMaterial->m_Dirty.UpdateDirtyForFrame();
 
         SRenderableImage *firstImage = NULL;
 
@@ -780,11 +777,14 @@ namespace render {
         retval.m_FirstImage = firstImage;
         if (retval.m_RenderableFlags.IsDirty())
             retval.m_Dirty = true;
+        if (retval.m_Dirty)
+            m_Renderer.addMaterialDirtyClear(&inMaterial);
         return retval;
     }
 
     SDefaultMaterialPreparationResult SLayerRenderPreparationData::PrepareCustomMaterialForRender(
-        SCustomMaterial &inMaterial, SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity)
+        SCustomMaterial &inMaterial, SRenderableObjectFlags &inExistingFlags, QT3DSF32 inOpacity,
+        bool alreadyDirty)
     {
         SDefaultMaterialPreparationResult retval(GenerateLightingKey(
             DefaultMaterialLighting::FragmentLighting)); // always fragment lighting
@@ -836,6 +836,8 @@ namespace render {
 #undef CHECK_IMAGE_AND_PREPARE
 
         retval.m_FirstImage = firstImage;
+        if (retval.m_Dirty || alreadyDirty)
+            m_Renderer.addMaterialDirtyClear(&inMaterial);
         return retval;
     }
 
@@ -926,10 +928,6 @@ namespace render {
                         subsetDirty | (theSubset.m_WireframeMode != inModel.m_WireframeMode);
                     inModel.m_WireframeMode = false;
                 }
-                // Only clear flags on the materials in this direct hierarchy.  Do not clear them of
-                // this
-                // references materials in another hierarchy.
-                bool clearMaterialDirtyFlags = theMaterialObject == theSourceMaterialObject;
 
                 if (theMaterialObject == NULL)
                     continue;
@@ -938,8 +936,8 @@ namespace render {
                     SDefaultMaterial &theMaterial(
                         static_cast<SDefaultMaterial &>(*theMaterialObject));
                     SDefaultMaterialPreparationResult theMaterialPrepResult(
-                        PrepareDefaultMaterialForRender(theMaterial, renderableFlags, subsetOpacity,
-                                                        clearMaterialDirtyFlags));
+                        PrepareDefaultMaterialForRender(theMaterial, renderableFlags,
+                                                        subsetOpacity));
                     SShaderDefaultMaterialKey theGeneratedKey = theMaterialPrepResult.m_MaterialKey;
                     subsetOpacity = theMaterialPrepResult.m_Opacity;
                     SRenderableImage *firstImage(theMaterialPrepResult.m_FirstImage);
@@ -968,11 +966,11 @@ namespace render {
                     ICustomMaterialSystem &theMaterialSystem(
                         qt3dsContext.GetCustomMaterialSystem());
                     subsetDirty |= theMaterialSystem.PrepareForRender(
-                        theModelContext.m_Model, theSubset, theMaterial, clearMaterialDirtyFlags);
+                        theModelContext.m_Model, theSubset, theMaterial);
 
                     SDefaultMaterialPreparationResult theMaterialPrepResult(
                         PrepareCustomMaterialForRender(theMaterial, renderableFlags,
-                                                       subsetOpacity));
+                                                       subsetOpacity, subsetDirty));
                     SShaderDefaultMaterialKey theGeneratedKey = theMaterialPrepResult.m_MaterialKey;
                     subsetOpacity = theMaterialPrepResult.m_Opacity;
                     SRenderableImage *firstImage(theMaterialPrepResult.m_FirstImage);

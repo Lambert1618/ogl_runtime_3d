@@ -111,7 +111,7 @@ namespace render {
         // Returns true if the material is dirty and thus will produce a different render result
         // than previously.  This effects things like progressive AA.
         virtual bool PrepareForRender(const SModel &inModel, const SRenderSubset &inSubset,
-                                      SCustomMaterial &inMaterial, bool inClearDirty) = 0;
+                                      SCustomMaterial &inMaterial) = 0;
 
         virtual bool RenderDepthPrepass(const QT3DSMat44 &inMVP, const SCustomMaterial &inMaterial,
                                         const SRenderSubset &inSubset) = 0;

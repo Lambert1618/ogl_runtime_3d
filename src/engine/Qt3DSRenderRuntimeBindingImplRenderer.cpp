@@ -167,6 +167,7 @@ struct SRenderer : public Q3DStudio::ITegraApplicationRenderEngine
     }
 
     void SetMatteColor(Option<QT3DSVec4> inColor) override { m_Context->SetMatteColor(inColor); }
+    void setMatteEnabled(bool enabled) override { m_Context->setMatteEnabled(enabled); };
     virtual void PushState() { m_StateStack.push_back(m_Viewport); }
     virtual void PopState()
     {

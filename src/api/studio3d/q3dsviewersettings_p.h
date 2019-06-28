@@ -62,6 +62,7 @@ public:
     void save(const QString &group, const QString &organization, const QString &application);
     void load(const QString &group, const QString &organization, const QString &application);
 
+    void setMatteEnabled(bool enabled);
     void setMatteColor(const QColor &color);
     void setShowRenderStats(bool show);
     void setShadeMode(Q3DSViewerSettings::ShadeMode mode);
@@ -78,6 +79,7 @@ private:
     CommandQueue *m_commandQueue; // Not owned
     QColor m_matteColor;
     bool m_showRenderStats;
+    bool m_matteEnabled;
     Q3DSViewerSettings::ShadeMode m_shadeMode;
     Q3DSViewerSettings::ScaleMode m_scaleMode;
     QSettings *m_savedSettings;

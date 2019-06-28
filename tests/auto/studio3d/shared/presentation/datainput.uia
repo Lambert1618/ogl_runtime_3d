@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<application>
+    <assets initial="datainput">
+        <dataInput name="animationInput" type="Ranged Number" min="0" max="100"/>
+        <dataInput name="slideInput" type="String" />
+        <presentation id="datainput" src="datainput.uip"/>
+        <presentation id="subpres" src="datainput_sub.uip"/>
+	</assets>
+	<statemachine ref="#logic">
+		<visual-states>
+			<state ref="Initial">
+				<enter>
+					<goto-slide element="main:Scene" rel="next"/>
+				</enter>
+			</state>
+		</visual-states>
+	</statemachine>
+</application>

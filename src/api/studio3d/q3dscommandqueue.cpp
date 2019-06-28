@@ -61,6 +61,7 @@ CommandQueue::CommandQueue()
     , m_showRenderStats(false)
     , m_matteColor(Qt::black)
     , m_delayedLoading(false)
+    , m_matteEnabled(false)
     , m_size(0)
 {
     qRegisterMetaType<CommandType>();
@@ -207,6 +208,7 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
     m_globalAnimationTimeChanged
             = m_globalAnimationTimeChanged || fromQueue.m_globalAnimationTimeChanged;
     m_delayedLoadingChanged = m_delayedLoadingChanged || fromQueue.m_delayedLoadingChanged;
+    m_matteEnabledChanged = m_matteEnabledChanged || fromQueue.m_matteEnabledChanged;
 
     if (fromQueue.m_visibleChanged)
        m_visible = fromQueue.m_visible;
@@ -226,6 +228,8 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
         m_globalAnimationTime = fromQueue.m_globalAnimationTime;
     if (fromQueue.m_delayedLoadingChanged)
         m_delayedLoading = fromQueue.m_delayedLoading;
+    if (fromQueue.m_matteEnabledChanged)
+        m_matteEnabled = fromQueue.m_matteEnabled;
 
     // Pending queue may be synchronized multiple times between queue processing, so let's append
     // to the existing queue rather than clearing it.
@@ -304,6 +308,7 @@ void CommandQueue::clear(bool deleteCommandData)
     m_variantListChanged = false;
     m_globalAnimationTimeChanged = false;
     m_delayedLoadingChanged = false;
+    m_matteEnabledChanged = false;
 
     if (deleteCommandData) {
         for (int i = 0; i < m_size; ++i) {

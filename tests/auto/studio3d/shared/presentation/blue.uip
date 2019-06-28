@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="3" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="800" presentationHeight="480" maintainAspect="False" />
+		<Graph >
+			<Scene id="Scene" >
+				<Layer id="Layer" >
+					<Camera id="Camera" />
+					<Light id="Light" />
+					<Model id="Rectangle" >
+						<Material id="Material" />
+					</Model>
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene" >
+				<Add ref="#Layer" />
+				<Add ref="#Camera" />
+				<Add ref="#Light" lighttype="Directional" position="0 0 -500" rotation="0 0 0" />
+				<State id="Scene-Slide1" name="Slide1" playmode="Looping" >
+					<Set ref="#Layer" endtime="8000" />
+					<Set ref="#Camera" endtime="8000" />
+					<Set ref="#Light" endtime="8000" />
+					<Add ref="#Rectangle" name="Rectangle" endtime="8000" position="0 -15.8771 0" scale="13.3333 9.5252 1" sourcepath="#Rectangle" />
+					<Add ref="#Material" diffuse="0 0 1" emissivecolor="1 1 1" emissivepower="1" />
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>

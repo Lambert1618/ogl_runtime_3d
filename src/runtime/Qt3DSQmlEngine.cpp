@@ -389,6 +389,9 @@ private:
     QMap<QString, QQmlComponent *> m_components;
     QVector<Q3DSQmlScript *> m_scripts;
 
+    QSet<int> m_availableIds;
+    QHash<TElement *, int> m_elementIdMap;
+
 public:
     CQmlEngineImpl(NVFoundationBase &fnd, ITimeProvider &inTimeProvider);
 
@@ -474,10 +477,14 @@ private:
     TElement *getTarget(const char *component);
     void listAllElements(TElement *root, QList<TElement *> &elements);
     void initializeDataInputsInPresentation(CPresentation &presentation, bool isPrimary,
+                                            bool isDynamicAdd = false,
                                             QList<TElement *> inElements = QList<TElement *>());
     void initializeDataOutputsInPresentation(CPresentation &presentation, bool isPrimary);
+    void removeDataInputControl(const QVector<TElement *> &inElements);
     // Splits down vector attributes to components as Runtime does not really
     // handle vectors at this level anymore
+    bool getAttributeVector4(QVector<QByteArray> &outAttVec, const QByteArray &attName,
+                             TElement *elem);
     bool getAttributeVector3(QVector<QByteArray> &outAttVec, const QByteArray &attName,
                              TElement *elem);
     bool getAttributeVector2(QVector<QByteArray> &outAttVec, const QByteArray &attName,
@@ -532,6 +539,8 @@ private:
     void notifyMaterialCreation(const QStringList &materialNames, const QString &error);
     void deleteElements(const QVector<TElement *> &elements,
                         qt3ds::render::IQt3DSRenderer *renderer);
+    int getAvailableId();
+    void releaseId(int id);
 };
 
 CQmlEngineImpl::CQmlEngineImpl(NVFoundationBase &fnd, ITimeProvider &)
@@ -595,7 +604,7 @@ void CQmlEngineImpl::SetAttribute(TElement *target, const char *attName, const c
 {
     QML_ENGINE_MULTITHREAD_PROTECT_METHOD;
     if (target) {
-        bool success = CQmlElementHelper::SetAttribute(target, attName, value, false);
+        bool success = CQmlElementHelper::SetAttribute(target, attName, value);
         if (!success) {
             qCCritical(qt3ds::INVALID_OPERATION)
                     << "CQmlEngineImpl::SetAttribute: "
@@ -611,7 +620,7 @@ void CQmlEngineImpl::SetAttribute(const char *element, const char *attName, cons
 
     TElement *theTarget = getTarget(element);
     if (theTarget) {
-        bool success = CQmlElementHelper::SetAttribute(theTarget, attName, value, false);
+        bool success = CQmlElementHelper::SetAttribute(theTarget, attName, value);
         if (!success) {
             qCCritical(qt3ds::INVALID_OPERATION)
                     << "CQmlEngineImpl::SetAttribute: "
@@ -929,8 +938,6 @@ void CQmlEngineImpl::SetDataInputValue(
     }
 }
 
-static int _idCounter = 0;
-
 void CQmlEngineImpl::createElements(const QString &parentElementPath, const QString &slideName,
                                     const QVector<QHash<QString, QVariant>> &properties,
                                     qt3ds::render::IQt3DSRenderer *renderer)
@@ -944,13 +951,15 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
     elementPaths.reserve(properties.size());
     QVector<QHash<QString, QVariant>> theProperties = properties;
     const QString namePropName = QStringLiteral("name");
+    QVector<int> idNumbers(theProperties.size());
 
     for (int i = 0; i < theProperties.size(); ++i) {
         auto &props = theProperties[i];
         QString newElementName = props.value(namePropName).toString();
+        idNumbers[i] = getAvailableId();
         if (newElementName.isEmpty()) {
             // The id number on generated name will match generated graph object identifiers
-            newElementName = QStringLiteral("NewElement_%1").arg(_idCounter + i + 1);
+            newElementName = QStringLiteral("NewElement_%1").arg(idNumbers[i]);
             props.insert(namePropName, newElementName);
         }
         elementPaths << parentElementPath + QLatin1Char('.') + newElementName;
@@ -959,8 +968,11 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
     TElement *parentElement = nullptr;
 
     auto handleError = [&]() {
-        if (!error.isEmpty())
+        if (!error.isEmpty()) {
+            for (int id : qAsConst(idNumbers))
+                releaseId(id);
             deleteElements(createdElements, renderer);
+        }
         notifyElementCreation(elementPaths, error);
     };
 
@@ -1012,8 +1024,8 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
     parentElement->GetAttribute(Q3DStudio::ATTRIBUTE_ENDTIME, attValue);
     const int parentEndTime = int(attValue.m_INT32);
 
-    for (const auto &currentProps : qAsConst(theProperties)) {
-        ++_idCounter;
+    for (int i = 0; i < theProperties.size(); ++i) {
+        const auto &currentProps = theProperties[i];
         ++elementIndex;
 
         // Remove properties requiring custom handling
@@ -1200,7 +1212,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
         NVAllocatorCallback &allocator = presentation->GetScene()->allocator();
         SModel *newObject = QT3DS_NEW(allocator, SModel)();
         newObject->m_Id = strTable.RegisterStr((QByteArrayLiteral("__newObj_")
-                                                + QByteArray::number(_idCounter)).constData());
+                                                + QByteArray::number(idNumbers[i])).constData());
         parentObject.AddChild(*newObject);
 
         Qt3DSTranslator::CreateTranslatorForElement(newElem, *newObject, allocator);
@@ -1210,7 +1222,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
             SReferencedMaterial *newMaterial = QT3DS_NEW(allocator, SReferencedMaterial)();
             newMaterial->m_Id = strTable.RegisterStr(
                         (QByteArrayLiteral("__newMat_")
-                         + QByteArray::number(_idCounter)).constData());
+                         + QByteArray::number(idNumbers[i])).constData());
             newMaterial->m_ReferencedMaterial = referencedMaterial;
             newObject->AddMaterial(*newMaterial);
         }
@@ -1233,10 +1245,11 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
             newElem.GetActivityZone().UpdateItemInfo(newElem);
 
         createdElements << &newElem;
+        m_elementIdMap.insert(&newElem, idNumbers[i]);
     }
 
     bool isPrimary = presentation == m_Application->GetPrimaryPresentation() ? true : false;
-    initializeDataInputsInPresentation(*presentation, isPrimary, createdElements.toList());
+    initializeDataInputsInPresentation(*presentation, isPrimary, true, createdElements.toList());
 
     renderer->ChildrenUpdated(parentObject);
 
@@ -1311,10 +1324,16 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
     };
     QVector<MaterialInfo *> materialInfos;
     QVector<TElement *> createdElements;
+    QVector<int> idNumbers(materialDefinitions.size());
+    for (int i = 0; i < materialDefinitions.size(); ++i)
+        idNumbers[i] = getAvailableId();
 
     auto handleError = [&]() {
-        if (!error.isEmpty())
+        if (!error.isEmpty()) {
+            for (int id : qAsConst(idNumbers))
+                releaseId(id);
             deleteElements(createdElements, renderer);
+        }
         QStringList materialNames;
         QString prefix;
         if (!subPresId.isEmpty())
@@ -1365,7 +1384,8 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
     if (!container)
         container = createMaterialContainer(rootElement, presentation);
 
-    for (auto &materialInfo : materialInfos) {
+    for (int i = 0; i < materialInfos.size(); ++i) {
+        const auto &materialInfo = materialInfos[i];
         if (materialInfo->materialName.isEmpty() || materialInfo->materialProps.isEmpty()) {
             error = QObject::tr("Invalid material definition: '%1'")
                     .arg(materialInfo->materialDefinition);
@@ -1570,7 +1590,7 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
         // Create render object for the material
         qt3ds::render::SGraphObject *newMaterial = nullptr;
         CRegisteredString newMatId = strTable.RegisterStr(
-                    (QByteArrayLiteral("__newMat_") + QByteArray::number(++_idCounter))
+                    (QByteArrayLiteral("__newMat_") + QByteArray::number(idNumbers[i]))
                     .constData());
         if (isCustomMaterial) {
             newMaterial = customMaterialSystem->CreateCustomMaterial(matClass, allocator);
@@ -1647,15 +1667,18 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
 
                     qt3ds::render::SImage *newImageObj
                             = QT3DS_NEW(allocator, qt3ds::render::SImage)();
+                    const int imageId = getAvailableId();
                     newImageObj->m_Id = strTable.RegisterStr(
                                 (QByteArrayLiteral("__newImage_")
-                                 + QByteArray::number(++_idCounter)).constData());
+                                 + QByteArray::number(imageId)).constData());
                     qt3ds::render::Qt3DSTranslator::CreateTranslatorForElement(
                                 *imageElem, *newImageObj, allocator);
+                    m_elementIdMap.insert(imageElem, imageId);
                 }
             }
-            createdElements << &newMatElem;
         }
+        createdElements << &newMatElem;
+        m_elementIdMap.insert(&newMatElem, idNumbers[i]);
 
         qt3ds::render::Qt3DSTranslator::CreateTranslatorForElement(newMatElem, *newMaterial,
                                                                    allocator);
@@ -2030,7 +2053,7 @@ void CQmlEngineImpl::listAllElements(TElement *root, QList<TElement *> &elements
 // Initializes datainput bindings in the presentation starting by default from the root element.
 // If inElements is specified, only parses the specified elements.
 void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentation,
-                                                        bool isPrimary,
+                                                        bool isPrimary, bool isDynamicAdd,
                                                         QList<TElement *> inElements)
 {
     QList<TElement *> elements;
@@ -2078,6 +2101,24 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                             ctrlElem.propertyType = ATTRIBUTETYPE_DATAINPUT_SLIDE;
                             TElement *component = &element->GetComponentParent();
                             ctrlElem.elementPath.append(component->m_Path);
+                        } else if (diMap[controllerName].type
+                                   == qt3ds::runtime::DataInOutTypeVector4) {
+                            // special handling for vector datatype to handle
+                            // expansion from <propertyname> to <propertyname>.x .y .z .w
+                            QVector<QByteArray> attVec;
+                            bool success = getAttributeVector4(
+                                attVec, ctrlElem.attributeName.first().constData(),
+                                element);
+                            if (!attVec.empty() && success) {
+                                ctrlElem.attributeName = attVec;
+                                ctrlElem.elementPath.append(element->m_Path);
+                                ctrlElem.propertyType = ATTRIBUTETYPE_FLOAT4;
+                            } else {
+                                qWarning() << __FUNCTION__ << "Property "
+                                           << ctrlElem.attributeName.first()
+                                           << " was not expanded to vector";
+                                ctrlElem.propertyType = ATTRIBUTETYPE_NONE;
+                            }
                         } else if (diMap[controllerName].type
                                    == qt3ds::runtime::DataInOutTypeVector3) {
                             // special handling for vector datatype to handle
@@ -2152,41 +2193,46 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                         diDef.controlledAttributes.append(ctrlElem);
 
 // #TODO: Remove below once QT3DS-3510 has been implemented in the editor
-                        // Note, in this temp implementation only the LAST of multiple attributes
-                        // will be notified from the object under the DataInput name..
-                        qt3ds::runtime::DataInputDef inDef   = diMap[controllerName];
-                        qt3ds::runtime::DataOutputDef &doDef = doMap[controllerName];
-                        doDef.observedAttribute = ctrlElem;
-                        doDef.type = inDef.type;
-                        doDef.min  = inDef.min;
-                        doDef.max  = inDef.max;
+                        // Skip data output modification when adding dynamic elements,
+                        // as that would break the previous binding
+                        if (!isDynamicAdd) {
+                            // Note, in this temp implementation only the LAST of multiple attrs
+                            // will be notified from the object under the DataInput name..
+                            qt3ds::runtime::DataInputDef inDef   = diMap[controllerName];
+                            qt3ds::runtime::DataOutputDef &doDef = doMap[controllerName];
+                            doDef.observedAttribute = ctrlElem;
+                            doDef.type = inDef.type;
+                            doDef.min  = inDef.min;
+                            doDef.max  = inDef.max;
 
-                        if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_TIMELINE) {
-                            // Find the TElement for the @timeline attrib
-                            TElement *target = nullptr;
-                            QStringList split
-                                    = QString(ctrlElem.elementPath).split(QLatin1Char(':'));
-                            if (split.size() > 1) {
-                                target = CQmlElementHelper::GetElement(
-                                            *m_Application,
-                                            m_Application->GetPresentationById(
-                                                split.at(0).toStdString().c_str()),
-                                            split.at(1).toStdString().c_str(), nullptr);
+                            if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_TIMELINE) {
+                                // Find the TElement for the @timeline attrib
+                                TElement *target = nullptr;
+                                QStringList split
+                                        = QString(ctrlElem.elementPath).split(QLatin1Char(':'));
+                                if (split.size() > 1) {
+                                    target = CQmlElementHelper::GetElement(
+                                                *m_Application,
+                                                m_Application->GetPresentationById(
+                                                    split.at(0).toStdString().c_str()),
+                                                split.at(1).toStdString().c_str(), nullptr);
+                                } else {
+                                    target = CQmlElementHelper::GetElement(
+                                                *m_Application,
+                                                m_Application->GetPrimaryPresentation(),
+                                                split.at(0).toStdString().c_str(), nullptr);
+                                }
+
+                                doDef.timelineComponent = static_cast<TComponent *>(target);
+                            } else if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_SLIDE) {
+                                // Slide notifications are already done with separate signal
+                                // No need to process
                             } else {
-                                target = CQmlElementHelper::GetElement(
-                                            *m_Application,
-                                            m_Application->GetPrimaryPresentation(),
-                                            split.at(0).toStdString().c_str(), nullptr);
+                                // Other than slide or timeline are handled by CPresentation
+                                CRegisteredString rString = strTable.RegisterStr(
+                                            ctrlElem.elementPath);
+                                elementPathToDataOutputDefMap.insertMulti(rString, doDef);
                             }
-
-                            doDef.timelineComponent = static_cast<TComponent *>(target);
-                        } else if (ctrlElem.propertyType == ATTRIBUTETYPE_DATAINPUT_SLIDE) {
-                            // Slide notifications are already done with separate signal
-                            // No need to process
-                        } else {
-                            // Other than slide or timeline attributes are handled by CPresentation
-                            CRegisteredString rString = strTable.RegisterStr(ctrlElem.elementPath);
-                            elementPathToDataOutputDefMap.insertMulti(rString, doDef);
                         }
 // #TODO: Remove above once QT3DS-3510 has been implemented in the editor
                     }
@@ -2196,7 +2242,8 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
     }
 
 // #TODO: Remove below once QT3DS-3510 has been implemented in the editor
-    presentation.AddToDataOutputMap(elementPathToDataOutputDefMap);
+    if (!isDynamicAdd)
+        presentation.AddToDataOutputMap(elementPathToDataOutputDefMap);
 // #TODO: Remove above once QT3DS-3510 has been implemented in the editor
 }
 
@@ -2292,11 +2339,61 @@ void CQmlEngineImpl::initializeDataOutputsInPresentation(CPresentation &presenta
     presentation.AddToDataOutputMap(elementPathToDataOutputDefMap);
 }
 
+// Remove datainput control from listed elements and update internal control map. Should be used
+// when elements having a datainput controller are removed in order to avoid invalid entries.
+void CQmlEngineImpl::removeDataInputControl(const QVector<TElement *> &inElements)
+{
+    const qt3ds::runtime::DataInputMap diMap(m_Application->dataInputMap());
+
+    // Have to do nasty triple-nested search loop as the datainput map is organized around
+    // datainputs for fast lookups in setDataInputValue, not around control targets.
+    QVector<QPair<QString, qt3ds::runtime::DataInOutAttribute>> elemAttrsToRemove;
+    QMapIterator<QString, qt3ds::runtime::DataInputDef> diMapIter(diMap);
+
+    for (const auto &elem : inElements) {
+        while (diMapIter.hasNext()) {
+            diMapIter.next();
+            for (const auto &inOutAttr : qAsConst(diMapIter.value().controlledAttributes)) {
+                if (inOutAttr.elementPath == QByteArray(elem->m_Path))
+                    elemAttrsToRemove.append({diMapIter.key(), inOutAttr});
+            }
+        }
+        diMapIter.toFront();
+    }
+
+    for (const auto &attr : qAsConst(elemAttrsToRemove))
+        m_Application->dataInputMap()[attr.first].controlledAttributes.removeAll(attr.second);
+}
+
 // Bit clumsy way of getting from "position" to "position .x .y .z" and enabling datainput
 // support for vectorized types. UIP parser has already thrown away all vector
 // type attributes and at this point we are operating with scalar components only.
 // We check if this element has a property attName.x or attName.r to find out it
 // we should expand property attName to XYZ or RGB vector
+bool CQmlEngineImpl::getAttributeVector4(QVector<QByteArray> &outAttVec,
+                                         const QByteArray &attName,
+                                         TElement *elem)
+{
+    auto hashName = Q3DStudio::CHash::HashAttribute(attName + ".x");
+
+    if (!elem->FindProperty(hashName).isEmpty()) {
+        outAttVec.append(attName + ".x");
+        outAttVec.append(attName + ".y");
+        outAttVec.append(attName + ".z");
+        outAttVec.append(attName + ".w");
+        return true;
+    }
+    hashName = Q3DStudio::CHash::HashAttribute(attName + ".r");
+    if (!elem->FindProperty(hashName).isEmpty()) {
+        outAttVec.append(attName + ".r");
+        outAttVec.append(attName + ".g");
+        outAttVec.append(attName + ".b");
+        outAttVec.append(attName + ".a");
+        return true;
+    }
+    return false;
+}
+
 bool CQmlEngineImpl::getAttributeVector3(QVector<QByteArray> &outAttVec,
                                          const QByteArray &attName,
                                          TElement *elem)
@@ -2615,6 +2712,9 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
         // Recursive deleter for translators and graph objects
         std::function<void(TElement *)> deleteRenderObjects;
         deleteRenderObjects = [&](TElement *elem)  {
+            if (m_elementIdMap.contains(elem))
+                releaseId(m_elementIdMap.take(elem));
+
             TElement *child = elem->m_Child;
             while (child) {
                 TElement *sibling = child->m_Sibling;
@@ -2633,6 +2733,10 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
                                     model->m_FirstMaterial);
                         QT3DS_FREE(allocator, material);
                     }
+                } else if (type == qt3ds::render::GraphObjectTypes::Image) {
+                    auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
+                    if (image->m_LoadedTextureData)
+                        image->m_LoadedTextureData->m_callbacks.removeOne(image);
                 }
                 QT3DS_FREE(allocator, &translator->RenderObject());
                 QT3DS_FREE(allocator, translator);
@@ -2664,6 +2768,29 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
     }
     for (auto parentNode : qAsConst(parentNodes))
         renderer->ChildrenUpdated(*parentNode);
+
+    removeDataInputControl(elements);
+}
+
+int CQmlEngineImpl::getAvailableId()
+{
+    static int _idCounter = 0;
+
+    int id = -1;
+    if (m_availableIds.isEmpty()) {
+        id = ++_idCounter;
+    } else {
+        auto first = m_availableIds.begin();
+        id = *first;
+        m_availableIds.erase(first);
+    }
+
+    return id;
+}
+
+void CQmlEngineImpl::releaseId(int id)
+{
+    m_availableIds.insert(id);
 }
 
 template<typename TDataType>

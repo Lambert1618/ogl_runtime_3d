@@ -265,6 +265,9 @@ int main(int argc, char *argv[])
     QString extraImportPath2(QStringLiteral("%1/../../../../qml"));
     engine.addImportPath(extraImportPath2.arg(QGuiApplication::applicationDirPath()));
 #endif
+    // Add import path for running viewer without having to install it during development
+    QString extraImportPath3(QStringLiteral("%1/../qml"));
+    engine.addImportPath(extraImportPath3.arg(QGuiApplication::applicationDirPath()));
 
     QQmlContext *ctx = engine.rootContext();
     ctx->setContextProperty(QStringLiteral("_menuBackgroundColor"), QColor("#404244"));

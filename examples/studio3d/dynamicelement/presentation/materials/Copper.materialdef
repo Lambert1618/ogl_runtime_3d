@@ -1,0 +1,14 @@
+<MaterialData version="1.0">
+	<Property name="uEnvironmentTexture" type="Texture"><![CDATA[./maps/materials/spherical_checker.png]]></Property>
+	<Property name="uEnvironmentMappingEnabled">True</Property>
+	<Property name="uBakedShadowTexture" type="Texture"><![CDATA[./maps/materials/shadow.png]]></Property>
+	<Property name="uShadowMappingEnabled">False</Property>
+	<Property name="roughness">0</Property>
+	<Property name="metal_color">0.805 0.395 0.305 1</Property>
+	<Property name="sourcepath"><![CDATA[./materials/copper.shader]]></Property>
+	<Property name="importid"></Property>
+	<Property name="importfile"></Property>
+	<Property name="name"><![CDATA[materials/Copper]]></Property>
+	<Property name="type">CustomMaterial</Property>
+	<Property name="path"><![CDATA[/home/jakarppi/Work/ogl-runtime/examples/studio3d/dynamicelement/presentation/materials/Copper.materialdef]]></Property>
+</MaterialData>

@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../../scenes/simple_cube_animation/simple_cube_animation.uia</file>
+        <file>../../scenes/simple_cube_animation/presentations/simple_cube_animation.uip</file>
+        <file>../../scenes/simple_cube_animation/materials/Basic Green.materialdef</file>
+        <file>../../scenes/simple_cube_animation/materials/Basic Red.materialdef</file>
+        <file>../../scenes/simple_cube_animation/materials/Basic Blue.materialdef</file>
+        <file>../../scenes/simple_cube_animation/materials/Basic Texture.materialdef</file>
+        <file>../../scenes/simple_cube_animation/materials/Copper.materialdef</file>
+        <file>../../scenes/simple_cube_animation/materials/copper.shader</file>
+        <file>../../scenes/simple_cube_animation/maps/materials/shadow.png</file>
+        <file>../../scenes/simple_cube_animation/maps/materials/spherical_checker.png</file>
+        <file>../../scenes/simple_cube_animation/maps/QT-symbol.png</file>
+        <file>tst_qt3dsviewer.qml</file>
+    </qresource>
+</RCC>

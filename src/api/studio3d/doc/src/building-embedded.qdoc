@@ -1,0 +1,82 @@
+/****************************************************************************
+**
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of Qt 3D Studio.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+
+\title Building \RUNTIME for Embedded Linux
+\page building-opengl-runtime-embedded-linux.html
+
+Before you build the \RUNTIME for Embedded Linux, you will need to install Qt for Embedded Linux.
+
+\section1 Install Qt for Embedded Linux
+Follow the Installation guide for your specific target device.
+
+\section1 Build the \RUNTIME
+
+\list 1
+  \li
+    Clone the \RUNTIME repository from
+    \l {https://code.qt.io/cgit/qt3dstudio/ogl-runtime.git}.
+    You can clone the repo with the \c {git clone} command:
+    \badcode
+    git clone git://code.qt.io/qt3dstudio/ogl-runtime.git
+    \endcode
+
+    \note If you want to use the HTTPS protocol, you can clone the \RUNTIME repo with the
+    following command:
+    \badcode
+    git clone https://code.qt.io/qt3dstudio/ogl-runtime.git
+    \endcode
+  \li
+    Run the following \c{git submodule} command:
+    \badcode
+    git submodule update --init --recursive
+    \endcode
+  \li
+    Open \c{ogl-runtime.pro} in Qt Creator. \c{ogl-runtime.pro} is located in the root of the
+    cloned repository.
+
+    \image ogl-runtime-pro.png
+  \li
+    Select the desired prebuilt Embedded Linux component and select \uicontrol{Configure Project}.
+
+    \image embedded-linux.png
+  \li
+    Add a build step with argument \c{install}.
+
+    \image embedded-linux-2.png
+  \li
+    From the menu, select \uicontrol{Build > Build Project "opengl-runtime"}.
+\endlist
+
+\section1 Deploy the \RUNTIME
+
+Follow the
+\l{https://doc.qt.io/QtForDeviceCreation/b2qt-installation-guides.html}{Installation guide}
+for your specific target device.
+
+*/

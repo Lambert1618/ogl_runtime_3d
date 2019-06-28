@@ -70,9 +70,13 @@ Rectangle {
         anchors.fill: parent
         property string textValue: "hello world"
 
+        ViewerSettings {
+            id: viewerSettings
+        }
+
         Presentation {
             id: s3dpres
-            source: "qrc:/presentation/barrel.uip"
+            source: "qrc:/presentation/barrel.uia"
             onCustomSignalEmitted: customSignalName.text = Date.now() + ": " + name
             onSlideEntered: slideEnter.text = "Entered slide " + name + "(index " + index + ") on " + elementPath
             onSlideExited: slideExit.text = "Exited slide " + name + "(index " + index + ") on " + elementPath
@@ -169,7 +173,11 @@ Rectangle {
         }
         Button {
             text: "Reload"
-            onClicked: s3dpres.reload()
+            onClicked: {
+                var src = s3dpres.source
+                s3dpres.source = ""
+                s3dpres.source = src
+            }
             focusPolicy: Qt.NoFocus
         }
         Button {
@@ -185,9 +193,10 @@ Rectangle {
         }
         Button {
             text: "Toggle camera"
+            property bool eyeball: true
             onClicked: {
-                var v = s3dpres.getAttribute("Scene.Layer.Camera", "eyeball")
-                s3dpres.setAttribute("Scene.Layer.Camera", "eyeball", !v)
+                eyeball = !eyeball
+                s3dpres.setAttribute("Scene.Layer.Camera", "eyeball", eyeball)
             }
             focusPolicy: Qt.NoFocus
         }
@@ -258,11 +267,11 @@ Rectangle {
 
     Button {
         id: profTogBtn
-        text: "Toggle profile UI"
+        text: "Toggle render stats"
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         focusPolicy: Qt.NoFocus
-        onClicked: s3dpres.profileUiVisible = !s3dpres.profileUiVisible
+        onClicked: viewerSettings.showRenderStats = !viewerSettings.showRenderStats
     }
     Slider {
         id: profUiScale

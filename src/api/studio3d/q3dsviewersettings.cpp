@@ -40,11 +40,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype ViewerSettings
     \instantiates Q3DSViewerSettings
-    \inqmlmodule Qt3DStudio
+    \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \brief Qt 3D Studio presentation viewer settings.
 
-    This type provides properties to define presentation independent viewer settings.
+    This type provides properties to define presentation-independent viewer settings.
 
     \note ViewerSettings are only applicable when \l Studio3D is used in the
     default mode, showing the final, composed image from the Qt 3D Studio
@@ -60,13 +60,12 @@ QT_BEGIN_NAMESPACE
 
     \brief Qt 3D Studio presentation viewer settings.
 
-    Q3DSViewerSettings provides properties to define presentation independent
+    Q3DSViewerSettings provides properties to define presentation-independent
     viewer settings.
 
     \note This class should not be instantiated directly when working with the
-    C++ APIs. Q3DSSurfaceViewer and Q3DSWidget create a Q3DSViewerSettings
-    instance implicitly. This can be queried via Q3DSSurfaceViewer::settings()
-    or Q3DSWidget::settings().
+    C++ APIs. Q3DSSurfaceViewer creates a Q3DSViewerSettings
+    instance implicitly. This can be queried via Q3DSSurfaceViewer::settings().
  */
 
 /*!
@@ -156,11 +155,15 @@ void Q3DSViewerSettings::setShowRenderStats(bool show)
     }
 }
 
-/*!
-    \qmlproperty ViewerSettings::shadeMode
+/*
+    //! TODO
+    \internal
+    \qmlproperty enumeration ViewerSettings::shadeMode
  */
 
-/*!
+/*
+    // TODO
+    \internal
     \property Q3DSViewerSettings::shadeMode
  */
 Q3DSViewerSettings::ShadeMode Q3DSViewerSettings::shadeMode() const
@@ -226,20 +229,49 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
 }
 
 /*!
-    \qmmlmethod ViewerSettings::save
-    Persistently saves the viewer \l{QSettings}{settings} using \a group, \a organization and
-    \a application.
-    \param group
-    \param organization
-    \param application
+    \qmlproperty bool ViewerSettings::matteEnabled
+
+    Specifies if the empty area around the presentation (applicable when
+    scaleMode is set to ScaleModeCenter or ScaleModeFit) should be filled with
+    a custom color.
+
+    The default value is \c false.
  */
 /*!
- * \brief Q3DSViewerSettings::save  Persistently saves the viewer \l{QSettings}{settings}
+    \property Q3DSViewerSettings::matteEnabled
+
+    Specifies if the empty area around the presentation (applicable when
+    scaleMode is set to ScaleModeCenter or ScaleModeFit) should be filled with
+    a custom color.
+
+    The default value is \c false.
+
+    \sa matteColor
+ */
+bool Q3DSViewerSettings::matteEnabled() const
+{
+    return d_ptr->m_matteEnabled;
+}
+
+void Q3DSViewerSettings::setMatteEnabled(bool enabled)
+{
+    if (d_ptr->m_matteEnabled != enabled) {
+        d_ptr->setMatteEnabled(enabled);
+        Q_EMIT matteEnabledChanged(enabled);
+    }
+}
+
+
+/*!
+    \qmlmethod ViewerSettings::save(string group, string organization, string application)
+
     Persistently saves the viewer \l{QSettings}{settings} using \a group, \a organization and
     \a application.
-    \param group
-    \param organization
-    \param application
+ */
+
+/*!
+    Persistently saves the viewer \l{QSettings}{settings} using \a group, \a organization and
+    \a application.
  */
 void Q3DSViewerSettings::save(const QString &group, const QString &organization,
                                       const QString &application)
@@ -248,20 +280,14 @@ void Q3DSViewerSettings::save(const QString &group, const QString &organization,
 }
 
 /*!
-    \qmlmethod ViewerSettings::load
+    \qmlmethod ViewerSettings::load(string group, string organization, string application)
     Loads previously saved viewer \l{QSettings}{settings} using \a group, \a organization and
     \a application.
-    \param group
-    \param organization
-    \param application
  */
+
 /*!
- * \brief Q3DSViewerSettings::load Loads previously saved viewer \l{QSettings}{settings}
     Loads previously saved viewer \l{QSettings}{settings} using \a group, \a organization and
     \a application.
-    \param group
-    \param organization
-    \param application
  */
 void Q3DSViewerSettings::load(const QString &group, const QString &organization,
                                       const QString &application)
@@ -276,6 +302,7 @@ Q3DSViewerSettingsPrivate::Q3DSViewerSettingsPrivate(Q3DSViewerSettings *q)
     , m_commandQueue(nullptr)
     , m_matteColor(Qt::black)
     , m_showRenderStats(false)
+    , m_matteEnabled(false)
     , m_shadeMode(Q3DSViewerSettings::ShadeModeShaded)
     , m_scaleMode(Q3DSViewerSettings::ScaleModeCenter)
     , m_savedSettings(nullptr)
@@ -290,6 +317,7 @@ void Q3DSViewerSettingsPrivate::setViewerApp(Q3DSViewer::Q3DSViewerApp *app)
 {
     m_viewerApp = app;
     if (m_viewerApp) {
+        setMatteEnabled(m_matteEnabled);
         setMatteColor(m_matteColor);
         setShowRenderStats(m_showRenderStats);
         setShadeMode(m_shadeMode);
@@ -301,6 +329,7 @@ void Q3DSViewerSettingsPrivate::setCommandQueue(CommandQueue *queue)
 {
     m_commandQueue = queue;
     if (m_commandQueue) {
+        setMatteEnabled(m_matteEnabled);
         setMatteColor(m_matteColor);
         setShowRenderStats(m_showRenderStats);
         setShadeMode(m_shadeMode);
@@ -317,6 +346,7 @@ void Q3DSViewerSettingsPrivate::save(const QString &group, const QString &organi
     m_savedSettings->setValue(QStringLiteral("showRenderStats"), m_showRenderStats);
     m_savedSettings->setValue(QStringLiteral("shadeMode"), m_shadeMode);
     m_savedSettings->setValue(QStringLiteral("scaleMode"), m_scaleMode);
+    m_savedSettings->setValue(QStringLiteral("matteEnabled"), m_matteEnabled);
 }
 
 void Q3DSViewerSettingsPrivate::load(const QString &group, const QString &organization,
@@ -330,6 +360,7 @@ void Q3DSViewerSettingsPrivate::load(const QString &group, const QString &organi
                             m_savedSettings->value(QStringLiteral("shadeMode")).toInt()));
     q_ptr->setScaleMode(Q3DSViewerSettings::ScaleMode(
                             m_savedSettings->value(QStringLiteral("scaleMode")).toInt()));
+    q_ptr->setMatteEnabled(m_savedSettings->value(QStringLiteral("matteEnabled")).toBool());
 }
 
 void Q3DSViewerSettingsPrivate::setMatteColor(const QColor &color)
@@ -340,6 +371,17 @@ void Q3DSViewerSettingsPrivate::setMatteColor(const QColor &color)
     } else if (m_commandQueue) {
         m_commandQueue->m_matteColor = color;
         m_commandQueue->m_matteColorChanged = true;
+    }
+}
+
+void Q3DSViewerSettingsPrivate::setMatteEnabled(bool enabled)
+{
+    m_matteEnabled = enabled;
+    if (m_viewerApp) {
+        m_viewerApp->setMatteColor(enabled);
+    } else if (m_commandQueue) {
+        m_commandQueue->m_matteEnabled = enabled;
+        m_commandQueue->m_matteEnabledChanged = true;
     }
 }
 

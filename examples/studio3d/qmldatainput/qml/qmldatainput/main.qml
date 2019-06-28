@@ -94,7 +94,7 @@ Item {
                       + (modelData.max !== 0 ? "\n    range min: " + modelData.min
                                                + "\n    range max: " + modelData.max
                                              : "")
-                      + " \n    metadata keys: [" + modelData.metadataKeys() + "]"
+                      + " \n    metadata keys: [" + modelData.metadataKeys + "]"
                 font.pointSize: 6
             }
         }
@@ -112,10 +112,6 @@ Item {
         property vector3d inputScaleVec3: Qt.vector3d(0, 0, 0)
         property string inputString: ""
         property variant inputVariant: 0
-
-        onPresentationLoaded: {
-            diList.updateModel();
-        }
 
         // A changing property to demonstrate DataInput
         NumberAnimation {
@@ -179,6 +175,10 @@ Item {
             id: presentation
 
             source: "qrc:/presentation/datainput.uia"
+
+            onDataInputsReady: {
+                diList.updateModel();
+            }
             DataInput {
                 // Name must match the data input name specified in the presentation
                 name: "rangeInput"

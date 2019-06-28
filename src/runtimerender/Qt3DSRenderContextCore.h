@@ -145,6 +145,7 @@ namespace render {
         virtual void SetInSubPresentation(bool inValue) = 0;
         virtual void SetSceneColor(Option<QT3DSVec4> inSceneColor) = 0;
         virtual void SetMatteColor(Option<QT3DSVec4> inMatteColor) = 0;
+        virtual void setMatteEnabled(bool enable) = 0;
 
         // Render screen aligned 2D text at x,y
         virtual void RenderText2D(QT3DSF32 x, QT3DSF32 y, qt3ds::foundation::Option<qt3ds::QT3DSVec3> inColor,

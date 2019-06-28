@@ -38,6 +38,8 @@
 #include "foundation/SerializationTypes.h"
 #include "foundation/Qt3DSMutex.h"
 
+#include <QtCore/qhash.h>
+
 using namespace qt3ds;
 using namespace qt3ds::foundation;
 using namespace eastl;
@@ -317,6 +319,16 @@ public:
         return theFind->second;
     }
 
+    SCharAndHandle justFindStrDontRegister(SCharAndHash hashCode)
+    {
+        if (isTrivial(hashCode.m_Data))
+            return SCharAndHandle();
+        TMapType::iterator theFind = m_HashToStrMap.find(hashCode);
+        if (theFind == m_HashToStrMap.end())
+            return SCharAndHandle();
+        return theFind->second;
+    }
+
     const CRegisteredString FindStr(SCharAndHash hashCode)
     {
         SCharAndHandle result = DoFindStr(hashCode);
@@ -527,6 +539,8 @@ struct SStringTableMutexScope
 
 #define STRING_TABLE_MULTITHREADED_METHOD SStringTableMutexScope __locker(m_MultithreadMutex)
 
+static const QT3DSU32 dynHandleBase = 0x80000000;
+
 class StringTable : public IStringTable
 {
     typedef nvhash_map<SCharAndHash, QT3DSU32> TMapType;
@@ -539,6 +553,18 @@ class StringTable : public IStringTable
     TWideStr m_WideConvertBuffer;
     Mutex m_MultithreadMutexBacker;
     Mutex *m_MultithreadMutex;
+
+    struct DynamicString
+    {
+        QByteArray str;
+        int refCount = 0;
+    };
+
+    QHash<QT3DSU32, DynamicString *> m_dynamicFreeHandlesMap;
+    QHash<QT3DSU32, DynamicString *> m_dynamicUsedHandlesMap;
+    QHash<QByteArray, QT3DSU32> m_dynamicStringToHandleMap;
+    QT3DSU32 m_nextFreeDynamicHandle = dynHandleBase;
+
     // Data that will be written out to the file.
 
 public:
@@ -554,7 +580,11 @@ public:
     {
     }
 
-    virtual ~StringTable() override {}
+    virtual ~StringTable() override
+    {
+        qDeleteAll(m_dynamicFreeHandlesMap);
+        qDeleteAll(m_dynamicUsedHandlesMap);
+    }
 
     QT3DS_IMPLEMENT_REF_COUNT_ADDREF_RELEASE_OVERRIDE(m_FileData.m_Allocator.m_Allocator)
 
@@ -630,10 +660,59 @@ public:
         return m_FileData.FindStrHandle(str);
     }
 
+    CStringHandle getDynamicHandle(const QByteArray &str) override
+    {
+        STRING_TABLE_MULTITHREADED_METHOD;
+        QT3DSU32 handle = m_dynamicStringToHandleMap.value(str, 0);
+        DynamicString *theStr = nullptr;
+
+        if (!handle) {
+            handle = m_FileData.justFindStrDontRegister(str.constData()).m_Handle;
+            if (!handle) {
+                if (m_dynamicFreeHandlesMap.isEmpty()) {
+                    handle = ++m_nextFreeDynamicHandle;
+                    theStr = new DynamicString;
+                } else {
+                    auto first = m_dynamicFreeHandlesMap.begin();
+                    handle = first.key();
+                    theStr = first.value();
+                    m_dynamicFreeHandlesMap.erase(first);
+                }
+                theStr->str = str;
+                m_dynamicStringToHandleMap.insert(str, handle);
+                m_dynamicUsedHandlesMap.insert(handle, theStr);
+            } else {
+                return CStringHandle::ISwearThisHasBeenRegistered(handle);
+            }
+        } else {
+            theStr = m_dynamicUsedHandlesMap.value(handle);
+        }
+        ++theStr->refCount;
+        return CStringHandle::ISwearThisHasBeenRegistered(handle);
+    }
+
+    void releaseDynamicHandle(QT3DSU32 strHandle) override
+    {
+        DynamicString *str = m_dynamicUsedHandlesMap.value(strHandle);
+        if (str) {
+            --str->refCount;
+            if (str->refCount == 0) {
+                m_dynamicUsedHandlesMap.remove(strHandle);
+                m_dynamicFreeHandlesMap.insert(strHandle, str);
+                m_dynamicStringToHandleMap.remove(str->str);
+            }
+        }
+    }
+
     CRegisteredString HandleToStr(QT3DSU32 strHandle) override
     {
         STRING_TABLE_MULTITHREADED_METHOD;
-        return m_FileData.FindStrByHandle(strHandle);
+        if (strHandle >= dynHandleBase) {
+            DynamicString *str = m_dynamicUsedHandlesMap.value(strHandle);
+            return CRegisteredString::ISwearThisHasBeenRegistered(str->str.constData());
+        } else {
+            return m_FileData.FindStrByHandle(strHandle);
+        }
     }
 
     const wchar_t *GetWideStr(CRegisteredString theStr)

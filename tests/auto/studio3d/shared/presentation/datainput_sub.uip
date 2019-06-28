@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="3" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="400" presentationHeight="200" maintainAspect="False" >
+			<CustomColors count="16" >#ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff</CustomColors>
+		</ProjectSettings>
+		<Graph >
+            <Scene id="Scene" controlledproperty="$animationInput @timeline" >
+				<Layer id="Layer" >
+					<Camera id="Camera" />
+					<Light id="Light" />
+                    <Text id="Text" controlledproperty="$slideInput textstring" />
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene" >
+				<Add ref="#Layer" />
+				<Add ref="#Camera" />
+				<Add ref="#Light" />
+				<State id="Scene-Slide1" name="Slide1" initialplaystate="Pause" >
+					<Add ref="#Text" name="Text" font="TitilliumWeb-Regular" opacity="99" size="96" >
+						<AnimationTrack property="rotation.x" type="EaseInOut" >0 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="rotation.y" type="EaseInOut" >0 0 100 100 10 0 100 100</AnimationTrack>
+						<AnimationTrack property="rotation.z" type="EaseInOut" >0 0 100 100 10 -360 100 100</AnimationTrack>
+					</Add>
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>
