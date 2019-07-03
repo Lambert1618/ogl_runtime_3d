@@ -247,7 +247,7 @@ struct SNullBackend : public NVRenderBackend
     {
     }
     void GenerateMipMaps(NVRenderBackendTextureObject, NVRenderTextureTargetType::Enum,
-                                 NVRenderHint::Enum) override
+                         NVRenderHint::Enum) override
     {
     }
     void BindTexture(NVRenderBackendTextureObject, NVRenderTextureTargetType::Enum, QT3DSU32) override

@@ -610,7 +610,8 @@ namespace render {
             ioFlags |= RenderPreparationResultFlagValues::HasTransparency;
         }
 
-        if (inImage.m_TextureData.m_Texture) {
+        if (inImageIndex < SShaderDefaultMaterialKeyProperties::ImageMapCount
+                && inImage.m_TextureData.m_Texture) {
             if (inImage.m_TextureData.m_TextureFlags.HasTransparency()
                 && (inMapType == ImageMapTypes::Diffuse
                     || inMapType == ImageMapTypes::Opacity
@@ -836,6 +837,15 @@ namespace render {
         CHECK_IMAGE_AND_PREPARE(inMaterial.m_Lightmaps.m_LightmapShadow,
                                 ImageMapTypes::LightmapShadow,
                                 SShaderDefaultMaterialKeyProperties::LightmapShadow);
+        if (inMaterial.m_imageMaps && inMaterial.m_imageMaps->size() > 0) {
+            auto iter = inMaterial.m_imageMaps->begin();
+            auto end = inMaterial.m_imageMaps->end();
+            for (; iter != end; iter++) {
+                CHECK_IMAGE_AND_PREPARE(iter->second,
+                                        ImageMapTypes::Unknown,
+                                        SShaderDefaultMaterialKeyProperties::ImageMapCount);
+            }
+        }
 #undef CHECK_IMAGE_AND_PREPARE
 
         retval.m_FirstImage = firstImage;
@@ -1178,11 +1188,27 @@ namespace render {
                 if (theEffect->m_Flags.IsActive()) {
                     // If the effect uses subpresentations, those have to be rendered before
                     // the effect itself
-                    theEffectSystem.renderSubpresentations(*theEffect);
+                    theEffectSystem.prepareEffectForRender(*theEffect);
                     theLastEffect = theEffect;
                     if (hasOffscreenRenderer == false
                         && theEffectSystem.DoesEffectRequireDepthTexture(theEffect->m_ClassName))
                         requiresDepthPrepass = true;
+
+                    if (theEffect->m_imageMaps && theEffect->m_imageMaps->size() > 0) {
+                        SRenderableImage *firstImage = nullptr;
+                        SRenderableImage *nextImage = nullptr;
+                        SShaderDefaultMaterialKey key;
+                        SRenderableObjectFlags flags;
+                        auto iter = theEffect->m_imageMaps->begin();
+                        auto end = theEffect->m_imageMaps->end();
+                        for (; iter != end; iter++) {
+                            if (iter->second) {
+                                PrepareImageForRender(*iter->second, ImageMapTypes::Unknown,
+                                       firstImage, nextImage, flags, key,
+                                       SShaderDefaultMaterialKeyProperties::ImageMapCount);
+                            }
+                        }
+                    }
                 }
             }
             if (m_Layer.m_Flags.IsDirty()) {

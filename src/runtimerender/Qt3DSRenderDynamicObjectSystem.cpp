@@ -860,7 +860,7 @@ struct SDynamicObjectSystemImpl : public IDynamicObjectSystem
     }
 
     SDynamicObject *CreateInstance(CRegisteredString inClassName,
-                                           NVAllocatorCallback &inSceneGraphAllocator) override
+                                   NVAllocatorCallback &inSceneGraphAllocator) override
     {
         SDynamicObjClassImpl *theClass = FindClass(inClassName);
         if (!theClass) {

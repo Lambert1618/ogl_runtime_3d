@@ -496,6 +496,7 @@ struct SEffectSystem : public IEffectSystem
     typedef nvhash_map<CRegisteredString, NVScopedRefCounted<SEffectClass>> TEffectClassMap;
     typedef nvhash_map<TStrStrPair, NVScopedRefCounted<SEffectShader>> TShaderMap;
     typedef nvvector<SEffectContext *> TContextList;
+    typedef eastl::pair<CRegisteredString, SImage *> TAllocatedImageEntry;
 
     IQt3DSRenderContextCore &m_CoreContext;
     IQt3DSRenderContext *m_Context;
@@ -510,6 +511,9 @@ struct SEffectSystem : public IEffectSystem
     TShaderMap m_ShaderMap;
     NVScopedRefCounted<NVRenderDepthStencilState> m_DefaultStencilState;
     nvvector<NVScopedRefCounted<NVRenderDepthStencilState>> m_DepthStencilStates;
+    nvvector<TAllocatedImageEntry> m_AllocatedImages;
+    nvvector<SEffect::TImageMapHash *> m_effectImageMaps;
+
     volatile QT3DSI32 mRefCount;
 
     SEffectSystem(IQt3DSRenderContextCore &inContext)
@@ -521,6 +525,8 @@ struct SEffectSystem : public IEffectSystem
         , m_Contexts(inContext.GetAllocator(), "SEffectSystem::m_Contexts")
         , m_ShaderMap(inContext.GetAllocator(), "SEffectSystem::m_ShaderMap")
         , m_DepthStencilStates(inContext.GetAllocator(), "SEffectSystem::m_DepthStencilStates")
+        , m_AllocatedImages(inContext.GetAllocator(), "SEffectSystem::m_AllocatedImages")
+        , m_effectImageMaps(inContext.GetAllocator(), "SEffectSystem::m_effectImageMaps")
         , mRefCount(0)
     {
     }
@@ -530,6 +536,18 @@ struct SEffectSystem : public IEffectSystem
         for (QT3DSU32 idx = 0, end = m_Contexts.size(); idx < end; ++idx)
             NVDelete(m_Allocator, m_Contexts[idx]);
         m_Contexts.clear();
+
+        for (QT3DSU32 idx = 0; idx < m_AllocatedImages.size(); ++idx) {
+            SImage *pImage = m_AllocatedImages[idx].second;
+            QT3DS_FREE(m_CoreContext.GetAllocator(), pImage);
+        }
+        for (QT3DSU32 idx = 0; idx < m_effectImageMaps.size(); ++idx) {
+            auto *effmap = m_effectImageMaps[idx];
+            effmap->~nvhash_map();
+            QT3DS_FREE(m_CoreContext.GetAllocator(), effmap);
+        }
+        m_effectImageMaps.clear();
+        m_AllocatedImages.clear();
     }
 
     SEffectContext &GetEffectContext(SEffect &inEffect)
@@ -1043,22 +1061,27 @@ struct SEffectSystem : public IEffectSystem
                     StaticAssert<sizeof(CRegisteredString)
                                  == sizeof(NVRenderTexture2DPtr)>::valid_expression();
                     CRegisteredString *theStrPtr = reinterpret_cast<CRegisteredString *>(inDataPtr);
-                    IBufferManager &theBufferManager(m_Context->GetBufferManager());
-                    IOffscreenRenderManager &theOffscreenRenderer(
-                        m_Context->GetOffscreenRenderManager());
                     bool needsAlphaMultiply = true;
                     NVRenderTexture2D *theTexture = nullptr;
-                    if (theStrPtr->IsValid()) {
-                        if (theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr)) {
-                            SOffscreenRenderResult theResult
-                                    = theOffscreenRenderer.GetRenderedItem(*theStrPtr);
-                            needsAlphaMultiply = false;
-                            theTexture = theResult.m_Texture;
-                        } else {
-                            SImageTextureData theTextureData
-                                    = theBufferManager.LoadRenderImage(*theStrPtr);
-                            needsAlphaMultiply = true;
-                            theTexture = theTextureData.m_Texture;
+                    if (theStrPtr->IsValid() && inEffect.m_imageMaps) {
+                        SImage *image = (*inEffect.m_imageMaps)[inPropertyName];
+                        if (image) {
+                            if (image->m_ImagePath != *theStrPtr) {
+                                image->m_ImagePath = *theStrPtr;
+                                image->m_Flags.SetDirty(true);
+                            } else {
+                                if (image->m_OffscreenRendererId.IsValid()) {
+                                    IOffscreenRenderManager &theOffscreenRenderer(
+                                                            m_Context->GetOffscreenRenderManager());
+                                    SOffscreenRenderResult theResult
+                                            = theOffscreenRenderer.GetRenderedItem(*theStrPtr);
+                                    needsAlphaMultiply = false;
+                                    theTexture = theResult.m_Texture;
+                                } else {
+                                    needsAlphaMultiply = true;
+                                    theTexture = image->m_LoadedTextureData->m_Texture;
+                                }
+                            }
                         }
                     }
                     GetEffectContext(inEffect).SetTexture(
@@ -1839,7 +1862,26 @@ struct SEffectSystem : public IEffectSystem
         return *m_ResourceManager;
     }
 
-    void renderSubpresentations(SEffect &inEffect) override
+    QT3DSU32 FindAllocatedImage(CRegisteredString inName)
+    {
+        for (QT3DSU32 idx = 0, end = m_AllocatedImages.size(); idx < end; ++idx) {
+            if (m_AllocatedImages[idx].first == inName)
+                return idx;
+        }
+        return QT3DSU32(-1);
+    }
+
+    SEffect::TImageMapHash *newImageMap(NVAllocatorCallback &allocator)
+    {
+        const char *name = "SEffect::TImageMapHash";
+        SEffect::TImageMapHash *ret
+                = new (QT3DS_ALLOC(allocator, sizeof(SEffect::TImageMapHash), name))
+                        SEffect::TImageMapHash(allocator, name);
+        m_effectImageMaps.push_back(ret);
+        return ret;
+    }
+
+    void prepareEffectForRender(SEffect &inEffect) override
     {
         SEffectClass *theClass = GetEffectClass(inEffect.m_ClassName);
         if (!theClass)
@@ -1849,16 +1891,43 @@ struct SEffectSystem : public IEffectSystem
         for (QT3DSU32 idx = 0, end = theDefs.size(); idx < end; ++idx) {
             const SPropertyDefinition &theDefinition(theDefs[idx]);
             if (theDefinition.m_DataType == NVRenderShaderDataTypes::NVRenderTexture2DPtr) {
+                SImage *pImage = nullptr;
+
                 QT3DSU8 *dataPtr = inEffect.GetDataSectionBegin() + theDefinition.m_Offset;
                 StaticAssert<sizeof(CRegisteredString)
                              == sizeof(NVRenderTexture2DPtr)>::valid_expression();
                 CRegisteredString *theStrPtr = reinterpret_cast<CRegisteredString *>(dataPtr);
-                IOffscreenRenderManager &theOffscreenRenderer(
-                    m_Context->GetOffscreenRenderManager());
-
                 if (theStrPtr->IsValid()) {
-                    if (theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr))
+                    IOffscreenRenderManager &theOffscreenRenderer(
+                        m_Context->GetOffscreenRenderManager());
+
+                    if (theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr)) {
                         theOffscreenRenderer.GetRenderedItem(*theStrPtr);
+                    } else {
+                        QT3DSU32 index = FindAllocatedImage(theDefs[idx].m_ImagePath);
+                        if (index == QT3DSU32(-1)) {
+                            pImage = QT3DS_NEW(m_CoreContext.GetAllocator(), SImage)();
+                            m_AllocatedImages.push_back(
+                                eastl::make_pair(theDefs[idx].m_ImagePath, pImage));
+                        } else {
+                            pImage = m_AllocatedImages[index].second;
+                        }
+
+                        if (!inEffect.m_imageMaps)
+                            inEffect.m_imageMaps = newImageMap(m_CoreContext.GetAllocator());
+
+                        if ((*inEffect.m_imageMaps)[theDefs[idx].m_Name] != pImage) {
+                            (*inEffect.m_imageMaps)[theDefs[idx].m_Name] = pImage;
+                            pImage->m_ImagePath = theDefs[idx].m_ImagePath;
+                            pImage->m_ImageShaderName = theDefs[idx].m_Name;
+                            pImage->m_VerticalTilingMode = theDefs[idx].m_CoordOp;
+                            pImage->m_HorizontalTilingMode = theDefs[idx].m_CoordOp;
+                        }
+                    }
+                } else {
+                    if (!inEffect.m_imageMaps)
+                        inEffect.m_imageMaps = newImageMap(m_CoreContext.GetAllocator());
+                    (*inEffect.m_imageMaps)[theDefs[idx].m_Name] = nullptr;
                 }
             }
         }

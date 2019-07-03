@@ -361,10 +361,13 @@ public:
     virtual bool LoadPluginXMLFile(const char *inType, const char *inId, const char *inName,
                                    const char *inSourcePath) = 0;
 
-    virtual Option<qt3dsdm::SMetaDataEffect> GetEffectMetaDataBySourcePath(const char *inName) = 0;
+    virtual Option<qt3dsdm::SMetaDataEffect>
+    GetEffectMetaDataBySourcePath(const char *sourcePath) = 0;
+    virtual Option<qt3dsdm::SMetaDataEffect> GetEffectMetaDataByName(const char *name) = 0;
 
     virtual Option<qt3dsdm::SMetaDataCustomMaterial>
     GetMaterialMetaDataBySourcePath(const char *inSourcePath) = 0;
+    virtual Option<qt3dsdm::SMetaDataCustomMaterial> GetMaterialMetaDataByName(const char *name) = 0;
 
     virtual std::shared_ptr<qt3dsdm::IStringTable> GetStringTable() = 0;
 

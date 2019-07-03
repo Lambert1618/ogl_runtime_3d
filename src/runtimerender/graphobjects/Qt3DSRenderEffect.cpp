@@ -41,6 +41,7 @@ void SEffect::Initialize()
     m_Layer = NULL;
     m_NextEffect = NULL;
     m_Context = NULL;
+    m_imageMaps = nullptr;
 }
 
 void SEffect::SetActive(bool inActive, IEffectSystem &inManager)

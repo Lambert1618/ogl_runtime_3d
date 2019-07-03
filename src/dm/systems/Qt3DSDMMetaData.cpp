@@ -4131,6 +4131,20 @@ public:
         }
         return Empty();
     }
+    Option<SMetaDataCustomMaterial> GetMaterialByName(const char *name) override
+    {
+        auto iter = m_CustomMaterials.find(Intern(name));
+        if (iter != m_CustomMaterials.end())
+            return iter->second.ToMaterial();
+        return Empty();
+    }
+    Option<SMetaDataEffect> GetEffectByName(const char *name) override
+    {
+        auto iter = m_EffectMap.find(Intern(name));
+        if (iter != m_EffectMap.end())
+            return iter->second.ToEffect();
+        return Empty();
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////
     // Undo/Redo

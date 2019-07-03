@@ -218,6 +218,15 @@ struct SHandleElementPairComparator
     }
 };
 
+static int s_debug = -1;
+
+static bool debuggingEnabled()
+{
+    if (s_debug == -1)
+        s_debug = qEnvironmentVariableIntValue("QT3DS_DEBUG");
+    return s_debug >= 1;
+}
+
 struct SSlideResourceCounter
 {
     QHash<QString, int> counters;
@@ -285,8 +294,7 @@ struct SSlideResourceCounter
     }
     void print()
     {
-        static const bool debugging = qEnvironmentVariableIntValue("QT3DS_DEBUG") >= 1;
-        if (debugging) {
+        if (debuggingEnabled()) {
             qDebug() << "SlideResourceCounter resources:";
             const auto keys = counters.keys();
             for (auto &x : keys)
@@ -331,6 +339,9 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
     void Run() override
     {
         QMutexLocker loc(&m_updateMutex);
+        // Delete first so that maximum required memory is reduced
+        if (!m_deleteSet.isEmpty())
+            m_bufferManager.unloadSet(m_deleteSet);
         if (!m_uploadSet.isEmpty()) {
             nvvector<CRegisteredString> sourcePaths(m_bufferManager.GetStringTable().GetAllocator(),
                                                     "TempSourcePathList");
@@ -356,8 +367,6 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
                 m_uploadWaitSet.clear();
             }
         }
-        if (!m_deleteSet.isEmpty())
-            m_bufferManager.unloadSet(m_deleteSet);
     }
     void add(const QSet<QString> &set, bool wait)
     {

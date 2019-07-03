@@ -343,7 +343,8 @@ public:
                                              const TCharStr &inObjectName,
                                              std::vector<SMetaDataLoadWarning> &outWarnings,
                                              qt3ds::foundation::IInStream &inStream) = 0;
-    virtual Option<SMetaDataEffect> GetEffectBySourcePath(const char *inName) = 0;
+    virtual Option<SMetaDataEffect> GetEffectBySourcePath(const char *inSourcePath) = 0;
+    virtual Option<SMetaDataEffect> GetEffectByName(const char *inName) = 0;
 
     virtual void LoadMaterialInstance(const char *inShaderFile,
                                       Qt3DSDMInstanceHandle inInstance,
@@ -361,6 +362,7 @@ public:
                                                  std::vector<SMetaDataLoadWarning> &outWarnings,
                                                  qt3ds::foundation::IInStream &inStream) = 0;
     virtual Option<SMetaDataCustomMaterial> GetMaterialBySourcePath(const char *inSourcePath) = 0;
+    virtual Option<SMetaDataCustomMaterial> GetMaterialByName(const char *inName) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////
     // Undo/Redo

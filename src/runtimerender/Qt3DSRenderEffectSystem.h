@@ -202,7 +202,7 @@ namespace render {
         virtual bool RenderEffect(SEffectRenderArgument inRenderArgument, QT3DSMat44 &inMVP,
                                   bool inEnableBlendWhenRenderToTarget) = 0;
 
-        virtual void renderSubpresentations(SEffect &inEffect) = 0;
+        virtual void prepareEffectForRender(SEffect &inEffect) = 0;
     };
 }
 }

@@ -638,8 +638,7 @@ struct SCustomMaterialTextureData
             m_Texture->SetTextureWrapS(NVRenderTextureCoordOp::ClampToEdge);
             m_Texture->SetTextureWrapT(NVRenderTextureCoordOp::ClampToEdge);
         }
-
-        if ((m_Texture->GetNumMipmaps() == 0) && m_needsMips)
+        if (m_Texture && (m_Texture->GetNumMipmaps() == 0) && m_needsMips)
             m_Texture->GenerateMipmaps();
 
         m_Sampler.Set(m_Texture);
@@ -875,6 +874,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
     nvvector<TCustomMaterialTextureEntry> m_TextureEntries;
     nvvector<SCustomMaterialBuffer> m_AllocatedBuffers;
     nvvector<TAllocatedImageEntry> m_AllocatedImages;
+    nvvector<SCustomMaterial::TImageMapHash *> m_materialImageMaps;
     bool m_UseFastBlits;
     eastl::string m_ShaderNameBuilder;
     QT3DSU64 m_LastFrameTime;
@@ -890,6 +890,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
         , m_TextureEntries(ct.GetAllocator(), "SMaterialSystem::m_TextureEntries")
         , m_AllocatedBuffers(ct.GetAllocator(), "SMaterialSystem::m_AllocatedBuffers")
         , m_AllocatedImages(ct.GetAllocator(), "SMaterialSystem::m_AllocatedImages")
+        , m_materialImageMaps(ct.GetAllocator(), "SMaterialSystem::m_materialImageMaps")
         , m_UseFastBlits(true)
         , m_LastFrameTime(0)
         , m_MillisecondsSinceLastFrame(0)
@@ -906,6 +907,12 @@ struct SMaterialSystem : public ICustomMaterialSystem
             SImage *pImage = m_AllocatedImages[idx].second;
             QT3DS_FREE(m_CoreContext.GetAllocator(), pImage);
         }
+        for (QT3DSU32 idx = 0; idx < m_materialImageMaps.size(); ++idx) {
+            auto *matmap = m_materialImageMaps[idx];
+            matmap->~nvhash_map();
+            QT3DS_FREE(m_CoreContext.GetAllocator(), matmap);
+        }
+        m_materialImageMaps.clear();
         m_AllocatedImages.clear();
     }
 
@@ -1082,7 +1089,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
     }
 
     SCustomMaterial *CreateCustomMaterial(CRegisteredString inName,
-                                                  NVAllocatorCallback &inSceneGraphAllocator) override
+                                          NVAllocatorCallback &inSceneGraphAllocator) override
     {
         SCustomMaterial *theMaterial = static_cast<SCustomMaterial *>(
             m_CoreContext.GetDynamicObjectSystemCore().CreateInstance(inName,
@@ -1267,7 +1274,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
         return SMaterialOrComputeShader();
     }
 
-    void DoApplyInstanceValue(SCustomMaterial & /* inMaterial */, QT3DSU8 *inDataPtr,
+    void DoApplyInstanceValue(SCustomMaterial &inMaterial, QT3DSU8 *inDataPtr,
                               CRegisteredString inPropertyName,
                               NVRenderShaderDataTypes::Enum inPropertyType,
                               NVRenderShaderProgram &inShader,
@@ -1282,27 +1289,23 @@ struct SMaterialSystem : public ICustomMaterialSystem
                     StaticAssert<sizeof(CRegisteredString)
                                  == sizeof(NVRenderTexture2DPtr)>::valid_expression();
                     CRegisteredString *theStrPtr = reinterpret_cast<CRegisteredString *>(inDataPtr);
-                    IBufferManager &theBufferManager(m_Context->GetBufferManager());
-                    IOffscreenRenderManager &theOffscreenRenderer(
-                        m_Context->GetOffscreenRenderManager());
-                    NVRenderTexture2D *theTexture = nullptr;
-
-                    if (theStrPtr->IsValid()) {
-                        if (theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr)) {
-                            SOffscreenRenderResult theResult
-                                    = theOffscreenRenderer.GetRenderedItem(*theStrPtr);
-                            theTexture = theResult.m_Texture;
-                            if (theTexture) {
-                                SetSubpresentation(inShader, inPropertyName, theTexture,
-                                                   &inDefinition);
-                            }
-                        } else {
-                            SImageTextureData theTextureData
-                                    = theBufferManager.LoadRenderImage(*theStrPtr);
-                            theTexture = theTextureData.m_Texture;
-                            if (theTexture) {
-                                SetTexture(inShader, inPropertyName, theTexture, &inDefinition,
-                                           TextureNeedsMips(&inDefinition, theTexture));
+                    if (theStrPtr->IsValid() && inMaterial.m_imageMaps) {
+                        SImage *image = (*inMaterial.m_imageMaps)[inPropertyName];
+                        if (image) {
+                            if (image->m_ImagePath != *theStrPtr) {
+                                image->m_ImagePath = *theStrPtr;
+                                image->m_Flags.SetDirty(true);
+                            } else {
+                                if (image->m_OffscreenRendererId.IsValid()) {
+                                    SetSubpresentation(inShader, inPropertyName,
+                                                       image->m_TextureData.m_Texture,
+                                                       &inDefinition);
+                                } else {
+                                    SetTexture(inShader, inPropertyName,
+                                               image->m_TextureData.m_Texture, &inDefinition,
+                                               TextureNeedsMips(&inDefinition,
+                                                                image->m_TextureData.m_Texture));
+                                }
                             }
                         }
                     }
@@ -1909,28 +1912,39 @@ struct SMaterialSystem : public ICustomMaterialSystem
        return theClass->m_Class->RequiresCompilation();
     }
 
+    SCustomMaterial::TImageMapHash *newImageMap(NVAllocatorCallback &allocator)
+    {
+        const char *name = "SCustomMaterial::TImageMapHash";
+        SCustomMaterial::TImageMapHash *ret
+                = new (QT3DS_ALLOC(allocator, sizeof(SCustomMaterial::TImageMapHash), name))
+                        SCustomMaterial::TImageMapHash(allocator, name);
+        m_materialImageMaps.push_back(ret);
+        return ret;
+    }
+
     virtual void PrepareTextureForRender(SMaterialClass &inClass, SCustomMaterial &inMaterial)
     {
         NVConstDataRef<SPropertyDefinition> thePropDefs = inClass.m_Class->GetProperties();
         for (QT3DSU32 idx = 0, end = thePropDefs.size(); idx < end; ++idx) {
             if (thePropDefs[idx].m_DataType == NVRenderShaderDataTypes::NVRenderTexture2DPtr) {
-                if (thePropDefs[idx].m_TexUsageType == NVRenderTextureTypeValue::Displace) {
-                    SImage *pImage = NULL;
+                SImage *pImage = nullptr;
 
-                    // we only do this to not miss if "None" is selected
-                    CRegisteredString theStrPtr = *reinterpret_cast<CRegisteredString *>(
-                        inMaterial.GetDataSectionBegin() + thePropDefs[idx].m_Offset);
+                // we only do this to not miss if "None" is selected
+                CRegisteredString theStrPtr = *reinterpret_cast<CRegisteredString *>(
+                    inMaterial.GetDataSectionBegin() + thePropDefs[idx].m_Offset);
 
-                    if (theStrPtr.IsValid()) {
+                if (theStrPtr.IsValid()) {
+                    QT3DSU32 index = FindAllocatedImage(thePropDefs[idx].m_ImagePath);
+                    if (index == QT3DSU32(-1)) {
+                        pImage = QT3DS_NEW(m_CoreContext.GetAllocator(), SImage)();
+                        m_AllocatedImages.push_back(
+                            eastl::make_pair(thePropDefs[idx].m_ImagePath, pImage));
+                    } else {
+                        pImage = m_AllocatedImages[index].second;
+                    }
 
-                        QT3DSU32 index = FindAllocatedImage(thePropDefs[idx].m_ImagePath);
-                        if (index == QT3DSU32(-1)) {
-                            pImage = QT3DS_NEW(m_CoreContext.GetAllocator(), SImage)();
-                            m_AllocatedImages.push_back(
-                                eastl::make_pair(thePropDefs[idx].m_ImagePath, pImage));
-                        } else
-                            pImage = m_AllocatedImages[index].second;
-
+                    switch (thePropDefs[idx].m_TexUsageType) {
+                    case NVRenderTextureTypeValue::Displace:
                         if (inMaterial.m_DisplacementMap != pImage) {
                             inMaterial.m_DisplacementMap = pImage;
                             inMaterial.m_DisplacementMap->m_ImagePath =
@@ -1942,25 +1956,8 @@ struct SMaterialSystem : public ICustomMaterialSystem
                             inMaterial.m_DisplacementMap->m_HorizontalTilingMode =
                                 thePropDefs[idx].m_CoordOp;
                         }
-                    } else {
-                        inMaterial.m_DisplacementMap = NULL;
-                    }
-                } else if (thePropDefs[idx].m_TexUsageType == NVRenderTextureTypeValue::Emissive2) {
-                    SImage *pImage = NULL;
-
-                    // we only do this to not miss if "None" is selected
-                    CRegisteredString theStrPtr = *reinterpret_cast<CRegisteredString *>(
-                        inMaterial.GetDataSectionBegin() + thePropDefs[idx].m_Offset);
-
-                    if (theStrPtr.IsValid()) {
-                        QT3DSU32 index = FindAllocatedImage(thePropDefs[idx].m_ImagePath);
-                        if (index == QT3DSU32(-1)) {
-                            pImage = QT3DS_NEW(m_CoreContext.GetAllocator(), SImage)();
-                            m_AllocatedImages.push_back(
-                                eastl::make_pair(thePropDefs[idx].m_ImagePath, pImage));
-                        } else
-                            pImage = m_AllocatedImages[index].second;
-
+                        break;
+                    case NVRenderTextureTypeValue::Emissive2:
                         if (inMaterial.m_EmissiveMap2 != pImage) {
                             inMaterial.m_EmissiveMap2 = pImage;
                             inMaterial.m_EmissiveMap2->m_ImagePath = thePropDefs[idx].m_ImagePath;
@@ -1971,8 +1968,32 @@ struct SMaterialSystem : public ICustomMaterialSystem
                             inMaterial.m_EmissiveMap2->m_HorizontalTilingMode =
                                 thePropDefs[idx].m_CoordOp;
                         }
-                    } else {
-                        inMaterial.m_EmissiveMap2 = NULL;
+                        break;
+                    default:
+                        if (!inMaterial.m_imageMaps)
+                            inMaterial.m_imageMaps = newImageMap(m_CoreContext.GetAllocator());
+                        if ((*inMaterial.m_imageMaps)[thePropDefs[idx].m_Name] != pImage) {
+                            (*inMaterial.m_imageMaps)[thePropDefs[idx].m_Name] = pImage;
+                            pImage->m_ImagePath = thePropDefs[idx].m_ImagePath;
+                            pImage->m_ImageShaderName = thePropDefs[idx].m_Name;
+                            pImage->m_VerticalTilingMode = thePropDefs[idx].m_CoordOp;
+                            pImage->m_HorizontalTilingMode = thePropDefs[idx].m_CoordOp;
+                        }
+                        break;
+                    }
+                } else {
+                    switch (thePropDefs[idx].m_TexUsageType) {
+                    case NVRenderTextureTypeValue::Displace:
+                        inMaterial.m_DisplacementMap = nullptr;
+                        break;
+                    case NVRenderTextureTypeValue::Emissive2:
+                        inMaterial.m_EmissiveMap2 = nullptr;
+                        break;
+                    default:
+                        if (!inMaterial.m_imageMaps)
+                            inMaterial.m_imageMaps = newImageMap(m_CoreContext.GetAllocator());
+                        (*inMaterial.m_imageMaps)[thePropDefs[idx].m_Name] = nullptr;
+                        break;
                     }
                 }
             }

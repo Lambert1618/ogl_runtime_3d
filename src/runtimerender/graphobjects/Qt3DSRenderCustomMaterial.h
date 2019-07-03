@@ -35,6 +35,7 @@
 #include "Qt3DSRenderImage.h"
 #include "Qt3DSRenderLightmaps.h"
 #include "foundation/Qt3DSFlags.h"
+#include "foundation/Qt3DSContainers.h"
 
 namespace qt3ds {
 namespace render {
@@ -77,6 +78,9 @@ namespace render {
         SImage *m_DisplacementMap;
         QT3DSF32 m_DisplaceAmount; ///< depends on the object size
 
+        typedef qt3ds::foundation::nvhash_map<CRegisteredString, SImage *> TImageMapHash;
+        TImageMapHash *m_imageMaps;
+
         SGraphObject *m_NextSibling;
 
         SCustomMaterialShaderKeyFlags m_ShaderKeyValues; ///< input from MDL files
@@ -98,6 +102,7 @@ namespace render {
             m_DisplaceAmount = 0.0;
             m_ShaderKeyValues = (SCustomMaterialShaderKeyFlags)inKey;
             m_LayerCount = inLayerCount;
+            m_imageMaps = nullptr;
         }
 
         bool IsDielectric() const

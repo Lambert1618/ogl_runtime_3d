@@ -238,8 +238,8 @@ namespace render {
                                       const void *hostPtr = NULL) override;
 
         void GenerateMipMaps(NVRenderBackendTextureObject to,
-                                     NVRenderTextureTargetType::Enum target,
-                                     NVRenderHint::Enum genType) override;
+                             NVRenderTextureTargetType::Enum target,
+                             NVRenderHint::Enum genType) override;
 
         virtual NVRenderTextureSwizzleMode::Enum
         GetTextureSwizzleMode(const NVRenderTextureFormats::Enum inFormat) const override;

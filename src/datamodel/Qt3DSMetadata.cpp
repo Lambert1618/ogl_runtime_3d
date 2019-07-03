@@ -923,11 +923,19 @@ public:
     {
         return m_NewMetaData->GetEffectBySourcePath(inName);
     }
+    Option<qt3dsdm::SMetaDataEffect> GetEffectMetaDataByName(const char *name)
+    {
+        return m_NewMetaData->GetEffectByName(name);
+    }
 
     virtual Option<qt3dsdm::SMetaDataCustomMaterial>
     GetMaterialMetaDataBySourcePath(const char *inName) override
     {
         return m_NewMetaData->GetMaterialBySourcePath(inName);
+    }
+    Option<qt3dsdm::SMetaDataCustomMaterial> GetMaterialMetaDataByName(const char *name)
+    {
+        return m_NewMetaData->GetMaterialByName(name);
     }
 
     virtual void GetInstanceProperties(const wchar_t *inType, const wchar_t *inId,

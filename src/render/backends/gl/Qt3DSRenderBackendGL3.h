@@ -65,8 +65,8 @@ namespace render {
         QT3DSU32 GetDepthBits() const override;
         QT3DSU32 GetStencilBits() const override;
         void GenerateMipMaps(NVRenderBackendTextureObject to,
-                                     NVRenderTextureTargetType::Enum target,
-                                     NVRenderHint::Enum genType) override;
+                             NVRenderTextureTargetType::Enum target,
+                             NVRenderHint::Enum genType) override;
 
         void SetMultisampledTextureData2D(NVRenderBackendTextureObject to,
                                                   NVRenderTextureTargetType::Enum target,

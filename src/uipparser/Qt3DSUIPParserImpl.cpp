@@ -51,6 +51,7 @@
 #include "Qt3DSElementSystem.h"
 #include "Qt3DSAnimationSystem.h"
 #include "Qt3DSSlideSystem.h"
+#include "Qt3DSRenderDynamicObjectSystem.h"
 
 using namespace qt3dsdm;
 
@@ -2122,8 +2123,13 @@ BOOL CUIPParserImpl::LoadSlideElements(IPresentation &inPresentation, qt3dsdm::I
     return theSuccess;
 }
 
-BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool,
-                                           SElementData &inElementData, qt3dsdm::IDOMReader &inReader,
+static inline bool IsDynamicObject(TStrType type)
+{
+    return strcmp(type.c_str(), "CustomMaterial") == 0 || strcmp(type.c_str(), "Effect") == 0;
+}
+
+BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool masterSlide,
+                                           SElementData &inElementData, IDOMReader &inReader,
                                            SElement *inComponent)
 {
     ISlideSystem &theBuilder = inPresentation.GetSlideSystem();
@@ -2143,9 +2149,30 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool,
             if (QString::fromUtf8(mapping) == QLatin1String("Light Probe"))
                 ibl = true;
         }
-        AddSourcePath(sourcepath, ibl);
-        theBuilder.AddSourcePath(sourcepath);
-        m_slideSourcePaths.push_back(QString::fromLatin1(sourcepath));
+        if (!IsTrivial(sourcepath) && sourcepath[0] != '#') {
+            AddSourcePath(sourcepath, ibl);
+            if (!masterSlide) {
+                theBuilder.AddSourcePath(sourcepath);
+                m_slideSourcePaths.push_back(QString::fromLatin1(sourcepath));
+            }
+        }
+    }
+
+    const bool dyn = IsDynamicObject(inElementData.m_Type);
+    Option<qt3dsdm::SMetaDataCustomMaterial> mat;
+    Option<qt3dsdm::SMetaDataEffect> eff;
+    SMetaDataDynamicObject *dynMetaData = nullptr;
+    if (dyn) {
+        // Dynamic object do not list all properties in the elementData property map for some reason
+        if (strcmp(inElementData.m_Type, "CustomMaterial") == 0) {
+            mat = m_MetaData.GetMaterialMetaDataByName(inElementData.m_Class);
+            if (mat.hasValue())
+                dynMetaData = &mat.getValue();
+        } else if (strcmp(inElementData.m_Type, "Effect") == 0) {
+            eff = m_MetaData.GetEffectMetaDataByName(inElementData.m_Class);
+            if (eff.hasValue())
+                dynMetaData = &eff.getValue();
+        }
     }
 
     // We don't force set attributes when a given component has a set command within one of its
@@ -2174,6 +2201,14 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool,
             GetAttributeList(inPresentation, theAttributeList, inElementData.m_Type, theIter->first,
                              inElementData.m_Class, theAttValue, theIter->second.m_PropertyNames);
         }
+        // Handle dynamic object texture source paths
+        if (hasAtt && !IsTrivial(theAttValue) && IsDynamicObject(inElementData.m_Type)
+                && theIter->second.m_AdditionalType == ERuntimeAdditionalMetaDataTypeTexture) {
+            AddSourcePath(theAttValue, false);
+            theBuilder.AddSourcePath(theAttValue);
+            if (!masterSlide)
+                m_slideSourcePaths.push_back(QString::fromLatin1(theAttValue));
+        }
         if (isSet == false && theIter->second.m_SlideForceFlag == false) {
             if (inElementData.m_Element != NULL && theIter->second.m_ElementFlag) {
                 for (QT3DSU32 idx = previousListSize, end = theAttributeList.size(); idx < end;
@@ -2186,6 +2221,22 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool,
                 }
             }
             theAttributeList.resize(previousListSize);
+        }
+    }
+    if (dynMetaData) {
+        for (int i = 0; i < dynMetaData->m_Properties.size(); ++i) {
+            qt3ds::render::dynamic::SPropertyDefinition prop = dynMetaData->m_Properties[i];
+            if (prop.m_DataType == qt3ds::render::NVRenderShaderDataTypes::NVRenderTexture2DPtr) {
+                const char8_t *theAttValue = "";
+                bool hasAtt = inReader.UnregisteredAtt(prop.m_Name, theAttValue);
+                if (hasAtt && !IsTrivial(theAttValue) ) {
+                    AddSourcePath(theAttValue, false);
+                    if (!masterSlide) {
+                        theBuilder.AddSourcePath(theAttValue);
+                        m_slideSourcePaths.push_back(QString::fromLatin1(theAttValue));
+                    }
+                }
+            }
         }
     }
     for (TPropertyDescAndValueList::iterator theIter = theAttributeList.begin();

@@ -34,6 +34,8 @@
 #include "foundation/StringTable.h"
 #include "foundation/Qt3DSBounds3.h"
 #include "Qt3DSBoundingBox.h"
+#include "Qt3DSTypes.h"
+
 namespace qt3ds {
 namespace render {
     class IImageLoadListener;
@@ -119,18 +121,6 @@ public: // Base Interface
     virtual CBoundingBox GetBoundingBox(TElement *inElement, bool inSelfOnly) = 0;
     // Get bounding box in local space.
     virtual CBoundingBox GetLocalBoundingBox(TElement *inElement, bool inSelfOnly) = 0;
-
-    // The final argument, inHasTransparency has 3 possible values,
-    // 0 for no transparency, 1 for hasTransparency, -1 for unknown
-    virtual void SetTextureData(TElement *inElement, const unsigned char *inBuffer,
-                                INT32 inBufferLength, INT32 inWidth, INT32 inHeight,
-                                qt3ds::render::NVRenderTextureFormats::Enum inFormat,
-                                INT32 inHasTransparency = -1) = 0;
-
-    virtual bool CreateOrSetMeshData(const char *inPathStr, unsigned char *vertData,
-                                     unsigned int numVerts, unsigned int vertStride,
-                                     unsigned int *indexData, unsigned int numIndices,
-                                     qt3ds::NVBounds3 &objBounds) = 0;
 
     virtual STextSizes MeasureText(TElement *inElement, const char *inTextStr) = 0;
 

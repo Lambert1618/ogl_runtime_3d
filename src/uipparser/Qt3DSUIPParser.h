@@ -34,6 +34,7 @@
 //	Includes
 //==============================================================================
 #include "foundation/StringTable.h"
+#include "Qt3DSKernelTypes.h"
 #include <EASTL/string.h>
 
 namespace qt3ds {

@@ -35,6 +35,8 @@
 #include "Qt3DSRenderNode.h"
 #include "EASTL/string.h"
 #include "Qt3DSRenderDynamicObject.h"
+#include "Qt3DSRenderImage.h"
+#include "foundation/Qt3DSContainers.h"
 
 namespace qt3ds {
 namespace render {
@@ -60,6 +62,9 @@ namespace render {
         // May be null in which case the effect system will generate a new context
         // the first time it needs to render this effect.
         SEffectContext *m_Context;
+
+        typedef qt3ds::foundation::nvhash_map<CRegisteredString, SImage *> TImageMapHash;
+        TImageMapHash *m_imageMaps;
 
         void Initialize();
 

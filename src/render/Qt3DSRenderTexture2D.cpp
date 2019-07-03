@@ -236,12 +236,17 @@ namespace render {
 
     void NVRenderTexture2D::GenerateMipmaps(NVRenderHint::Enum genType)
     {
-        applyTexParams();
-        m_Backend->GenerateMipMaps(m_TextureHandle, m_TexTarget, genType);
         QT3DSU32 maxDim = (m_Width >= m_Height) ? m_Width : m_Height;
+        QT3DSU32 oldMaxLevel = m_MaxMipLevel;
         m_MaxMipLevel = static_cast<QT3DSU32>(logf((float)maxDim) / logf(2.0f));
         // we never create more level than m_MaxLevel
         m_MaxMipLevel = qt3ds::NVMin(m_MaxMipLevel, (QT3DSU32)m_MaxLevel);
+        m_TexStateDirty = oldMaxLevel != m_MaxMipLevel;
+        if (m_TexStateDirty) {
+            m_Sampler->m_MaxLod = m_MaxMipLevel;
+            m_SamplerParamsDirty = true;
+        }
+        m_Backend->GenerateMipMaps(m_TextureHandle, m_TexTarget, genType);
     }
 
     void NVRenderTexture2D::Bind()
