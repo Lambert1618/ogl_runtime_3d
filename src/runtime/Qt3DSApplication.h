@@ -169,7 +169,7 @@ public:
 
     virtual Q3DStudio::CPresentation *GetPrimaryPresentation() = 0;
 
-    virtual Q3DStudio::CPresentation *GetPresentationById(const char8_t *inId) = 0;
+    virtual Q3DStudio::CPresentation *LoadAndGetPresentationById(const char8_t *inId) = 0;
 
     virtual QList<Q3DStudio::CPresentation *> GetPresentationList() = 0;
 

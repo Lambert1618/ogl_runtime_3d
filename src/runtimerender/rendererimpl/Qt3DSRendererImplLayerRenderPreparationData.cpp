@@ -221,11 +221,13 @@ namespace render {
                 m_LastFrameOffscreenRenderer = theInstance;
             }
         }
-        if (m_LastFrameOffscreenRenderer.mPtr == NULL)
+        if (m_LastFrameOffscreenRenderer.mPtr == nullptr && m_Layer.m_TexturePath.IsValid()) {
             m_LastFrameOffscreenRenderer =
                 m_Renderer.GetQt3DSContext().GetOffscreenRenderManager().GetOffscreenRenderer(
                     m_Layer.m_TexturePath);
-        return m_LastFrameOffscreenRenderer.mPtr != NULL;
+            m_LastFrameOffscreenRendererId = m_Layer.m_TexturePath;
+        }
+        return m_LastFrameOffscreenRenderer.mPtr != nullptr;
     }
 
     QT3DSVec3 SLayerRenderPreparationData::GetCameraDirection()
@@ -1136,9 +1138,7 @@ namespace render {
         }
     };
 
-    // m_Layer.m_Camera->CalculateViewProjectionMatrix(m_ViewProjection);
-    void
-    SLayerRenderPreparationData::PrepareForRender(const QSize &inViewportDimensions)
+    void SLayerRenderPreparationData::PrepareForRender(const QSize &inViewportDimensions)
     {
         SStackPerfTimer __timer(m_Renderer.GetQt3DSContext().GetPerfTimer(),
                                 "SLayerRenderData::PrepareForRender");
@@ -1494,8 +1494,13 @@ namespace render {
         m_LayerPrepResult.setEmpty();
         // The check for if the camera is or is not null is used
         // to figure out if this layer was rendered at all.
-        m_Camera = NULL;
-        m_LastFrameOffscreenRenderer = NULL;
+        m_Camera = nullptr;
+
+        // Called at the beginning of the frame so the objects have been updated with new values
+        // so we can check if the renderer is the same
+        if (m_LastFrameOffscreenRendererId != m_Layer.m_TexturePath)
+            m_LastFrameOffscreenRenderer = nullptr;
+
         m_IRenderWidgets.clear_unsafe();
         m_CameraDirection.setEmpty();
         m_LightDirections.clear_unsafe();

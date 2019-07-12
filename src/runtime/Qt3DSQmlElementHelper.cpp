@@ -91,7 +91,7 @@ TElement *CQmlElementHelper::GetElement(qt3ds::runtime::IApplication &inApplicat
 
         const CHAR *thePresentationName = theToken;
 
-        thePresentation = inApplication.GetPresentationById(thePresentationName);
+        thePresentation = inApplication.LoadAndGetPresentationById(thePresentationName);
     }
     if (thePresentation == nullptr)
         thePresentation = inDefaultPresentation;

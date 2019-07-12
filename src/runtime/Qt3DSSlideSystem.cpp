@@ -119,6 +119,7 @@ struct SSlide
     bool m_activeSlide = false;
     bool m_unloadSlide = false;
     QVector<QString> m_sourcePaths;
+    QVector<QString> m_subpresentationIds;
 
     SSlide()
         : m_PlayMode(PlayMode::StopAtEnd)
@@ -222,11 +223,25 @@ struct SSlideSystem : public ISlideSystem
             m_CurrentSlide->m_sourcePaths.push_back(QString::fromUtf8(path));
     }
 
+    void AddSubPresentation(const char8_t *subpresentationId) override
+    {
+        if (m_CurrentSlide)
+            m_CurrentSlide->m_subpresentationIds.push_back(QString::fromUtf8(subpresentationId));
+    }
+
     QVector<QString> GetSourcePaths(SSlideKey inKey) override
     {
         auto slide = FindSlide(inKey);
         if (slide)
             return slide->m_sourcePaths;
+        return {};
+    }
+
+    QVector<QString> GetSubPresentations(SSlideKey inKey) override
+    {
+        auto slide = FindSlide(inKey);
+        if (slide)
+            return slide->m_subpresentationIds;
         return {};
     }
 

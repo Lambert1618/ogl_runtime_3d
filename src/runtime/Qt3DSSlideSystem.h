@@ -135,7 +135,9 @@ namespace runtime {
         virtual SSlideAnimAction *AddSlideAnimAction(bool inAnimation, QT3DSI32 inIndex,
                                                      bool inActive) = 0;
         virtual void AddSourcePath(const char8_t *path) = 0;
+        virtual void AddSubPresentation(const char8_t *subpresentationId) = 0;
         virtual QVector<QString> GetSourcePaths(SSlideKey inKey) = 0;
+        virtual QVector<QString> GetSubPresentations(SSlideKey inKey) = 0;
         virtual void setIsActiveSlide(SSlideKey inKey, bool active) = 0;
         virtual bool isActiveSlide(SSlideKey inKey) const = 0;
         virtual void setUnloadSlide(SSlideKey inKey, bool unload) = 0;

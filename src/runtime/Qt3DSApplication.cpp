@@ -313,6 +313,15 @@ struct SSlideResourceCounter
     }
 };
 
+
+struct SApp;
+
+struct AssetHandlers {
+    static bool handlePresentation(SApp &app, SAssetValue &asset, bool initRenderThread = false);
+    static bool handleBehavior(SApp &app, SAssetValue &asset);
+    static bool handleQmlPresentation(IRuntimeFactory &factory, SAssetValue &asset);
+};
+
 struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
 {
     IImageBatchLoader &m_batchLoader;
@@ -398,8 +407,6 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
         m_bufferManager.loadSet(m_batches[inBatch]);
     }
 };
-
-struct SApp;
 
 class IAppLoadContext : public NVRefCounted
 {
@@ -633,7 +640,6 @@ struct SApp : public IApplication
 
     // Handles are loaded sorted but only added to the handle map when needed.
     nvvector<char8_t> m_LoadBuffer;
-    nvvector<CPresentation *> m_PresentationBuffer;
     Mutex m_RunnableMutex;
     nvvector<NVScopedRefCounted<IAppRunnable>> m_ThreadRunnables;
     nvvector<NVScopedRefCounted<IAppRunnable>> m_MainThreadRunnables;
@@ -684,8 +690,6 @@ struct SApp : public IApplication
         , m_ElementAllocator(IElementAllocator::CreateElementAllocator(inFactory.GetFoundation(),
                                                                        inFactory.GetStringTable()))
         , m_LoadBuffer(inFactory.GetFoundation().getAllocator(), "SApp::m_LoadBuffer")
-        , m_PresentationBuffer(inFactory.GetFoundation().getAllocator(),
-                               "SApp::m_PresentationBuffer")
         , m_RunnableMutex(inFactory.GetFoundation().getAllocator())
         , m_ThreadRunnables(inFactory.GetFoundation().getAllocator(), "SApp::m_ThreadRunnables")
         , m_MainThreadRunnables(inFactory.GetFoundation().getAllocator(),
@@ -773,31 +777,15 @@ struct SApp : public IApplication
         m_visitor = v;
     }
 
-    NVDataRef<CPresentation *> GetPresentations()
-    {
-        if (m_PresentationBuffer.empty()) {
-            for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
-                SAssetValue &theAsset = *m_OrderedAssets[idx].second;
-                if (theAsset.getType() == AssetValueTypes::Presentation) {
-                    SPresentationAsset &thePresAsset = *theAsset.getDataPtr<SPresentationAsset>();
-                    if (thePresAsset.m_Presentation)
-                        m_PresentationBuffer.push_back(thePresAsset.m_Presentation);
-                }
-            }
-        }
-        return m_PresentationBuffer;
-    }
     QVector<CPresentation *> getPresentations()
     {
         QVector<CPresentation *> presentations;
-        if (m_PresentationBuffer.empty()) {
-            for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
-                SAssetValue &theAsset = *m_OrderedAssets[idx].second;
-                if (theAsset.getType() == AssetValueTypes::Presentation) {
-                    SPresentationAsset &thePresAsset = *theAsset.getDataPtr<SPresentationAsset>();
-                    if (thePresAsset.m_Presentation)
-                        presentations.push_back(thePresAsset.m_Presentation);
-                }
+        for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
+            SAssetValue &theAsset = *m_OrderedAssets[idx].second;
+            if (theAsset.getType() == AssetValueTypes::Presentation) {
+                SPresentationAsset &thePresAsset = *theAsset.getDataPtr<SPresentationAsset>();
+                if (thePresAsset.m_Presentation)
+                    presentations.push_back(thePresAsset.m_Presentation);
             }
         }
         return presentations;
@@ -938,9 +926,18 @@ struct SApp : public IApplication
 
     void ClearPresentationDirtyLists()
     {
-        NVDataRef<CPresentation *> thePresentations(GetPresentations());
-        for (QT3DSU32 idx = 0, end = thePresentations.size(); idx < end; ++idx)
-            thePresentations[idx]->ClearDirtyList();
+        const QVector<CPresentation *> presentations(getPresentations());
+        for (auto pres : presentations)
+            pres->ClearDirtyList();
+    }
+
+    void forAllPresentations(const QVector<CPresentation *> &presentations, bool checkActive,
+                             std::function<void(CPresentation *)> func)
+    {
+        for (auto pres : presentations) {
+            if (!checkActive || pres->GetActive())
+                func(pres);
+        }
     }
 
     void UpdatePresentations()
@@ -958,65 +955,36 @@ struct SApp : public IApplication
         // SetTimeMilliSecs().
         Q3DStudio::INT64 globalTime(GetTimeMilliSecs());
 
-        NVDataRef<CPresentation *> thePresentations(GetPresentations());
+        QVector<CPresentation *> presentations(getPresentations());
 
         {
             SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
                                           "UpdatePresentations - pre update");
-            for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
-                if (m_OrderedAssets[idx].second->getType() == AssetValueTypes::Presentation) {
-                    SPresentationAsset &theAsset(
-                                *m_OrderedAssets[idx].second->getDataPtr<SPresentationAsset>());
-                    CPresentation *thePresentation = theAsset.m_Presentation;
-                    if (thePresentation && thePresentation->GetActive())
-                        thePresentation->PreUpdate(globalTime);
-                }
-            }
+            forAllPresentations(presentations, true, [globalTime](CPresentation *p) {
+                p->PreUpdate(globalTime);
+            });
         }
         {
             SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
                                           "UpdatePresentations - begin update");
-            for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
-                if (m_OrderedAssets[idx].second->getType() == AssetValueTypes::Presentation) {
-                    SPresentationAsset &theAsset(
-                                *m_OrderedAssets[idx].second->getDataPtr<SPresentationAsset>());
-                    CPresentation *thePresentation = theAsset.m_Presentation;
-                    if (thePresentation && thePresentation->GetActive())
-                        thePresentation->BeginUpdate();
-                }
-            }
+            forAllPresentations(presentations, true, [](CPresentation *p) {
+                p->BeginUpdate();
+            });
         }
+        // Allow EndUpdate and PostUpdate for inactive presentations so we can activate it
         {
             SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
                                           "UpdatePresentations - end update");
-
-            for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
-                if (m_OrderedAssets[idx].second->getType() == AssetValueTypes::Presentation) {
-                    SPresentationAsset &theAsset(
-                                *m_OrderedAssets[idx].second->getDataPtr<SPresentationAsset>());
-                    CPresentation *thePresentation = theAsset.m_Presentation;
-                    // allow EndUpdate also for inactive presentations so that we can
-                    // activate it
-                    if (thePresentation)
-                        thePresentation->EndUpdate();
-                }
-            }
+            forAllPresentations(presentations, false, [](CPresentation *p) {
+                p->EndUpdate();
+            });
         }
         {
             SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
                                           "UpdatePresentations - postupdate");
-
-            for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
-                if (m_OrderedAssets[idx].second->getType() == AssetValueTypes::Presentation) {
-                    SPresentationAsset &theAsset(
-                                *m_OrderedAssets[idx].second->getDataPtr<SPresentationAsset>());
-                    CPresentation *thePresentation = theAsset.m_Presentation;
-                    // allow PostUpdate also for inactive presentations so that we can
-                    // activate it
-                    if (thePresentation)
-                        thePresentation->PostUpdate(globalTime);
-                }
-            }
+            forAllPresentations(presentations, false, [globalTime](CPresentation *p) {
+                p->PostUpdate(globalTime);
+            });
         }
 
         // Run the garbage collection
@@ -1074,6 +1042,59 @@ struct SApp : public IApplication
 
     void UpdateScenes() { m_RuntimeFactory->GetSceneManager().Update(); }
 
+    bool LazyLoadSubPresentations()
+    {
+        bool loadedSomething = false;
+        QVector<CRegisteredString> activeSubpresentations;
+        m_RuntimeFactory->GetSceneManager().GetActiveSubPresentations(activeSubpresentations);
+
+        for (auto subPres : qAsConst(activeSubpresentations)) {
+            // Already loaded?
+            if (GetPresentationById(subPres.c_str()))
+                continue;
+            bool done = false;
+            for (unsigned int i = 0; i < m_OrderedAssets.size() && !done; ++i) {
+                if (m_OrderedAssets[i].first == subPres) {
+                    // Load asset
+                    SAssetValue &theAsset = *m_OrderedAssets[i].second;
+                    switch (theAsset.getType()) {
+                    case AssetValueTypes::Presentation: {
+                        AssetHandlers::handlePresentation(*this, theAsset);
+                        loadedSomething = true;
+                        done = true;
+
+                        SPresentationAsset &thePresentationAsset
+                                = *theAsset.getDataPtr<SPresentationAsset>();
+                        CPresentation *thePresentation = thePresentationAsset.m_Presentation;
+                        if (thePresentation) {
+                            SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
+                                                        "Application: SetActivityZone");
+                            thePresentation->SetActivityZone(
+                                      &m_ActivityZoneManager->CreateActivityZone(*thePresentation));
+                            thePresentation->SetActive(thePresentationAsset.m_Active);
+                        }
+                    } break;
+                    case AssetValueTypes::Behavior:
+                        AssetHandlers::handleBehavior(*this, theAsset);
+                        loadedSomething = true;
+                        done = true;
+                        break;
+                    case AssetValueTypes::QmlPresentation:
+                        AssetHandlers::handleQmlPresentation(GetRuntimeFactory(), theAsset);
+                        loadedSomething = true;
+                        done = true;
+                        break;
+                        // SCXML, NoAssetValue do not need processing here
+                    default:
+                        done = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return loadedSomething;
+    }
+
     void Render()
     {
         SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(), "Render");
@@ -1122,8 +1143,14 @@ struct SApp : public IApplication
         }
 
         UpdatePresentations();
-
         UpdateScenes();
+
+        // If subpresentations changed we need to check if any of them needs to be loaded.
+        if (LazyLoadSubPresentations()) {
+            // Just redo all
+            UpdatePresentations();
+            UpdateScenes();
+        }
 
         Render();
 
@@ -1195,6 +1222,20 @@ struct SApp : public IApplication
         }
     }
 
+    void getComponentSlideAssets(QVector<QString> &initialAssets, CPresentation *presentation,
+                                 TElement *component, int index)
+    {
+        auto &slideSystem = presentation->GetSlideSystem();
+        SSlideKey key;
+        key.m_Component = component;
+        key.m_Index = index;
+        const auto subpress = slideSystem.GetSubPresentations(key);
+        for (auto pres : subpress) {
+            if (!initialAssets.contains(pres))
+                initialAssets.push_back(pres);
+        }
+    }
+
     void unloadComponentSlideResources(TElement *component, CPresentation *presentation, int index,
                                        const QString slideName)
     {
@@ -1226,12 +1267,11 @@ struct SApp : public IApplication
         CFileTools::CombineBaseAndRelative(GetProjectDirectory().c_str(), inAsset.m_Src.c_str(),
                                            theFile);
         // Check if the file event exists
-        eastl::string fullPath;
         NVScopedRefCounted<qt3ds::render::IRefCountedInputStream> theStream
                 = m_CoreFactory->GetRenderContextCore().GetInputStreamFactory().GetStreamForFile(
                     theFile.c_str());
         if (theStream) {
-            theStream = NULL;
+            theStream = nullptr;
             CPresentation *thePresentation
                     = Q3DStudio_new(CPresentation) CPresentation(inAsset.m_Id.c_str(),
                                                                  GetProjectDirectory().c_str(),
@@ -1242,8 +1282,7 @@ struct SApp : public IApplication
                                                             theFile.c_str(), *m_MetaData,
                                                             m_CoreFactory->GetInputStreamFactory(),
                                                             m_CoreFactory->GetStringTable()));
-            Q3DStudio::IScene *newScene = NULL;
-            m_PresentationBuffer.clear();
+            Q3DStudio::IScene *newScene = nullptr;
             if (theUIPParser->Load(*thePresentation, inExternalReferences, initInRenderThread)) {
                 // Load the scene graph portion of the scene.
                 newScene = m_RuntimeFactory->GetSceneManager().LoadScene(
@@ -1821,13 +1860,21 @@ struct SApp : public IApplication
         return GetPresentationById(m_PresentationId.c_str());
     }
 
-    Q3DStudio::CPresentation *GetPresentationById(const char8_t *inId) override
+    virtual Q3DStudio::CPresentation *LoadAndGetPresentationById(const char8_t *inId) override
+    {
+        return GetPresentationById(inId, true);
+    }
+
+    Q3DStudio::CPresentation *GetPresentationById(const char8_t *inId, bool load = false)
     {
         if (!isTrivial(inId)) {
             TIdAssetMap::iterator iter
                     = m_AssetMap.find(m_CoreFactory->GetStringTable().RegisterStr(inId));
             if (iter != m_AssetMap.end()
                     && iter->second->getType() == AssetValueTypes::Presentation) {
+                CPresentation *ret = iter->second->getData<SPresentationAsset>().m_Presentation;
+                if (!ret && load)
+                    AssetHandlers::handlePresentation(*this, *iter->second);
                 return iter->second->getData<SPresentationAsset>().m_Presentation;
             }
         }
@@ -1962,58 +2009,65 @@ struct SXMLLoader : public IAppLoadContext
 
     bool OnGraphicsInitialized(IRuntimeFactory &inFactory, bool initInRenderThread) override
     {
-        eastl::vector<SElementAttributeReference> theUIPReferences;
         eastl::string tempString;
+        const bool delayedLoading = inFactory.GetQt3DSRenderContext().GetBufferManager()
+                .isReloadableResourcesEnabled();
+
+        // First load the initial presentation
+        CAppStr initial = m_App.m_PresentationId;
+        if (initial.empty()) {
+            for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
+                SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
+                if (theAsset.getType() == AssetValueTypes::Presentation) {
+                    initial.assign(theAsset.getDataPtr<SPresentationAsset>()->m_Id.c_str());
+                    break;
+                }
+            }
+        }
+        // Do we even have a presentation
+        if (initial.empty())
+            return false;
+
+        // Load it
         for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
-            SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
-            eastl::string thePathStr;
-
-            CFileTools::CombineBaseAndRelative(m_App.GetProjectDirectory().c_str(),
-                                               theAsset.GetSource(), thePathStr);
-            switch (theAsset.getType()) {
-            case AssetValueTypes::Presentation: {
-                QDir::addSearchPath(QStringLiteral("qt3dstudio"),
-                                    QFileInfo(QString(thePathStr.c_str()))
-                                    .absoluteDir().absolutePath());
-                SPresentationAsset &thePresentationAsset
-                        = *theAsset.getDataPtr<SPresentationAsset>();
-                theUIPReferences.clear();
-
-                if (!m_App.LoadUIP(thePresentationAsset,
-                                   toConstDataRef(theUIPReferences.data(),
-                                                  (QT3DSU32)theUIPReferences.size()),
-                                   initInRenderThread)) {
-                    qCCritical(INVALID_OPERATION, "Unable to load presentation %s",
-                               thePathStr.c_str());
-                }
-            } break;
-            case AssetValueTypes::Behavior: {
-                SBehaviorAsset &theBehaviorAsset = *theAsset.getDataPtr<SBehaviorAsset>();
-                Q3DStudio::INT32 scriptId
-                        = m_App.m_CoreFactory->GetScriptEngineQml().InitializeApplicationBehavior(
-                            theBehaviorAsset.m_Src);
-                if (scriptId == 0) {
-                    qCCritical(INVALID_OPERATION, "Unable to load application behavior %s",
-                               theBehaviorAsset.m_Src.c_str());
-                } else {
-                    theBehaviorAsset.m_Handle = scriptId;
-                    m_App.m_Behaviors.push_back(eastl::make_pair(theBehaviorAsset, false));
-                }
-            } break;
-            case AssetValueTypes::RenderPlugin: {
-                SRenderPluginAsset &thePluginAsset = *theAsset.getDataPtr<SRenderPluginAsset>();
-
-                inFactory.GetSceneManager().LoadRenderPlugin(
-                            thePluginAsset.m_Id, thePathStr.c_str(), thePluginAsset.m_Args);
-            } break;
-
-            case AssetValueTypes::QmlPresentation: {
-                SQmlPresentationAsset &asset = *theAsset.getDataPtr<SQmlPresentationAsset>();
-                inFactory.GetSceneManager().LoadQmlStreamerPlugin(asset.m_Id);
-            } break;
-                // SCXML, NoAssetValue do not need processing here
-            default:
+            if (m_App.m_OrderedAssets[idx].first == initial) {
+                SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
+                AssetHandlers::handlePresentation(m_App, theAsset, initInRenderThread);
                 break;
+            }
+        }
+
+        QVector<QString> initialAssets;
+        CPresentation *mainPresentation = m_App.GetPrimaryPresentation();
+        QVector<element::SElement*> components;
+        mainPresentation->GetRoot()->findComponents(components);
+
+        for (int i = 0; i < components.size(); ++i) {
+            m_App.getComponentSlideAssets(initialAssets, mainPresentation, components[i], 0);
+            m_App.getComponentSlideAssets(initialAssets, mainPresentation, components[i], 1);
+        }
+
+        if (!delayedLoading || (m_App.m_OrderedAssets.size() > 1 && initialAssets.size() > 0)) {
+            for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
+                QString assetId = QString::fromLatin1(m_App.m_OrderedAssets[idx].first.c_str());
+                if (m_App.m_OrderedAssets[idx].first != initial
+                        && (initialAssets.contains(assetId) || !delayedLoading)) {
+                    SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
+                    switch (theAsset.getType()) {
+                    case AssetValueTypes::Presentation:
+                        AssetHandlers::handlePresentation(m_App, theAsset);
+                        break;
+                    case AssetValueTypes::Behavior:
+                        AssetHandlers::handleBehavior(m_App, theAsset);
+                        break;
+                    case AssetValueTypes::QmlPresentation:
+                        AssetHandlers::handleQmlPresentation(inFactory, theAsset);
+                        break;
+                        // SCXML, NoAssetValue do not need processing here
+                    default:
+                        break;
+                    }
+                }
             }
         }
         if (m_ScaleMode.empty() == false) {
@@ -2069,6 +2123,54 @@ IApplication &IApplication::CreateApplicationCore(Q3DStudio::IRuntimeFactoryCore
 {
     return *QT3DS_NEW(inFactory.GetFoundation().getAllocator(), SApp)(inFactory,
                                                                       inApplicationDirectory);
+}
+
+bool AssetHandlers::handlePresentation(SApp &app, SAssetValue &asset, bool initInRenderThread)
+{
+    eastl::string thePathStr;
+
+    CFileTools::CombineBaseAndRelative(app.GetProjectDirectory().c_str(),
+                                       asset.GetSource(), thePathStr);
+
+    QDir::addSearchPath(QStringLiteral("qt3dstudio"),
+                        QFileInfo(QString(thePathStr.c_str()))
+                        .absoluteDir().absolutePath());
+    SPresentationAsset &thePresentationAsset
+            = *asset.getDataPtr<SPresentationAsset>();
+    eastl::vector<SElementAttributeReference> theUIPReferences;
+
+    if (!app.LoadUIP(thePresentationAsset,
+                       toConstDataRef(theUIPReferences.data(),
+                                      (QT3DSU32)theUIPReferences.size()), initInRenderThread)) {
+        qCCritical(INVALID_OPERATION, "Unable to load presentation %s",
+                   thePathStr.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool AssetHandlers::handleBehavior(SApp &app, SAssetValue &asset)
+{
+    SBehaviorAsset &theBehaviorAsset = *asset.getDataPtr<SBehaviorAsset>();
+    Q3DStudio::INT32 scriptId
+            = app.m_CoreFactory->GetScriptEngineQml().InitializeApplicationBehavior(
+                theBehaviorAsset.m_Src);
+    if (scriptId == 0) {
+        qCCritical(INVALID_OPERATION, "Unable to load application behavior %s",
+                   theBehaviorAsset.m_Src.c_str());
+        return false;
+    } else {
+        theBehaviorAsset.m_Handle = scriptId;
+        app.m_Behaviors.push_back(eastl::make_pair(theBehaviorAsset, false));
+    }
+    return true;
+}
+
+bool AssetHandlers::handleQmlPresentation(IRuntimeFactory &factory, SAssetValue &asset)
+{
+    SQmlPresentationAsset &qmlAsset = *asset.getDataPtr<SQmlPresentationAsset>();
+    factory.GetSceneManager().LoadQmlStreamerPlugin(qmlAsset.m_Id);
+    return true;
 }
 
 // Checks if the event is one that can cause picking

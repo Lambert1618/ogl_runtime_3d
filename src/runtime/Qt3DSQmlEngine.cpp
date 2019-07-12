@@ -1384,7 +1384,7 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
     if (theSubPresId.isEmpty())
         presentation = m_Application->GetPrimaryPresentation();
     else
-        presentation = m_Application->GetPresentationById(theSubPresId.constData());
+        presentation = m_Application->LoadAndGetPresentationById(theSubPresId.constData());
 
     if (!presentation) {
         error = QObject::tr("Invalid presentation ID: '%1'").arg(subPresId);
@@ -1737,7 +1737,7 @@ void CQmlEngineImpl::deleteMaterials(const QStringList &materialNames, IQt3DSRen
         if (presId.isEmpty())
             presentation = m_Application->GetPrimaryPresentation();
         else
-            presentation = m_Application->GetPresentationById(theId.constData());
+            presentation = m_Application->LoadAndGetPresentationById(theId.constData());
 
         if (presentation) {
             // Find material container
@@ -1856,7 +1856,7 @@ void CQmlEngineImpl::SetPresentationAttribute(const char *presId, const char *, 
         return;
     if (presId[0] == '#')
         ++presId;
-    CPresentation *thePresentation = m_Application->GetPresentationById(presId);
+    CPresentation *thePresentation = m_Application->LoadAndGetPresentationById(presId);
     if (thePresentation) {
         bool active = AreEqualCaseless(nonNull(value), "True");
         thePresentation->SetActive(active);
@@ -2054,7 +2054,7 @@ TElement *CQmlEngineImpl::getTarget(const char *component) {
     if (split.size() > 1) {
         target = CQmlElementHelper::GetElement(
                     *m_Application,
-                    m_Application->GetPresentationById(split.at(0).toStdString().c_str()),
+                    m_Application->LoadAndGetPresentationById(split.at(0).toStdString().c_str()),
                     split.at(1).toStdString().c_str(), NULL);
     } else {
         target = CQmlElementHelper::GetElement(
@@ -2238,7 +2238,7 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                                 if (split.size() > 1) {
                                     target = CQmlElementHelper::GetElement(
                                                 *m_Application,
-                                                m_Application->GetPresentationById(
+                                                m_Application->LoadAndGetPresentationById(
                                                     split.at(0).toStdString().c_str()),
                                                 split.at(1).toStdString().c_str(), nullptr);
                                 } else {
@@ -2323,7 +2323,7 @@ void CQmlEngineImpl::initializeDataOutputsInPresentation(CPresentation &presenta
                         if (split.size() > 1) {
                             target = CQmlElementHelper::GetElement(
                                         *m_Application,
-                                        m_Application->GetPresentationById(
+                                        m_Application->LoadAndGetPresentationById(
                                             split.at(0).toStdString().c_str()),
                                         split.at(1).toStdString().c_str(), nullptr);
                         } else {

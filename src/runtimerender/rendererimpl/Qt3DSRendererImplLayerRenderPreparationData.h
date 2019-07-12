@@ -286,6 +286,7 @@ namespace render {
         nvvector<QT3DSVec3> m_SourceLightDirections;
         nvvector<QT3DSVec3> m_LightDirections;
         TModelContextPtrList m_ModelContexts;
+        qt3ds::foundation::CRegisteredString m_LastFrameOffscreenRendererId;
         NVScopedRefCounted<IOffscreenRenderer> m_LastFrameOffscreenRenderer;
 
         eastl::vector<SShaderPreprocessorFeature> m_Features;

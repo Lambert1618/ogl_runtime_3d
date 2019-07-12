@@ -75,6 +75,7 @@
 #include "Qt3DSRenderPrefilterTexture.h"
 #include "foundation/PoolingAllocator.h"
 #include "q3dsqmlrender.h"
+#include "Qt3DSHash.h"
 
 #ifdef EA_PLATFORM_WINDOWS
 #pragma warning(disable : 4355)
@@ -229,6 +230,27 @@ struct Qt3DSRenderScene : public Q3DStudio::IScene
                 m_DirtySet.insert(*theTranslator);
         }
         return m_DirtySet.size() > 0;
+    }
+
+    void GetActiveSubPresentations(QVector<qt3ds::foundation::CRegisteredString> &subs) override
+    {
+        using namespace Q3DStudio;
+        Q3DStudio::TElementList &theDirtyList
+                = m_RuntimePresentation->GetFrameData().GetDirtyList();
+        for (int idx = 0, end = theDirtyList.GetCount(); idx < end; ++idx) {
+            Q3DStudio::TElement &theElement = *theDirtyList[idx];
+            Qt3DSTranslator *theTranslator
+                    = reinterpret_cast<Qt3DSTranslator *>(theElement.GetAssociation());
+            if (theTranslator && theTranslator->GetUIPType() == GraphObjectTypes::Layer) {
+                Q3DStudio::UVariant value;
+                if (theElement.GetAttribute(ATTRIBUTE_SOURCEPATH, value))
+                    subs.push_back(m_Context->GetStringTable().HandleToStr(value.m_StringHandle));
+            } else if (theTranslator && theTranslator->GetUIPType() == GraphObjectTypes::Image) {
+                Q3DStudio::UVariant value;
+                if (theElement.GetAttribute(ATTRIBUTE_SUBPRESENTATION, value))
+                    subs.push_back(m_Context->GetStringTable().HandleToStr(value.m_StringHandle));
+            }
+        }
     }
 
     void TransferDirtyProperties()
@@ -1459,6 +1481,15 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
             theResult |= theScene->Update();
         }
         return theResult;
+    }
+
+    virtual void GetActiveSubPresentations(QVector<qt3ds::foundation::CRegisteredString> &subs)
+    {
+        size_t theSceneCount = m_Scenes.size();
+        for (size_t sid = 0; sid < theSceneCount; ++sid) {
+            Qt3DSRenderScene *theScene = m_Scenes[sid].second;
+            theScene->GetActiveSubPresentations(subs);
+        }
     }
 
     Q3DStudio::BOOL RenderPresentation(Q3DStudio::IPresentation *inPresentation,

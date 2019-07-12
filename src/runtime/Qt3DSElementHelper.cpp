@@ -77,7 +77,7 @@ TElement *CElementHelper::GetElement(qt3ds::runtime::IApplication &inApplication
 
         const CHAR *thePresentationName = theToken;
 
-        thePresentation = inApplication.GetPresentationById(thePresentationName);
+        thePresentation = inApplication.LoadAndGetPresentationById(thePresentationName);
     }
 
     if (!thePresentation)

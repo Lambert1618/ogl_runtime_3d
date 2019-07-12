@@ -2163,11 +2163,18 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
         }
         if (!IsTrivial(sourcepath) && sourcepath[0] != '#') {
             AddSourcePath(sourcepath, ibl);
-            if (!masterSlide) {
-                theBuilder.AddSourcePath(sourcepath);
+            theBuilder.AddSourcePath(sourcepath);
+            if (!masterSlide)
                 m_slideSourcePaths.push_back(QString::fromLatin1(sourcepath));
-            }
+            if (AreEqual(inElementData.m_Type.c_str(), "Layer"))
+                theBuilder.AddSubPresentation(sourcepath);
+
         }
+    }
+    const char8_t *subpres;
+    if (inReader.UnregisteredAtt("subpresentation", subpres)) {
+        if (!IsTrivial(subpres))
+            theBuilder.AddSubPresentation(subpres);
     }
 
     const bool dyn = IsDynamicObject(inElementData.m_Type);
@@ -2243,10 +2250,9 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
                 bool hasAtt = inReader.UnregisteredAtt(prop.m_Name, theAttValue);
                 if (hasAtt && !IsTrivial(theAttValue) ) {
                     AddSourcePath(theAttValue, false);
-                    if (!masterSlide) {
-                        theBuilder.AddSourcePath(theAttValue);
+                    theBuilder.AddSourcePath(theAttValue);
+                    if (!masterSlide)
                         m_slideSourcePaths.push_back(QString::fromLatin1(theAttValue));
-                    }
                 }
             }
         }
