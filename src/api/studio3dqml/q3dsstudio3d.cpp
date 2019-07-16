@@ -454,6 +454,11 @@ void Q3DSStudio3D::tick()
   */
 void Q3DSStudio3D::getCommands(bool emitInitialize, CommandQueue &renderQueue)
 {
+    if (m_presentation->d_ptr->m_dataInputsChanged) {
+        m_presentation->d_ptr->setDataInputValueBatch();
+        m_presentation->d_ptr->m_dataInputsChanged = false;
+    }
+
     if (emitInitialize)
         m_emitRunningChange = true;
 

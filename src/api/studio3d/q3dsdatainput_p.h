@@ -61,6 +61,7 @@ public:
     void setViewerApp(Q3DSViewer::Q3DSViewerApp *app);
     void setCommandQueue(CommandQueue *queue);
     void setPresentation(Q3DSPresentation *presentation);
+    void setDirty(bool dirty);
 
 protected:
     Q3DSDataInput *q_ptr;
@@ -73,6 +74,8 @@ protected:
     QVariant m_value;
     float m_max = 0;
     float m_min = 0;
+
+    bool m_dirty = false;
 
     // Note: Qt3d Runtime allows metadata to be both read and set, therefore requiring
     // internal representation of both keys and values to be QVariant as per API convention.

@@ -357,6 +357,11 @@ void Q3DSDataInputPrivate::setPresentation(Q3DSPresentation *presentation)
     m_presentation = presentation;
 }
 
+void Q3DSDataInputPrivate::setDirty(bool dirty)
+{
+    m_dirty = dirty;
+}
+
 Q3DSDataInputPrivate::Q3DSDataInputPrivate(Q3DSDataInput *parent)
     : q_ptr(parent)
 {
@@ -371,6 +376,8 @@ Q3DSDataInputPrivate::~Q3DSDataInputPrivate()
 void Q3DSDataInputPrivate::setValue(const QVariant &value, Q3DSDataInput::ValueRole valueRole)
 {
     m_value = value;
+    setDirty(true);
+
     if (m_presentation)
         m_presentation->setDataInputValue(m_name, m_value, valueRole);
 }

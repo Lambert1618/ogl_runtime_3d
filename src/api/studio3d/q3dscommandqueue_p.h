@@ -68,6 +68,7 @@ enum CommandType {
     CommandType_KeyRelease,
     CommandType_SetGlobalAnimationTime,
     CommandType_SetDataInputValue,
+    CommandType_SetDataInputBatch,
     CommandType_CreateElements,
     CommandType_DeleteElements,
     CommandType_CreateMaterials,

@@ -90,6 +90,8 @@ public:
     QVector<Q3DSDataInput *> dataInputs(const QString &key) const;
     bool isValidDataOutput(const Q3DSDataOutput *dataOutput) const;
 
+    void setDataInputValueBatch();
+
     ViewerQmlStreamProxy *streamProxy();
     Q3DStudio::EKeyCode getScanCode(QKeyEvent *e);
 
@@ -118,6 +120,7 @@ private:
     QStringList m_createdElements;
     QStringList m_createdMaterials;
     QStringList m_createdMeshes;
+    bool m_dataInputsChanged;
 
     friend class Q3DSStudio3D;
 };

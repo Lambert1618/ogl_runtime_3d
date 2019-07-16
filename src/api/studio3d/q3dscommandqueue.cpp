@@ -240,6 +240,11 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
             queueCommand(source.m_elementPath, source.m_commandType, source.m_stringValue,
                          source.m_variantValue, source.m_intValues[0]);
             break;
+        case CommandType_SetDataInputBatch:
+            queueCommand(source.m_elementPath, source.m_commandType, source.m_stringValue,
+                         source.m_data);
+            fromQueue.commandAt(i).m_data = nullptr; // This queue takes ownership of data
+            break;
         case CommandType_SetAttribute:
             queueCommand(source.m_elementPath, source.m_commandType, source.m_stringValue,
                          source.m_variantValue);
@@ -326,6 +331,10 @@ void CommandQueue::clear(bool deleteCommandData)
                     break;
                 case CommandType_CreateMeshes: {
                     delete static_cast<QHash<QString, Q3DSViewer::MeshData> *>(cmd.m_data);
+                    break;
+                }
+                case CommandType_SetDataInputBatch: {
+                    delete static_cast<QVector<QPair<QString, QVariant>> *>(cmd.m_data);
                     break;
                 }
                 default:

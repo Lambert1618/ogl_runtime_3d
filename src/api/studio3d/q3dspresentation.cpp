@@ -848,12 +848,13 @@ void Q3DSPresentation::setGlobalAnimationTime(qint64 milliseconds)
 void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &value,
                                          Q3DSDataInput::ValueRole valueRole)
 {
+    // If we do not have viewerApp i.e. if this is a QML client context, do not send
+    // datainput set commands to the queue. They are batched and sent out at frameUpdate signal.
     if (d_ptr->m_viewerApp) {
         d_ptr->m_viewerApp->SetDataInputValue(name, value,
                                               (qt3ds::runtime::DataInputValueRole)valueRole);
-    } else if (d_ptr->m_commandQueue) {
-        d_ptr->m_commandQueue->queueCommand(QString(), CommandType_SetDataInputValue,
-                                            name, value, static_cast<int>(valueRole));
+    } else {
+        d_ptr->m_dataInputsChanged = true;
     }
 }
 
@@ -1512,6 +1513,7 @@ Q3DSPresentationPrivate::Q3DSPresentationPrivate(Q3DSPresentation *q)
     , m_commandQueue(nullptr)
     , m_streamProxy(nullptr)
     , m_delayedLoading(false)
+    , m_dataInputsChanged(false)
 {
 }
 
@@ -1915,6 +1917,21 @@ bool Q3DSPresentationPrivate::isValidDataOutput(const Q3DSDataOutput *dataOutput
         return false;
 
     return m_viewerApp->dataOutputs().contains(dataOutput->name());
+}
+
+void Q3DSPresentationPrivate::setDataInputValueBatch()
+{
+    // Allocated here, deleted after queue command has been processed.
+    QVector<QPair<QString, QVariant>> *theProperties = new QVector<QPair<QString, QVariant>>();
+    for (const auto &di : qAsConst(m_dataInputs)) {
+        if (di->d_ptr->m_dirty) {
+            theProperties->append({di->name(), di->value()});
+            di->d_ptr->m_dirty = false;
+        }
+    }
+
+    if (!theProperties->empty() && m_commandQueue)
+        m_commandQueue->queueCommand({}, CommandType_SetDataInputBatch, {}, theProperties);
 }
 
 Q3DStudio::EKeyCode Q3DSPresentationPrivate::getScanCode(QKeyEvent *e)

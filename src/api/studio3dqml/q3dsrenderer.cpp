@@ -370,6 +370,19 @@ void Q3DSRenderer::processCommands()
                         cmd.m_stringValue, cmd.m_variantValue,
                         static_cast<qt3ds::runtime::DataInputValueRole>(cmd.m_intValues[0]));
             break;
+        case CommandType_SetDataInputBatch: {
+            const QVector<QPair<QString, QVariant>> diValues
+                    = *static_cast<QVector<QPair<QString, QVariant>> *>(cmd.m_data);
+
+            for (const auto &di : diValues) {
+                m_runtime->SetDataInputValue(di.first, di.second,
+                                             qt3ds::runtime::DataInputValueRole::Value);
+            }
+            // No need for data after this, delete.
+            auto &command = m_commands.commandAt(i);
+            delete static_cast<QVector<QPair<QString, QVariant>> *>(command.m_data);
+            break;
+        }
         case CommandType_CreateElements: {
             m_runtime->createElements(
                         cmd.m_elementPath, cmd.m_stringValue,
