@@ -8,7 +8,6 @@
 		<Property name="Downsample4" 	filter="linear" clamp="clamp" type="Texture" />
 		<Property name="Downsample8" 	filter="linear" clamp="clamp" type="Texture" />
 		<Property name="Downsample16" 	filter="linear" clamp="clamp" type="Texture" />
-		<Property name="DepthSampler" type="Texture" filter="nearest" clamp="clamp"/>
 	</MetaData>
 	<Shaders>
 		<Shared>
