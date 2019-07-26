@@ -852,12 +852,16 @@ void Q3DSPresentation::setGlobalAnimationTime(qint64 milliseconds)
  */
 void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &value, bool force)
 {
+    auto di = d_ptr->m_dataInputs.value(name, nullptr);
+    if (!di)
+        return;
+
     // Set directly to avoid loop between Q3DSDataInput and Q3DSPresentation value setters.
-    d_ptr->m_dataInputs[name]->d_ptr->m_value = value;
+    di->d_ptr->m_value = value;
 
     // If we have had forced set during this frame, inherit force flag to all subsequent setters.
-    if (!d_ptr->m_dataInputs[name]->d_ptr->m_forced)
-        d_ptr->m_dataInputs[name]->d_ptr->m_forced = force;
+    if (!di->d_ptr->m_forced)
+        di->d_ptr->m_forced = force;
 
     d_ptr->setDataInputDirty(name, true);
     // We batch datainput changes within a frame, so just tell the presentation that one
