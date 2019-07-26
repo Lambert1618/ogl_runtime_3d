@@ -66,6 +66,8 @@ namespace render {
         typedef qt3ds::foundation::nvhash_map<CRegisteredString, SImage *> TImageMapHash;
         TImageMapHash *m_imageMaps;
 
+        CRegisteredString m_error;
+
         void Initialize();
 
         // If our active flag value changes, then we ask the effect manager
@@ -73,6 +75,9 @@ namespace render {
         void SetActive(bool inActive, IEffectSystem &inSystem);
 
         void Reset(IEffectSystem &inSystem);
+
+        CRegisteredString GetError() const;
+        void SetError(const CRegisteredString &error);
 
         // Generic method used during serialization
         // to remap string and object pointers

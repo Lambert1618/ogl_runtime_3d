@@ -43,6 +43,7 @@
 #include "Qt3DSRenderResourceManager.h"
 #include "Qt3DSTextRenderer.h"
 #include "Qt3DSRenderEffectSystem.h"
+#include "Qt3DSRenderContextCore.h"
 #include "render/Qt3DSRenderFrameBuffer.h"
 #include "render/Qt3DSRenderRenderBuffer.h"
 #include "Qt3DSOffscreenRenderKey.h"

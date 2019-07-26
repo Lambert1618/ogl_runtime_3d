@@ -265,7 +265,7 @@ namespace render {
         GetShaderProgram(CRegisteredString inPath, CRegisteredString inProgramMacro,
                          TShaderFeatureSet inFeatureSet,
                          const dynamic::SDynamicShaderProgramFlags &inFlags,
-                         bool inForceCompilation = false) = 0;
+                         QString &errors, bool inForceCompilation = false) = 0;
 
         virtual void GetShaderSource(CRegisteredString inPath, Qt3DSString &outSource) = 0;
 

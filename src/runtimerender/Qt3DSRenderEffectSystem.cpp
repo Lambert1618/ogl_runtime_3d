@@ -1020,7 +1020,8 @@ struct SEffectSystem : public IEffectSystem
         return theBuffer;
     }
 
-    SEffectShader *BindShader(CRegisteredString &inEffectId, const SBindShader &inCommand)
+    SEffectShader *BindShader(CRegisteredString &inEffectId, const SBindShader &inCommand,
+                              QString &errors)
     {
         SEffectClass *theClass = GetEffectClass(inEffectId);
         if (!theClass) {
@@ -1039,7 +1040,7 @@ struct SEffectSystem : public IEffectSystem
             NVRenderShaderProgram *theProgram =
                 m_Context->GetDynamicObjectSystem()
                     .GetShaderProgram(inCommand.m_ShaderPath, inCommand.m_ShaderDefine,
-                                      TShaderFeatureSet(), SDynamicShaderProgramFlags(),
+                                      TShaderFeatureSet(), SDynamicShaderProgramFlags(), errors,
                                       forceCompilation).first;
             if (theProgram)
                 theInsertResult.first->second = QT3DS_NEW(m_Allocator, SEffectShader)(*theProgram);
@@ -1546,6 +1547,7 @@ struct SEffectSystem : public IEffectSystem
             theContext.SetDepthWriteEnabled(false);
 
             QT3DSMat44 theMVP(QT3DSMat44::createIdentity());
+            QString errors;
             NVConstDataRef<dynamic::SCommand *> theCommands =
                 inClass.m_DynamicClass->GetRenderCommands();
             for (QT3DSU32 commandIdx = 0, commandEnd = theCommands.size(); commandIdx < commandEnd;
@@ -1592,8 +1594,10 @@ struct SEffectSystem : public IEffectSystem
                 } break;
                 case CommandTypes::BindShader:
                     theCurrentShader = BindShader(inEffect.m_ClassName,
-                                                  static_cast<const SBindShader &>(theCommand));
-                    break;
+                                                  static_cast<const SBindShader &>(theCommand),
+                                                  errors);
+                    if (!errors.isEmpty())
+                        inEffect.SetError(m_CoreContext.GetStringTable().RegisterStr(errors));
                 case CommandTypes::ApplyInstanceValue:
                     if (theCurrentShader)
                         ApplyInstanceValue(inEffect, inClass, *theCurrentShader->m_Shader,

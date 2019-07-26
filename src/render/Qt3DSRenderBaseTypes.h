@@ -37,6 +37,7 @@
 #include "foundation/Qt3DSSimpleTypes.h"
 #include "foundation/Qt3DSMath.h"
 #include "foundation/Qt3DSVec2.h"
+#include <QtCore/qstring.h>
 
 namespace qt3ds {
 
@@ -1076,6 +1077,8 @@ struct NVRenderVertFragCompilationResult
     const char *mShaderName;
 
     NVRenderShaderProgram *mShader; ///< contains the program
+
+    QString errors;
 
     NVRenderVertFragCompilationResult()
         : mShaderName("")
