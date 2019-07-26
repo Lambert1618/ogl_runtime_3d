@@ -497,7 +497,12 @@ struct STimeContext
 
     void setControlled(TActivityItem &item)
     {
-        m_ControlledList.insert(item);
+        if (!m_ControlledList.contains(item)) {
+            m_ControlledList.insert(item);
+            qCInfo(TRACE_INFO) << "Element" << item.m_Name.c_str()
+                               << "visibility now controlled by datainput. "
+                                  "Visibility will no longer be affected by slide transitions.";
+        }
     }
 
     static void UpdateItemScriptStatus(SElement &inNode, bool activeAndHasScript,
@@ -573,9 +578,12 @@ struct STimeContext
             bool parentActive = theEntry.IsParentActive();
             bool wasActive = theScanNode->IsGlobalActive();
 
+            bool isControlledByDi
+                    = controlledList.contains(*theScanNode) && theScanNode->m_OnMaster;
+
             // Override visibility for master slide elements that have datainput eyeball controller.
-            bool isActive = (controlledList.contains(*theScanNode) && theScanNode->m_OnMaster)
-                    ? theScanNode->IsControlledActive() : theScanNode->IsGlobalActive(parentActive);
+            bool isActive = isControlledByDi ? theScanNode->IsControlledActive()
+                                             : theScanNode->IsGlobalActive(parentActive);
             bool wasChildDirty = theScanNode->m_ActivationManagerNode.m_Flags.IsChildDirty();
             theScanNode->m_ActivationManagerNode.m_Flags.ClearChildDirty();
             bool activateChange = isActive != wasActive;
@@ -583,6 +591,9 @@ struct STimeContext
             if (activateChange) {
                 HandleActivationChange(*theScanNode, activateBuffer, deactivateBuffer, scriptBuffer,
                                        inElementAccessMutex, scriptBufferRequiresSort, isActive);
+            } else if (isControlledByDi) {
+                qCInfo(TRACE_INFO) << "Element" << theScanNode->m_Name.c_str()
+                                   << "visibility persistently controlled by datainput.";
             }
 
             if (checkChildren && theScanNode->m_Child) {
@@ -590,7 +601,11 @@ struct STimeContext
                      theScanNodeChild = theScanNodeChild->m_Sibling) {
                     // Override visibility for master slide elements that have datainput
                     // eyeball controller.
-                    if (controlledList.contains(*theScanNodeChild) && theScanNodeChild->m_OnMaster)
+                    isControlledByDi
+                            = controlledList.contains(*theScanNodeChild)
+                              && theScanNodeChild->m_OnMaster;
+
+                    if (isControlledByDi)
                         theScanNodeChild->SetExplicitActive(theScanNodeChild->IsControlledActive());
                     if (theScanNodeChild->IsIndependent() == false)
                         inScanBuffer.push_back(SScanBufferEntry(theScanNodeChild, isActive));
