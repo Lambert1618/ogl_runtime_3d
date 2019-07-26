@@ -201,7 +201,10 @@ namespace runtime {
             {
                 return this->operator&(Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE);
             }
-
+            bool IsControlledActive() const
+            {
+                return this->operator&(Q3DStudio::ELEMENTFLAG_CONTROLLED_ACTIVE);
+            }
             void SetActive(bool inValue)
             {
                 clearOrSet(inValue, Q3DStudio::ELEMENTFLAG_GLOBALACTIVE);
@@ -283,6 +286,7 @@ namespace runtime {
             SElement *m_Parent; ///< Parent element in activity graph
             SElement *m_Sibling; ///< Next sibling element in activity graph
             SElement *m_Child; ///< First child element in activity graph
+            bool m_OnMaster = false;
             void *m_Association; ///< Link to associated asset in scene
             Q3DStudio::IPresentation *m_BelongedPresentation;
             SActivationManagerNode m_ActivationManagerNode;
@@ -428,6 +432,13 @@ namespace runtime {
                 SetFlag(Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE, inValue);
             }
             bool IsExplicitActive() const { return m_Flags.IsExplicitActive(); }
+
+            void SetControlledActive(bool inValue)
+            {
+                SetFlag(Q3DStudio::ELEMENTFLAG_CONTROLLED_ACTIVE, inValue);
+            }
+
+            bool IsControlledActive() const { return m_Flags.IsControlledActive(); }
 
             // Flag set by the activity manager.
             void SetActive(bool inValue) { SetFlag(Q3DStudio::ELEMENTFLAG_GLOBALACTIVE, inValue); }

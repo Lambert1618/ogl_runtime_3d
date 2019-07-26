@@ -921,10 +921,21 @@ void CQmlEngineImpl::SetDataInputValue(
                                    << diDef.type;
                         break;
                     }
-
                     SetAttribute(ctrlElem.elementPath.constData(),
                                  ctrlElem.attributeName.first().constData(),
                                  reinterpret_cast<const char *>(&valueBool));
+
+                    // Special case for eyeball (visibility) controller that targets elements
+                    // on master slide, and whose visibility setting must be persistent over
+                    // slide changes.
+                    TElement *element = getTarget(ctrlElem.elementPath.constData());
+                    auto hash = CHash::HashAttribute(ctrlElem.attributeName.first().constData());
+
+                    if (hash == Q3DStudio::ATTRIBUTE_EYEBALL && element->m_OnMaster) {
+                        element->GetActivityZone().setControlled(*element);
+                        element->SetControlledActive(valueBool);
+                    }
+
                     break;
                 }
                 case ATTRIBUTETYPE_STRING: {

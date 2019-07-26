@@ -190,6 +190,7 @@ struct STimeContext
     TTimeEventList m_TimeEventBackingStore;
     TTimeEventList m_TimeEvents;
     SActivationManagerNodeDirtyList m_DirtyList;
+    SActivationManagerNodeDirtyList m_ControlledList;
     QT3DSU32 m_TimeEventBackingStoreIndex;
     QT3DSI32 mRefCount;
     STimeContext *m_NextSibling;
@@ -207,6 +208,7 @@ struct STimeContext
         , m_TimeEventBackingStore(alloc, "TimeEventBackingStore")
         , m_TimeEvents(alloc, "TimeEvents")
         , m_DirtyList(alloc)
+        , m_ControlledList(alloc)
         , m_TimeEventBackingStoreIndex(0)
         , mRefCount(0)
         , m_NextSibling(NULL)
@@ -493,6 +495,11 @@ struct STimeContext
         }
     }
 
+    void setControlled(TActivityItem &item)
+    {
+        m_ControlledList.insert(item);
+    }
+
     static void UpdateItemScriptStatus(SElement &inNode, bool activeAndHasScript,
                                        TElementAndSortKeyList &scriptBuffer)
     {
@@ -542,7 +549,9 @@ struct STimeContext
     static void RunActivateScan(SElement &inNode, TScanBuffer &inScanBuffer,
                                 TElementAndSortKeyList &activateBuffer,
                                 TElementAndSortKeyList &deactivateBuffer,
-                                TElementAndSortKeyList &scriptBuffer, Mutex &inElementAccessMutex,
+                                TElementAndSortKeyList &scriptBuffer,
+                                SActivationManagerNodeDirtyList &controlledList,
+                                Mutex &inElementAccessMutex,
                                 bool &scriptBufferRequiresSort, bool inRunFullScan)
     {
         inScanBuffer.clear();
@@ -563,7 +572,10 @@ struct STimeContext
             QT3DS_ASSERT(theScanNode->IsIndependent() == false);
             bool parentActive = theEntry.IsParentActive();
             bool wasActive = theScanNode->IsGlobalActive();
-            bool isActive = theScanNode->IsGlobalActive(parentActive);
+
+            // Override visibility for master slide elements that have datainput eyeball controller.
+            bool isActive = (controlledList.contains(*theScanNode) && theScanNode->m_OnMaster)
+                    ? theScanNode->IsControlledActive() : theScanNode->IsGlobalActive(parentActive);
             bool wasChildDirty = theScanNode->m_ActivationManagerNode.m_Flags.IsChildDirty();
             theScanNode->m_ActivationManagerNode.m_Flags.ClearChildDirty();
             bool activateChange = isActive != wasActive;
@@ -576,6 +588,10 @@ struct STimeContext
             if (checkChildren && theScanNode->m_Child) {
                 for (SElement *theScanNodeChild = theScanNode->m_Child; theScanNodeChild;
                      theScanNodeChild = theScanNodeChild->m_Sibling) {
+                    // Override visibility for master slide elements that have datainput
+                    // eyeball controller.
+                    if (controlledList.contains(*theScanNodeChild) && theScanNodeChild->m_OnMaster)
+                        theScanNodeChild->SetExplicitActive(theScanNodeChild->IsControlledActive());
                     if (theScanNodeChild->IsIndependent() == false)
                         inScanBuffer.push_back(SScanBufferEntry(theScanNodeChild, isActive));
                 }
@@ -612,7 +628,8 @@ struct STimeContext
             // dirty list.
             // This case has got to be extremely rare in practice, however.
             RunActivateScan(dirtyNode, inScanBuffer, activateBuffer, deactivateBuffer, scriptBuffer,
-                            m_ElementAccessMutex, scriptBufferRequiresSort, m_AllNodesDirty);
+                            m_ControlledList, m_ElementAccessMutex, scriptBufferRequiresSort,
+                            m_AllNodesDirty);
         }
         // Set at end so while debugging you can see if all nodes were dirty on method entry.
         m_AllNodesDirty = false;
@@ -994,6 +1011,11 @@ struct SActivityZone : public IActivityZone
     void GoToTime(TActivityItem inItem, TTimeUnit inTime) override
     {
         GetItemTimeContext(inItem).GoToTime(inTime);
+    }
+
+    void setControlled(TActivityItem inItem) override
+    {
+        GetItemTimeContext(inItem).setControlled(inItem);
     }
 };
 

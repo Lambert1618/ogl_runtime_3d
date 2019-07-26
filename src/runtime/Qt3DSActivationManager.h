@@ -140,6 +140,8 @@ namespace runtime {
         virtual void EndUpdate() = 0;
 
         virtual void GoToTime(TActivityItem item, TTimeUnit inTime) = 0;
+
+        virtual void setControlled(TActivityItem item) = 0;
     };
 
     class IActivityZoneManager : public NVRefCounted

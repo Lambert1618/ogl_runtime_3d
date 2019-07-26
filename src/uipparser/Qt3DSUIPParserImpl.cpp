@@ -2148,6 +2148,9 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
 
     TPropertyDescAndValueList theAttributeList;
 
+    if (masterSlide)
+        inElementData.m_Element->m_OnMaster = true;
+
     const char8_t *theRef = "";
     inReader.Att("ref", theRef);
     if (theRef && *theRef && theRef[0] == '#')
