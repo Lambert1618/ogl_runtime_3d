@@ -457,16 +457,16 @@ struct ShaderCache : public IShaderCache
     CompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
                    const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
                    const SShaderCacheProgramFlags &inFlags,
-                   NVConstDataRef<SShaderPreprocessorFeature> inFeatures, bool separableProgram) override
+                   NVConstDataRef<SShaderPreprocessorFeature> inFeatures,
+                   QString &errors, bool separableProgram) override
     {
         NVRenderShaderProgram *theProgram = GetProgram(inKey, inFeatures);
         if (theProgram)
             return theProgram;
 
-        QString error;
         NVRenderShaderProgram *retval =
             ForceCompileProgram(inKey, inVert, inFrag, inTessCtrl, inTessEval, inGeom, inFlags,
-                                inFeatures, error, separableProgram);
+                                inFeatures, errors, separableProgram);
         return retval;
     }
 

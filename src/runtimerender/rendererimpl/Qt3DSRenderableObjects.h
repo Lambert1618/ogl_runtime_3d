@@ -296,14 +296,14 @@ namespace render {
      */
     struct SSubsetRenderable : public SSubsetRenderableBase
     {
-        const SDefaultMaterial &m_Material;
+        SDefaultMaterial &m_Material;
         SRenderableImage *m_FirstImage;
         SShaderDefaultMaterialKey m_ShaderDescription;
         NVConstDataRef<QT3DSMat44> m_Bones;
 
         SSubsetRenderable(SRenderableObjectFlags inFlags, QT3DSVec3 inWorldCenterPt,
                           Qt3DSRendererImpl &gen, const SRenderSubset &subset,
-                          const SDefaultMaterial &mat, const SModelContext &modelContext,
+                          SDefaultMaterial &mat, const SModelContext &modelContext,
                           QT3DSF32 inOpacity, SRenderableImage *inFirstImage,
                           SShaderDefaultMaterialKey inShaderKey,
                           NVConstDataRef<QT3DSMat44> inBoneGlobals)
@@ -334,13 +334,13 @@ namespace render {
 
     struct SCustomMaterialRenderable : public SSubsetRenderableBase
     {
-        const SCustomMaterial &m_Material;
+        SCustomMaterial &m_Material;
         SRenderableImage *m_FirstImage;
         SShaderDefaultMaterialKey m_ShaderDescription;
 
         SCustomMaterialRenderable(SRenderableObjectFlags inFlags, QT3DSVec3 inWorldCenterPt,
                                   Qt3DSRendererImpl &gen, const SRenderSubset &subset,
-                                  const SCustomMaterial &mat, const SModelContext &modelContext,
+                                  SCustomMaterial &mat, const SModelContext &modelContext,
                                   QT3DSF32 inOpacity, SRenderableImage *inFirstImage,
                                   SShaderDefaultMaterialKey inShaderKey)
             : SSubsetRenderableBase(inFlags, inWorldCenterPt, gen, subset, modelContext, inOpacity)
@@ -451,8 +451,8 @@ namespace render {
         SPathRenderable(SRenderableObjectFlags inFlags, QT3DSVec3 inWorldCenterPt,
                         Qt3DSRendererImpl &gen, const QT3DSMat44 &inGlobalTransform,
                         NVBounds3 &inBounds, SPath &inPath, const QT3DSMat44 &inModelViewProjection,
-                        const QT3DSMat33 inNormalMat, const SGraphObject &inMaterial, QT3DSF32 inOpacity,
-                        SShaderDefaultMaterialKey inShaderKey, bool inIsStroke)
+                        const QT3DSMat33 inNormalMat, const SGraphObject &inMaterial,
+                        QT3DSF32 inOpacity, SShaderDefaultMaterialKey inShaderKey, bool inIsStroke)
 
             : SRenderableObject(inFlags, inWorldCenterPt, inGlobalTransform, m_Bounds)
             , m_Generator(gen)

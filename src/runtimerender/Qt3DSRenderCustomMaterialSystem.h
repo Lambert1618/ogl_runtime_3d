@@ -133,6 +133,7 @@ namespace render {
         virtual bool requiresCompilation(const CRegisteredString &name) const = 0;
         // Called by the uiccontext so this system can clear any per-frame render information.
         virtual void EndFrame() = 0;
+        virtual IQt3DSRenderContext *getContext() = 0;
     };
 
     struct QT3DS_AUTOTEST_EXPORT SCustomMaterialVertexPipeline : public SVertexPipelineImpl

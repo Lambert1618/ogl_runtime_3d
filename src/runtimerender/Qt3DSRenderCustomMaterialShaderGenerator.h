@@ -50,7 +50,15 @@ namespace render {
             const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
             IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
             NVDataRef<SLight *> inLights, SRenderableImage *inFirstImage, bool inHasTransparency,
-            const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") override = 0;
+            const char8_t *inVertexPipelineName, QString &error,
+            const char8_t *inCustomMaterialName = "") override = 0;
+
+        NVRenderShaderProgram *GenerateShader(
+            const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+            IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+            NVDataRef<SLight *> inLights, SRenderableImage *inFirstImage, bool inHasTransparency,
+            const char8_t *inVertexPipelineName,
+            const char8_t *inCustomMaterialName = "") override = 0;
 
         // Also sets the blend function on the render context.
         virtual void

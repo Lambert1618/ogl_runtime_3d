@@ -1390,7 +1390,7 @@ struct SDynamicObjectSystemImpl : public IDynamicObjectSystem
         }
         return theShaderCache.CompileProgram(theKey, m_VertShader.c_str(), m_FragShader.c_str(),
                                              NULL, NULL, m_GeometryShader.c_str(), theFlags,
-                                             inFeatureSet);
+                                             inFeatureSet, errors);
     }
 
     // This just returns the custom material shader source without compiling

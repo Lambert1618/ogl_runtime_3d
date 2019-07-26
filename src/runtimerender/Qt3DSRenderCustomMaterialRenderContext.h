@@ -56,7 +56,7 @@ namespace render {
         const QT3DSMat44 &m_ModelViewProjection;
         const QT3DSMat44 &m_ModelMatrix; ///< model to world transformation
         const QT3DSMat33 &m_NormalMatrix;
-        const SCustomMaterial &m_Material;
+        SCustomMaterial &m_Material;
         const NVRenderTexture2D *m_DepthTexture;
         const NVRenderTexture2D *m_AOTexture;
         SShaderDefaultMaterialKey m_MaterialKey;
@@ -66,7 +66,7 @@ namespace render {
         SCustomMaterialRenderContext(
             const SLayer &layer, const SLayerRenderData &data, NVDataRef<SLight *> lights,
             const SCamera &cam, const SModel &m, const SRenderSubset &subset, const QT3DSMat44 &mvp,
-            const QT3DSMat44 &world, const QT3DSMat33 &nm, const SCustomMaterial &material,
+            const QT3DSMat44 &world, const QT3DSMat33 &nm, SCustomMaterial &material,
             const NVRenderTexture2D *depthTex, const NVRenderTexture2D *aoTex,
             SShaderDefaultMaterialKey inMaterialKey, SRenderableImage *inFirstImage = NULL,
             QT3DSF32 opacity = 1.0)

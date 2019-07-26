@@ -132,7 +132,18 @@ namespace render {
         CompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
                        const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
                        const SShaderCacheProgramFlags &inFlags, TShaderFeatureSet inFeatures,
-                       bool separableProgram = false) = 0;
+                       QString &errors, bool separableProgram = false) = 0;
+
+        virtual NVRenderShaderProgram *
+        CompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
+                       const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
+                       const SShaderCacheProgramFlags &inFlags, TShaderFeatureSet inFeatures,
+                       bool separableProgram = false)
+        {
+            QString errors;
+            return CompileProgram(inKey, inVert, inFrag, inTessCtrl, inTessEval, inGeom, inFlags,
+                           inFeatures, errors, separableProgram);
+        }
 
         // Used to disable any shader compilation during loading.  This is used when we are just
         // interested in going from uia->binary
