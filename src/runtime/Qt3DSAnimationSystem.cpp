@@ -163,6 +163,11 @@ struct SAnimSystem : public IAnimationSystem
     NVDataRef<QT3DSU8> m_LoadData;
     QT3DSI32 m_NextTrackId;
     QT3DSI32 m_RefCount;
+    // Keep element handle to track mapping so that we can query if an element has animation tracks,
+    // and can turn them on/off. Combine element and property id:s to a single 64 bit hash
+    // so we can utilise nvhash_map and allocators without needing to implement multimap,
+    // or resort to Qt containers. (Single element can have several animation tracks associated.)
+    nvhash_map<QT3DSI64, SAnimationTrack *> m_ElemPropsToActiveTracks;
 
     SAnimSystem(NVFoundationBase &inFoundation)
         : m_Foundation(inFoundation)
@@ -175,6 +180,7 @@ struct SAnimSystem : public IAnimationSystem
         , m_ActiveSet(inFoundation.getAllocator(), "m_ActiveSet")
         , m_NextTrackId(1)
         , m_RefCount(0)
+        , m_ElemPropsToActiveTracks(inFoundation.getAllocator(), "m_ElemPropsToActiveTracks")
     {
     }
 
@@ -223,6 +229,11 @@ struct SAnimSystem : public IAnimationSystem
         new (theNewTrack) SAnimationTrack(inElement, inserter.first->first, *theIndex, inDynamic);
         inserter.first->second = theNewTrack;
         m_LastInsertedTrack = theNewTrack;
+
+        m_ElemPropsToActiveTracks.insert(
+                    eastl::make_pair(static_cast<QT3DSI64>(inElement.m_Handle) << 32
+                                     | static_cast<QT3DSI64>(inPropertyName),
+                                     theNewTrack));
         ++m_NextTrackId;
         return inserter.first->first;
     }
@@ -376,6 +387,23 @@ struct SAnimSystem : public IAnimationSystem
                 m_ActiveSet.remove(*theTrack);
         }
     }
+
+    QT3DSI32 getActiveTrackForElemProp(
+            element::SElement *inElement, QT3DSU32 inPropertyHash) override
+    {
+        nvhash_map<QT3DSI64, SAnimationTrack *>::iterator iter
+                = m_ElemPropsToActiveTracks.find(static_cast<QT3DSI64>(inElement->m_Handle) << 32
+                                                 | static_cast<QT3DSI64>(inPropertyHash));
+        if (iter == m_ElemPropsToActiveTracks.end())
+            return 0;
+
+        // Only return track if it is actually active
+        if (!m_ActiveSet.contains(*iter->second))
+            return 0;
+
+        return iter->second->m_Id;
+    }
+
     //==============================================================================
     /**
      *	Recomputes control point values for Studio animation based off of new start

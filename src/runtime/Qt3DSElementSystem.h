@@ -519,6 +519,9 @@ namespace runtime {
                     child = child->m_Sibling;
                 }
             }
+
+            // Sets animation on property to inactive.
+            void stopAnimations(QT3DSU32 propHash);
         };
 
         struct SGetElementNodeDirtyIndex

@@ -43,6 +43,7 @@
 #include "foundation/SerializationTypes.h"
 #include "foundation/IOStreams.h"
 #include "foundation/Qt3DSIndexableLinkedList.h"
+#include "Qt3DSAnimationSystem.h"
 
 using namespace qt3ds::runtime::element;
 using namespace qt3ds;
@@ -651,12 +652,29 @@ void SElement::SetAttribute(const Q3DStudio::TAttributeHash inKey,
     SetAttribute(*existing, inValue);
 }
 
+void SElement::stopAnimations(QT3DSU32 propHash)
+{
+    QT3DSI32 animTrack = m_BelongedPresentation->GetAnimationSystem().getActiveTrackForElemProp(
+                this, propHash);
+
+    if (animTrack != 0) {
+        qWarning() << "Property animation in element" << m_Name.c_str()
+                   << "stopped due to datainput or setAttribute targeting the same property";
+
+        m_BelongedPresentation->GetAnimationSystem().SetActive(animTrack, false);
+    }
+}
 void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inValue,
                             bool forceSet)
 {
     Q3DStudio::EAttributeType theType = inKey.first.m_Type;
     Q3DStudio::UVariant *currentValue = inKey.second;
     QT3DSU32 attHash = inKey.first.GetNameHash();
+
+    // If there is an active animation for this property, disable it. Otherwise the set value
+    // gets overwritten immediately as animation update takes place.
+    // Do this even if the value gets rejected in the code below.
+    stopAnimations(attHash);
     if (!forceSet) {
         switch (theType) {
         case Q3DStudio::ATTRIBUTETYPE_FLOAT: // Early return

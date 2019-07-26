@@ -59,6 +59,8 @@ namespace runtime {
         virtual void Update() = 0;
         virtual void SetActive(QT3DSI32 inTrackId, bool inActive) = 0;
         virtual void UpdateDynamicKey(QT3DSI32 inTrackId) = 0;
+        virtual QT3DSI32 getActiveTrackForElemProp(element::SElement *inElement,
+                                                   QT3DSU32 inPropertyName) = 0;
 
         static IAnimationSystem &CreateAnimationSystem(NVFoundationBase &inFoundation);
     };
