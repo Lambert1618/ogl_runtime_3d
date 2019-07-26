@@ -992,16 +992,11 @@ ITextRendererCore &ITextRendererCore::createDistanceFieldRenderer(NVFoundationBa
     return *QT3DS_NEW(fnd.getAllocator(), Q3DSDistanceFieldRenderer)(fnd);
 }
 
-bool Q3DSDistanceFieldRenderer::checkAndBuildGlyphs(SText &text)
+void Q3DSDistanceFieldRenderer::checkAndAddRenderedTexts(SText &text)
 {
     auto hashVal = getTextHashValue(text);
-    m_renderedTexts += hashVal;
-    if (!m_glyphCache.contains(hashVal)) {
-        m_glyphCache[hashVal] = buildGlyphsPerTexture(text);
-        return true;
-    }
-
-    return false;
+    if (m_glyphCache.contains(hashVal))
+        m_renderedTexts += hashVal;
 }
 
 // Unused methods:

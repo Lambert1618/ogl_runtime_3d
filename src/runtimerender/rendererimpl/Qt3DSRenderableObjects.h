@@ -413,7 +413,7 @@ namespace render {
             m_RenderableFlags.SetCustom(false);
             m_RenderableFlags.SetText(false);
             m_RenderableFlags.setDistanceField(true);
-            m_distanceFieldText.checkAndBuildGlyphs(text);
+            m_distanceFieldText.checkAndAddRenderedTexts(text);
         }
 
         void Render(const QT3DSVec2 &inCameraVec);
