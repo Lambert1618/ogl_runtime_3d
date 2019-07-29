@@ -48,27 +48,17 @@ struct pair_hash {
 namespace qt3dsdm {
 struct SAnimationTrack : public CHandleObject
 {
-    int m_Slide;
-    int m_Instance;
-    int m_Property;
-    EAnimationType m_AnimationType;
-    size_t m_Index;
+    int m_Slide = 0;
+    int m_Instance = 0;
+    int m_Property = 0;
+    EAnimationType m_AnimationType = EAnimationTypeLinear;
+    size_t m_Index = 0;
     TKeyframeHandleList m_Keyframes;
-    bool m_KeyframesDirty;
-    bool m_FirstKeyframeDynamic;
-    bool m_ArtistEdited;
+    bool m_KeyframesDirty = false;
+    bool m_FirstKeyframeDynamic = false;
+    bool m_ArtistEdited = true;
 
-    SAnimationTrack()
-        : m_Slide(0)
-        , m_Instance(0)
-        , m_Property(0)
-        , m_AnimationType(EAnimationTypeLinear)
-        , m_Index(0)
-        , m_KeyframesDirty(false)
-        , m_FirstKeyframeDynamic(false)
-        , m_ArtistEdited(true)
-    {
-    }
+    SAnimationTrack() = default;
 
     SAnimationTrack(int inHandle, Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
                     Qt3DSDMPropertyHandle inProperty, size_t inIndex, EAnimationType inAnimationType,
@@ -79,7 +69,6 @@ struct SAnimationTrack : public CHandleObject
         , m_Property(inProperty)
         , m_AnimationType(inAnimationType)
         , m_Index(inIndex)
-        , m_KeyframesDirty(false)
         , m_FirstKeyframeDynamic(inFirstKeyframeDynamic)
         , m_ArtistEdited(inArtistEdited)
     {
@@ -159,6 +148,7 @@ public: // Use
     void GetKeyframes(Qt3DSDMAnimationHandle inAnimation, TKeyframeHandleList &outKeyframes) const override;
     size_t GetKeyframeCount(Qt3DSDMAnimationHandle inAnimation) const override;
     bool IsFirstKeyframe(Qt3DSDMKeyframeHandle inKeyframe) const override;
+    bool IsLastKeyframe(Qt3DSDMKeyframeHandle inKeyframe) const override;
     // Only implemented in the producer for now.
     void OffsetAnimations(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
                           long inOffset) override;

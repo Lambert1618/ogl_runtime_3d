@@ -97,6 +97,10 @@ public:
     {
         return m_Data->IsFirstKeyframe(inKeyframe);
     }
+    bool IsLastKeyframe(Qt3DSDMKeyframeHandle inKeyframe) const override
+    {
+        return m_Data->IsLastKeyframe(inKeyframe);
+    }
     void OffsetAnimations(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
                           long inMillisecondOffset) override;
 

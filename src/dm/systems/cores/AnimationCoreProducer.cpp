@@ -342,7 +342,7 @@ void CAnimationCoreProducer::OffsetAnimations(Qt3DSDMSlideHandle inSlide,
                                               Qt3DSDMInstanceHandle inInstance,
                                               long inMillisecondOffset)
 {
-    float theOffsetSeconds = static_cast<float>(inMillisecondOffset) / 1000.f;
+    float dt = static_cast<float>(inMillisecondOffset) / 1000.f; // time offset in seconds
     for (THandleObjectMap::const_iterator iter = m_Data->m_Objects.begin(),
                                           end = m_Data->m_Objects.end();
          iter != end; ++iter) {
@@ -351,14 +351,13 @@ void CAnimationCoreProducer::OffsetAnimations(Qt3DSDMSlideHandle inSlide,
             for (size_t keyframeIdx = 0, keyframeEnd = theTrack->m_Keyframes.size();
                  keyframeIdx < keyframeEnd; ++keyframeIdx) {
                 Qt3DSDMKeyframeHandle theKeyframeHandle(theTrack->m_Keyframes[keyframeIdx]);
-                TKeyframe theCurrentKeyframe = m_Data->GetKeyframeData(theKeyframeHandle);
+                TKeyframe kfData = m_Data->GetKeyframeData(theKeyframeHandle);
 
-                float seconds = qt3dsdm::GetKeyframeSeconds(theCurrentKeyframe);
+                // offset control points for bezier keyframes
+                offsetBezier(kfData, dt);
 
-                theCurrentKeyframe =
-                    qt3dsdm::SetKeyframeSeconds(theCurrentKeyframe, seconds + theOffsetSeconds);
-
-                SetKeyframeData(theKeyframeHandle, theCurrentKeyframe);
+                kfData = SetKeyframeSeconds(kfData, GetKeyframeSeconds(kfData) + dt);
+                SetKeyframeData(theKeyframeHandle, kfData);
             }
         }
     }

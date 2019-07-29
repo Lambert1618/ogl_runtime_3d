@@ -147,7 +147,16 @@ inline FLOAT EvaluateInverseBezierCurve(const FLOAT inP0, const FLOAT inP1, cons
         }
     } else {
         INT32 theNumRoots = CCubicRoots::SolveCubic(theConstants, theSolution);
-        theResult = static_cast<FLOAT>(theSolution[theNumRoots / 3]);
+        INT32 solutionIndex = theNumRoots / 3;
+        theResult = static_cast<FLOAT>(theSolution[solutionIndex]);
+
+        // if the result is not within bounds, correct solutionIndex to pick the right solution
+        // TODO: in rare situations the 3 solutions for the cubic equation are all invalid. It's
+        // worth investigating.
+        if (theResult <= 0)
+            theResult = static_cast<FLOAT>(theSolution[solutionIndex - 1]);
+        else if (theResult >= 1)
+            theResult = static_cast<FLOAT>(theSolution[solutionIndex + 1]);
     }
 
     return theResult;
@@ -157,7 +166,6 @@ inline FLOAT EvaluateBezierKeyframe(FLOAT inTime, FLOAT inTime1, FLOAT inValue1,
                                     FLOAT inC1Value, FLOAT inC2Time, FLOAT inC2Value, FLOAT inTime2,
                                     FLOAT inValue2)
 {
-
     // The special case of C1Time=0 and C2Time=0 is used to indicate Studio-native animation.
     // Studio uses a simplified version of the bezier animation where the time control points
     // are equally spaced between the starting and ending times. This avoids calling the expensive
@@ -171,12 +179,14 @@ inline FLOAT EvaluateBezierKeyframe(FLOAT inTime, FLOAT inTime1, FLOAT inValue1,
     } else {
         // Compute the "s" parameter on the Bezier given the time
         theParameter = EvaluateInverseBezierCurve(inTime1, inC1Time, inC2Time, inTime2, inTime);
+
         if (theParameter <= 0.0f)
             return inValue1;
+
         if (theParameter >= 1.0f)
             return inValue2;
     }
 
     return EvaluateBezierCurve(inValue1, inC1Value, inC2Value, inValue2, theParameter);
 }
-}
+} // namespace Qt3DStudio

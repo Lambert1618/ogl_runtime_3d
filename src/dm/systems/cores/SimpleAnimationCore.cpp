@@ -303,6 +303,17 @@ bool CSimpleAnimationCore::IsFirstKeyframe(Qt3DSDMKeyframeHandle inKeyframe) con
     return false;
 }
 
+bool CSimpleAnimationCore::IsLastKeyframe(Qt3DSDMKeyframeHandle inKeyframe) const
+{
+    Qt3DSDMAnimationHandle theAnimation = GetAnimationForKeyframe(inKeyframe);
+    if (theAnimation.Valid()) {
+        const SAnimationTrack *theItem = GetAnimationNF(theAnimation, m_Objects);
+        return theItem->m_Keyframes.size() && theItem->m_Keyframes[theItem->m_Keyframes.size() - 1]
+                                              == inKeyframe;
+    }
+    return false;
+}
+
 void CSimpleAnimationCore::OffsetAnimations(Qt3DSDMSlideHandle /*inSlide*/,
                                             Qt3DSDMInstanceHandle /*inInstance*/, long /*inOffset*/)
 {
@@ -382,7 +393,7 @@ float CSimpleAnimationCore::EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation
         return 0.0f;
     CheckKeyframesSorted(theItem, m_Objects);
     // Default to linear for now.
-    SLinearKeyframe theKeyframe = { 0 };
+    SLinearKeyframe theKeyframe;
     theKeyframe.m_KeyframeSeconds = inSeconds;
     TKeyframe theSearchKey(theKeyframe);
     function<TKeyframe(int)> theIntToKeyframe(

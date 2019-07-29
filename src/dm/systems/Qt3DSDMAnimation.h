@@ -39,6 +39,11 @@ struct SLinearKeyframe
 {
     float m_KeyframeSeconds;
     float m_KeyframeValue;
+
+    SLinearKeyframe() = default;
+    SLinearKeyframe(float seconds, float value)
+    : m_KeyframeSeconds(seconds)
+    , m_KeyframeValue(value) {}
 };
 
 struct SBezierKeyframe : public SLinearKeyframe
@@ -47,6 +52,15 @@ struct SBezierKeyframe : public SLinearKeyframe
     float m_InTangentValue; // value offset
     float m_OutTangentTime; // time offset in seconds
     float m_OutTangentValue; // value offset
+
+    SBezierKeyframe() = default;
+    SBezierKeyframe(float seconds, float value, float tangentInTime, float tangentInValue,
+                    float tangentOutTime, float tangentOutValue)
+    : SLinearKeyframe(seconds, value)
+    , m_InTangentTime(tangentInTime)
+    , m_InTangentValue(tangentInValue)
+    , m_OutTangentTime(tangentOutTime)
+    , m_OutTangentValue(tangentOutValue) {}
 };
 
 typedef std::vector<SBezierKeyframe> TBezierKeyframeList;
@@ -62,6 +76,12 @@ struct SEaseInEaseOutKeyframe : public SLinearKeyframe
 {
     float m_EaseIn;
     float m_EaseOut;
+
+    SEaseInEaseOutKeyframe() = default;
+    SEaseInEaseOutKeyframe(float seconds, float value, float easeIn, float easeOut)
+    : SLinearKeyframe(seconds, value)
+    , m_EaseIn(easeIn)
+    , m_EaseOut(easeOut) {}
 };
 
 } // namespace qt3dsdm
@@ -92,8 +112,8 @@ namespace qt3dsdm {
 enum EAnimationType {
     EAnimationTypeNone = 0,
     EAnimationTypeLinear,
-    EAnimationTypeBezier,
     EAnimationTypeEaseInOut,
+    EAnimationTypeBezier,
 };
 
 template <typename TDataType>
@@ -246,7 +266,6 @@ public:
     virtual void GetAnimations(TAnimationInfoList &outAnimations,
                                Qt3DSDMSlideHandle inMaster = Qt3DSDMSlideHandle(),
                                Qt3DSDMSlideHandle inSlide = Qt3DSDMSlideHandle()) const = 0;
-
     virtual void GetSpecificInstanceAnimations(Qt3DSDMSlideHandle inSlide,
                                                Qt3DSDMInstanceHandle inInstance,
                                                TAnimationHandleList &outAnimations) = 0;
@@ -269,6 +288,7 @@ public:
                               TKeyframeHandleList &outKeyframes) const = 0;
     virtual size_t GetKeyframeCount(Qt3DSDMAnimationHandle inAnimation) const = 0;
     virtual bool IsFirstKeyframe(Qt3DSDMKeyframeHandle inKeyframe) const = 0;
+    virtual bool IsLastKeyframe(Qt3DSDMKeyframeHandle inKeyframe) const = 0;
 
     virtual void OffsetAnimations(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
                                   long inOffset) = 0;
@@ -293,22 +313,17 @@ typedef std::shared_ptr<IAnimationCore> TAnimationCorePtr;
 
 struct SGetOrSetKeyframeInfo
 {
-    float m_Value = 0.0;
-    float m_EaseIn = -1.f;
-    float m_EaseOut = -1.f;
+    qt3dsdm::TKeyframe m_keyframeData;
     bool m_AnimationTrackIsDynamic = false;
 
-    SGetOrSetKeyframeInfo(float inValue, float inEaseIn = -1.f, float inEaseOut = -1.f,
-                          bool inDynamic = false)
-        : m_Value(inValue)
-        , m_EaseIn(inEaseIn)
-        , m_EaseOut(inEaseOut)
+    SGetOrSetKeyframeInfo(qt3dsdm::TKeyframe &keyframeData, bool inDynamic = false)
+        : m_keyframeData(keyframeData)
         , m_AnimationTrackIsDynamic(inDynamic)
     {
     }
     SGetOrSetKeyframeInfo() = default;
-
 };
+
 /**
  *	Interface from studio into the animation system that speaks
  *	a language near to that of studio.  Public interface.
@@ -789,6 +804,33 @@ inline void GetEaseInOutValues(const TKeyframe &inValue, float &outEaseIn, float
     outEaseOut = inValue.visit<float>(theEaseOutGetter);
 }
 
+struct BezierValuesGetter
+{
+    QVector<float> operator()(const SLinearKeyframe &) const { return {}; }
+    QVector<float> operator()(const SEaseInEaseOutKeyframe &) const { return {}; }
+    QVector<float> operator()(const SBezierKeyframe &inValue) const
+    {
+        return {inValue.m_InTangentTime, inValue.m_InTangentValue,
+                inValue.m_OutTangentTime, inValue.m_OutTangentValue};
+    }
+    QVector<float> operator()()
+    {
+        QT3DS_ASSERT(false);
+        return {};
+    }
+};
+inline void getBezierValues(const TKeyframe &keyframe, float &tangentInTime, float &tangentInValue,
+                            float &tangentOutTime, float &tangentOutValue)
+{
+    const QVector<float> values = keyframe.visit<QVector<float>>(BezierValuesGetter());
+    if (!values.empty()) {
+        tangentInTime = values[0];
+        tangentInValue = values[1];
+        tangentOutTime = values[2];
+        tangentOutValue = values[3];
+    }
+}
+
 struct SEaseInSetter
 {
     float m_Value;
@@ -830,6 +872,35 @@ inline TKeyframe SetEaseInOutValues(TKeyframe &inKeyframe, float inEaseIn, float
     SEaseOutSetter theEaseOutSetter;
     theEaseOutSetter.m_Value = inEaseOut;
     inKeyframe.visit<TKeyframe>(theEaseOutSetter);
+
+    return inKeyframe;
+}
+
+struct BezierOffsetter
+{
+    float dt; // time offset in seconds
+
+    TKeyframe operator()(SLinearKeyframe &inValue) const { return inValue; }
+    TKeyframe operator()(SEaseInEaseOutKeyframe &inValue) const { return inValue; }
+    TKeyframe operator()(SBezierKeyframe &inKeyframe) const
+    {
+        inKeyframe.m_InTangentTime += dt;
+        inKeyframe.m_OutTangentTime += dt;
+
+        return inKeyframe;
+    }
+    TKeyframe operator()()
+    {
+        QT3DS_ASSERT(false);
+        return TKeyframe();
+    }
+};
+
+// dt: time offset in seconds
+inline TKeyframe offsetBezier(TKeyframe &inKeyframe, float dt)
+{
+    BezierOffsetter offsetter{dt};
+    inKeyframe.visit<TKeyframe>(offsetter);
 
     return inKeyframe;
 }

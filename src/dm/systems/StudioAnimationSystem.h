@@ -126,8 +126,18 @@ private:
                                                  const SValue &inValue);
 
     void OverrideChannelIfAnimated(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
-                                   Qt3DSDMPropertyHandle inProperty, size_t inIndex, float inSeconds,
-                                   bool &ioAnimated, SValue &outValue) const;
+                                   Qt3DSDMPropertyHandle inProperty, size_t inIndex,
+                                   float inSeconds, bool &ioAnimated, SValue &outValue) const;
+
+    void DoKeyframeProperty(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
+                            Qt3DSDMPropertyHandle inProperty, const SValue &inValue,
+                            bool inDoDiffValue);
+
+    Qt3DSDMKeyframeHandle CreateKeyframe(Qt3DSDMAnimationHandle inAnimation, const SValue &inValue,
+                                         float inSeconds, TAnimationCorePtr inAnimationCore);
+    Qt3DSDMKeyframeHandle CreateKeyframeExplicit(Qt3DSDMAnimationHandle inAnimation, float inValue,
+                                                 float inSeconds, TKeyframe kfData = {});
+
 };
 }
 
