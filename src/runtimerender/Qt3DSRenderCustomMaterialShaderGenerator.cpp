@@ -1209,6 +1209,16 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
         SShaderDefaultMaterialKey theKey(Key());
         theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties);
 
+        // Add hash of the shader code to the cache key so that custom materials with the same name
+        // can have different shaders and the shaders are recompiled when the code is changed
+        qt3ds::render::IDynamicObjectSystem &dynamicSystem
+                = m_RenderContext.GetDynamicObjectSystem();
+        Qt3DSString shaderBuffer;
+        dynamicSystem.GetShaderSource(
+            m_RenderContext.GetStringTable().RegisterStr(inCustomMaterialName), shaderBuffer);
+        m_GeneratedShaderString.append(
+                    QString::number(qHash(QString(shaderBuffer))).toUtf8().constData());
+
         bool hasCustomVertexShader = GenerateVertexShader(theKey, inCustomMaterialName);
         bool hasCustomFragmentShader = GenerateFragmentShader(theKey, inCustomMaterialName,
                                                               hasCustomVertexShader);

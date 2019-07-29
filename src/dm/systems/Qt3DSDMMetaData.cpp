@@ -3875,6 +3875,9 @@ public:
     {
         using namespace qt3ds::render::dynamic;
 
+        // Remove the previous custom material entry so that the new shader code is used
+        m_CustomMaterials.erase(Intern(inObjectName));
+
         std::pair<TCustomMaterialMap::iterator, bool> theInserter = m_CustomMaterials.insert(
                     std::make_pair(Intern(inObjectName), SMetaDataCustomMaterialImpl()));
         /*if ( inStream.MoveToFirstChild( "Effect" ) == false )

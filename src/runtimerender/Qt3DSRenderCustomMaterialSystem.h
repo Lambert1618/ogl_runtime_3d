@@ -53,6 +53,8 @@ namespace render {
         RegisterMaterialClass(CRegisteredString inName,
                               NVConstDataRef<dynamic::SPropertyDeclaration> inProperties) = 0;
 
+        virtual void unregisterMaterial(const CRegisteredString &name) = 0;
+
         virtual NVConstDataRef<dynamic::SPropertyDefinition>
         GetCustomMaterialProperties(CRegisteredString inCustomMaterialName) const = 0;
 
@@ -126,6 +128,9 @@ namespace render {
         virtual void ApplyShaderPropertyValues(const SCustomMaterial &inMaterial,
                                                NVRenderShaderProgram &inProgram) = 0;
         virtual void renderSubpresentations(SCustomMaterial &inMaterial) = 0;
+        virtual void clearShaderCache() = 0;
+        virtual void setRequiresCompilation(const CRegisteredString &name, bool value) = 0;
+        virtual bool requiresCompilation(const CRegisteredString &name) const = 0;
         // Called by the uiccontext so this system can clear any per-frame render information.
         virtual void EndFrame() = 0;
     };

@@ -949,6 +949,19 @@ struct SMaterialSystem : public ICustomMaterialSystem
         return true;
     }
 
+    void unregisterMaterial(const CRegisteredString &name) override
+    {
+
+        if (!IsMaterialRegistered(name))
+            return;
+
+        m_CoreContext.GetDynamicObjectSystemCore().Unregister(name);
+
+        TStringMaterialMap::iterator iter = m_StringMaterialMap.find(name);
+        if (iter != m_StringMaterialMap.end())
+            m_StringMaterialMap.erase(iter);
+    }
+
     SMaterialClass *GetMaterialClass(CRegisteredString inStr)
     {
         TStringMaterialMap::iterator theIter = m_StringMaterialMap.find(inStr);
@@ -1225,7 +1238,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
         eastl::pair<TShaderMap::iterator, bool> theInsertResult(m_ShaderMap.insert(
             eastl::make_pair(skey, NVScopedRefCounted<SCustomMaterialShader>(NULL))));
 
-        if (theInsertResult.second) {
+        if (theInsertResult.second || requiresCompilation(inMaterial.m_ClassName)) {
             theProgram = GetShader(inRenderContext, inMaterial, inCommand, featureSet, theFlags);
 
             if (theProgram) {
@@ -1234,6 +1247,8 @@ struct SMaterialSystem : public ICustomMaterialSystem
             }
         } else if (theInsertResult.first->second)
             theProgram = theInsertResult.first->second->m_Shader;
+
+        setRequiresCompilation(inMaterial.m_ClassName, false);
 
         if (theProgram) {
             if (theProgram->GetProgramType() == NVRenderShaderProgram::ProgramType::Graphics) {
@@ -1864,6 +1879,34 @@ struct SMaterialSystem : public ICustomMaterialSystem
                 }
             }
         }
+    }
+
+    void clearShaderCache() override
+    {
+        for (const auto &it : m_StringMaterialMap)
+            m_CoreContext.GetDynamicObjectSystemCore().Unregister(it.first);
+        m_StringMaterialMap.clear();
+        m_ShaderMap.clear();
+    }
+
+    void setRequiresCompilation(const CRegisteredString &name, bool value) override
+    {
+        SMaterialClass *theClass = GetMaterialClass(name);
+        if (theClass == nullptr) {
+            QT3DS_ASSERT(false);
+            return;
+        }
+        theClass->m_Class->SetRequiresCompilation(value);
+    }
+
+    bool requiresCompilation(const CRegisteredString &name) const override
+    {
+        const SMaterialClass *theClass = GetMaterialClass(name);
+        if (theClass == nullptr) {
+            QT3DS_ASSERT(false);
+            return false;
+        }
+       return theClass->m_Class->RequiresCompilation();
     }
 
     virtual void PrepareTextureForRender(SMaterialClass &inClass, SCustomMaterial &inMaterial)
