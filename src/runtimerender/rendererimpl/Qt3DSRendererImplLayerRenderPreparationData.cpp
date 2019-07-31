@@ -366,7 +366,7 @@ namespace render {
             QT3DSF32 inTextScaleFactor, SLayerRenderPreparationResultFlags &ioFlags)
     {
         ITextTextureCache *theTextRenderer = m_Renderer.GetQt3DSContext().GetTextureCache();
-        if (theTextRenderer == NULL)
+        if (theTextRenderer == nullptr && !IQt3DSRenderContextCore::distanceFieldEnabled())
             return false;
 
         SRenderableObjectFlags theFlags;
@@ -385,37 +385,40 @@ namespace render {
             SRenderableObject *theRenderable = nullptr;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,2)
-            Q3DSDistanceFieldRenderer *distanceFieldText
-                    = static_cast<Q3DSDistanceFieldRenderer *>(
-                        m_Renderer.GetQt3DSContext().getDistanceFieldRenderer());
-            distanceFieldText->buildShaders();
-            theRenderable = RENDER_FRAME_NEW(SDistanceFieldRenderable)(
-                        theFlags, inText.GetGlobalPos(), inText, inText.m_Bounds, theMVP,
-                        *distanceFieldText);
-#else
-            TTPathObjectAndTexture theResult
-                    = theTextRenderer->RenderText(inText, inTextScaleFactor);
-            inText.m_TextTexture = theResult.second.second.mPtr;
-            inText.m_TextTextureDetails = theResult.second.first;
-            inText.m_PathFontItem = theResult.first.second;
-            inText.m_PathFontDetails = theResult.first.first;
-            STextScaleAndOffset theScaleAndOffset(*inText.m_TextTexture,
-                                                  inText.m_TextTextureDetails, inText);
-            QT3DSVec2 theTextScale(theScaleAndOffset.m_TextScale);
-            QT3DSVec2 theTextOffset(theScaleAndOffset.m_TextOffset);
-            QT3DSVec3 minimum(theTextOffset[0] - theTextScale[0],
-                    theTextOffset[1] - theTextScale[1], 0);
-            QT3DSVec3 maximum(theTextOffset[0] + theTextScale[0],
-                    theTextOffset[1] + theTextScale[1], 0);
-            inText.m_Bounds = NVBounds3(minimum, maximum);
-
-            if (inText.m_PathFontDetails)
-                ioFlags.SetRequiresStencilBuffer(true);
-
-            theRenderable = RENDER_FRAME_NEW(STextRenderable)(
-                theFlags, inText.GetGlobalPos(), m_Renderer, inText, inText.m_Bounds, theMVP,
-                inViewProjection, *inText.m_TextTexture, theTextOffset, theTextScale);
+            if (IQt3DSRenderContextCore::distanceFieldEnabled()) {
+                Q3DSDistanceFieldRenderer *distanceFieldText
+                        = static_cast<Q3DSDistanceFieldRenderer *>(
+                            m_Renderer.GetQt3DSContext().getDistanceFieldRenderer());
+                distanceFieldText->buildShaders();
+                theRenderable = RENDER_FRAME_NEW(SDistanceFieldRenderable)(
+                            theFlags, inText.GetGlobalPos(), inText, inText.m_Bounds, theMVP,
+                            *distanceFieldText);
+            } else
 #endif
+            {
+                TTPathObjectAndTexture theResult
+                        = theTextRenderer->RenderText(inText, inTextScaleFactor);
+                inText.m_TextTexture = theResult.second.second.mPtr;
+                inText.m_TextTextureDetails = theResult.second.first;
+                inText.m_PathFontItem = theResult.first.second;
+                inText.m_PathFontDetails = theResult.first.first;
+                STextScaleAndOffset theScaleAndOffset(*inText.m_TextTexture,
+                                                      inText.m_TextTextureDetails, inText);
+                QT3DSVec2 theTextScale(theScaleAndOffset.m_TextScale);
+                QT3DSVec2 theTextOffset(theScaleAndOffset.m_TextOffset);
+                QT3DSVec3 minimum(theTextOffset[0] - theTextScale[0],
+                        theTextOffset[1] - theTextScale[1], 0);
+                QT3DSVec3 maximum(theTextOffset[0] + theTextScale[0],
+                        theTextOffset[1] + theTextScale[1], 0);
+                inText.m_Bounds = NVBounds3(minimum, maximum);
+
+                if (inText.m_PathFontDetails)
+                    ioFlags.SetRequiresStencilBuffer(true);
+
+                theRenderable = RENDER_FRAME_NEW(STextRenderable)(
+                    theFlags, inText.GetGlobalPos(), m_Renderer, inText, inText.m_Bounds, theMVP,
+                    inViewProjection, *inText.m_TextTexture, theTextOffset, theTextScale);
+            }
             // After preparation, do not push object back to queue if it is not
             // active, because we prepare text elements regardless of their
             // visibility (=active status).
@@ -1021,7 +1024,9 @@ namespace render {
         m_ViewProjection = inViewProjection;
         QT3DSF32 theTextScaleFactor = inTextScaleFactor;
         bool wasDataDirty = false;
-        bool hasTextRenderer = m_Renderer.GetQt3DSContext().GetTextRenderer() != NULL;
+        bool hasTextRenderer
+                = m_Renderer.GetQt3DSContext().getDistanceFieldRenderer() != nullptr
+                || m_Renderer.GetQt3DSContext().GetTextRenderer() != nullptr;
         for (QT3DSU32 idx = 0, end = m_RenderableNodes.size(); idx < end; ++idx) {
             SRenderableNodeEntry &theNodeEntry(m_RenderableNodes[idx]);
             SNode *theNode = theNodeEntry.m_Node;

@@ -880,3 +880,23 @@ IQt3DSRenderContextCore &IQt3DSRenderContextCore::Create(NVFoundationBase &fnd, 
 {
     return *QT3DS_NEW(fnd.getAllocator(), SRenderContextCore)(fnd, strt);
 }
+
+bool IQt3DSRenderContextCore::distanceFieldEnabled()
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5,12,2)
+    static bool enabled = true;
+    static bool checkDone = false;
+    if (!checkDone) {
+        checkDone = true;
+        const char *name = "Q3DS_DISTANCE_FIELD_DISABLED";
+        if (!qEnvironmentVariableIsEmpty(name)) {
+            const QByteArray value = qgetenv(name);
+            if (value != QByteArrayLiteral("0") && value != QByteArrayLiteral("false"))
+                enabled = false;
+        }
+    }
+    return enabled;
+#else
+    return false;
+#endif
+}

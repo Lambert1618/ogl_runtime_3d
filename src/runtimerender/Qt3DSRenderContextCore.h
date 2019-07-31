@@ -81,6 +81,7 @@ namespace render {
                                                          bool delayedLoading) = 0;
 
         static IQt3DSRenderContextCore &Create(NVFoundationBase &fnd, IStringTable &strt);
+        static bool distanceFieldEnabled();
     };
 
     class IQt3DSRenderContext : public NVRefCounted

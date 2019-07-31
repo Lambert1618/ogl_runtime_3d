@@ -81,6 +81,12 @@ void Q3DSDistanceFieldRenderer::ClearProjectFontDirectories()
     m_projectDirs.clear();
 }
 
+void Q3DSDistanceFieldRenderer::ReloadFonts()
+{
+    m_fontDatabase.unregisterFonts(m_projectDirs);
+    m_fontDatabase.registerFonts(m_projectDirs);
+}
+
 ITextRenderer &Q3DSDistanceFieldRenderer::GetTextRenderer(NVRenderContext &)
 {
     return *this;
@@ -984,6 +990,18 @@ ITextRendererCore &ITextRendererCore::createDistanceFieldRenderer(NVFoundationBa
     return *QT3DS_NEW(fnd.getAllocator(), Q3DSDistanceFieldRenderer)(fnd);
 }
 
+bool Q3DSDistanceFieldRenderer::checkAndBuildGlyphs(SText &text)
+{
+    auto hashVal = getTextHashValue(text);
+    m_renderedTexts += hashVal;
+    if (!m_glyphCache.contains(hashVal)) {
+        m_glyphCache[hashVal] = buildGlyphsPerTexture(text);
+        return true;
+    }
+
+    return false;
+}
+
 // Unused methods:
 
 void Q3DSDistanceFieldRenderer::PreloadFonts()
@@ -997,11 +1015,6 @@ void Q3DSDistanceFieldRenderer::BeginPreloadFonts(IThreadPool &, IPerfTimer &)
 }
 
 void Q3DSDistanceFieldRenderer::EndPreloadFonts()
-{
-    Q_ASSERT(false);
-}
-
-void Q3DSDistanceFieldRenderer::ReloadFonts()
 {
     Q_ASSERT(false);
 }
@@ -1069,14 +1082,4 @@ STextTextureAtlasEntryDetails Q3DSDistanceFieldRenderer::RenderAtlasEntry(QT3DSU
     return STextTextureAtlasEntryDetails();
 }
 
-bool Q3DSDistanceFieldRenderer::checkAndBuildGlyphs(SText &text)
-{
-    auto hashVal = getTextHashValue(text);
-    if (!m_glyphCache.contains(hashVal)) {
-        m_glyphCache[hashVal] = buildGlyphsPerTexture(text);
-        return true;
-    }
-
-    return false;
-}
 #endif
