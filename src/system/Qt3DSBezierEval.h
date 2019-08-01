@@ -147,16 +147,7 @@ inline FLOAT EvaluateInverseBezierCurve(const FLOAT inP0, const FLOAT inP1, cons
         }
     } else {
         INT32 theNumRoots = CCubicRoots::SolveCubic(theConstants, theSolution);
-        INT32 solutionIndex = theNumRoots / 3;
-        theResult = static_cast<FLOAT>(theSolution[solutionIndex]);
-
-        // if the result is not within bounds, correct solutionIndex to pick the right solution
-        // TODO: in rare situations the 3 solutions for the cubic equation are all invalid. It's
-        // worth investigating.
-        if (theResult <= 0)
-            theResult = static_cast<FLOAT>(theSolution[solutionIndex - 1]);
-        else if (theResult >= 1)
-            theResult = static_cast<FLOAT>(theSolution[solutionIndex + 1]);
+        theResult = static_cast<FLOAT>(theSolution[theNumRoots / 3]);
     }
 
     return theResult;
