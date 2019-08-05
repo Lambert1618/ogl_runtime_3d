@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-!boot2qt:!integrity:!qnx {
+!integrity:!qnx {
     SUBDIRS += viewer
 }
 
