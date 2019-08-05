@@ -86,6 +86,7 @@ bool SImage::ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager
 
     if (newImage.m_Texture == nullptr) {
         if (m_OffscreenRendererId.IsValid()) {
+            // Image has subpresentation set
             SOffscreenRenderResult theResult =
                 inRenderManager.GetRenderedItem(m_OffscreenRendererId);
             HandleOffscreenResult(*this, newImage, theResult, replaceTexture, wasDirty);
@@ -94,7 +95,8 @@ bool SImage::ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager
 
     if (newImage.m_Texture == nullptr) {
         m_LastFrameOffscreenRenderer = nullptr;
-        if (m_ImagePath.IsValid()) {
+        if (m_ImagePath.IsValid() && !m_OffscreenRendererId.IsValid()) {
+            // Image has sourcepath set
             if (!m_LoadedTextureData
                     || m_LoadedTextureData->m_path != QString::fromUtf8(m_ImagePath.c_str())) {
                 if (m_LoadedTextureData)
