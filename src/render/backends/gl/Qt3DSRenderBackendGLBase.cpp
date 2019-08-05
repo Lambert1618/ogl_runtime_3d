@@ -604,7 +604,7 @@ NVRenderBackendGLBase::CreateBuffer(size_t size, NVRenderBufferBindFlags bindFla
         } else {
             GL_CALL_FUNCTION(glDeleteBuffers(1, &bufID));
             bufID = 0;
-            qCCritical(GL_ERROR, GLConversion::processGLError(target));
+            qCCritical(GL_ERROR) << GLConversion::processGLError(target);
         }
     }
 
@@ -832,7 +832,7 @@ NVRenderBackendGLBase::CreateRenderbuffer(NVRenderRenderBufferFormats::Enum stor
     // check for error
     GLenum error = m_glFunctions->glGetError();
     if (error != GL_NO_ERROR) {
-        qCCritical(GL_ERROR, GLConversion::processGLError(error));
+        qCCritical(GL_ERROR) << GLConversion::processGLError(error);
         QT3DS_ASSERT(false);
         GL_CALL_FUNCTION(glDeleteRenderbuffers(1, &bufID));
         bufID = 0;
@@ -869,7 +869,7 @@ bool NVRenderBackendGLBase::ResizeRenderbuffer(NVRenderBackendRenderbufferObject
     // check for error
     GLenum error = m_glFunctions->glGetError();
     if (error != GL_NO_ERROR) {
-        qCCritical(GL_ERROR, GLConversion::processGLError(error));
+        qCCritical(GL_ERROR) << GLConversion::processGLError(error);
         QT3DS_ASSERT(false);
         success = false;
     }
@@ -1306,7 +1306,7 @@ bool NVRenderBackendGLBase::compileSource(GLuint shaderID, NVConstDataRef<QT3DSI
         GLenum binaryError = m_glFunctions->glGetError();
         if (binaryError != GL_NO_ERROR) {
             shaderStatus = GL_FALSE;
-            qCCritical(GL_ERROR, GLConversion::processGLError(binaryError));
+            qCCritical(GL_ERROR) << GLConversion::processGLError(binaryError);
         }
     }
 

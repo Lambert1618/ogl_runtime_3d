@@ -663,7 +663,7 @@ NVRenderBackendGLES2Impl::CreateRenderbuffer(NVRenderRenderBufferFormats::Enum s
     // check for error
     GLenum error = m_glFunctions->glGetError();
     if (error != GL_NO_ERROR) {
-        qCCritical(GL_ERROR, GLConversion::processGLError(error));
+        qCCritical(GL_ERROR) << GLConversion::processGLError(error);
         QT3DS_ASSERT(false);
         GL_CALL_EXTRA_FUNCTION(glDeleteRenderbuffers(1, &bufID));
         bufID = 0;
@@ -699,7 +699,7 @@ bool NVRenderBackendGLES2Impl::ResizeRenderbuffer(NVRenderBackendRenderbufferObj
     // check for error
     GLenum error = m_glFunctions->glGetError();
     if (error != GL_NO_ERROR) {
-        qCCritical(GL_ERROR, GLConversion::processGLError(error));
+        qCCritical(GL_ERROR) << GLConversion::processGLError(error);
         QT3DS_ASSERT(false);
         success = false;
     }
