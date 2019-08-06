@@ -104,6 +104,8 @@ protected:
     Q3DSPresentation *m_presentation;
     QString m_error;
     QElapsedTimer *m_startupTimer;
+
+    friend class RuntimeInitializer;
 };
 
 QT_END_NAMESPACE

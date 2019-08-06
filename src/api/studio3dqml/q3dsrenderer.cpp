@@ -40,6 +40,7 @@
 #include <QtStudio3D/private/q3dsdatainput_p.h>
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qrunnable.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtQuick/qquickwindow.h>
@@ -100,6 +101,8 @@ void Q3DSRenderer::synchronize(QQuickFramebufferObject *inView)
         m_presentation->setVariantList(m_commands.m_variantList);
         m_presentation->setSource(m_commands.m_source);
         m_presentation->setDelayedLoading(m_commands.m_delayedLoading);
+        m_commands.m_sourceChanged = false;
+        m_commands.m_variantListChanged = false;
         m_initialized = false;
         m_initializationFailure = false;
         m_error.clear();
@@ -125,6 +128,28 @@ void Q3DSRenderer::releaseRuntime()
     }
 }
 
+class RuntimeInitializer : public QRunnable
+{
+public:
+    RuntimeInitializer(Q3DSRenderer *r)
+        : m_renderer(r)
+    { }
+    void run() override
+    {
+        if (!m_renderer->m_initialized && !m_renderer->m_initializationFailure) {
+            m_renderer->m_initialized
+                    = m_renderer->initializeRuntime(m_renderer->framebufferObject());
+            m_renderer->m_initializationFailure = !m_renderer->m_initialized;
+            if (m_renderer->m_initializationFailure)
+                m_renderer->m_commands.clear(true);
+        }
+    }
+
+private:
+    Q3DSRenderer *m_renderer;
+};
+
+
 /** Invoked by the QML scene graph indicating that it's time to render.
  *  Calls `draw()` if the plugin is visible, or `processCommands()` otherwise.
  *
@@ -138,10 +163,9 @@ void Q3DSRenderer::render()
     // We may start in a non visible state but we still need
     // to init the runtime otherwise the commands are never processed
     if (!m_initialized && !m_initializationFailure) {
-        m_initialized = initializeRuntime(this->framebufferObject());
-        m_initializationFailure = !m_initialized;
-        if (m_initializationFailure)
-            m_commands.clear(true);
+        auto *ri = new RuntimeInitializer(this);
+        // Initialize runtime after the first frame has been drawn
+        m_window->scheduleRenderJob(ri, QQuickWindow::AfterSwapStage);
     }
 
     // Don't render if the plugin is hidden; however, if hidden, but sure
