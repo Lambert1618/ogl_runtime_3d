@@ -139,7 +139,7 @@ public: // Scripts
     // LoadScript goes further by registering scriptIndex->inPresentation, and inOwner->m_ScriptID=
     // scriptIndex
     virtual void LoadScript(IPresentation *inPresentation, TElement *inOwner,
-                            const CHAR *inName) = 0;
+                            const CHAR *inName, bool initInRenderThread) = 0;
     virtual Q3DStudio::INT32 InitializeApplicationBehavior(const char *inProjectRelativePath) = 0;
 
 public: // Script functions and Callbacks

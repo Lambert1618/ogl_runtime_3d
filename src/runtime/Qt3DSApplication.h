@@ -249,7 +249,8 @@ public:
     // of resources that need to be uploaded to opengl.  Maintains reference to runtime factory
     virtual IApplication &CreateApplication(Q3DStudio::CInputEngine &inInputEngine,
                                             Q3DStudio::IAudioPlayer *inAudioPlayer,
-                                            Q3DStudio::IRuntimeFactory &inFactory) = 0;
+                                            Q3DStudio::IRuntimeFactory &inFactory,
+                                            bool initInRenderThread) = 0;
 
     // maintains reference to runtime factory core.  AppDir is where the executable is located;
     // the system will expect res directory

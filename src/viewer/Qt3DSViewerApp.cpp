@@ -390,7 +390,7 @@ void Q3DSViewerApp::setOffscreenId(int offscreenID)
 bool Q3DSViewerApp::InitializeApp(int winWidth, int winHeight, const QSurfaceFormat &format,
                                   int offscreenID, const QString &source,
                                   const QStringList &variantList,
-                                  bool delayedLoading,
+                                  bool delayedLoading, bool initInRenderThread,
                                   qt3ds::Qt3DSAssetVisitor *assetVisitor)
 {
     bool hasValidPresentationFile = !source.isEmpty();
@@ -427,7 +427,8 @@ bool Q3DSViewerApp::InitializeApp(int winWidth, int winHeight, const QSurfaceFor
             return false;
         }
 
-        bool success = m_Impl.m_view->InitializeGraphics(format, delayedLoading);
+        bool success = m_Impl.m_view->InitializeGraphics(format, delayedLoading,
+                                                         initInRenderThread);
         if (!success) {
             m_Impl.m_error = QObject::tr("Viewer launch failure! Failed to load: '%1'").arg(source);
             m_Impl.m_error.append("\n");
@@ -435,34 +436,50 @@ bool Q3DSViewerApp::InitializeApp(int winWidth, int winHeight, const QSurfaceFor
             return false;
         }
 
-        // Connect signals
-        connect(m_Impl.m_view->signalProxy(),
-                &QRuntimeViewSignalProxy::SigSlideEntered, this, &Q3DSViewerApp::SigSlideEntered);
-        connect(m_Impl.m_view->signalProxy(),
-                &QRuntimeViewSignalProxy::SigSlideExited, this, &Q3DSViewerApp::SigSlideExited);
-        connect(m_Impl.m_view->signalProxy(),
-                &QRuntimeViewSignalProxy::SigCustomSignal, this, &Q3DSViewerApp::SigCustomSignal);
-        connect(m_Impl.m_view->signalProxy(), &QRuntimeViewSignalProxy::SigDataOutputValueUpdated,
-                this, &Q3DSViewerApp::SigDataOutputValueUpdated);
-        QMetaObject::Connection *presReadyconn = new QMetaObject::Connection();
-        *presReadyconn = connect(m_Impl.m_view->signalProxy(),
-                                 &QRuntimeViewSignalProxy::SigPresentationReady, [&, presReadyconn]{
-            // We receive presentation ready signal from runtime when animations and properties
-            // have been updated.
-            Q_EMIT SigPresentationReady();
-            disconnect(*presReadyconn);
-            delete presReadyconn;
-        });
-        connect(m_Impl.m_view->signalProxy(), &QRuntimeViewSignalProxy::SigElementsCreated, this,
-                &Q3DSViewerApp::SigElementsCreated);
-        connect(m_Impl.m_view->signalProxy(), &QRuntimeViewSignalProxy::SigMaterialsCreated, this,
-                &Q3DSViewerApp::SigMaterialsCreated);
+        if (initInRenderThread)
+            this->connectSignals();
 
         Resize(winWidth, winHeight);
 
         Q_EMIT SigPresentationLoaded();
     }
     return true;
+}
+
+void Q3DSViewerApp::connectSignals()
+{
+    if (!m_Impl.m_view)
+        return;
+
+    m_Impl.m_view->connectSignals();
+
+    connect(m_Impl.m_view->signalProxy(),
+            &QRuntimeViewSignalProxy::SigSlideEntered, this, &Q3DSViewerApp::SigSlideEntered);
+    connect(m_Impl.m_view->signalProxy(),
+            &QRuntimeViewSignalProxy::SigSlideExited, this, &Q3DSViewerApp::SigSlideExited);
+    connect(m_Impl.m_view->signalProxy(),
+            &QRuntimeViewSignalProxy::SigCustomSignal, this, &Q3DSViewerApp::SigCustomSignal);
+    connect(m_Impl.m_view->signalProxy(), &QRuntimeViewSignalProxy::SigDataOutputValueUpdated,
+            this, &Q3DSViewerApp::SigDataOutputValueUpdated);
+    QMetaObject::Connection *presReadyconn = new QMetaObject::Connection();
+    *presReadyconn = connect(m_Impl.m_view->signalProxy(),
+                             &QRuntimeViewSignalProxy::SigPresentationReady, [&, presReadyconn]{
+        // We receive presentation ready signal from runtime when animations and properties
+        // have been updated.
+        Q_EMIT SigPresentationReady();
+        disconnect(*presReadyconn);
+        delete presReadyconn;
+    });
+    connect(m_Impl.m_view->signalProxy(), &QRuntimeViewSignalProxy::SigElementsCreated, this,
+            &Q3DSViewerApp::SigElementsCreated);
+    connect(m_Impl.m_view->signalProxy(), &QRuntimeViewSignalProxy::SigMaterialsCreated, this,
+            &Q3DSViewerApp::SigMaterialsCreated);
+}
+
+void Q3DSViewerApp::finishAsyncInit()
+{
+    connectSignals();
+    m_Impl.m_view->finishAsyncInit();
 }
 
 bool Q3DSViewerApp::IsInitialised(void)

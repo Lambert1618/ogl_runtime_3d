@@ -161,7 +161,10 @@ public:
 public: // loading
     virtual bool BeginLoad(const QString &sourcePath, const QStringList &variantList) = 0;
     virtual bool HasOfflineLoadingCompleted() = 0;
-    virtual bool InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading) = 0;
+    virtual bool InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
+                                    bool initInRenderThread) = 0;
+    virtual void connectSignals() = 0;
+    virtual void finishAsyncInit() = 0;
 
     virtual void Cleanup() = 0;
 

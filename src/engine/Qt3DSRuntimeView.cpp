@@ -170,7 +170,10 @@ public:
 
     bool BeginLoad(const QString &sourcePath, const QStringList &variantList) override;
     bool HasOfflineLoadingCompleted() override;
-    bool InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading) override;
+    bool InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
+                            bool initInRenderThread) override;
+    void connectSignals() override;
+    void finishAsyncInit() override;
 
     void Cleanup() override;
 
@@ -251,6 +254,8 @@ CRuntimeView::CRuntimeView(ITimeProvider &inTimeProvider, IWindowSystem &inWindo
     , m_startupTimer(startupTimer)
     , m_startupTime(-1)
 {
+    // Signal proxy thread affinity is set later when signals are connected to ensure it is correct
+    signalProxy()->moveToThread(nullptr);
 }
 
 CRuntimeView::~CRuntimeView()
@@ -292,7 +297,8 @@ bool CRuntimeView::HasOfflineLoadingCompleted()
     return true;
 }
 
-bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading)
+bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
+                                      bool initInRenderThread)
 {
     m_ApplicationCore->EndLoad();
     // Next call will initialize the render portion of the scenes.  This *must* have a loaded
@@ -300,13 +306,22 @@ bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayed
     m_RuntimeFactory = m_RuntimeFactoryCore->CreateRenderFactory(format, delayedLoading);
     m_Application
             = m_ApplicationCore->CreateApplication(*m_InputEngine, m_AudioPlayer,
-                                                   *m_RuntimeFactory);
+                                                   *m_RuntimeFactory, initInRenderThread);
     if (!m_Application->createSuccessful())
         return false;
 
     m_Application->ResetTime();
     m_RenderEngine = &m_RuntimeFactory->CreateRenderEngine();
     m_Presentation = m_Application->GetPrimaryPresentation();
+
+    m_TimeProvider.Reset();
+    return true;
+}
+
+void CRuntimeView::connectSignals()
+{
+    m_Presentation->signalProxy()->moveToThread(QThread::currentThread());
+    signalProxy()->moveToThread(QThread::currentThread());
 
     QObject::connect(m_Presentation->signalProxy(), &QPresentationSignalProxy::SigSlideEntered,
                      signalProxy(), &QRuntimeViewSignalProxy::SigSlideEntered);
@@ -325,9 +340,13 @@ bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayed
                      &QPresentationSignalProxy::SigDataOutputValueUpdated,
                      signalProxy(),
                      &QRuntimeViewSignalProxy::SigDataOutputValueUpdated);
+}
 
-    m_TimeProvider.Reset();
-    return true;
+void CRuntimeView::finishAsyncInit()
+{
+    Q3DStudio::CQmlEngine &bridgeEngine
+            = static_cast<Q3DStudio::CQmlEngine &>(m_RuntimeFactoryCore->GetScriptEngineQml());
+    bridgeEngine.loadDeferredScripts();
 }
 
 void CRuntimeView::Cleanup()

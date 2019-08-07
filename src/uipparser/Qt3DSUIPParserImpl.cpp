@@ -514,7 +514,8 @@ CUIPParserImpl::~CUIPParserImpl()
  *	@return a flag indicating whether or not we successfully loaded the file
  */
 BOOL CUIPParserImpl::Load(IPresentation &inPresentation,
-                          NVConstDataRef<SElementAttributeReference> inStateReferences)
+                          NVConstDataRef<SElementAttributeReference> inStateReferences,
+                          bool initInRenderThread)
 {
     m_CurrentPresentation = &inPresentation;
     if (!m_DOMReader) {
@@ -582,7 +583,7 @@ BOOL CUIPParserImpl::Load(IPresentation &inPresentation,
 
     // Now we are ready to load the scene graph
     if (theLoadResult)
-        theLoadResult &= LoadGraph(inPresentation, *m_DOMReader);
+        theLoadResult &= LoadGraph(inPresentation, *m_DOMReader, initInRenderThread);
     if (theLoadResult)
         theLoadResult &= LoadLogic(inPresentation, *m_DOMReader);
 
@@ -673,7 +674,8 @@ BOOL CUIPParserImpl::LoadClasses(IPresentation & /*inPresentation*/, IDOMReader 
     return true;
 }
 
-BOOL CUIPParserImpl::LoadGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader)
+BOOL CUIPParserImpl::LoadGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader,
+                               bool initInRenderThread)
 {
     IDOMReader::Scope __childScope(inReader);
 
@@ -683,7 +685,7 @@ BOOL CUIPParserImpl::LoadGraph(IPresentation &inPresentation, qt3dsdm::IDOMReade
 
     bool theLoadResult = inReader.MoveToFirstChild("Graph");
     if (theLoadResult) {
-        theLoadResult &= LoadSceneGraph(inPresentation, inReader);
+        theLoadResult &= LoadSceneGraph(inPresentation, inReader, nullptr, initInRenderThread);
         if (theLoadResult)
             PatchSceneElementRef();
     }
@@ -1009,7 +1011,8 @@ EElementType GetElementType(const char *inType)
  *	@return a flag indicating whether or not we successfully loaded the file
  */
 BOOL CUIPParserImpl::LoadSceneGraph(IPresentation &inPresentation, IDOMReader &inReader,
-                                    qt3ds::runtime::element::SElement *inNewStyleParent)
+                                    qt3ds::runtime::element::SElement *inNewStyleParent,
+                                    bool initInRenderThread)
 {
     IDOMReader::Scope __childScope(inReader);
     IScriptBridge *theScriptBridgeQml = inPresentation.GetScriptBridgeQml();
@@ -1141,10 +1144,10 @@ BOOL CUIPParserImpl::LoadSceneGraph(IPresentation &inPresentation, IDOMReader &i
         if (isBehavior) {
             if (theFileString.find(".qml") != eastl::string::npos) {
                 theScriptBridgeQml->LoadScript(&inPresentation, &theNewElem,
-                                               theFileString.c_str());
+                                               theFileString.c_str(), initInRenderThread);
             }
         }
-        LoadSceneGraph(inPresentation, inReader, &theNewElem);
+        LoadSceneGraph(inPresentation, inReader, &theNewElem, initInRenderThread);
     }
 
     return true;

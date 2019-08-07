@@ -94,6 +94,9 @@ CPresentation::CPresentation(const QString &inName, const QString &projectPath,
         ILogicSystem::CreateLogicSystem(inApplication->GetRuntimeFactoryCore().GetFoundation());
     m_ParametersSystem = IParametersSystem::CreateParametersSystem(
         inApplication->GetRuntimeFactoryCore().GetFoundation());
+
+    // Signal proxy thread affinity is set later when signals are connected to ensure it is correct
+    m_SignalProxy.moveToThread(nullptr);
 }
 #ifdef _WIN32
 #pragma warning(pop)
@@ -831,11 +834,6 @@ SPresentationSize CPresentation::GetSize() const
 void CPresentation::SetSize(const SPresentationSize &inSize)
 {
     m_Size = inSize;
-}
-
-QPresentationSignalProxy *CPresentation::signalProxy()
-{
-    return &m_SignalProxy;
 }
 
 } // namespace Q3DStudio

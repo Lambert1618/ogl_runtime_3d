@@ -209,6 +209,8 @@ public: // Public functions but not functions on the script bridge
 
     virtual void Initialize() = 0;
 
+    virtual void loadDeferredScripts() = 0;
+
 public:
     /**
     * @brief Create QML engine

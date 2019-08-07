@@ -61,6 +61,7 @@ class Q3DSStudio3D : public QQuickFramebufferObject
     Q_PROPERTY(Q3DSViewerSettings *viewerSettings READ viewerSettings CONSTANT)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
     Q_PROPERTY(EventIgnoreFlags ignoredEvents READ ignoredEvents WRITE setIgnoredEvents NOTIFY ignoredEventsChanged)
+    Q_PROPERTY(bool asyncInit READ asyncInit WRITE setAsyncInit NOTIFY asyncInitChanged)
 
 public:
     enum EventIgnoreFlag {
@@ -83,6 +84,8 @@ public:
     Q3DSViewerSettings *viewerSettings() const;
     QString error() const;
     void setError(const QString &error);
+    bool asyncInit() const;
+    void setAsyncInit(bool enabled);
 
     void getCommands(bool emitInitialize, CommandQueue &renderQueue);
 
@@ -105,6 +108,7 @@ Q_SIGNALS:
     void ignoredEventsChanged();
     void presentationReady();
     void presentationLoaded();
+    void asyncInitChanged(bool enabled);
 
 public Q_SLOTS:
     void reset();
@@ -130,6 +134,7 @@ protected:
     qreal m_pixelRatio;
     QString m_error;
     QScopedPointer<QElapsedTimer> m_startupTimer;
+    bool m_asyncInit = false;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Q3DSStudio3D::EventIgnoreFlags)

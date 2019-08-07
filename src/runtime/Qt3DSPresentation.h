@@ -161,7 +161,7 @@ public: // Commands and Events
     void FlushEventCommandQueue(void) override;
     void ProcessEvent(SEventCommand &inEvent) override;
 
-    QPresentationSignalProxy *signalProxy();
+    QPresentationSignalProxy *signalProxy() { return &m_SignalProxy; }
 
 public: // Data Output
     void AddToDataOutputMap(const QHash<qt3ds::foundation::CRegisteredString,

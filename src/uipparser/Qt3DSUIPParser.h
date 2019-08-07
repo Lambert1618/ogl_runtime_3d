@@ -131,7 +131,8 @@ protected:
     virtual ~IUIPParser() {}
 public: // Parse UIP file
     virtual BOOL Load(IPresentation &inPresentation,
-                      NVConstDataRef<SElementAttributeReference> inStateReferences) = 0;
+                      NVConstDataRef<SElementAttributeReference> inStateReferences,
+                      bool initInRenderThread) = 0;
     virtual qt3dsdm::IDOMReader &GetDOMReader() = 0;
     virtual IRuntimeMetaData &GetMetaData() = 0;
     // Mapping back from file id to element id, needed to hook elements up to their respective

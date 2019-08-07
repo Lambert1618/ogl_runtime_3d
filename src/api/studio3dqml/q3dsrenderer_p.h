@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class Q3DSViewerSettings;
 class Q3DSPresentation;
+class Q3DSRuntimeInitializerThread;
 
 class Q3DSRenderer : public QObject,
                      public QQuickFramebufferObject::Renderer
@@ -60,8 +61,8 @@ class Q3DSRenderer : public QObject,
 
 public:
     Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisitor,
-                 QElapsedTimer *startupTimer);
-    ~Q3DSRenderer();
+                 QElapsedTimer *startupTimer, bool asyncInit);
+    ~Q3DSRenderer() override;
 
     QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
 
@@ -80,6 +81,9 @@ Q_SIGNALS:
     void meshesCreated(const QStringList &meshNames, const QString &error);
     void dataOutputValueUpdated(const QString &name, const QVariant &newValue);
 
+protected Q_SLOTS:
+    void handleRuntimeInitializedAsync();
+
 protected:
     static void onInitHandler(void *userData);
     static void onUpdateHandler(void *userData);
@@ -88,6 +92,7 @@ protected:
     void render() override;
     void synchronize(QQuickFramebufferObject *inView) override;
     void releaseRuntime();
+    void registerCallbacks();
 
 protected:
     bool m_visibleFlag; // Is the plugin visible? Prevents rendering hidden content.
@@ -104,6 +109,8 @@ protected:
     Q3DSPresentation *m_presentation;
     QString m_error;
     QElapsedTimer *m_startupTimer;
+    Q3DSRuntimeInitializerThread *m_runtimeInitializerThread = nullptr;
+    bool m_asyncInit = false;
 
     friend class RuntimeInitializer;
 };

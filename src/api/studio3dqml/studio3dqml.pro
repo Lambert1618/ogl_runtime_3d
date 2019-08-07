@@ -16,13 +16,15 @@ SOURCES += \
     q3dsplugin.cpp \
     q3dsstudio3d.cpp \
     q3dsrenderer.cpp \
-    q3dspresentationitem.cpp
+    q3dspresentationitem.cpp \
+    q3dsruntimeinitializerthread.cpp
 
 HEADERS += \
     q3dsplugin.h \
     q3dsrenderer_p.h \
     q3dsstudio3d_p.h \
-    q3dspresentationitem_p.h
+    q3dspresentationitem_p.h \
+    q3dsruntimeinitializerthread_p.h
 
 LIBS += \
     -lqt3dsopengl$$qtPlatformTargetSuffix() \

@@ -385,12 +385,13 @@ private:
 
     CScriptCallbacks m_ScriptCallbacks;
 
-    QQmlEngine m_engine;
+    QScopedPointer<QQmlEngine> m_engine;
     QMap<QString, QQmlComponent *> m_components;
     QVector<Q3DSQmlScript *> m_scripts;
 
     QSet<int> m_availableIds;
     QHash<TElement *, int> m_elementIdMap;
+    QVector<QPair<TElement *, QString>> m_deferredScriptLoads;
 
 public:
     CQmlEngineImpl(NVFoundationBase &fnd, ITimeProvider &inTimeProvider);
@@ -406,7 +407,10 @@ public:
     qt3ds::runtime::IApplication *GetApplication() override;
     void Initialize() override;
 
-    void LoadScript(IPresentation *presentation, TElement *element, const CHAR *path) override;
+    void loadScript(TElement *element, const QString &sourcePath);
+    void LoadScript(IPresentation *presentation, TElement *element, const CHAR *path,
+                    bool initInRenderThread) override;
+    void loadDeferredScripts() override;
     Q3DStudio::INT32 InitializeApplicationBehavior(const char *) override
     {
         return -1;
@@ -667,20 +671,15 @@ bool CQmlEngineImpl::GetAttribute(const char *element, const char *attName, char
     return false;
 }
 
-void CQmlEngineImpl::LoadScript(IPresentation *presentation, TElement *element, const CHAR *path)
+void CQmlEngineImpl::loadScript(TElement *element, const QString &sourcePath)
 {
-    QString presPath = QFileInfo(presentation->GetFilePath()).absolutePath();
-
-    QString sourcePath(presPath + QLatin1Char('/') + path);
-    sourcePath.replace(QLatin1Char('\\'), QLatin1Char('/'));
-
-    TElement *parent = element->GetParent();
-    if (!parent)
-        return;
+    if (m_engine.isNull())
+        m_engine.reset(new QQmlEngine);
 
     if (!m_components.contains(sourcePath)) {
-        m_components[sourcePath] = new QQmlComponent(&m_engine, QUrl::fromLocalFile(sourcePath),
-                                                     &m_engine);
+        m_components[sourcePath] = new QQmlComponent(m_engine.data(),
+                                                     QUrl::fromLocalFile(sourcePath),
+                                                     m_engine.data());
     }
 
     QQmlComponent *component = m_components[sourcePath];
@@ -703,6 +702,32 @@ void CQmlEngineImpl::LoadScript(IPresentation *presentation, TElement *element, 
             }
         );
     }
+}
+
+void CQmlEngineImpl::LoadScript(IPresentation *presentation, TElement *element, const CHAR *path,
+                                bool initInRenderThread)
+{
+    QString presPath = QFileInfo(presentation->GetFilePath()).absolutePath();
+
+    QString sourcePath(presPath + QLatin1Char('/') + path);
+    sourcePath.replace(QLatin1Char('\\'), QLatin1Char('/'));
+
+    TElement *parent = element->GetParent();
+    if (!parent)
+        return;
+
+    // Defer engine initialization until we are in render thread
+    if (initInRenderThread)
+        loadScript(element, sourcePath);
+    else
+        m_deferredScriptLoads.append({element, sourcePath});
+}
+
+void CQmlEngineImpl::loadDeferredScripts()
+{
+    for (const auto &data : qAsConst(m_deferredScriptLoads))
+        loadScript(data.first, data.second);
+    m_deferredScriptLoads.clear();
 }
 
 void CQmlEngineImpl::FireEvent(const char *element, const char *evtName)
@@ -2001,7 +2026,7 @@ void CQmlEngineImpl::createComponent(QQmlComponent *component, TElement *element
     if (!parent)
         return;
 
-    QQmlContext *context = new QQmlContext(&m_engine, &m_engine);
+    QQmlContext *context = new QQmlContext(m_engine.data(), m_engine.data());
     QObject *obj = component->beginCreate(context);
     if (!obj) {
         context->deleteLater();
@@ -2439,7 +2464,7 @@ bool CQmlEngineImpl::getAttributeVector2(QVector<QByteArray> &outAttVec,
 
 QJSValue CQmlEngineImpl::buildJSFunc(const QString &userFunc)
 {
-    auto res = this->m_engine.evaluate(userFunc);
+    auto res = this->m_engine->evaluate(userFunc);
     if (res.isError()) {
         qWarning() << __FUNCTION__
             << "Uncaught exception during datainput evaluation. Evaluator function" << userFunc;
@@ -2457,7 +2482,7 @@ QVariant CQmlEngineImpl::callJSFunc(const QString &controllerName,
 
     // get the most recent set values for datainput sources (arguments) in the expression
     for (auto diVal : sourceDIs)
-        args << this->m_engine.toScriptValue(diMap[diVal].value);
+        args << this->m_engine->toScriptValue(diMap[diVal].value);
 
     if (diDef.evalFunc.isCallable()) {
         QJSValue res = diDef.evalFunc.call(args);

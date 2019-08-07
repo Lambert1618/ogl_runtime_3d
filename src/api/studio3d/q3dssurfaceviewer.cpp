@@ -650,9 +650,9 @@ bool Q3DSSurfaceViewerPrivate::initializeRuntime()
 
     if (!m_viewerApp->InitializeApp(int(m_size.width() * m_pixelRatio),
                                     int(m_size.height() * m_pixelRatio),
-                                    m_context->format(), m_fboId, localSource,
+                                    m_context->format(), int(m_fboId), localSource,
                                     m_presentation->variantList(),
-                                    m_presentation->delayedLoading(),
+                                    m_presentation->delayedLoading(), true,
                                     m_presentation->d_ptr->streamProxy())) {
         setError(m_viewerApp->error());
         releaseRuntime();

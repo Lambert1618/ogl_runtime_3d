@@ -527,7 +527,8 @@ public: // Construction
 
 public: // Parse UIP file
     BOOL Load(IPresentation &inPresentation,
-                      NVConstDataRef<SElementAttributeReference> inStateReferences) override;
+              NVConstDataRef<SElementAttributeReference> inStateReferences,
+              bool initInRenderThread) override;
     qt3dsdm::IDOMReader &GetDOMReader() override;
     IRuntimeMetaData &GetMetaData() override;
     SElementAndType GetElementForID(const char *inStringId) override;
@@ -549,9 +550,11 @@ public: // Parse UIP file
 protected: // Operation
     BOOL LoadProjectSettings(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader);
     BOOL LoadClasses(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader);
-    BOOL LoadGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader);
+    BOOL LoadGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader,
+                   bool initInRenderThread);
     BOOL LoadSceneGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader,
-                        qt3ds::runtime::element::SElement *inNewStyleParent = NULL);
+                        qt3ds::runtime::element::SElement *inNewStyleParent,
+                        bool initInRenderThread);
     BOOL LoadLogic(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader);
     BOOL LoadStateGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader);
 

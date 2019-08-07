@@ -405,7 +405,7 @@ class IAppLoadContext : public NVRefCounted
 {
 public:
     virtual void EndLoad() = 0;
-    virtual bool OnGraphicsInitialized(IRuntimeFactory &inFactory) = 0;
+    virtual bool OnGraphicsInitialized(IRuntimeFactory &inFactory, bool initInRenderThread) = 0;
     virtual bool HasCompletedLoading() = 0;
     static IAppLoadContext &CreateXMLLoadContext(
             SApp &inApp, const char8_t *inScaleMode);
@@ -1218,7 +1218,8 @@ struct SApp : public IApplication
     }
 
     bool LoadUIP(SPresentationAsset &inAsset,
-                 NVConstDataRef<SElementAttributeReference> inExternalReferences)
+                 NVConstDataRef<SElementAttributeReference> inExternalReferences,
+                 bool initInRenderThread)
     {
         GetMetaData();
         eastl::string theFile;
@@ -1243,7 +1244,7 @@ struct SApp : public IApplication
                                                             m_CoreFactory->GetStringTable()));
             Q3DStudio::IScene *newScene = NULL;
             m_PresentationBuffer.clear();
-            if (theUIPParser->Load(*thePresentation, inExternalReferences)) {
+            if (theUIPParser->Load(*thePresentation, inExternalReferences, initInRenderThread)) {
                 // Load the scene graph portion of the scene.
                 newScene = m_RuntimeFactory->GetSceneManager().LoadScene(
                             thePresentation, theUIPParser.mPtr,
@@ -1691,7 +1692,8 @@ struct SApp : public IApplication
     // of resources that need to be uploaded to opengl.  Maintains reference to runtime factory
     IApplication &CreateApplication(Q3DStudio::CInputEngine &inInputEngine,
                                     Q3DStudio::IAudioPlayer *inAudioPlayer,
-                                    Q3DStudio::IRuntimeFactory &inFactory) override
+                                    Q3DStudio::IRuntimeFactory &inFactory,
+                                    bool initInRenderThread) override
     {
         {
             SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
@@ -1708,7 +1710,8 @@ struct SApp : public IApplication
                 SStackPerfTimer __timer(m_CoreFactory->GetPerfTimer(),
                                         "Application: Load Context Graphics Initialized");
                 if (m_AppLoadContext)
-                    m_createSuccessful = m_AppLoadContext->OnGraphicsInitialized(inFactory);
+                    m_createSuccessful = m_AppLoadContext->OnGraphicsInitialized(
+                                inFactory, initInRenderThread);
                 // Guarantees the end of the multithreaded access to the various components
                 m_AppLoadContext = NULL;
                 if (!m_createSuccessful)
@@ -1957,7 +1960,7 @@ struct SXMLLoader : public IAppLoadContext
 
     bool HasCompletedLoading() override { return true; }
 
-    bool OnGraphicsInitialized(IRuntimeFactory &inFactory) override
+    bool OnGraphicsInitialized(IRuntimeFactory &inFactory, bool initInRenderThread) override
     {
         eastl::vector<SElementAttributeReference> theUIPReferences;
         eastl::string tempString;
@@ -1978,7 +1981,8 @@ struct SXMLLoader : public IAppLoadContext
 
                 if (!m_App.LoadUIP(thePresentationAsset,
                                    toConstDataRef(theUIPReferences.data(),
-                                                  (QT3DSU32)theUIPReferences.size()))) {
+                                                  (QT3DSU32)theUIPReferences.size()),
+                                   initInRenderThread)) {
                     qCCritical(INVALID_OPERATION, "Unable to load presentation %s",
                                thePathStr.c_str());
                 }
@@ -2061,7 +2065,7 @@ CAppStr &CAppStr::operator=(const CAppStr &inOther)
 }
 
 IApplication &IApplication::CreateApplicationCore(Q3DStudio::IRuntimeFactoryCore &inFactory,
-                                                          const char8_t *inApplicationDirectory)
+                                                  const char8_t *inApplicationDirectory)
 {
     return *QT3DS_NEW(inFactory.GetFoundation().getAllocator(), SApp)(inFactory,
                                                                       inApplicationDirectory);

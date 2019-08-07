@@ -219,9 +219,11 @@ public:
     bool InitializeApp(int winWidth, int winHeight, const QSurfaceFormat& format,
                        int offscreenID, const QString &source,
                        const QStringList &variantList,
-                       bool delayedLoading,
+                       bool delayedLoading, bool initInRenderThread,
                        qt3ds::Qt3DSAssetVisitor *assetVisitor = nullptr);
 
+    void connectSignals();
+    void finishAsyncInit();
     bool IsInitialised(void);
     void setOffscreenId(int offscreenID);
 

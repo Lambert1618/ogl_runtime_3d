@@ -21,6 +21,7 @@ SOURCES += \
     $$PWD/../../src/api/studio3dqml/q3dsstudio3d.cpp \
     $$PWD/../../src/api/studio3dqml/q3dsrenderer.cpp \
     $$PWD/../../src/api/studio3dqml/q3dspresentationitem.cpp \
+    $$PWD/../../src/api/studio3dqml/q3dsruntimeinitializerthread.cpp \
     main.cpp \
     viewer.cpp \
     remotedeploymentreceiver.cpp
@@ -29,6 +30,7 @@ HEADERS += \
     $$PWD/../../src/api/studio3dqml/q3dsstudio3d_p.h \
     $$PWD/../../src/api/studio3dqml/q3dsrenderer_p.h \
     $$PWD/../../src/api/studio3dqml/q3dspresentationitem_p.h \
+    $$PWD/../../src/api/studio3dqml/q3dsruntimeinitializerthread_p.h \
     viewer.h \
     remotedeploymentreceiver.h
 

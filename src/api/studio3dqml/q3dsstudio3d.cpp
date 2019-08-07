@@ -211,6 +211,31 @@ void Q3DSStudio3D::setError(const QString &error)
 }
 
 /*!
+    \qmlproperty bool Studio3D::asyncInit
+
+    If set to \c{true}, indicates that renderer initialization should be done asynchronously
+    in a helper thread. This improves UI responsiveness while initialization is happening,
+    but can lead to slower initialization. Asynchronous initialization may not work properly
+    on all platforms.
+
+    Defaults to \c{false}.
+
+    Changing this property after renderer is created doesn't do anything.
+*/
+bool Q3DSStudio3D::asyncInit() const
+{
+    return m_asyncInit;
+}
+
+void Q3DSStudio3D::setAsyncInit(bool enabled)
+{
+    if (enabled != m_asyncInit) {
+        m_asyncInit = enabled;
+        Q_EMIT asyncInitChanged(m_asyncInit);
+    }
+}
+
+/*!
     \qmlproperty EventIgnoreFlags Studio3D::ignoredEvents
 
     This property can be used to ignore mouse/wheel/keyboard events.
@@ -295,7 +320,10 @@ void Q3DSStudio3D::handleWindowChanged(QQuickWindow *window)
     if (!window)
         return;
 
-    window->setClearBeforeRendering(false);
+    // We need to enable clearing until the presentation starts rendering and takes care of that.
+    // Note that having this flag as false assumes presentation is always full screen.
+    window->setClearBeforeRendering(m_asyncInit);
+
     m_pixelRatio = window->devicePixelRatio();
 
     // Call tick every frame of the GUI thread to notify QML about new frame via frameUpdate signal
@@ -380,8 +408,7 @@ QQuickFramebufferObject::Renderer *Q3DSStudio3D::createRenderer() const
     // and the plugin, and vice-versa. The only valid time the two
     // may communicate is during Q3DSRenderer::synchronize().
     Q3DSRenderer *renderer = new Q3DSRenderer(isVisible(), m_presentation->d_ptr->streamProxy(),
-                                              m_startupTimer.get());
-
+                                              m_startupTimer.get(), m_asyncInit);
     connect(renderer, &Q3DSRenderer::enterSlide,
             m_presentation->d_ptr, &Q3DSPresentationPrivate::handleSlideEntered);
     connect(renderer, &Q3DSRenderer::dataOutputValueUpdated,

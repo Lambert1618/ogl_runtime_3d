@@ -32,6 +32,7 @@
 #include "Qt3DSViewerApp.h"
 #include "Qt3DSAudioPlayerImpl.h"
 #include "q3dspresentationitem_p.h"
+#include "q3dsruntimeInitializerthread_p.h"
 
 #include <QtStudio3D/private/q3dscommandqueue_p.h>
 #include <QtStudio3D/private/q3dsviewersettings_p.h>
@@ -41,6 +42,7 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qrunnable.h>
+#include <QtCore/qthread.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtQuick/qquickwindow.h>
@@ -50,10 +52,10 @@ using namespace Q3DSViewer;
 QT_BEGIN_NAMESPACE
 
 Q3DSRenderer::Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisitor,
-                           QElapsedTimer *startupTimer)
+                           QElapsedTimer *startupTimer, bool asyncInit)
     : m_visibleFlag(visibleFlag)
     , m_initElements(false)
-    , m_runtime(0)
+    , m_runtime(nullptr)
     , m_window(nullptr)
     , m_initialized(false)
     , m_initializationFailure(false)
@@ -61,6 +63,7 @@ Q3DSRenderer::Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisi
     , m_settings(new Q3DSViewerSettings(this))
     , m_presentation(new Q3DSPresentation(this))
     , m_startupTimer(startupTimer)
+    , m_asyncInit(asyncInit)
 {
 
 }
@@ -77,7 +80,7 @@ QOpenGLFramebufferObject *Q3DSRenderer::createFramebufferObject(const QSize &siz
     QOpenGLFramebufferObject *frameBuffer =
             new QOpenGLFramebufferObject(size, theFormat);
     if (m_runtime && m_runtime->IsInitialised())
-        m_runtime->setOffscreenId(frameBuffer->handle());
+        m_runtime->setOffscreenId(int(frameBuffer->handle()));
     return frameBuffer;
 }
 
@@ -123,9 +126,25 @@ void Q3DSRenderer::releaseRuntime()
     m_presentation->d_ptr->setViewerApp(nullptr);
 
     if (m_runtime) {
+        if (m_asyncInit && m_runtimeInitializerThread) {
+            m_runtimeInitializerThread->quit();
+            m_runtimeInitializerThread->wait();
+            delete m_runtimeInitializerThread;
+            m_runtimeInitializerThread = nullptr;
+        }
         m_runtime->Release();
         m_runtime = nullptr;
     }
+}
+
+void Q3DSRenderer::registerCallbacks()
+{
+    m_runtime->RegisterScriptCallback(Q3DSViewer::ViewerCallbackType::Enum::CALLBACK_ON_INIT,
+                                      reinterpret_cast<qml_Function>(Q3DSRenderer::onInitHandler),
+                                      this);
+    m_runtime->RegisterScriptCallback(Q3DSViewer::ViewerCallbackType::Enum::CALLBACK_ON_UPDATE,
+                                      reinterpret_cast<qml_Function>(Q3DSRenderer::onUpdateHandler),
+                                      this);
 }
 
 class RuntimeInitializer : public QRunnable
@@ -149,7 +168,6 @@ private:
     Q3DSRenderer *m_renderer;
 };
 
-
 /** Invoked by the QML scene graph indicating that it's time to render.
  *  Calls `draw()` if the plugin is visible, or `processCommands()` otherwise.
  *
@@ -163,9 +181,14 @@ void Q3DSRenderer::render()
     // We may start in a non visible state but we still need
     // to init the runtime otherwise the commands are never processed
     if (!m_initialized && !m_initializationFailure) {
-        auto *ri = new RuntimeInitializer(this);
-        // Initialize runtime after the first frame has been drawn
-        m_window->scheduleRenderJob(ri, QQuickWindow::AfterSwapStage);
+        if (m_asyncInit) {
+            if (!m_runtimeInitializerThread)
+                initializeRuntime(framebufferObject());
+        } else {
+            auto *ri = new RuntimeInitializer(this);
+            // Initialize runtime after the first frame has been drawn
+            m_window->scheduleRenderJob(ri, QQuickWindow::AfterSwapStage);
+        }
     }
 
     // Don't render if the plugin is hidden; however, if hidden, but sure
@@ -210,28 +233,37 @@ bool Q3DSRenderer::initializeRuntime(QOpenGLFramebufferObject *inFbo)
 
     const QString localSource = Q3DSUtils::urlToLocalFileOrQrc(m_presentation->source());
 
-    if (!m_runtime->InitializeApp(theWidth, theHeight,
-                                  QOpenGLContext::currentContext()->format(),
-                                  inFbo->handle(), localSource,
-                                  m_presentation->variantList(),
-                                  m_presentation->delayedLoading(),
-                                  m_visitor)) {
-        m_error = m_runtime->error();
-        releaseRuntime();
-        return false;
+    if (m_asyncInit) {
+        auto currentContext = QOpenGLContext::currentContext();
+        auto context = new QOpenGLContext();
+        context->setFormat(currentContext->format());
+        context->setShareContext(currentContext);
+        context->create();
+        m_runtimeInitializerThread = new Q3DSRuntimeInitializerThread(
+                    m_runtime, theWidth, theHeight, QOpenGLContext::currentContext()->format(),
+                    int(inFbo->handle()), localSource, m_presentation->variantList(),
+                    m_presentation->delayedLoading(), m_visitor, context,
+                    currentContext->surface());
+        connect(m_runtimeInitializerThread, &Q3DSRuntimeInitializerThread::initDone,
+                this, &Q3DSRenderer::handleRuntimeInitializedAsync, Qt::QueuedConnection);
+        context->moveToThread(m_runtimeInitializerThread);
+        m_runtimeInitializerThread->start();
+    } else {
+        if (!m_runtime->InitializeApp(theWidth, theHeight,
+                                      QOpenGLContext::currentContext()->format(),
+                                      int(inFbo->handle()), localSource,
+                                      m_presentation->variantList(),
+                                      m_presentation->delayedLoading(), true,
+                                      m_visitor)) {
+            m_error = m_runtime->error();
+            releaseRuntime();
+            return false;
+        }
+        m_settings->d_ptr->setViewerApp(m_runtime);
+        m_presentation->d_ptr->setViewerApp(m_runtime, false);
+        registerCallbacks();
     }
 
-    m_runtime->RegisterScriptCallback(Q3DSViewer::ViewerCallbackType::Enum::CALLBACK_ON_INIT,
-                                      reinterpret_cast<qml_Function>(Q3DSRenderer::onInitHandler),
-                                      this);
-    m_runtime->RegisterScriptCallback(Q3DSViewer::ViewerCallbackType::Enum::CALLBACK_ON_UPDATE,
-                                      reinterpret_cast<qml_Function>(Q3DSRenderer::onUpdateHandler),
-                                      this);
-
-    m_settings->d_ptr->setViewerApp(m_runtime);
-    m_presentation->d_ptr->setViewerApp(m_runtime, false);
-
-    // Connect signals
     connect(m_runtime, &Q3DSViewer::Q3DSViewerApp::SigSlideEntered,
             this, &Q3DSRenderer::enterSlide);
     connect(m_runtime, &Q3DSViewer::Q3DSViewerApp::SigSlideExited,
@@ -332,7 +364,7 @@ void Q3DSRenderer::processCommands()
             m_presentation->goToTime(cmd.m_elementPath, cmd.m_floatValue);
             break;
         case CommandType_GoToSlide:
-            m_presentation->goToSlide(cmd.m_elementPath, cmd.m_intValues[0]);
+            m_presentation->goToSlide(cmd.m_elementPath, quint32(cmd.m_intValues[0]));
             break;
         case CommandType_GoToSlideByName:
             m_presentation->goToSlide(cmd.m_elementPath, cmd.m_stringValue);
@@ -494,6 +526,30 @@ void Q3DSRenderer::processCommands()
     }
 
     m_commands.clear(false);
+}
+
+void Q3DSRenderer::handleRuntimeInitializedAsync()
+{
+    m_initialized = m_runtimeInitializerThread->wasSuccess();
+    m_initializationFailure = !m_initialized;
+
+    if (m_initializationFailure) {
+        m_commands.clear(true);
+        m_error = m_runtime->error();
+        releaseRuntime();
+    } else {
+        m_runtime->finishAsyncInit();
+        registerCallbacks();
+        m_settings->d_ptr->setViewerApp(m_runtime);
+        m_presentation->d_ptr->setViewerApp(m_runtime, false);
+        m_window->setClearBeforeRendering(false);
+
+        connect(m_runtimeInitializerThread, &QThread::finished, [this]() {
+            m_runtimeInitializerThread->deleteLater();
+            m_runtimeInitializerThread = nullptr;
+        });
+        m_runtimeInitializerThread->quit();
+    }
 }
 
 QT_END_NAMESPACE
