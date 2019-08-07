@@ -468,15 +468,17 @@ Q3DSDistanceFieldRenderer::buildGlyphsPerTexture(const SText &textInfo)
                 else if (cx2 > maximum.x)
                     maximum.x = cx2;
 
-                if (cy1 < minimum.y)
-                    minimum.y = cy1;
-                else if (cy1 > maximum.y)
-                    maximum.y = cy1;
-
+                // Note: Handle cy2 before cy1 because it is smaller due to y-coordinate switch.
+                // This way both minimum & maximum will get value even with single glyph text.
                 if (cy2 < minimum.y)
                     minimum.y = cy2;
                 else if (cy2 > maximum.y)
                     maximum.y = cy2;
+
+                if (cy1 < minimum.y)
+                    minimum.y = cy1;
+                else if (cy1 > maximum.y)
+                    maximum.y = cy1;
 
                 if (hasValidBoundingBox) {
                     if (maximum.x < halfWidth)
