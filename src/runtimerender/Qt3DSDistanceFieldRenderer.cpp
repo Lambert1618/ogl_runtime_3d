@@ -139,10 +139,17 @@ Q3DSDistanceFieldRenderer::buildGlyphsPerTexture(const SText &textInfo)
     QRawFont font = m_fontDatabase.findFont(textInfo.m_Font.c_str());
     qreal scaleFactor = font.pixelSize() / qreal(textInfo.m_FontSize);
 
+    const float boundingWidth = (textInfo.m_HorizontalAlignment == TextHorizontalAlignment::Left
+                                 || textInfo.m_HorizontalAlignment == TextHorizontalAlignment::Right)
+            ? halfWidth : boundingBox.x();
+    const float boundingHeight = (textInfo.m_VerticalAlignment == TextVerticalAlignment::Top
+                                  || textInfo.m_VerticalAlignment == TextVerticalAlignment::Bottom)
+            ? halfHeight : boundingBox.y();
+
     const qreal maximumWidth = boundingBox.isNull() ? qreal(0x01000000)
-                                                    : qreal(boundingBox.x()) * scaleFactor;
+                                                    : qreal(boundingWidth) * scaleFactor;
     const qreal maximumHeight = boundingBox.isNull() ? qreal(0x01000000)
-                                                     : qreal(boundingBox.y()) * scaleFactor;
+                                                     : qreal(boundingHeight) * scaleFactor;
 
     QTextLayout layout;
     QTextOption option = layout.textOption();
