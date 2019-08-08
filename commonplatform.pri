@@ -21,7 +21,6 @@ DEFINES += \
 win32: PlatformSpecificDir = windows
 macos: PlatformSpecificDir = macos
 linux|integrity|qnx: PlatformSpecificDir = linux
-android: PlatformSpecificDir = android/jni
 
 integrity: {
     DEFINES += _LINUX
@@ -258,12 +257,8 @@ clang {
 android {
     QMAKE_CXXFLAGS -= -fstack-protector-strong
     QMAKE_CFLAGS -= -fstack-protector-strong
-    # TODO: Should be done using this instead of copying the GLES headers, but including this
-    # causes lots of conflicting definitions in signal.h for some reason. Feel free to fix it if
-    # you know how. After this works, GLES3 and GLES2 folders can be deleted from
-    # 3rdparty/RuntimePlatformSpecific/Android/jni
-#    INCLUDEPATH += $$(ANDROID_NDK_ROOT)/sysroot/usr/include
-#    DEFINES += __BITS_PER_LONG=32
+    INCLUDEPATH += $$(ANDROID_NDK_ROOT)/sysroot/usr/include
+    DEFINES += __BITS_PER_LONG=32
 }
 
 win32 {

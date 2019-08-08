@@ -7,8 +7,7 @@ contains(TEMPLATE, lib) {
 }
 QT += core gui openglextensions
 
-DEFINES += COMPILED_FROM_DSP \
-    QT3DSDM_USE_NVLOG QT3DSDM_META_DATA_NO_SIGNALS
+DEFINES += COMPILED_FROM_DSP QT3DSDM_USE_NVLOG QT3DSDM_META_DATA_NO_SIGNALS
 
 INCLUDEPATH += \
     $$PWD/src \
@@ -35,7 +34,7 @@ INCLUDEPATH += \
     $$PWD/src/qmlstreamer \
     $$PWD/src/runtimerender \
     $$PWD/src/runtimerender/graphobjects \
-    $$PWD/src/runtimerender/resourcemanager \
+    $$PWD/src/runtimerender/resourcemanager
 
 # TODO: Investigate whether these can be moved to commonplatform
 win32-msvc {
@@ -70,12 +69,4 @@ macos {
 INCLUDEPATH += \
   $$PWD/src/3rdparty/platformspecific/Macos/Qt3DSLibs \
   $$PWD/src/platformspecific/macos/libs
-
-}
-
-android {
-INCLUDEPATH += \
-    $$PWD/src/platformspecific/android/jni/libs/nv_thread \
-    $$PWD/src/3rdparty/platformspecific/Android/jni/Qt3DSLibs \
-    $$PWD/src/3rdparty/platformspecific/Android/jni
 }
