@@ -35,7 +35,7 @@
 #include "foundation/Qt3DSAssert.h"
 #include "foundation/Qt3DSIntrinsics.h"
 #include "foundation/Qt3DSBroadcastingAllocator.h"
-#if !defined(QT3DS_APPLE) && !defined(ANDROID) && !defined(__CYGWIN__) && !defined(__QNX__) && !defined(__INTEGRITY)
+#if !defined(QT3DS_APPLE) && !defined(ANDROID) && !defined(__CYGWIN__) && !defined(__QNX__) && !defined(__INTEGRITY) && defined(__GLIBC__)
 #include <bits/local_lim.h> // PTHREAD_STACK_MIN
 #endif
 #include <stdio.h>
