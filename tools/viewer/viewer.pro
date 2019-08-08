@@ -1,8 +1,13 @@
+CONFIG += VIEWER_BUILD
+
 include($$PWD/../../commoninclude.pri)
 
 TEMPLATE = app
 TARGET = Qt3DViewer
-QT += qml quickcontrols2 studio3d-private
+QT += studio3d-private
+!android: {
+    QT += qml quickcontrols2
+}
 
 INCLUDEPATH += $$PWD/../../src/api/studio3dqml
 INCLUDEPATH += $$PWD/../../src/api/studio3d
@@ -47,3 +52,22 @@ macos:QMAKE_RPATHDIR += @executable_path/../../../../lib
 
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
+
+DISTFILES += \
+    android/AndroidManifest.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew \
+    android/gradlew.bat \
+    android/res/values/libs.xml
+
+contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
+    ANDROID_PACKAGE_SOURCE_DIR = \
+        $$PWD/android
+}
+
+contains(ANDROID_TARGET_ARCH,arm64-v8a) {
+    ANDROID_PACKAGE_SOURCE_DIR = \
+        $$PWD/android
+}

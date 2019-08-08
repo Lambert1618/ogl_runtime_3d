@@ -1,4 +1,17 @@
-include($$PWD/commonplatform.pri)
+contains(CONFIG, VIEWER_BUILD) {
+    android: {
+        CONFIG(debug, debug|release) {
+            DEFINES += _DEBUG
+        } else {
+            DEFINES += NDEBUG
+        }
+        DEFINES += _LINUX QT3DS_OS_LINUX _LINUXPLATFORM
+    } else {
+        include($$PWD/commonplatform.pri)
+    }
+} else {
+    include($$PWD/commonplatform.pri)
+}
 
 contains(TEMPLATE, lib) {
     load(qt_helper_lib)
