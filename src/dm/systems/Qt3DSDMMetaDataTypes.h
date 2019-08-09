@@ -70,6 +70,8 @@ struct CompleteMetaDataType
         Float,
         Long,
         Float2,
+        Float3,
+        Float4,
         Vector,
         Scale,
         Rotation,

@@ -29,9 +29,10 @@
 #include "Qt3DSDMPrefix.h"
 #include "Qt3DSDMValue.h"
 
-#include <QColor>
-#include <QDebug>
-#include <QVariant>
+#include <QtGui/qcolor.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qvariant.h>
+#include <QtGui/qvector4d.h>
 
 using namespace qt3dsdm;
 
@@ -74,19 +75,21 @@ SValue::SValue(const QVariant &inData)
         *this = inData.toFloat();
         break;
     }
-
     case QVariant::Vector2D: {
         const auto v = inData.value<QVector2D>();
         *this = qt3dsdm::SFloat2(v.x(), v.y());
         break;
     }
-
     case QVariant::Vector3D: {
         const auto v = inData.value<QVector3D>();
         *this = qt3dsdm::SFloat3(v.x(), v.y(), v.z());
         break;
     }
-
+    case QVariant::Vector4D: {
+        const auto v = inData.value<QVector4D>();
+        *this = qt3dsdm::SFloat4(v.x(), v.y(), v.z(), v.w());
+        break;
+    }
     default:
         qDebug() << "Add a handler for QVariant::type" << inData.type();
         throw std::runtime_error("Cannot transform this QVariant into SValue");

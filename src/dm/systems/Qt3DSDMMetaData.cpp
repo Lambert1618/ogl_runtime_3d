@@ -197,6 +197,8 @@ bool WStrOps<HandlerArgumentType::Value>::StrTo(const wchar_t *buffer, HandlerAr
     HANDLE_QT3DSDM_COMPLETE_TYPE(Float, None, DataModelDataType::Float)                            \
     HANDLE_QT3DSDM_COMPLETE_TYPE(Long, None, DataModelDataType::Long)                              \
     HANDLE_QT3DSDM_COMPLETE_TYPE(Float2, None, DataModelDataType::Float2)                          \
+    HANDLE_QT3DSDM_COMPLETE_TYPE(Float3, None, DataModelDataType::Float3)                          \
+    HANDLE_QT3DSDM_COMPLETE_TYPE(Float4, None, DataModelDataType::Float4)                          \
     HANDLE_QT3DSDM_COMPLETE_TYPE(Vector, None, DataModelDataType::Float3)                          \
     HANDLE_QT3DSDM_COMPLETE_TYPE(Scale, None, DataModelDataType::Float3)                           \
     HANDLE_QT3DSDM_COMPLETE_TYPE(Rotation, Rotation, DataModelDataType::Float3)                    \
