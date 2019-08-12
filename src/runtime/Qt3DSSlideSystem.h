@@ -153,6 +153,9 @@ namespace runtime {
         virtual QT3DSU8 FindSlide(element::SElement &inComponent, QT3DSU32 inSlideHashName) const = 0;
         virtual const char8_t *GetSlideName(SSlideKey inKey) const = 0;
         virtual QT3DSU8 GetPlaythroughToSlideIndex(SSlideKey inKey) const = 0;
+        virtual bool isElementInSlide(const element::SElement &element,
+                                      element::SElement &component,
+                                      int slideIndex) const = 0;
 
         static ISlideSystem &CreateSlideSystem(NVFoundationBase &inFnd, IStringTable &inStrTable,
                                                IElementAllocator &inElemAllocator);

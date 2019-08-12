@@ -495,21 +495,28 @@ struct SSlideSystem : public ISlideSystem
 
     struct SElementOperator
     {
-        bool m_InvertActive;
-        SElementOperator(bool inInvert = false)
-            : m_InvertActive(inInvert)
+        bool m_slideRollback;
+        SElementOperator(bool inSlideRollback = false)
+            : m_slideRollback(inSlideRollback)
         {
         }
+
+        // Returns true if element properties should be updated
         bool handleElementActive(SElement &inElement, bool inActive)
         {
-            if (m_InvertActive && inElement.Flags().IsExplicitActive())
-                inActive = !inActive;
+            // Always deactivate element when exiting slide
+            if (m_slideRollback)
+                inActive = false;
+
             inElement.Flags().SetExplicitActive(inActive);
 
-            if (m_InvertActive)
+            // No need to update element properties when exiting slide
+            if (m_slideRollback)
                 return false;
 
-            return inActive;
+            // Always update element properties to initial properties when entering a slide
+            // so that initially inactive objects have their slide values
+            return true;
         }
 
         void handleElementAttribute(SElement &inElement, const SSlideAttribute &inAttribute)
@@ -664,6 +671,26 @@ struct SSlideSystem : public ISlideSystem
     {
         SSlide *theSlide = FindSlide(inKey);
         theSlide->m_activeSlide = active;
+    }
+
+    bool isElementInSlide(const SElement &element, SElement &component,
+                          int slideIndex) const override
+    {
+        TComponentSlideHash::const_iterator result = m_Slides.find(&component);
+        if (result == m_Slides.end())
+            return false;
+
+        QT3DSU8 idx = 0;
+        for (const SSlide *slide = result->second; slide; slide = slide->m_NextSlide, ++idx) {
+            if (slideIndex == idx) {
+                for (const SSlideElement *slideElement = slide->m_FirstElement; slideElement;
+                     slideElement = slideElement->m_NextElement) {
+                    if (slideElement->m_ElementHandle == element.m_Handle)
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 };
 }

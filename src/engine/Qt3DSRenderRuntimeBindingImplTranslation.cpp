@@ -1638,8 +1638,12 @@ struct STranslatorCreator
     {
         TTranslatorType &theTranslator(static_cast<TTranslatorType &>(inTranslator));
         SRuntimePropertyParser theParser(inPresentation, inRenderContext, *theTranslator.m_Element);
-        if (theTranslator.Element().GetActive()) {
+        bool isMaterial = QString(theTranslator.Element().GetTypeDescription().m_TypeName.c_str())
+                .contains(QLatin1String("Material"));
+        if (theTranslator.Element().GetActive() || isMaterial) {
             // Don't push properties from inactive elements.
+            // Exceptions to this rule are Materials since materials that reference them need
+            // the values even when the original material is inactive
             for (long idx = 0, end = theTranslator.Element().GetAttributeCount(); idx < end;
                  ++idx) {
                 qt3ds::runtime::element::TPropertyDescAndValuePtr thePropInfo =

@@ -34,6 +34,8 @@
 #include "Qt3DSAttributeHashes.h"
 #include "Qt3DSElementSystem.h"
 #include "Qt3DSRuntimeFactory.h"
+#include "Qt3DSSlideSystem.h"
+#include "Qt3DSActivationManager.h"
 #include "qmath.h"
 
 using namespace Q3DStudio;
@@ -155,6 +157,19 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
     SAttributeKey theAttributeKey;
     theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
     bool force = false;
+
+    // Fail if trying to change the activation state of an object in another slide
+    if (theAttributeKey.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL) {
+        CPresentation *presentation = static_cast<CPresentation *>(
+                    theElement->GetBelongedPresentation());
+        ISlideSystem &slideSystem = presentation->GetSlideSystem();
+        TElement *componentElement = theElement->GetActivityZone().GetItemTimeParent(*theElement);
+        TComponent *component = presentation->GetComponentManager().GetComponent(componentElement);
+        if (!slideSystem.isElementInSlide(*theElement, *componentElement,
+                                          component->GetCurrentSlide())) {
+            return false;
+        }
+    }
 
     // Early out for our single 'read only' attribute
     if (ATTRIBUTE_URI == theAttributeKey.m_Hash) {
