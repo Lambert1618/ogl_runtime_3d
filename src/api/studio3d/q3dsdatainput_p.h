@@ -56,8 +56,7 @@ public:
     explicit Q3DSDataInputPrivate(Q3DSDataInput *parent);
     virtual ~Q3DSDataInputPrivate();
 
-    void setValue(const QVariant &value,
-                  Q3DSDataInput::ValueRole valueRole = Q3DSDataInput::ValueRole::Value);
+    void setValue(const QVariant &value);
     void setViewerApp(Q3DSViewer::Q3DSViewerApp *app);
     void setCommandQueue(CommandQueue *queue);
     void setPresentation(Q3DSPresentation *presentation);

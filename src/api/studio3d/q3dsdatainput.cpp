@@ -348,7 +348,7 @@ void Q3DSDataInput::setValue(const QVariant &value)
     // For example, when controlling timeline, the value set to DataInput will only be
     // the current value for one frame if presentation has a running animation.
     // In order to track an element property, see DataOutput API.
-    d_ptr->setValue(value, ValueRole::Value);
+    d_ptr->setValue(value);
     Q_EMIT valueChanged();
 }
 
@@ -373,13 +373,13 @@ Q3DSDataInputPrivate::~Q3DSDataInputPrivate()
         m_presentation->unregisterDataInput(q_ptr);
 }
 
-void Q3DSDataInputPrivate::setValue(const QVariant &value, Q3DSDataInput::ValueRole valueRole)
+void Q3DSDataInputPrivate::setValue(const QVariant &value)
 {
     m_value = value;
     setDirty(true);
 
     if (m_presentation)
-        m_presentation->setDataInputValue(m_name, m_value, valueRole);
+        m_presentation->setDataInputValue(m_name, m_value);
 }
 
 void Q3DSDataInputPrivate::setViewerApp(Q3DSViewer::Q3DSViewerApp *app)

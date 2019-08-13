@@ -523,6 +523,13 @@ void Q3DSSurfaceViewerPrivate::update()
 
             if (m_autoSize)
                 setSize(m_surface->size());
+
+            // Fire off a batch change with the most recently set values for this frame period.
+            if (m_presentation->d_ptr->dataInputsChanged()) {
+                m_presentation->d_ptr->setDataInputValueBatch();
+                m_presentation->d_ptr->setDataInputsChanged(false);
+            }
+
             m_viewerApp->Render();
 
             const uint defaultFbo = m_context->defaultFramebufferObject();

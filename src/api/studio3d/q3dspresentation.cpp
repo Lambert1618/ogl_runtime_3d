@@ -845,17 +845,13 @@ void Q3DSPresentation::setGlobalAnimationTime(qint64 milliseconds)
 
     \sa DataInput
  */
-void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &value,
-                                         Q3DSDataInput::ValueRole valueRole)
+void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &value)
 {
-    // If we do not have viewerApp i.e. if this is a QML client context, do not send
-    // datainput set commands to the queue. They are batched and sent out at frameUpdate signal.
-    if (d_ptr->m_viewerApp) {
-        d_ptr->m_viewerApp->SetDataInputValue(name, value,
-                                              (qt3ds::runtime::DataInputValueRole)valueRole);
-    } else {
-        d_ptr->m_dataInputsChanged = true;
-    }
+    Q_UNUSED(name) // TODO: need these again when adding "force set" flag to this API
+    Q_UNUSED(value)
+    // We batch datainput changes within a frame, so just tell the presentation that one
+    // or more datainputs have changed value.
+    d_ptr->m_dataInputsChanged = true;
 }
 
 /*!
@@ -1633,6 +1629,11 @@ void Q3DSPresentationPrivate::setDelayedLoading(bool enable)
     }
 }
 
+void Q3DSPresentationPrivate::setDataInputsChanged(bool changed)
+{
+    m_dataInputsChanged = changed;
+}
+
 void Q3DSPresentationPrivate::requestResponseHandler(CommandType commandType, void *requestData)
 {
     switch (commandType) {
@@ -1919,9 +1920,13 @@ bool Q3DSPresentationPrivate::isValidDataOutput(const Q3DSDataOutput *dataOutput
     return m_viewerApp->dataOutputs().contains(dataOutput->name());
 }
 
+bool Q3DSPresentationPrivate::dataInputsChanged() const
+{
+    return m_dataInputsChanged;
+}
+
 void Q3DSPresentationPrivate::setDataInputValueBatch()
 {
-    // Allocated here, deleted after queue command has been processed.
     QVector<QPair<QString, QVariant>> *theProperties = new QVector<QPair<QString, QVariant>>();
     for (const auto &di : qAsConst(m_dataInputs)) {
         if (di->d_ptr->m_dirty) {
@@ -1930,8 +1935,17 @@ void Q3DSPresentationPrivate::setDataInputValueBatch()
         }
     }
 
-    if (!theProperties->empty() && m_commandQueue)
-        m_commandQueue->queueCommand({}, CommandType_SetDataInputBatch, {}, theProperties);
+    if (!theProperties->empty()) {
+        if (m_commandQueue) { // QML context
+            m_commandQueue->queueCommand({}, CommandType_SetDataInputBatch, {}, theProperties);
+            return; // Get out, queue will handle property list deletion.
+        } else if (m_viewerApp) { // C++ API access
+            for (const auto &change : qAsConst(*theProperties))
+                m_viewerApp->SetDataInputValue(change.first, change.second);
+        }
+    }
+
+    delete theProperties; // Delete immediately, we do not have queue to take care of deletion.
 }
 
 Q3DStudio::EKeyCode Q3DSPresentationPrivate::getScanCode(QKeyEvent *e)

@@ -130,8 +130,7 @@ public Q_SLOTS:
     void setPresentationActive(const QString &id, bool active);
     void fireEvent(const QString &elementPath, const QString &eventName);
     void setGlobalAnimationTime(qint64 milliseconds);
-    void setDataInputValue(const QString &name, const QVariant &value,
-                           Q3DSDataInput::ValueRole valueRole = Q3DSDataInput::ValueRole::Value);
+    void setDataInputValue(const QString &name, const QVariant &value);
 
 Q_SIGNALS:
     void variantListChanged(const QStringList &variantList);

@@ -57,12 +57,6 @@ public:
 
     virtual ~Q3DSDataInput();
 
-    enum class ValueRole {
-        Value = 0,
-        Min = 1,
-        Max = 2
-    };
-
     QString name() const;
     QVariant value() const;
     float min() const;

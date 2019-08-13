@@ -71,6 +71,7 @@ public:
     void setViewerApp(Q3DSViewer::Q3DSViewerApp *app, bool connectApp = true);
     void setCommandQueue(CommandQueue *queue);
     void setDelayedLoading(bool enable);
+    void setDataInputsChanged(bool changed);
 
     void registerElement(Q3DSElement *element);
     void unregisterElement(Q3DSElement *element);
@@ -89,6 +90,7 @@ public:
     QHash<QString, QString> dataInputMetadata(const QString &name) const;
     QVector<Q3DSDataInput *> dataInputs(const QString &key) const;
     bool isValidDataOutput(const Q3DSDataOutput *dataOutput) const;
+    bool dataInputsChanged() const;
 
     void setDataInputValueBatch();
 
