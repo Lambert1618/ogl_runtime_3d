@@ -1928,17 +1928,14 @@ struct SMaterialSystem : public ICustomMaterialSystem
         for (QT3DSU32 idx = 0, end = thePropDefs.size(); idx < end; ++idx) {
             if (thePropDefs[idx].m_DataType == NVRenderShaderDataTypes::NVRenderTexture2DPtr) {
                 SImage *pImage = nullptr;
-
-                // we only do this to not miss if "None" is selected
                 CRegisteredString theStrPtr = *reinterpret_cast<CRegisteredString *>(
                     inMaterial.GetDataSectionBegin() + thePropDefs[idx].m_Offset);
 
                 if (theStrPtr.IsValid()) {
-                    QT3DSU32 index = FindAllocatedImage(thePropDefs[idx].m_ImagePath);
+                    QT3DSU32 index = FindAllocatedImage(theStrPtr);
                     if (index == QT3DSU32(-1)) {
                         pImage = QT3DS_NEW(m_CoreContext.GetAllocator(), SImage)();
-                        m_AllocatedImages.push_back(
-                            eastl::make_pair(thePropDefs[idx].m_ImagePath, pImage));
+                        m_AllocatedImages.push_back(eastl::make_pair(theStrPtr, pImage));
                     } else {
                         pImage = m_AllocatedImages[index].second;
                     }
