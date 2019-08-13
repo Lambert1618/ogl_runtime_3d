@@ -72,6 +72,7 @@ public:
     void setCommandQueue(CommandQueue *queue);
     void setDelayedLoading(bool enable);
     void setDataInputsChanged(bool changed);
+    void setDataInputDirty(const QString &name, bool dirty);
 
     void registerElement(Q3DSElement *element);
     void unregisterElement(Q3DSElement *element);

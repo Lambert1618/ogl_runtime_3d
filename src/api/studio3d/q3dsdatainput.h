@@ -82,6 +82,7 @@ protected:
 private:
     Q_DISABLE_COPY(Q3DSDataInput)
     friend class Q3DSPresentationPrivate;
+    friend class Q3DSPresentation;
     friend class Q3DSRenderer;
 };
 

@@ -83,6 +83,7 @@ protected:
     QHash<QString, QString> m_metadata;
 
     friend class Q3DSPresentationPrivate;
+    friend class Q3DSPresentation;
     friend class Q3DSRenderer;
 };
 

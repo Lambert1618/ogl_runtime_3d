@@ -847,8 +847,9 @@ void Q3DSPresentation::setGlobalAnimationTime(qint64 milliseconds)
  */
 void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &value)
 {
-    Q_UNUSED(name) // TODO: need these again when adding "force set" flag to this API
-    Q_UNUSED(value)
+    // Set directly to avoid loop between Q3DSDataInput and Q3DSPresentation value setters
+    d_ptr->m_dataInputs[name]->d_ptr->m_value = value;
+    d_ptr->setDataInputDirty(name, true);
     // We batch datainput changes within a frame, so just tell the presentation that one
     // or more datainputs have changed value.
     d_ptr->m_dataInputsChanged = true;
@@ -1632,6 +1633,12 @@ void Q3DSPresentationPrivate::setDelayedLoading(bool enable)
 void Q3DSPresentationPrivate::setDataInputsChanged(bool changed)
 {
     m_dataInputsChanged = changed;
+}
+
+void Q3DSPresentationPrivate::setDataInputDirty(const QString &name, bool dirty)
+{
+    if (m_dataInputs.contains(name))
+        m_dataInputs[name]->d_ptr->setDirty(dirty);
 }
 
 void Q3DSPresentationPrivate::requestResponseHandler(CommandType commandType, void *requestData)
