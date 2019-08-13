@@ -37,6 +37,7 @@
 #include <QVector>
 #include <QVector2D>
 #include <QVector3D>
+#include <QVector4D>
 
 namespace qt3dsdm {
 
@@ -322,10 +323,10 @@ inline QVector3D get<QVector3D>(const qt3dsdm::SValue &inType)
 }
 
 template <>
-inline QVector<float> get<QVector<float> >(const qt3dsdm::SValue &inType)
+inline QVector4D get<QVector4D>(const qt3dsdm::SValue &inType)
 {
     auto f = get<qt3dsdm::SFloat4>(inType);
-    return {f.m_Floats[0], f.m_Floats[1], f.m_Floats[2], f.m_Floats[3]};
+    return QVector4D(f.m_Floats[0], f.m_Floats[1], f.m_Floats[2], f.m_Floats[3]);
 }
 
 // KDAB_TODO Shortcut to not define our own 4 member long structure

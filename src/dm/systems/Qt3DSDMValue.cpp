@@ -114,7 +114,7 @@ QVariant SValue::toQVariant() const
         return QVariant::fromValue(get<QVector3D>(*this));
     }
     case DataModelDataType::Float4: {
-        return QVariant::fromValue(get<QVector<float> >(*this));
+        return QVariant::fromValue(get<QVector4D>(*this));
     }
     case DataModelDataType::Long: {
         return QVariant::fromValue(get<qt3ds::QT3DSI32>(*this));
