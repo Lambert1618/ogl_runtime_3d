@@ -56,11 +56,13 @@ public:
     explicit Q3DSDataInputPrivate(Q3DSDataInput *parent);
     virtual ~Q3DSDataInputPrivate();
 
-    void setValue(const QVariant &value);
+    void setValue(const QVariant &value, bool force = false);
     void setViewerApp(Q3DSViewer::Q3DSViewerApp *app);
     void setCommandQueue(CommandQueue *queue);
     void setPresentation(Q3DSPresentation *presentation);
     void setDirty(bool dirty);
+    // Used by presentation to indicate which is the latest committed (not cached locally) value.
+    void setCommittedValue(const QVariant &value);
 
 protected:
     Q3DSDataInput *q_ptr;
@@ -75,6 +77,9 @@ protected:
     float m_min = 0;
 
     bool m_dirty = false;
+    bool m_forced = false;
+
+    QVariant m_committedValue; // Latest value that was committed to runtime engine
 
     // Note: Qt3d Runtime allows metadata to be both read and set, therefore requiring
     // internal representation of both keys and values to be QVariant as per API convention.

@@ -843,12 +843,22 @@ void Q3DSPresentation::setGlobalAnimationTime(qint64 milliseconds)
     is also an alternative to the goToSlide() and goToTime() family of APIs and
     to Q3DSSceneElement.
 
+    Use \a force parameter to always create a change event. (The default behavior
+    for datainput is to only forward the change event to runtime engine if the set
+    value differs from the previously committed value.) Note that property changes
+    from animations take precedence over datainput control regardless of force parameter.
+
     \sa DataInput
  */
-void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &value)
+void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &value, bool force)
 {
-    // Set directly to avoid loop between Q3DSDataInput and Q3DSPresentation value setters
+    // Set directly to avoid loop between Q3DSDataInput and Q3DSPresentation value setters.
     d_ptr->m_dataInputs[name]->d_ptr->m_value = value;
+
+    // If we have had forced set during this frame, inherit force flag to all subsequent setters.
+    if (!d_ptr->m_dataInputs[name]->d_ptr->m_forced)
+        d_ptr->m_dataInputs[name]->d_ptr->m_forced = force;
+
     d_ptr->setDataInputDirty(name, true);
     // We batch datainput changes within a frame, so just tell the presentation that one
     // or more datainputs have changed value.
@@ -1937,8 +1947,13 @@ void Q3DSPresentationPrivate::setDataInputValueBatch()
     QVector<QPair<QString, QVariant>> *theProperties = new QVector<QPair<QString, QVariant>>();
     for (const auto &di : qAsConst(m_dataInputs)) {
         if (di->d_ptr->m_dirty) {
-            theProperties->append({di->name(), di->value()});
-            di->d_ptr->m_dirty = false;
+            if (di->value() != di->d_ptr->m_committedValue || di->d_ptr->m_forced) {
+                theProperties->append({di->name(), di->value()});
+                di->d_ptr->m_dirty = false;
+                di->d_ptr->m_forced = false; // Reset also forced flag as it is per-frame.
+                di->d_ptr->setCommittedValue(di->value()); // Make note of value that was actually
+                                                           // forwarded to runtime engine.
+            }
         }
     }
 

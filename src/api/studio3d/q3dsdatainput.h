@@ -68,7 +68,7 @@ public:
 
 public Q_SLOTS:
     void setName(const QString &name);
-    void setValue(const QVariant &value);
+    void setValue(const QVariant &value, bool force = false);
 
 Q_SIGNALS:
     void nameChanged();

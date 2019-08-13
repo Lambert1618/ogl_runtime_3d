@@ -218,9 +218,7 @@ void Q3DSDataInput::setName(const QString &name)
     Q3DSDataInput instance. If the value of the same data input in the
     presentation is changed elsewhere, for example via animations or
     Q3DSPresentation::setAttribute(), those changes are not reflected in the
-    value of this property. Due to this uncertainty, this property treats all
-    value sets as changes even if the newly set value is the same value as the
-    previous value.
+    value of this property.
 
     To get actual values from the presentation, use DataOutput.
     \sa DataOutput
@@ -235,9 +233,7 @@ void Q3DSDataInput::setName(const QString &name)
     Q3DSDataInput instance. If the value of the same data input in the
     presentation is changed elsewhere, for example via animations or
     Q3DSPresentation::setAttribute(), those changes are not reflected in the
-    value of this property. Due to this uncertainty, this property treats all
-    value sets as changes even if the newly set value is the same value as the
-    previous value.
+    value of this property.
 
     To get actual values from the presentation, use DataOutput.
     \sa DataOutput
@@ -338,17 +334,22 @@ QStringList Q3DSDataInput::metadataKeys() const
 
 /*!
     \brief Q3DSDataInput::setValue Set a new \a value for this data input.
-    \note For performance reasons do not call setValue unnecessarily.
+
+    SetValue calls are batched within a single frame period. The most recently set \a value will be
+    used to commit a change event for the runtime engine at the end of frame period. By default,
+    a change event is only created if the new \a value is actually different from the previous
+    frame's committed value.
+
+    Use \a force parameter to force commit a change. This can be useful in situations where the
+    target element property is being changed by several controllers, and the caller wants to be
+    certain that value change will be processed. Note that animations take precedence over
+    datainput control.
+
+    \note For performance reasons do not call setValue with \a force set to true unnecessarily.
  */
-void Q3DSDataInput::setValue(const QVariant &value)
+void Q3DSDataInput::setValue(const QVariant &value, bool force)
 {
-    // Since properties controlled by data inputs can change without the current value being
-    // reflected on the value of the DataInput element, we allow setting the value to the
-    // same one it was previously and still consider it a change.
-    // For example, when controlling timeline, the value set to DataInput will only be
-    // the current value for one frame if presentation has a running animation.
-    // In order to track an element property, see DataOutput API.
-    d_ptr->setValue(value);
+    d_ptr->setValue(value, force);
     Q_EMIT valueChanged();
 }
 
@@ -362,6 +363,11 @@ void Q3DSDataInputPrivate::setDirty(bool dirty)
     m_dirty = dirty;
 }
 
+void Q3DSDataInputPrivate::setCommittedValue(const QVariant &value)
+{
+    m_committedValue = value;
+}
+
 Q3DSDataInputPrivate::Q3DSDataInputPrivate(Q3DSDataInput *parent)
     : q_ptr(parent)
 {
@@ -373,13 +379,18 @@ Q3DSDataInputPrivate::~Q3DSDataInputPrivate()
         m_presentation->unregisterDataInput(q_ptr);
 }
 
-void Q3DSDataInputPrivate::setValue(const QVariant &value)
+void Q3DSDataInputPrivate::setValue(const QVariant &value, bool force)
 {
+    // Was there a force set at some point during this frame? If so, then inherit force flag
+    // to all value set calls after it so that we do not discard the forced change.
+    if (!m_forced)
+        m_forced = force;
+
     m_value = value;
     setDirty(true);
 
     if (m_presentation)
-        m_presentation->setDataInputValue(m_name, m_value);
+        m_presentation->setDataInputValue(m_name, m_value, m_forced);
 }
 
 void Q3DSDataInputPrivate::setViewerApp(Q3DSViewer::Q3DSViewerApp *app)
