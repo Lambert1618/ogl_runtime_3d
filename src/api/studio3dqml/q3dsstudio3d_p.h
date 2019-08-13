@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 class Q3DSRenderer;
 class Q3DSViewerSettings;
 class Q3DSPresentationItem;
+class QOffscreenSurface;
 
 class Q3DSStudio3D : public QQuickFramebufferObject
 {
@@ -135,6 +136,7 @@ protected:
     QString m_error;
     QScopedPointer<QElapsedTimer> m_startupTimer;
     bool m_asyncInit = false;
+    QScopedPointer<QOffscreenSurface> m_asyncInitSurface;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Q3DSStudio3D::EventIgnoreFlags)

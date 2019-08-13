@@ -41,6 +41,8 @@
 #include <QtCore/qfileinfo.h>
 #include <QtQuick/qquickwindow.h>
 #include <QtQml/qqmlcontext.h>
+#include <QtGui/qoffscreensurface.h>
+#include <QtGui/qopenglcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -324,12 +326,27 @@ void Q3DSStudio3D::handleWindowChanged(QQuickWindow *window)
     // Note that having this flag as false assumes presentation is always full screen.
     window->setClearBeforeRendering(m_asyncInit);
 
+    auto createAsyncSurface = [this](QOpenGLContext *qmlContext) {
+        if (qmlContext) {
+            m_asyncInitSurface->setFormat(qmlContext->format());
+            m_asyncInitSurface->create();
+        }
+    };
+
+    if (m_asyncInit) {
+        m_asyncInitSurface.reset(new QOffscreenSurface);
+        createAsyncSurface(window->openglContext());
+    }
+
     m_pixelRatio = window->devicePixelRatio();
 
     // Call tick every frame of the GUI thread to notify QML about new frame via frameUpdate signal
     connect(window, &QQuickWindow::afterAnimating, this, &Q3DSStudio3D::tick);
     // Call update after the frame is handled to queue another frame
     connect(window, &QQuickWindow::afterSynchronizing, this, &Q3DSStudio3D::update);
+
+    if (m_asyncInit && !m_asyncInitSurface->isValid())
+        connect(window, &QQuickWindow::openglContextCreated, createAsyncSurface);
 
     reset();
 }
@@ -408,7 +425,7 @@ QQuickFramebufferObject::Renderer *Q3DSStudio3D::createRenderer() const
     // and the plugin, and vice-versa. The only valid time the two
     // may communicate is during Q3DSRenderer::synchronize().
     Q3DSRenderer *renderer = new Q3DSRenderer(isVisible(), m_presentation->d_ptr->streamProxy(),
-                                              m_startupTimer.get(), m_asyncInit);
+                                              m_startupTimer.get(), m_asyncInitSurface.data());
     connect(renderer, &Q3DSRenderer::enterSlide,
             m_presentation->d_ptr, &Q3DSPresentationPrivate::handleSlideEntered);
     connect(renderer, &Q3DSRenderer::dataOutputValueUpdated,

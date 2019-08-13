@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class Q3DSViewerSettings;
 class Q3DSPresentation;
 class Q3DSRuntimeInitializerThread;
+class QSurface;
 
 class Q3DSRenderer : public QObject,
                      public QQuickFramebufferObject::Renderer
@@ -61,7 +62,7 @@ class Q3DSRenderer : public QObject,
 
 public:
     Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisitor,
-                 QElapsedTimer *startupTimer, bool asyncInit);
+                 QElapsedTimer *startupTimer, QSurface *asyncInitSurface);
     ~Q3DSRenderer() override;
 
     QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
@@ -110,7 +111,7 @@ protected:
     QString m_error;
     QElapsedTimer *m_startupTimer;
     Q3DSRuntimeInitializerThread *m_runtimeInitializerThread = nullptr;
-    bool m_asyncInit = false;
+    QSurface *m_asyncInitSurface = nullptr;
 
     friend class RuntimeInitializer;
 };

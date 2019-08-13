@@ -52,7 +52,7 @@ using namespace Q3DSViewer;
 QT_BEGIN_NAMESPACE
 
 Q3DSRenderer::Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisitor,
-                           QElapsedTimer *startupTimer, bool asyncInit)
+                           QElapsedTimer *startupTimer, QSurface *asyncInitSurface)
     : m_visibleFlag(visibleFlag)
     , m_initElements(false)
     , m_runtime(nullptr)
@@ -63,7 +63,7 @@ Q3DSRenderer::Q3DSRenderer(bool visibleFlag, qt3ds::Qt3DSAssetVisitor *assetVisi
     , m_settings(new Q3DSViewerSettings(this))
     , m_presentation(new Q3DSPresentation(this))
     , m_startupTimer(startupTimer)
-    , m_asyncInit(asyncInit)
+    , m_asyncInitSurface(asyncInitSurface)
 {
 
 }
@@ -126,7 +126,7 @@ void Q3DSRenderer::releaseRuntime()
     m_presentation->d_ptr->setViewerApp(nullptr);
 
     if (m_runtime) {
-        if (m_asyncInit && m_runtimeInitializerThread) {
+        if (m_asyncInitSurface && m_runtimeInitializerThread) {
             m_runtimeInitializerThread->quit();
             m_runtimeInitializerThread->wait();
             delete m_runtimeInitializerThread;
@@ -181,7 +181,7 @@ void Q3DSRenderer::render()
     // We may start in a non visible state but we still need
     // to init the runtime otherwise the commands are never processed
     if (!m_initialized && !m_initializationFailure) {
-        if (m_asyncInit) {
+        if (m_asyncInitSurface) {
             if (!m_runtimeInitializerThread)
                 initializeRuntime(framebufferObject());
         } else {
@@ -233,7 +233,7 @@ bool Q3DSRenderer::initializeRuntime(QOpenGLFramebufferObject *inFbo)
 
     const QString localSource = Q3DSUtils::urlToLocalFileOrQrc(m_presentation->source());
 
-    if (m_asyncInit) {
+    if (m_asyncInitSurface) {
         auto currentContext = QOpenGLContext::currentContext();
         auto context = new QOpenGLContext();
         context->setFormat(currentContext->format());
@@ -243,7 +243,7 @@ bool Q3DSRenderer::initializeRuntime(QOpenGLFramebufferObject *inFbo)
                     m_runtime, theWidth, theHeight, QOpenGLContext::currentContext()->format(),
                     int(inFbo->handle()), localSource, m_presentation->variantList(),
                     m_presentation->delayedLoading(), m_visitor, context,
-                    currentContext->surface());
+                    m_asyncInitSurface);
         connect(m_runtimeInitializerThread, &Q3DSRuntimeInitializerThread::initDone,
                 this, &Q3DSRenderer::handleRuntimeInitializedAsync, Qt::QueuedConnection);
         context->moveToThread(m_runtimeInitializerThread);
