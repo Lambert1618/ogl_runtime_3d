@@ -513,6 +513,14 @@ bool Q3DSDistanceFieldGlyphCache::loadPregeneratedCache(const QRawFont &font)
     return true;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+bool Q3DSDistanceFieldGlyphCache::eightBitFormatIsAlphaSwizzled() const
+{
+    return m_context.GetRenderContext().GetRenderContextType()
+        == qt3ds::render::NVRenderContextValues::GLES2;
+}
+#endif // QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+
 QT_END_NAMESPACE
 
 #endif // QT_VERSION >= QT_VERSION_CHECK(5,12,2)

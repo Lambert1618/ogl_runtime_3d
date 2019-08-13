@@ -76,6 +76,10 @@ public:
 
     qreal fontSize() const;
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+    bool eightBitFormatIsAlphaSwizzled() const override;
+#endif
+
 private:
     bool loadPregeneratedCache(const QRawFont &font);
     TextureInfo *textureInfo(int index) const;
