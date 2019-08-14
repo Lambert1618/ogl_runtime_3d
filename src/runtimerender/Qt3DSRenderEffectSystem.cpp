@@ -1904,11 +1904,11 @@ struct SEffectSystem : public IEffectSystem
                     if (theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr)) {
                         theOffscreenRenderer.GetRenderedItem(*theStrPtr);
                     } else {
-                        QT3DSU32 index = FindAllocatedImage(theDefs[idx].m_ImagePath);
+                        QT3DSU32 index = FindAllocatedImage(*theStrPtr);
                         if (index == QT3DSU32(-1)) {
                             pImage = QT3DS_NEW(m_CoreContext.GetAllocator(), SImage)();
                             m_AllocatedImages.push_back(
-                                eastl::make_pair(theDefs[idx].m_ImagePath, pImage));
+                                eastl::make_pair(*theStrPtr, pImage));
                         } else {
                             pImage = m_AllocatedImages[index].second;
                         }
