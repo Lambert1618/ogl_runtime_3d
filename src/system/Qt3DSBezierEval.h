@@ -28,156 +28,142 @@
 **
 ****************************************************************************/
 
+#include <vector>
+#include <QtCore/qglobal.h>
+#include <QtCore/qmath.h>
+
 namespace Q3DStudio {
 
-//==============================================================================
-/**
- *	Generic Bezier parametric curve evaluation at a given parametric value.
- *	@param inP0		control point P0
- *	@param inP1		control point P1
- *	@param inP2		control point P2
- *	@param inP3		control point P3
- *	@param inS		the variable
- *	@return the evaluated value on the bezier curve
- */
-inline FLOAT EvaluateBezierCurve(FLOAT inP0, FLOAT inP1, FLOAT inP2, FLOAT inP3, const FLOAT inS)
+class CubicPolynomial
 {
-    // Using:
-    //		Q(s) = Sum i=0 to 3 ( Pi * Bi,3(s))
-    // where:
-    //		Pi is a control point and
-    //		Bi,3 is a basis function such that:
-    //
-    //		B0,3(s) = (1 - s)^3
-    //		B1,3(s) = (3 * s) * (1 - s)^2
-    //		B2,3(s) = (3 * s^2) * (1 - s)
-    //		B3,3(s) = s^3
+public:
+    CubicPolynomial(double p0, double p1, double p2, double p3);
 
-    /*	FLOAT	theSSquared = inS * inS;										//
-       t^2
-            FLOAT	theSCubed = theSSquared * inS;									//
-       t^3
+    std::vector<double> extrema() const;
+    std::vector<double> roots() const;
 
-            FLOAT	theSDifference = 1 - inS;										// (1 -
-       t)
-            FLOAT	theSDifferenceSquared = theSDifference * theSDifference;		// (1 -
-       t)^2
-            FLOAT	theSDifferenceCubed = theSDifferenceSquared * theSDifference;	// (1 - t)^3
+private:
+    double m_a;
+    double m_b;
+    double m_c;
+    double m_d;
+};
 
-            FLOAT	theFirstTerm = theSDifferenceCubed;								// (1 -
-       t)^3
-            FLOAT	theSecondTerm = ( 3 * inS ) * theSDifferenceSquared;			// (3 * t) * (1
-       - t)^2
-            FLOAT	theThirdTerm = ( 3 * theSSquared ) * theSDifference;			// (3 * t^2) *
-       (1 - t)
-            FLOAT	theFourthTerm = theSCubed;										//
-       t^3
+CubicPolynomial::CubicPolynomial(double p0, double p1, double p2, double p3)
+    : m_a(p3 - 3.0 * p2 + 3.0 * p1 - p0)
+    , m_b(3.0 * p2 - 6.0 * p1 + 3.0 * p0)
+    , m_c(3.0 * p1 - 3.0 * p0)
+    , m_d(p0)
+{}
 
-            // Q(t) = ( p0 * (1 - t)^3 ) + ( p1 * (3 * t) * (1 - t)^2 ) + ( p2 * (3 * t^2) * (1 - t)
-       ) + ( p3 * t^3 )
-            return ( inP0 * theFirstTerm ) + ( inP1 * theSecondTerm ) + ( inP2 * theThirdTerm ) + (
-       inP3 * theFourthTerm );*/
+std::vector<double> CubicPolynomial::extrema() const
+{
+    std::vector<double> out;
 
-    FLOAT theFactor = inS * inS;
-    inP1 *= 3 * inS;
-    inP2 *= 3 * theFactor;
-    theFactor *= inS;
-    inP3 *= theFactor;
+    auto addValidValue = [&out](double value) {
+        if (!std::isnan(value) && !std::isinf(value))
+            out.push_back(qBound(0.0, value, 1.0));
+    };
 
-    theFactor = 1 - inS;
-    inP2 *= theFactor;
-    theFactor *= 1 - inS;
-    inP1 *= theFactor;
-    theFactor *= 1 - inS;
-    inP0 *= theFactor;
+    // Find the roots of the first derivative of y.
+    auto pd2 = (2.0 * m_b) / (3.0 * m_a) / 2.0;
+    auto q = m_c / (3.0 * m_a);
 
-    return inP0 + inP1 + inP2 + inP3;
+    auto radi = std::pow(pd2, 2.0) - q;
+
+    auto x1 = -pd2 + std::sqrt(radi);
+    auto x2 = -pd2 - std::sqrt(radi);
+
+    addValidValue(x1);
+    addValidValue(x2);
+
+    return out;
 }
 
-//==============================================================================
-/**
- *	Inverse Bezier parametric curve evaluation to get parametric value for a given output.
- *	This is equal to finding the root(s) of the Bezier cubic equation.
- *	@param inP0		control point P0
- *	@param inP1		control point P1
- *	@param inP2		control point P2
- *	@param inP3		control point P3
- *	@param inX		the variable
- *	@return the evaluated value
- */
-inline FLOAT EvaluateInverseBezierCurve(const FLOAT inP0, const FLOAT inP1, const FLOAT inP2,
-                                        const FLOAT inP3, const FLOAT inX)
+std::vector<double> CubicPolynomial::roots() const
 {
-    FLOAT theResult = 0;
+    std::vector<double> out;
 
-    // Using:
-    //		Q(s) = Sum i=0 to 3 ( Pi * Bi,3(s))
-    // where:
-    //		Pi is a control point and
-    //		Bi,3 is a basis function such that:
-    //
-    //		B0,3(s) = (1 - s)^3
-    //		B1,3(s) = (3 * s) * (1 - s)^2
-    //		B2,3(s) = (3 * s^2) * (1 - s)
-    //		B3,3(s) = s^3
+    auto addValidValue = [&out](double value) {
+        if (!(std::isnan(value) || std::isinf(value)))
+            out.push_back(value);
+    };
 
-    // The Bezier cubic equation:
-    // inX = inP0*(1-s)^3 + inP1*(3*s)*(1-s)^2 + inP2*(3*s^2)*(1-s) + inP3*s^3
-    //     = s^3*( -inP0 + 3*inP1 - 3*inP2 +inP3 ) + s^2*( 3*inP0 - 6*inP1 + 3*inP2 ) + s*( -3*inP0
-    //     + 3*inP1 ) + inP0
-    // For cubic eqn of the form: c[0] + c[1]*x + c[2]*x^2 + c[3]*x^3 = 0
-    FLOAT theConstants[4];
-    theConstants[0] = static_cast<FLOAT>(inP0 - inX);
-    theConstants[1] = static_cast<FLOAT>(-3 * inP0 + 3 * inP1);
-    theConstants[2] = static_cast<FLOAT>(3 * inP0 - 6 * inP1 + 3 * inP2);
-    theConstants[3] = static_cast<FLOAT>(-inP0 + 3 * inP1 - 3 * inP2 + inP3);
-
-    FLOAT theSolution[3] = { 0 };
-
-    if (theConstants[3] == 0) {
-        if (theConstants[2] == 0) {
-            if (theConstants[1] == 0)
-                theResult = 0;
-            else
-                theResult = -theConstants[0] / theConstants[1]; // linear
-        } else {
-            // quadratic
-            INT32 theNumRoots = CCubicRoots::SolveQuadric(theConstants, theSolution);
-            theResult = static_cast<FLOAT>(theSolution[theNumRoots / 2]);
+    if (m_a == 0.0) {
+        if (m_b == 0.0) { // Linear
+            if (m_c != 0.0)
+                out.push_back(-m_d / m_c);
+        } else { // Quadratic
+            const double p = m_c / m_b / 2.0;
+            const double q = m_d / m_b;
+            const double sqrt = std::sqrt(std::pow(p, 2.0) - q);
+            addValidValue(-p + sqrt);
+            addValidValue(-p - sqrt);
         }
-    } else {
-        INT32 theNumRoots = CCubicRoots::SolveCubic(theConstants, theSolution);
-        theResult = static_cast<FLOAT>(theSolution[theNumRoots / 3]);
-    }
+    } else { // Cubic
+        const double p = 3.0 * m_a * m_c - std::pow(m_b, 2.0);
+        const double q = 2.0 * std::pow(m_b, 3.0) - 9.0 * m_a * m_b * m_c
+                         + 27.0 * std::pow(m_a, 2.0) * m_d;
 
-    return theResult;
+        auto disc = std::pow(q, 2.0) + 4.0 * std::pow(p, 3.0);
+
+        auto toX = [&](double y) { return (y - m_b) / (3.0 * m_a); };
+
+        if (disc >= 0) { // One real solution.
+            double sqrt = 4.0 * std::sqrt(std::pow(q, 2.0) + 4.0 * std::pow(p, 3.0));
+            double u = .5 * std::cbrt(-4.0 * q + sqrt);
+            double v = .5 * std::cbrt(-4.0 * q - sqrt);
+
+            addValidValue(toX(u + v));
+        } else { // Three real solutions.
+            double phi = acos(-q / (2 * std::sqrt(-std::pow(p, 3.0))));
+            double sqrt = std::sqrt(-p) * 2.0;
+            double y1 = sqrt * cos(phi / 3.0);
+            double y2 = sqrt * cos((phi / 3.0) + (2.0 * M_PI / 3.0));
+            double y3 = sqrt * cos((phi / 3.0) + (4.0 * M_PI / 3.0));
+
+            addValidValue(toX(y1));
+            addValidValue(toX(y2));
+            addValidValue(toX(y3));
+        }
+    }
+    return out;
 }
 
-inline FLOAT EvaluateBezierKeyframe(FLOAT inTime, FLOAT inTime1, FLOAT inValue1, FLOAT inC1Time,
-                                    FLOAT inC1Value, FLOAT inC2Time, FLOAT inC2Value, FLOAT inTime2,
-                                    FLOAT inValue2)
+double evaluateForT(double t, double p0, double p1, double p2, double p3)
 {
-    // The special case of C1Time=0 and C2Time=0 is used to indicate Studio-native animation.
-    // Studio uses a simplified version of the bezier animation where the time control points
-    // are equally spaced between the starting and ending times. This avoids calling the expensive
-    // InverseBezierCurve function to find the right 's' given 't'.
-    FLOAT theParameter;
-    if (inC1Time == 0 && inC2Time == 0) {
-        // Special case signaling that it's ok to treat time as "s"
-        // This is done by assuming that Key1Val,Key1C1,Key1C2,Key2Val (aka P0,P1,P2,P3)
-        // are evenly distributed over time.
-        theParameter = (inTime - inTime1) / (inTime2 - inTime1);
-    } else {
-        // Compute the "s" parameter on the Bezier given the time
-        theParameter = EvaluateInverseBezierCurve(inTime1, inC1Time, inC2Time, inTime2, inTime);
+    assert(t >= 0. && t <= 1.);
 
-        if (theParameter <= 0.0f)
-            return inValue1;
+    const double it = 1.0 - t;
 
-        if (theParameter >= 1.0f)
-            return inValue2;
+    return p0 * std::pow(it, 3.0) + p1 * 3.0 * std::pow(it, 2.0) * t
+           + p2 * 3.0 * it * std::pow(t, 2.0) + p3 * std::pow(t, 3.0);
+}
+
+inline float EvaluateBezierKeyframe(float inTime, float inTime1, float inValue1, float inC1Time,
+                                    float inC1Value, float inC2Time, float inC2Value, float inTime2,
+                                    float inValue2)
+{
+    if (inTime == inTime1)
+        return inValue1;
+
+    if (inTime == inTime2)
+        return inValue2;
+
+    auto polynomial = CubicPolynomial(inTime1 - inTime, inC1Time - inTime, inC2Time - inTime,
+                                      inTime2 - inTime);
+
+    for (double t : polynomial.roots()) {
+        if (t < 0.0 || t > 1.0)
+            continue;
+
+        // the curve handles are confined so that only 1 solution should ever exist for a give time
+        return evaluateForT(t, inValue1, inC1Value, inC2Value, inValue2);
     }
 
-    return EvaluateBezierCurve(inValue1, inC1Value, inC2Value, inValue2, theParameter);
+    assert(false); // no solution found?!
+
+    return 0.0;
 }
+
 } // namespace Qt3DStudio
