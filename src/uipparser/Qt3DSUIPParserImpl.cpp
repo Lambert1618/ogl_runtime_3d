@@ -226,6 +226,15 @@ SElementPropertyInfo *SParseElementManager::GetOrCreateProperty(SElementData &in
                                              thePropNames, m_StringTable);
                         SetPropertyValueHash(m_Workspace, ".a", thePropHashes, thePeriodPos,
                                              thePropNames, m_StringTable);
+                    } else {
+                        SetPropertyValueHash(m_Workspace, ".x", thePropHashes, thePeriodPos,
+                                             thePropNames, m_StringTable);
+                        SetPropertyValueHash(m_Workspace, ".y", thePropHashes, thePeriodPos,
+                                             thePropNames, m_StringTable);
+                        SetPropertyValueHash(m_Workspace, ".z", thePropHashes, thePeriodPos,
+                                             thePropNames, m_StringTable);
+                        SetPropertyValueHash(m_Workspace, ".w", thePropHashes, thePeriodPos,
+                                             thePropNames, m_StringTable);
                     }
                 }
             } else {
