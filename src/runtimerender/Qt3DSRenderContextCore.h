@@ -51,6 +51,26 @@ namespace render {
         };
     };
 
+    // Supported (sterescopic) rendering modes. Default Mono.
+    struct StereoModes
+    {
+        enum Enum {
+            Mono,
+            TopBottom,
+            LeftRight
+        };
+    };
+
+    // Currently rendered (stereoscopic) view / camera. Default Mono.
+    struct StereoViews
+    {
+        enum Enum {
+            Mono,
+            Left,
+            Right
+        };
+    };
+
     // Part of render context that does not require the render system.
     class IQt3DSRenderContextCore : public NVRefCounted
     {
@@ -173,6 +193,14 @@ namespace render {
 
         virtual void SetScaleMode(ScaleModes::Enum inMode) = 0;
         virtual ScaleModes::Enum GetScaleMode() = 0;
+
+        virtual bool IsStereoscopic() const = 0;
+        virtual void SetStereoMode(StereoModes::Enum inMode) = 0;
+        virtual StereoModes::Enum GetStereoMode() const = 0;
+        virtual void SetStereoView(StereoViews::Enum inView) = 0;
+        virtual StereoViews::Enum GetStereoView() const = 0;
+        virtual void SetStereoEyeSeparation(double separation) = 0;
+        virtual double GetStereoEyeSeparation() const = 0;
 
         virtual void SetWireframeMode(bool inEnable) = 0;
         virtual bool GetWireframeMode() = 0;

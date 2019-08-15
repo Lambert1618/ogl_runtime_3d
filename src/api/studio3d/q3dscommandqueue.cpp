@@ -48,6 +48,8 @@ QString ElementCommand::toString() const
 CommandQueue::CommandQueue()
     : m_visibleChanged(false)
     , m_scaleModeChanged(false)
+    , m_stereoModeChanged(false)
+    , m_stereoEyeSeparationChanged(false)
     , m_shadeModeChanged(false)
     , m_showRenderStatsChanged(false)
     , m_matteColorChanged(false)
@@ -57,6 +59,8 @@ CommandQueue::CommandQueue()
     , m_delayedLoadingChanged(false)
     , m_visible(false)
     , m_scaleMode(Q3DSViewerSettings::ScaleModeCenter)
+    , m_stereoMode(Q3DSViewerSettings::StereoModeMono)
+    , m_stereoEyeSeparation(0.4)
     , m_shadeMode(Q3DSViewerSettings::ShadeModeShaded)
     , m_showRenderStats(false)
     , m_matteColor(Qt::black)
@@ -200,6 +204,9 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
 {
     m_visibleChanged = m_visibleChanged || fromQueue.m_visibleChanged;
     m_scaleModeChanged = m_scaleModeChanged || fromQueue.m_scaleModeChanged;
+    m_stereoModeChanged = m_stereoModeChanged || fromQueue.m_stereoModeChanged;
+    m_stereoEyeSeparationChanged
+            = m_stereoEyeSeparationChanged || fromQueue.m_stereoEyeSeparationChanged;
     m_shadeModeChanged = m_shadeModeChanged || fromQueue.m_shadeModeChanged;
     m_showRenderStatsChanged = m_showRenderStatsChanged || fromQueue.m_showRenderStatsChanged;
     m_matteColorChanged = m_matteColorChanged || fromQueue.m_matteColorChanged;
@@ -214,6 +221,10 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
        m_visible = fromQueue.m_visible;
     if (fromQueue.m_scaleModeChanged)
        m_scaleMode = fromQueue.m_scaleMode;
+    if (fromQueue.m_stereoModeChanged)
+       m_stereoMode = fromQueue.m_stereoMode;
+    if (fromQueue.m_stereoEyeSeparationChanged)
+       m_stereoEyeSeparation = fromQueue.m_stereoEyeSeparation;
     if (fromQueue.m_shadeModeChanged)
        m_shadeMode = fromQueue.m_shadeMode;
     if (fromQueue.m_showRenderStatsChanged)
@@ -306,6 +317,8 @@ void CommandQueue::clear(bool deleteCommandData)
 {
     m_visibleChanged = false;
     m_scaleModeChanged = false;
+    m_stereoModeChanged = false;
+    m_stereoEyeSeparationChanged = false;
     m_shadeModeChanged = false;
     m_showRenderStatsChanged = false;
     m_matteColorChanged = false;

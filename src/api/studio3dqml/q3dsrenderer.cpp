@@ -336,6 +336,10 @@ void Q3DSRenderer::processCommands()
 
     if (m_commands.m_scaleModeChanged)
         m_settings->setScaleMode(m_commands.m_scaleMode);
+    if (m_commands.m_stereoModeChanged)
+        m_settings->setStereoMode(m_commands.m_stereoMode);
+    if (m_commands.m_stereoEyeSeparationChanged)
+        m_settings->setStereoEyeSeparation(m_commands.m_stereoEyeSeparation);
     if (m_commands.m_shadeModeChanged)
         m_settings->setShadeMode(m_commands.m_shadeMode);
     if (m_commands.m_matteColorChanged)

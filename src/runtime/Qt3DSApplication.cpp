@@ -1100,8 +1100,21 @@ struct SApp : public IApplication
         SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(), "Render");
         CPresentation *pres = GetPrimaryPresentation();
         if (pres) {
-            m_LastRenderWasDirty = m_RuntimeFactory->GetSceneManager()
-                    .RenderPresentation(pres, m_initialFrame);
+            auto &rc = m_RuntimeFactory->GetQt3DSRenderContext();
+            if (!rc.IsStereoscopic()) {
+                rc.SetStereoView(StereoViews::Mono);
+                m_LastRenderWasDirty = m_RuntimeFactory->GetSceneManager()
+                        .RenderPresentation(pres, m_initialFrame);
+            } else {
+                // In stereoscopic mode, render 2 times for left & right eye
+                rc.SetStereoView(StereoViews::Left);
+                m_LastRenderWasDirty = m_RuntimeFactory->GetSceneManager()
+                        .RenderPresentation(pres, m_initialFrame);
+                rc.SetStereoView(StereoViews::Right);
+                m_RuntimeFactory->GetSceneManager()
+                        .RenderPresentation(pres, m_initialFrame);
+            }
+
             m_initialFrame = false;
         }
     }

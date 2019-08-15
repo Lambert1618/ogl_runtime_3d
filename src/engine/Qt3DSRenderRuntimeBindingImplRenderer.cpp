@@ -124,6 +124,37 @@ struct SRenderer : public Q3DStudio::ITegraApplicationRenderEngine
         return Q3DStudio::TegraRenderScaleModes::ExactSize;
     }
 
+    void SetStereoMode(Q3DStudio::TegraRenderStereoModes::Enum inMode) override
+    {
+        if (m_BindingCore && m_BindingCore->m_Context)
+            m_BindingCore->m_Context->SetStereoMode(static_cast<StereoModes::Enum>(inMode));
+    }
+    Q3DStudio::TegraRenderStereoModes::Enum GetStereoMode() const override
+    {
+        if (m_BindingCore && m_BindingCore->m_Context) {
+            return static_cast<Q3DStudio::TegraRenderStereoModes::Enum>(
+                const_cast<SRenderer &>(*this).m_BindingCore->m_Context->GetStereoMode());
+        }
+        QT3DS_ASSERT(false);
+        return Q3DStudio::TegraRenderStereoModes::Mono;
+    }
+
+    void SetStereoEyeSeparation(double separation) override
+    {
+        if (m_BindingCore && m_BindingCore->m_Context)
+            m_BindingCore->m_Context->SetStereoEyeSeparation(separation);
+    }
+    double GetStereoEyeSeparation() const override
+    {
+        if (m_BindingCore && m_BindingCore->m_Context) {
+            return const_cast<SRenderer &>(*this).m_BindingCore->
+                    m_Context->GetStereoEyeSeparation();
+        }
+        QT3DS_ASSERT(false);
+        return 0;
+    }
+
+
     void SetShadeMode(Q3DStudio::TegraRenderShadeModes::Enum inShade) override
     {
         if (m_BindingCore && m_BindingCore->m_Context) {

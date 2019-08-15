@@ -229,6 +229,76 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
 }
 
 /*!
+    \qmlproperty enumeration ViewerSettings::stereoMode
+
+    \since Qt 3D Studio 2.5
+
+    Specifies the stereo mode. The default value \c is StereoModeMono where the
+    view is rendered normally, as suitable for 2D displays. Other available modes
+    target different 3D stereo rendering types.
+
+    \value StereoModeMono Renders presentation normally in mono.
+    \value StereoModeTopBottom Renders presentation in stereoscopic top-bottom mode.
+    \value StereoModeLeftRight Renders presentation in stereoscopic left-right mode.
+
+    The default value is \c{StereoModeMono}.
+*/
+/*!
+    \property Q3DSViewerSettings::stereoMode
+
+    \since Qt 3D Studio 2.5
+
+    Specifies the stereo mode. The default value \c is StereoModeMono where the
+    view is rendered normally, as suitable for 2D displays. Other available modes
+    target different 3D stereo rendering types.
+
+    \value StereoModeMono Renders presentation normally in mono.
+    \value StereoModeTopBottom Renders presentation in stereoscopic top-bottom mode.
+    \value StereoModeLeftRight Renders presentation in stereoscopic left-right mode.
+
+    The default value is \c{StereoModeMono}.
+ */
+Q3DSViewerSettings::StereoMode Q3DSViewerSettings::stereoMode() const
+{
+    return d_ptr->m_stereoMode;
+}
+
+void Q3DSViewerSettings::setStereoMode(Q3DSViewerSettings::StereoMode mode)
+{
+    if (d_ptr->m_stereoMode != mode) {
+        d_ptr->setStereoMode(mode);
+        Q_EMIT stereoModeChanged(mode);
+    }
+}
+
+/*!
+    \property Q3DSViewerSettings::stereoEyeSeparation
+
+    \since Qt 3D Studio 2.5
+
+    Specifies the eye (camera) separation of stereo rendering.
+    Value is the amount left and right eye cameras move in x-coordinate
+    values away from center. Bigger separation increases the 3D effect.
+    Optimal value depends on viewed presentation.
+
+    This has only effect when stereo mode is set to something else than
+    default \c{StereoModeMono}.
+ */
+double Q3DSViewerSettings::stereoEyeSeparation() const
+{
+    return d_ptr->m_stereoEyeSeparation;
+}
+
+void Q3DSViewerSettings::setStereoEyeSeparation(double separation)
+{
+    if (separation >= 0
+            && !qFuzzyCompare(d_ptr->m_stereoEyeSeparation, separation)) {
+        d_ptr->setStereoEyeSeparation(separation);
+        Q_EMIT stereoEyeSeparationChanged(separation);
+    }
+}
+
+/*!
     \qmlproperty bool ViewerSettings::matteEnabled
 
     Specifies if the empty area around the presentation (applicable when
@@ -305,6 +375,8 @@ Q3DSViewerSettingsPrivate::Q3DSViewerSettingsPrivate(Q3DSViewerSettings *q)
     , m_matteEnabled(false)
     , m_shadeMode(Q3DSViewerSettings::ShadeModeShaded)
     , m_scaleMode(Q3DSViewerSettings::ScaleModeCenter)
+    , m_stereoMode(Q3DSViewerSettings::StereoModeMono)
+    , m_stereoEyeSeparation(0.4)
     , m_savedSettings(nullptr)
 {
 }
@@ -322,6 +394,8 @@ void Q3DSViewerSettingsPrivate::setViewerApp(Q3DSViewer::Q3DSViewerApp *app)
         setShowRenderStats(m_showRenderStats);
         setShadeMode(m_shadeMode);
         setScaleMode(m_scaleMode);
+        setStereoMode(m_stereoMode);
+        setStereoEyeSeparation(m_stereoEyeSeparation);
     }
 }
 
@@ -334,6 +408,8 @@ void Q3DSViewerSettingsPrivate::setCommandQueue(CommandQueue *queue)
         setShowRenderStats(m_showRenderStats);
         setShadeMode(m_shadeMode);
         setScaleMode(m_scaleMode);
+        setStereoMode(m_stereoMode);
+        setStereoEyeSeparation(m_stereoEyeSeparation);
     }
 }
 
@@ -346,6 +422,8 @@ void Q3DSViewerSettingsPrivate::save(const QString &group, const QString &organi
     m_savedSettings->setValue(QStringLiteral("showRenderStats"), m_showRenderStats);
     m_savedSettings->setValue(QStringLiteral("shadeMode"), m_shadeMode);
     m_savedSettings->setValue(QStringLiteral("scaleMode"), m_scaleMode);
+    m_savedSettings->setValue(QStringLiteral("stereoMode"), m_stereoMode);
+    m_savedSettings->setValue(QStringLiteral("stereoEyeSeparation"), m_stereoEyeSeparation);
     m_savedSettings->setValue(QStringLiteral("matteEnabled"), m_matteEnabled);
 }
 
@@ -360,6 +438,10 @@ void Q3DSViewerSettingsPrivate::load(const QString &group, const QString &organi
                             m_savedSettings->value(QStringLiteral("shadeMode")).toInt()));
     q_ptr->setScaleMode(Q3DSViewerSettings::ScaleMode(
                             m_savedSettings->value(QStringLiteral("scaleMode")).toInt()));
+    q_ptr->setStereoMode(Q3DSViewerSettings::StereoMode(
+                             m_savedSettings->value(QStringLiteral("stereoMode")).toInt()));
+    q_ptr->setStereoEyeSeparation(
+                m_savedSettings->value(QStringLiteral("stereoEyeSeparation")).toDouble());
     q_ptr->setMatteEnabled(m_savedSettings->value(QStringLiteral("matteEnabled")).toBool());
 }
 
@@ -423,6 +505,33 @@ void Q3DSViewerSettingsPrivate::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
     } else if (m_commandQueue) {
         m_commandQueue->m_scaleMode = mode;
         m_commandQueue->m_scaleModeChanged = true;
+    }
+}
+
+void Q3DSViewerSettingsPrivate::setStereoMode(Q3DSViewerSettings::StereoMode mode)
+{
+    m_stereoMode = mode;
+    if (m_viewerApp) {
+        if (mode == Q3DSViewerSettings::StereoModeMono)
+            m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::Mono);
+        else if (mode == Q3DSViewerSettings::StereoModeTopBottom)
+            m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::TopBottom);
+        else
+            m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::LeftRight);
+    } else if (m_commandQueue) {
+        m_commandQueue->m_stereoMode = mode;
+        m_commandQueue->m_stereoModeChanged = true;
+    }
+}
+
+void Q3DSViewerSettingsPrivate::setStereoEyeSeparation(double separation)
+{
+    m_stereoEyeSeparation = separation;
+    if (m_viewerApp) {
+        m_viewerApp->SetStereoEyeSeparation(separation);
+    } else if (m_commandQueue) {
+        m_commandQueue->m_stereoEyeSeparation = separation;
+        m_commandQueue->m_stereoEyeSeparationChanged = true;
     }
 }
 

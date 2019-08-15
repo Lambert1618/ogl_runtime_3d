@@ -79,6 +79,9 @@ SLayerRenderHelper::SLayerRenderHelper(const NVRenderRectF &inPresentationViewpo
                                        const QT3DSVec2 &inPresentationDesignDimensions,
                                        SLayer &inLayer, bool inOffscreen,
                                        qt3ds::render::ScaleModes::Enum inScaleMode,
+                                       qt3ds::render::StereoModes::Enum inStereoMode,
+                                       qt3ds::render::StereoViews::Enum inStereoView,
+                                       double inStereoEyeSeparation,
                                        qt3ds::QT3DSVec2 inScaleFactor)
     : m_PresentationViewport(inPresentationViewport)
     , m_PresentationScissor(inPresentationScissor)
@@ -86,6 +89,9 @@ SLayerRenderHelper::SLayerRenderHelper(const NVRenderRectF &inPresentationViewpo
     , m_Layer(&inLayer)
     , m_Offscreen(inOffscreen)
     , m_ScaleMode(inScaleMode)
+    , m_StereoMode(inStereoMode)
+    , m_StereoView(inStereoView)
+    , m_StereoEyeSeparation(QT3DSF32(inStereoEyeSeparation))
     , m_ScaleFactor(inScaleFactor)
 {
     {
@@ -195,6 +201,55 @@ NVRenderRectF SLayerRenderHelper::GetLayerRenderViewport() const
         return m_Viewport;
 }
 
+NVRenderRectF SLayerRenderHelper::GetLayerToPresentationViewport() const
+{
+    if (m_StereoMode == StereoModes::LeftRight) {
+        if (m_StereoView == StereoViews::Left) {
+            return NVRenderRectF(m_Viewport.m_X, m_Viewport.m_Y, m_Viewport.m_Width/2,
+                                 m_Viewport.m_Height);
+        }
+        if (m_StereoView == StereoViews::Right) {
+            return NVRenderRectF(m_Viewport.m_X + m_Viewport.m_Width/2, m_Viewport.m_Y,
+                                 m_Viewport.m_Width/2, m_Viewport.m_Height);
+        }
+    } else if (m_StereoMode == StereoModes::TopBottom) {
+        if (m_StereoView == StereoViews::Left) {
+            return NVRenderRectF(m_Viewport.m_X, m_Viewport.m_Y + m_Viewport.m_Height/2,
+                                 m_Viewport.m_Width, m_Viewport.m_Height/2);
+        }
+        if (m_StereoView == StereoViews::Right) {
+            return NVRenderRectF(m_Viewport.m_X, m_Viewport.m_Y,
+                                 m_Viewport.m_Width, m_Viewport.m_Height/2);
+        }
+    }
+    return m_Viewport;
+}
+
+NVRenderRectF SLayerRenderHelper::GetLayerToPresentationScissorRect() const
+{
+    if (m_StereoMode == StereoModes::LeftRight) {
+        if (m_StereoView == StereoViews::Left) {
+            return NVRenderRectF(m_Scissor.m_X, m_Scissor.m_Y,
+                                 m_Scissor.m_Width/2, m_Scissor.m_Height);
+        }
+        if (m_StereoView == StereoViews::Right) {
+            return NVRenderRectF(m_Scissor.m_X + m_Scissor.m_Width/2, m_Scissor.m_Y,
+                                 m_Scissor.m_Width/2, m_Scissor.m_Height);
+        }
+    } else if (m_StereoMode == StereoModes::TopBottom) {
+        if (m_StereoView == StereoViews::Left) {
+            return NVRenderRectF(m_Scissor.m_X, m_Scissor.m_Y + m_Scissor.m_Height/2,
+                                 m_Scissor.m_Width, m_Scissor.m_Height/2);
+        }
+        if (m_StereoView == StereoViews::Right) {
+            return NVRenderRectF(m_Scissor.m_X, m_Scissor.m_Y,
+                                 m_Scissor.m_Width, m_Scissor.m_Height/2);
+        }
+    }
+
+    return m_Scissor;
+}
+
 QSize SLayerRenderHelper::GetTextureDimensions() const
 {
     QT3DSU32 width = (QT3DSU32)m_Viewport.m_Width;
@@ -203,9 +258,21 @@ QSize SLayerRenderHelper::GetTextureDimensions() const
                              ITextRenderer::NextMultipleOf4(height));
 }
 
+SCamera *SLayerRenderHelper::GetCamera()  {
+    if (m_StereoView == StereoViews::Left)
+        return &m_CameraLeftEye;
+    if (m_StereoView == StereoViews::Right)
+        return &m_CameraRightEye;
+    return m_Camera;
+}
+
 SCameraGlobalCalculationResult SLayerRenderHelper::SetupCameraForRender(SCamera &inCamera)
 {
     m_Camera = &inCamera;
+
+    if (isStereoscopic())
+        adjustCameraStereoSeparation();
+
     NVRenderRectF rect = GetLayerRenderViewport();
     if (m_ScaleMode == ScaleModes::FitSelected) {
         rect.m_Width =
@@ -213,7 +280,11 @@ SCameraGlobalCalculationResult SLayerRenderHelper::SetupCameraForRender(SCamera 
         rect.m_Height =
             (QT3DSF32)(ITextRenderer::NextMultipleOf4((QT3DSU32)(rect.m_Height / m_ScaleFactor.y)));
     }
-    return m_Camera->CalculateGlobalVariables(rect, m_PresentationDesignDimensions);
+    // Always calculate main camera variables
+    if (isStereoscopic())
+        m_Camera->CalculateGlobalVariables(rect, m_PresentationDesignDimensions);
+    // Return current camera variables
+    return GetCamera()->CalculateGlobalVariables(rect, m_PresentationDesignDimensions);
 }
 
 Option<QT3DSVec2> SLayerRenderHelper::GetLayerMouseCoords(const QT3DSVec2 &inMouseCoords,
@@ -258,4 +329,32 @@ Option<SRay> SLayerRenderHelper::GetPickRay(const QT3DSVec2 &inMouseCoords,
 bool SLayerRenderHelper::IsLayerVisible() const
 {
     return m_Scissor.m_Height >= 2.0f && m_Scissor.m_Width >= 2.0f;
+}
+
+bool SLayerRenderHelper::isStereoscopic() const
+{
+    return m_StereoMode != StereoModes::Mono;
+}
+
+void SLayerRenderHelper::adjustCameraStereoSeparation()
+{
+    // Copy m_Camera properties into left & right cameras
+    m_CameraLeftEye = SCamera(*m_Camera);
+    m_CameraRightEye = SCamera(*m_Camera);
+
+    // Adjust left & right camera positions by eye separation
+    QT3DSMat44 mat = QT3DSMat44::createIdentity();
+    mat.rotate(m_Camera->GetDirection());
+    QT3DSVec3 camPos = m_Camera->m_Position;
+    camPos.x = m_Camera->m_Position.x - m_StereoEyeSeparation;
+    mat.scale(QT3DSVec4(m_Camera->m_Scale, 1.0f));
+    mat.setPosition(camPos);
+    m_CameraLeftEye.SetLocalTransformFromMatrix(mat);
+    camPos.x = m_Camera->m_Position.x + m_StereoEyeSeparation;
+    mat.scale(QT3DSVec4(m_Camera->m_Scale, 1.0f));
+    mat.setPosition(camPos);
+    m_CameraRightEye.SetLocalTransformFromMatrix(mat);
+
+    m_CameraLeftEye.MarkDirty();
+    m_CameraRightEye.MarkDirty();
 }

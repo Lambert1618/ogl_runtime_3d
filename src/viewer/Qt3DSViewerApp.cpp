@@ -833,6 +833,38 @@ ViewerScaleModes::Enum Q3DSViewerApp::GetScaleMode()
     return ViewerScaleModes::ExactSize;
 }
 
+void Q3DSViewerApp::SetStereoMode(ViewerStereoModes::Enum inMode)
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine()) {
+        m_Impl.m_view->GetTegraRenderEngine()->SetStereoMode(
+                    static_cast<TegraRenderStereoModes::Enum>(inMode));
+    }
+}
+
+ViewerStereoModes::Enum Q3DSViewerApp::GetStereoMode() const
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine()) {
+        return static_cast<ViewerStereoModes::Enum>(
+                    m_Impl.m_view->GetTegraRenderEngine()->GetStereoMode());
+    }
+
+    return ViewerStereoModes::Mono;
+}
+
+void Q3DSViewerApp::SetStereoEyeSeparation(double separation)
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
+        m_Impl.m_view->GetTegraRenderEngine()->SetStereoEyeSeparation(separation);
+}
+
+double Q3DSViewerApp::GetStereoEyeSeparation() const
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
+        return m_Impl.m_view->GetTegraRenderEngine()->GetStereoEyeSeparation();
+
+    return 0;
+}
+
 void Q3DSViewerApp::setMatteColor(const QColor &color)
 {
     if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine()) {

@@ -245,6 +245,9 @@ struct SRenderContext : public IQt3DSRenderContext
     Option<NVRenderRect> m_Viewport;
     QSize m_WindowDimensions;
     ScaleModes::Enum m_ScaleMode;
+    StereoModes::Enum m_StereoMode;
+    StereoViews::Enum m_StereoView;
+    double m_StereoEyeSeparation;
     bool m_WireframeMode;
     bool m_IsInSubPresentation;
     Option<QT3DSVec4> m_SceneColor;
@@ -283,6 +286,9 @@ struct SRenderContext : public IQt3DSRenderContext
         , mRefCount(0)
         , m_WindowDimensions(800, 480)
         , m_ScaleMode(ScaleModes::ExactSize)
+        , m_StereoMode(StereoModes::Mono)
+        , m_StereoView(StereoViews::Mono)
+        , m_StereoEyeSeparation(0.4)
         , m_WireframeMode(false)
         , m_IsInSubPresentation(false)
         , m_matteEnabled(false)
@@ -437,6 +443,30 @@ struct SRenderContext : public IQt3DSRenderContext
     void SetScaleMode(ScaleModes::Enum inMode) override { m_ScaleMode = inMode; }
 
     ScaleModes::Enum GetScaleMode() override { return m_ScaleMode; }
+
+    bool IsStereoscopic() const override {
+        return m_StereoMode != StereoModes::Mono;
+    }
+
+    void SetStereoMode(StereoModes::Enum inMode) override {
+        m_StereoMode = inMode;
+    }
+
+    StereoModes::Enum GetStereoMode() const override { return m_StereoMode; }
+
+    void SetStereoView(StereoViews::Enum inView) override
+    {
+        m_StereoView = inView;
+    }
+
+    StereoViews::Enum GetStereoView() const override { return m_StereoView; }
+
+    void SetStereoEyeSeparation(double separation) override
+    {
+        m_StereoEyeSeparation = separation;
+    }
+
+    double GetStereoEyeSeparation() const override { return m_StereoEyeSeparation; }
 
     void SetWireframeMode(bool inEnable) override { m_WireframeMode = inEnable; }
 
@@ -786,7 +816,9 @@ struct SRenderContext : public IQt3DSRenderContext
     void RunRenderTasks() override
     {
         m_RenderList->RunRenderTasks();
-        SetupRenderTarget();
+        // Don't (re)setup when rendering stereoscopic second (right) eye
+        if (m_StereoView != StereoViews::Right)
+            SetupRenderTarget();
     }
 
     // Note this runs before EndFrame

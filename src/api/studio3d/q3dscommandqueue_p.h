@@ -136,6 +136,8 @@ public:
 
     bool m_visibleChanged;
     bool m_scaleModeChanged;
+    bool m_stereoModeChanged;
+    bool m_stereoEyeSeparationChanged;
     bool m_shadeModeChanged;
     bool m_showRenderStatsChanged;
     bool m_matteColorChanged;
@@ -147,6 +149,8 @@ public:
 
     bool m_visible;
     Q3DSViewerSettings::ScaleMode m_scaleMode;
+    Q3DSViewerSettings::StereoMode m_stereoMode;
+    double m_stereoEyeSeparation;
     Q3DSViewerSettings::ShadeMode m_shadeMode;
     bool m_showRenderStats;
     QColor m_matteColor;

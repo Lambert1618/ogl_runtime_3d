@@ -60,12 +60,19 @@ namespace render {
         QT3DSVec2 m_PresentationDesignDimensions;
         SLayer *m_Layer;
         SCamera *m_Camera;
+        SCamera m_CameraLeftEye;
+        SCamera m_CameraRightEye;
         bool m_Offscreen;
 
         NVRenderRectF m_Viewport;
         NVRenderRectF m_Scissor;
 
         ScaleModes::Enum m_ScaleMode;
+
+        StereoModes::Enum m_StereoMode = StereoModes::Mono;
+        StereoViews::Enum m_StereoView = StereoViews::Mono;
+        QT3DSF32 m_StereoEyeSeparation = 0.4f;
+
         QT3DSVec2 m_ScaleFactor;
 
     public:
@@ -75,21 +82,33 @@ namespace render {
                            const NVRenderRectF &inPresentationScissor,
                            const QT3DSVec2 &inPresentationDesignDimensions, SLayer &inLayer,
                            bool inOffscreen, qt3ds::render::ScaleModes::Enum inScaleMode,
+                           qt3ds::render::StereoModes::Enum inStereoMode,
+                           qt3ds::render::StereoViews::Enum inStereoView,
+                           double inStereoEyeSeparation,
                            qt3ds::QT3DSVec2 inScaleFactor);
 
         NVRenderRectF GetPresentationViewport() const { return m_PresentationViewport; }
         NVRenderRectF GetPresentationScissor() const { return m_PresentationScissor; }
         QT3DSVec2 GetPresentationDesignDimensions() const { return m_PresentationDesignDimensions; }
         SLayer *GetLayer() const { return m_Layer; }
-        SCamera *GetCamera() const { return m_Camera; }
+        // Return currently used camera
+        SCamera *GetCamera();
         bool IsOffscreen() const { return m_Offscreen; }
+
+        bool isStereoscopic() const;
+        // Get/set current stereo mode. Default mode is Mono (no stereo)
+        StereoModes::Enum getStereoMode() const { return m_StereoMode; }
+        void setStereoMode(StereoModes::Enum mode) { m_StereoMode = mode; }
+        // Get/set eye (camera) separation.
+        QT3DSF32 getEyeSeparation() const { return m_StereoEyeSeparation; }
+        void setEyeSeparation(QT3DSF32 separation) { m_StereoEyeSeparation = separation; }
 
         // Does not differ whether offscreen or not, simply states how this layer maps to the
         // presentation
-        NVRenderRectF GetLayerToPresentationViewport() const { return m_Viewport; }
+        NVRenderRectF GetLayerToPresentationViewport() const;
         // Does not differ whether offscreen or not, scissor rect of how this layer maps to
         // presentation.
-        NVRenderRectF GetLayerToPresentationScissorRect() const { return m_Scissor; }
+        NVRenderRectF GetLayerToPresentationScissorRect() const;
 
         QSize GetTextureDimensions() const;
 
@@ -110,6 +129,8 @@ namespace render {
         // it may be
         // different than the layer to presentation viewport.
         NVRenderRectF GetLayerRenderViewport() const;
+
+        void adjustCameraStereoSeparation();
     };
 }
 }

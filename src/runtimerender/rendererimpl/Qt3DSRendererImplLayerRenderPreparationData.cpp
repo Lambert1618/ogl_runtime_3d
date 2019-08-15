@@ -1229,6 +1229,9 @@ namespace render {
             thePrepResult = SLayerRenderPreparationResult(SLayerRenderHelper(
                 theViewport, theScissor, m_Layer.m_Scene->m_Presentation->m_PresentationDimensions,
                 m_Layer, shouldRenderToTexture, m_Renderer.GetQt3DSContext().GetScaleMode(),
+                m_Renderer.GetQt3DSContext().GetStereoMode(),
+                m_Renderer.GetQt3DSContext().GetStereoView(),
+                m_Renderer.GetQt3DSContext().GetStereoEyeSeparation(),
                 m_Renderer.GetQt3DSContext().GetPresentationScaleFactor()));
             thePrepResult.m_LastEffect = theLastEffect;
             thePrepResult.m_MaxAAPassIndex = maxNumAAPasses;
@@ -1296,7 +1299,7 @@ namespace render {
                                     thePrepResult.SetupCameraForRender(*theCamera);
                             wasDataDirty = wasDataDirty || theResult.m_WasDirty;
                             if (theCamera->m_Flags.IsGloballyActive())
-                                m_Camera = theCamera;
+                                m_Camera = thePrepResult.GetCamera();
                             if (theResult.m_ComputeFrustumSucceeded == false) {
                                 qCCritical(INTERNAL_ERROR, "Failed to calculate camera frustum");
                             }

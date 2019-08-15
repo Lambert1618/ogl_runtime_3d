@@ -67,6 +67,8 @@ public:
     void setShowRenderStats(bool show);
     void setShadeMode(Q3DSViewerSettings::ShadeMode mode);
     void setScaleMode(Q3DSViewerSettings::ScaleMode mode);
+    void setStereoMode(Q3DSViewerSettings::StereoMode mode);
+    void setStereoEyeSeparation(double separation);
 
 public:
     Q3DSViewerSettings *q_ptr;
@@ -82,6 +84,8 @@ private:
     bool m_matteEnabled;
     Q3DSViewerSettings::ShadeMode m_shadeMode;
     Q3DSViewerSettings::ScaleMode m_scaleMode;
+    Q3DSViewerSettings::StereoMode m_stereoMode;
+    double m_stereoEyeSeparation;
     QSettings *m_savedSettings;
 };
 

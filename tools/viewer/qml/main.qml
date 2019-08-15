@@ -50,6 +50,8 @@ ApplicationWindow {
     property color matteColor: Qt.rgba(0.2, 0.2, 0.2, 1)
     property bool showRenderStats: false
     property int scaleMode: ViewerSettings.ScaleModeCenter
+    property int stereoMode: ViewerSettings.StereoModeMono
+    property double stereoEyeSeparation: 0.4
 
     function closeMenus() {
         fileMenu.close();
@@ -215,6 +217,8 @@ ApplicationWindow {
                 matteColor: window.matteColor
                 showRenderStats: window.showRenderStats
                 scaleMode: window.scaleMode
+                stereoMode: window.stereoMode
+                stereoEyeSeparation: window.stereoEyeSeparation
             }
 
             // Hider item keeps the Studio3D hidden until it starts running and we reset the
@@ -547,6 +551,82 @@ ApplicationWindow {
                                 onTriggered: {
                                     if (enabled)
                                         window.scaleMode = ViewerSettings.ScaleModeFill;
+                                }
+                            }
+                        }
+                    }
+                    StyledMenuItem {
+                        id: stereoMenuItem
+                        text: qsTr("Stereo Mode")
+                        showArrow: true
+                        arrowMenu: stereoMenu
+                        shortcut: "Ctrl+Shift+T"
+                        enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                        onTriggered: {
+                            if (enabled) {
+                                stereoMenu.close();
+                                if (window.stereoMode === ViewerSettings.StereoModeMono)
+                                    window.stereoMode = ViewerSettings.StereoModeTopBottom;
+                                else if (window.stereoMode === ViewerSettings.StereoModeTopBottom)
+                                    window.stereoMode = ViewerSettings.StereoModeLeftRight;
+                                else if (window.stereoMode === ViewerSettings.StereoModeLeftRight)
+                                    window.stereoMode = ViewerSettings.StereoModeMono;
+                            }
+                        }
+
+                        StyledMenu {
+                            id: stereoMenu
+                            x: parent.width
+                            y: 0
+
+                            StyledMenuItem {
+                                id: stereoMono
+                                text: qsTr("Mono")
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                showCheckMark: window.stereoMode === ViewerSettings.StereoModeMono
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoMode = ViewerSettings.StereoModeMono;
+                                }
+                            }
+                            StyledMenuItem {
+                                id: stereoTopBottom
+                                text: qsTr("Top-Bottom")
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                showCheckMark: window.stereoMode === ViewerSettings.StereoModeTopBottom
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoMode = ViewerSettings.StereoModeTopBottom;
+                                }
+                            }
+                            StyledMenuItem {
+                                id: stereoLeftRight
+                                text: qsTr("Left-Right")
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                showCheckMark: window.stereoMode === ViewerSettings.StereoModeLeftRight
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoMode = ViewerSettings.StereoModeLeftRight;
+                                }
+                            }
+                            StyledMenuItem {
+                                id: stereoEyeSeparationUp
+                                text: qsTr("Increase Separation")
+                                shortcut: "Ctrl+Shift++"
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoEyeSeparation += 0.1;
+                                }
+                            }
+                            StyledMenuItem {
+                                id: stereoEyeSeparationDown
+                                text: qsTr("Decrease Separation")
+                                shortcut: "Ctrl+Shift+-"
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoEyeSeparation -= 0.1;
                                 }
                             }
                         }

@@ -337,6 +337,15 @@ int main(int argc, char *argv[])
         else
             appWindow->setProperty("scaleMode", Q3DSViewerSettings::ScaleModeCenter);
     }
+    if (parser.isSet(QStringLiteral("stereomode"))) {
+        QString stereoStr(parser.value("stereomode"));
+        if (stereoStr == QStringLiteral("topbottom"))
+            appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeTopBottom);
+        else if (stereoStr == QStringLiteral("leftright"))
+            appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeLeftRight);
+        else
+            appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeMono);
+    }
 
     viewer.setVariantList(variantList);
 

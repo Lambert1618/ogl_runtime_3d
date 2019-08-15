@@ -44,11 +44,14 @@ class Q_STUDIO3D_EXPORT Q3DSViewerSettings : public QObject
     Q_DECLARE_PRIVATE(Q3DSViewerSettings)
     Q_ENUMS(ShadeMode)
     Q_ENUMS(ScaleMode)
+    Q_ENUMS(StereoMode)
 
     Q_PROPERTY(bool matteEnabled READ matteEnabled WRITE setMatteEnabled NOTIFY matteEnabledChanged)
     Q_PROPERTY(QColor matteColor READ matteColor WRITE setMatteColor NOTIFY matteColorChanged)
     Q_PROPERTY(bool showRenderStats READ isShowRenderStats WRITE setShowRenderStats NOTIFY showRenderStatsChanged)
     Q_PROPERTY(ScaleMode scaleMode READ scaleMode WRITE setScaleMode NOTIFY scaleModeChanged)
+    Q_PROPERTY(StereoMode stereoMode READ stereoMode WRITE setStereoMode NOTIFY stereoModeChanged)
+    Q_PROPERTY(double stereoEyeSeparation READ stereoEyeSeparation WRITE setStereoEyeSeparation NOTIFY stereoEyeSeparationChanged)
 
 public:
     enum ShadeMode {
@@ -62,6 +65,12 @@ public:
         ScaleModeCenter
     };
 
+    enum StereoMode {
+        StereoModeMono,
+        StereoModeTopBottom,
+        StereoModeLeftRight
+    };
+
     explicit Q3DSViewerSettings(QObject *parent = nullptr);
     ~Q3DSViewerSettings();
 
@@ -69,6 +78,8 @@ public:
     QColor matteColor() const;
     bool isShowRenderStats() const;
     ScaleMode scaleMode() const;
+    StereoMode stereoMode() const;
+    double stereoEyeSeparation() const;
 
     Q_INVOKABLE void save(const QString &group, const QString &organization = QString(),
                           const QString &application = QString());
@@ -80,6 +91,8 @@ public Q_SLOTS:
     void setMatteColor(const QColor &color);
     void setShowRenderStats(bool show);
     void setScaleMode(ScaleMode mode);
+    void setStereoMode(StereoMode mode);
+    void setStereoEyeSeparation(double separation);
 
 Q_SIGNALS:
     void matteEnabledChanged(bool enabled);
@@ -87,6 +100,8 @@ Q_SIGNALS:
     void showRenderStatsChanged(bool show);
     void shadeModeChanged(ShadeMode mode);
     void scaleModeChanged(ScaleMode mode);
+    void stereoModeChanged(StereoMode mode);
+    void stereoEyeSeparationChanged(double separation);
 
 private:
     Q_DISABLE_COPY(Q3DSViewerSettings)

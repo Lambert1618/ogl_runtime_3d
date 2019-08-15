@@ -105,6 +105,15 @@ struct TegraRenderScaleModes
     };
 };
 
+struct TegraRenderStereoModes
+{
+    enum Enum {
+        Mono,
+        TopBottom,
+        LeftRight
+    };
+};
+
 struct TegraRenderShadeModes
 {
     enum Enum {
@@ -131,6 +140,11 @@ public:
     virtual void SetScaleMode(TegraRenderScaleModes::Enum inScale) = 0;
     virtual void SetShadeMode(TegraRenderShadeModes::Enum inShade) = 0;
     virtual TegraRenderScaleModes::Enum GetScaleMode() const = 0;
+
+    virtual void SetStereoMode(TegraRenderStereoModes::Enum inMode) = 0;
+    virtual TegraRenderStereoModes::Enum GetStereoMode() const = 0;
+    virtual void SetStereoEyeSeparation(double separation) = 0;
+    virtual double GetStereoEyeSeparation() const = 0;
 
     // TODO: To be removed, not used anywhere anymore
     void CycleScaleMode()

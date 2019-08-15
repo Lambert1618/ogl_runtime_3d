@@ -86,6 +86,15 @@ struct ViewerScaleModes
     };
 };
 
+struct ViewerStereoModes
+{
+    enum Enum {
+        Mono,
+        TopBottom,
+        LeftRight
+    };
+};
+
 struct ViewerShadeModes
 {
     enum Enum {
@@ -301,6 +310,12 @@ public:
     void SetScaleMode(ViewerScaleModes::Enum inScaleMode);
 
     ViewerScaleModes::Enum GetScaleMode();
+
+    void SetStereoMode(ViewerStereoModes::Enum inStereoMode);
+    ViewerStereoModes::Enum GetStereoMode() const;
+
+    void SetStereoEyeSeparation(double separation);
+    double GetStereoEyeSeparation() const;
 
     void setMatteColor(const QColor &color);
     void setShowOnScreenStats(bool s);
