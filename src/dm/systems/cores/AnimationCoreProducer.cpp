@@ -356,7 +356,7 @@ void CAnimationCoreProducer::OffsetAnimations(Qt3DSDMSlideHandle inSlide,
                 // offset control points for bezier keyframes
                 offsetBezier(kfData, dt);
 
-                kfData = SetKeyframeSeconds(kfData, GetKeyframeSeconds(kfData) + dt);
+                kfData = SetKeyframeTime(kfData, getKeyframeTime(kfData) + dt);
                 SetKeyframeData(theKeyframeHandle, kfData);
             }
         }

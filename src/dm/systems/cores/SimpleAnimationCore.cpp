@@ -108,12 +108,12 @@ Qt3DSDMAnimationHandle CSimpleAnimationCore::GetAnimation(Qt3DSDMSlideHandle inS
 SAnimationInfo CSimpleAnimationCore::GetAnimationInfo(Qt3DSDMAnimationHandle inAnimation) const
 {
     if (m_Objects.find(inAnimation) != m_Objects.end()) {
-        const SAnimationTrack *theItem = GetAnimationNF(inAnimation, m_Objects);
-        return CreateAnimationInfo(theItem->m_Slide, theItem->m_Instance, theItem->m_Property,
-                                   theItem->m_Index, theItem->m_AnimationType,
-                                   theItem->m_FirstKeyframeDynamic, theItem->m_ArtistEdited);
+        const SAnimationTrack *animTrack = GetAnimationNF(inAnimation, m_Objects);
+        return {animTrack->m_Slide, animTrack->m_Instance, animTrack->m_Property,
+                animTrack->m_Index, animTrack->m_AnimationType, animTrack->m_FirstKeyframeDynamic,
+                animTrack->m_ArtistEdited};
     }
-    return SAnimationInfo();
+    return {};
 }
 
 inline void AddIfAnimation(const THandleObjectPair &inPair, TAnimationHandleList &outAnimations)
@@ -141,12 +141,11 @@ void CSimpleAnimationCore::GetAnimations(TAnimationInfoList &outAnimations,
             // If either master or slide is valid, then item slide must match.
             // If item slide matches neither, then we ignore unless neither are valid.
             bool keep = (theItem->m_Slide == inMaster || theItem->m_Slide == inSlide)
-                || (inMaster.Valid() == false && inSlide.Valid() == false);
+                        || (!inMaster.Valid() && !inSlide.Valid());
             if (keep) {
-                outAnimations.push_back(
-                    CreateAnimationInfo(theItem->m_Slide, theItem->m_Instance, theItem->m_Property,
-                                        theItem->m_Index, theItem->m_AnimationType,
-                                        theItem->m_FirstKeyframeDynamic, theItem->m_ArtistEdited));
+                outAnimations.push_back({theItem->m_Slide, theItem->m_Instance, theItem->m_Property,
+                                         theItem->m_Index, theItem->m_AnimationType,
+                                         theItem->m_FirstKeyframeDynamic, theItem->m_ArtistEdited});
             }
         }
     }
@@ -185,7 +184,7 @@ void CSimpleAnimationCore::SetFirstKeyframeDynamic(Qt3DSDMAnimationHandle inAnim
 
 inline void CheckKeyframeType(EAnimationType inExpected, const TKeyframe &inKeyframe)
 {
-    if (inExpected != GetKeyframeType(inKeyframe))
+    if (inExpected != inKeyframe.getType())
         throw AnimationKeyframeTypeError(L"");
 }
 
@@ -248,7 +247,7 @@ void CSimpleAnimationCore::DoSetKeyframeData(Qt3DSDMKeyframeHandle inKeyframe,
                                              const TKeyframe &inData)
 {
     SKeyframe *theKeyframe = GetKeyframeNF(inKeyframe, m_Objects);
-    CheckKeyframeType(GetKeyframeType(theKeyframe->m_Keyframe), inData);
+    CheckKeyframeType(theKeyframe->m_Keyframe.getType(), inData);
     theKeyframe->m_Keyframe = inData;
     SAnimationTrack *theItem = GetAnimationNF(theKeyframe->m_Animation, m_Objects);
     theItem->m_KeyframesDirty = true;
@@ -258,7 +257,7 @@ bool KeyframeLessThan(int inLeftSide, int inRightSide, const THandleObjectMap &i
 {
     const SKeyframe *theLeft = CSimpleAnimationCore::GetKeyframeNF(inLeftSide, inObjects);
     const SKeyframe *theRight = CSimpleAnimationCore::GetKeyframeNF(inRightSide, inObjects);
-    return KeyframeTime(theLeft->m_Keyframe) < KeyframeTime(theRight->m_Keyframe);
+    return getKeyframeTime(theLeft->m_Keyframe) < getKeyframeTime(theRight->m_Keyframe);
 }
 
 void SortKeyframes(TKeyframeHandleList &inKeyframes, const THandleObjectMap &inObjects)
@@ -341,12 +340,12 @@ bool CSimpleAnimationCore::IsArtistEdited(Qt3DSDMAnimationHandle inAnimation) co
 inline bool KeyframeTimeLessThan(int inKeyframe, float inSeconds, const THandleObjectMap &inObjects)
 {
     const SKeyframe *theKeyframe = CSimpleAnimationCore::GetKeyframeNF(inKeyframe, inObjects);
-    return KeyframeTime(theKeyframe->m_Keyframe) < inSeconds;
+    return getKeyframeTime(theKeyframe->m_Keyframe) < inSeconds;
 }
 
 inline bool KeyframeValueTimeLessThan(const TKeyframe &inLeft, const TKeyframe &inRight)
 {
-    return KeyframeTime(inLeft) < KeyframeTime(inRight);
+    return getKeyframeTime(inLeft) < getKeyframeTime(inRight);
 }
 
 TKeyframe IntToKeyframe(int inKeyframe, const THandleObjectMap &inObjects)
@@ -358,7 +357,7 @@ TKeyframe IntToKeyframe(int inKeyframe, const THandleObjectMap &inObjects)
 inline float KeyframeValue(int inKeyframe, const THandleObjectMap &inObjects)
 {
     const SKeyframe *theKeyframe = CSimpleAnimationCore::GetKeyframeNF(inKeyframe, inObjects);
-    return KeyframeValueValue(theKeyframe->m_Keyframe);
+    return getKeyframeValue(theKeyframe->m_Keyframe);
 }
 
 inline float EvaluateLinear(float inS1, float inS2, float inV1, float inV2, float inSeconds)
@@ -401,7 +400,7 @@ float CSimpleAnimationCore::EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation
             lower_bound(theItem->m_Keyframes.begin(), theItem->m_Keyframes.end(), theSearchKey,
                         [theIntToKeyframe](const Qt3DSDMKeyframeHandle &inLeft,
                                            const TKeyframe &inRight)
-    {return KeyframeTime(theIntToKeyframe(inLeft)) < KeyframeTime(inRight);});
+    {return getKeyframeTime(theIntToKeyframe(inLeft)) < getKeyframeTime(inRight);});
 
     if (theBound == theItem->m_Keyframes.end())
         return KeyframeValue(theItem->m_Keyframes.back(), m_Objects);
@@ -430,9 +429,10 @@ float CSimpleAnimationCore::EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation
     case EAnimationTypeEaseInOut: {
         SEaseInEaseOutKeyframe k1 = get<SEaseInEaseOutKeyframe>(theIntToKeyframe(theStart));
         SEaseInEaseOutKeyframe k2 = get<SEaseInEaseOutKeyframe>(theIntToKeyframe(theFinish));
+
         return DoBezierEvaluation(
-            inSeconds, CreateBezierKeyframeFromEaseInEaseOutKeyframe(NULL, k1, &k2.m_KeyframeValue),
-            CreateBezierKeyframeFromEaseInEaseOutKeyframe(&k1.m_KeyframeValue, k2, NULL));
+            inSeconds, CreateBezierKeyframeFromEaseInOut(-1, k1, k2.m_KeyframeSeconds),
+            CreateBezierKeyframeFromEaseInOut(k1.m_KeyframeSeconds, k2, -1));
     }
     }
 }
@@ -561,67 +561,4 @@ TKeyframeHandleList::iterator SafeIncrementIterator(TKeyframeHandleList::iterato
     return inIter == inEnd ? inEnd : inIter + 1;
 }
 
-void GetKeyframesAsBezier(Qt3DSDMAnimationHandle inAnimation, const IAnimationCore &inAnimationCore,
-                          TBezierKeyframeList &outKeyframes)
-{
-    SAnimationInfo theInfo(inAnimationCore.GetAnimationInfo(inAnimation));
-    TKeyframeHandleList theKeyframes;
-    inAnimationCore.GetKeyframes(inAnimation, theKeyframes);
-    outKeyframes.resize(theKeyframes.size());
-    switch (theInfo.m_AnimationType) {
-    default:
-        throw invalid_argument("AnimationType");
-    case EAnimationTypeBezier:
-        transform(theKeyframes.begin(), theKeyframes.end(), outKeyframes.begin(),
-                  std::bind(GetBezierKeyframeData, std::placeholders::_1,
-                            std::cref(inAnimationCore)));
-        break;
-    case EAnimationTypeEaseInOut: {
-
-        TKeyframeHandleList::iterator theEndKeyframe = theKeyframes.end();
-
-        typedef std::function<SEaseInEaseOutKeyframe(Qt3DSDMKeyframeHandle)> TConvertFunc;
-        TConvertFunc theDataConverter(
-            std::bind(GetEaseInEaseOutKeyframeData, std::placeholders::_1,
-                      std::cref(inAnimationCore)));
-
-        TKeyframeHandleList::iterator thePreviousKeyframe = theKeyframes.begin();
-
-        TKeyframeHandleList::iterator theCurrentKeyframe =
-                SafeIncrementIterator(thePreviousKeyframe, theEndKeyframe);
-
-        TKeyframeHandleList::iterator theNextKeyframe =
-                SafeIncrementIterator(theCurrentKeyframe, theEndKeyframe);
-
-        TBezierKeyframeList::iterator theResult(outKeyframes.begin());
-
-        if (thePreviousKeyframe != theEndKeyframe) {
-            float *theNextValuePtr = NULL;
-            float theNextValue;
-            if (theCurrentKeyframe != theEndKeyframe) {
-                theNextValue = theDataConverter(*theCurrentKeyframe).m_KeyframeValue;
-                theNextValuePtr = &theNextValue;
-            }
-            *theResult = CreateBezierKeyframeFromEaseInEaseOutKeyframe(
-                        NULL, theDataConverter(*thePreviousKeyframe), theNextValuePtr);
-            theResult = theResult + 1;
-        }
-        for (; theCurrentKeyframe != theEndKeyframe;
-             ++thePreviousKeyframe,
-             theCurrentKeyframe = SafeIncrementIterator(theCurrentKeyframe, theEndKeyframe),
-             theNextKeyframe = SafeIncrementIterator(theNextKeyframe, theEndKeyframe),
-             ++theResult) {
-            float theLastValue(theDataConverter(*thePreviousKeyframe).m_KeyframeValue);
-            float *theNextValuePtr = NULL;
-            float theNextValue;
-            if (theNextKeyframe != theEndKeyframe) {
-                theNextValue = theDataConverter(*theNextKeyframe).m_KeyframeValue;
-                theNextValuePtr = &theNextValue;
-            }
-            *theResult = CreateBezierKeyframeFromEaseInEaseOutKeyframe(
-                &theLastValue, theDataConverter(*theCurrentKeyframe), theNextValuePtr);
-        }
-    } break;
-    }
-}
-}
+} // namespace qt3dsdm

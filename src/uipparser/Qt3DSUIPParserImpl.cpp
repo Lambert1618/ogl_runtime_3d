@@ -2412,43 +2412,36 @@ BOOL CUIPParserImpl::LoadEaseInOutKeys(IPresentation &inPresentation,
     float *theBezierValues = new float[theNumKeys * 6];
     float *theBezierPtr = theBezierValues;
 
-    SEaseInEaseOutKeyframe thePreviousKeyframe;
-    thePreviousKeyframe.m_Value = 0.0f;
-    SEaseInEaseOutKeyframe theCurrentKeyframe;
-    theCurrentKeyframe.m_Value = 0.0f;
-    SEaseInEaseOutKeyframe theNextKeyframe;
-    theNextKeyframe.m_Value = 0.0f;
+    SEaseInEaseOutKeyframe prevKeyframe;
+    SEaseInEaseOutKeyframe currKeyframe;
+    SEaseInEaseOutKeyframe nextKeyframe;
 
     const float *theIter = inValues.begin();
 
     if (theNumKeys > 0) {
-        theCurrentKeyframe = ParseEaseInOutKey(theIter);
-        float *theNextValuePtr = NULL;
-        float theNextValue;
+        currKeyframe = ParseEaseInOutKey(theIter);
+        float nextKfTime = -1.f; // -1 = no value provided
 
         if (theNumKeys > 1) {
-            theNextKeyframe = ParseEaseInOutKey(theIter);
-            theNextValue = theNextKeyframe.m_Value;
-            theNextValuePtr = &theNextValue;
+            nextKeyframe = ParseEaseInOutKey(theIter);
+            nextKfTime = nextKeyframe.m_Time;
         }
-        CreateBezierKeyframeFromEaseInEaseOutKeyframe(NULL, theCurrentKeyframe, theNextValuePtr,
-                                                      theBezierPtr);
+        CreateBezierKeyframeFromEaseInEaseOutKeyframe(-1.f, currKeyframe, nextKfTime, theBezierPtr);
     }
 
     for (long theKeyIndex = 1; theKeyIndex < theNumKeys; ++theKeyIndex) {
-        thePreviousKeyframe = theCurrentKeyframe;
-        theCurrentKeyframe = theNextKeyframe;
+        prevKeyframe = currKeyframe;
+        currKeyframe = nextKeyframe;
 
-        float theLastValue = thePreviousKeyframe.m_Value;
-        float *theNextValuePtr = NULL;
-        float theNextValue;
+        float prevKfTime = prevKeyframe.m_Time;
+        float nextKfTime = -1.f; // -1 = no value provided
+
         if (theKeyIndex + 1 < theNumKeys) {
-            theNextKeyframe = ParseEaseInOutKey(theIter);
-            theNextValue = theNextKeyframe.m_Value;
-            theNextValuePtr = &theNextValue;
+            nextKeyframe = ParseEaseInOutKey(theIter);
+            nextKfTime = nextKeyframe.m_Time;
         }
-        CreateBezierKeyframeFromEaseInEaseOutKeyframe(&theLastValue, theCurrentKeyframe,
-                                                      theNextValuePtr, theBezierPtr);
+        CreateBezierKeyframeFromEaseInEaseOutKeyframe(prevKfTime, currKeyframe, nextKfTime,
+                                                      theBezierPtr);
     }
 
     NVConstDataRef<float> theFloatValues = NVConstDataRef<float>(theBezierValues, theNumKeys * 6);
@@ -2458,43 +2451,35 @@ BOOL CUIPParserImpl::LoadEaseInOutKeys(IPresentation &inPresentation,
     return theStatus;
 }
 
-inline float AnimationClamp(float inLowerBound, float inUpperBound, float inValue)
-{
-    if (inValue < inLowerBound)
-        return inLowerBound;
-    if (inValue > inUpperBound)
-        return inUpperBound;
-    return inValue;
-}
-
 void CUIPParserImpl::CreateBezierKeyframeFromEaseInEaseOutKeyframe(
-    float *inPreviousValue, SEaseInEaseOutKeyframe &inCurrent, float *inNextValue,
-    float *&outBezierValues)
+        float prevTime, SEaseInEaseOutKeyframe &keyframe, float nextTime, float *&outBezierValues)
 {
-    float theValue = inCurrent.m_Value;
-    float theSeconds = inCurrent.m_Time;
-    float inSeconds = 0.f;
-    float inValue = 0.f;
-    float outSeconds = 0.f;
-    float outValue = 0.f;
-    const double oneThird = 1.0 / 3.0;
-    if (inPreviousValue) {
-        float thePercent = 1.0f - AnimationClamp(0.0f, 1.0f, inCurrent.m_EaseIn / 100.f);
-        double theAmount = 1.0f - thePercent * oneThird;
-        inValue = *inPreviousValue + (float)(((inCurrent.m_Value - *inPreviousValue) * theAmount));
-    }
-    if (inNextValue) {
-        float thePercent = 1.0f - AnimationClamp(0.0f, 1.0f, inCurrent.m_EaseOut / 100.f);
-        double theAmount = thePercent * oneThird;
-        outValue = (float)(inCurrent.m_Value + ((*inNextValue - inCurrent.m_Value) * theAmount));
+    float kfValue = keyframe.m_Value;
+    float kfTime = keyframe.m_Time; // seconds
+    float timeIn = kfTime;
+    float valueIn = kfValue;
+    float timeOut = kfTime;
+    float valueOut = kfValue;
+
+     // at 100 ease, the control point will be midway between the 2 keyframes
+    float maxEasePerc = .5f;
+
+    if (prevTime != -1.f) {
+        float easeInPerc = qBound(0.f, keyframe.m_EaseIn / 100.f, 1.f) * maxEasePerc;
+        timeIn = prevTime + (kfTime - prevTime) * (1 - easeInPerc);
     }
 
-    *outBezierValues++ = theSeconds;
-    *outBezierValues++ = theValue;
-    *outBezierValues++ = inSeconds;
-    *outBezierValues++ = inValue;
-    *outBezierValues++ = outSeconds;
-    *outBezierValues++ = outValue;
+    if (nextTime != -1.f) {
+        float easeOutPerc = qBound(0.f, keyframe.m_EaseOut / 100.f, 1.f) * maxEasePerc;
+        timeOut = kfTime + (nextTime - kfTime) * easeOutPerc;
+    }
+
+    *outBezierValues++ = kfTime;
+    *outBezierValues++ = kfValue;
+    *outBezierValues++ = timeIn;
+    *outBezierValues++ = valueIn;
+    *outBezierValues++ = timeOut;
+    *outBezierValues++ = valueOut;
 }
 
 BOOL CUIPParserImpl::ProcessSlideAnimAction(IPresentation &inPresentation, eastl::string &inSlideId,

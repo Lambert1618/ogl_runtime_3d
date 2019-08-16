@@ -442,10 +442,10 @@ protected:
 
     struct SEaseInEaseOutKeyframe
     {
-        float m_Time;
-        float m_Value;
-        float m_EaseIn;
-        float m_EaseOut;
+        float m_Time = 0.f;
+        float m_Value = 0.f;
+        float m_EaseIn = 100.f;
+        float m_EaseOut = 100.f;
     };
 
     struct SGraphSectionCount
@@ -611,9 +611,9 @@ protected: // Animation helper
                                 bool inMaster, qt3dsdm::IDOMReader &inReader);
     BOOL AddSlideAction(IPresentation &inPresentation, eastl::string &inSlideId, bool inActive,
                         qt3dsdm::IDOMReader &inReader);
-    void CreateBezierKeyframeFromEaseInEaseOutKeyframe(float *inPreviousValue,
-                                                       SEaseInEaseOutKeyframe &inCurrent,
-                                                       float *inNextValue, float *&outBezierValues);
+    void CreateBezierKeyframeFromEaseInEaseOutKeyframe(float prevTime,
+                                                       SEaseInEaseOutKeyframe &keyframe,
+                                                       float nextTime, float *&outBezierValues);
 
 protected: // Helper methods
     bool IsStringType(ERuntimeDataModelDataType inDataType);

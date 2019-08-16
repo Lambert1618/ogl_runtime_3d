@@ -111,7 +111,7 @@ void CopyAnimationIfExist(Qt3DSDMSlideHandle inMaster, Qt3DSDMSlideHandle inTarg
                           TAnimationCorePtr inAnimationCore)
 {
     DataModelDataType::Value propertyType = inPropertySystem->GetDataType(inPropertyPair.second);
-    size_t arity = GetDatatypeAnimatableArity(propertyType);
+    size_t arity = getDatatypeAnimatableArity(propertyType);
     if (arity) {
         do_times(arity, std::bind(CopySpecificAnimation, inMaster, inTarget, inPropertyPair,
                                   inAnimationCore, std::placeholders::_1));

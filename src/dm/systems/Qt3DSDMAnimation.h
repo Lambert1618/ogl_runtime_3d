@@ -206,26 +206,17 @@ typedef std::vector<TKeyframe> TKeyframeList;
 
 struct SAnimationInfo
 {
-    Qt3DSDMSlideHandle m_Slide;
-    Qt3DSDMInstanceHandle m_Instance;
-    Qt3DSDMPropertyHandle m_Property;
-    size_t m_Index;
-    EAnimationType m_AnimationType;
+    Qt3DSDMSlideHandle m_Slide = 0;
+    Qt3DSDMInstanceHandle m_Instance = 0;
+    Qt3DSDMPropertyHandle m_Property = 0;
+    size_t m_Index = 0;
+    EAnimationType m_AnimationType = EAnimationTypeLinear;
     // Use the existing value for the value of the first keyframe.
     // Not reflected in studio at this time, purely a runtime problem.
     // Defaults to false
-    bool m_DynamicFirstKeyframe;
-    bool m_ArtistEdited;
-    SAnimationInfo()
-        : m_Index(0)
-        , m_AnimationType(EAnimationTypeLinear)
-        , m_DynamicFirstKeyframe(false)
-        // Animations are assumed to be artist edited.
-        // And any change will force this flag to true.
-        , m_ArtistEdited(true)
-
-    {
-    }
+    bool m_DynamicFirstKeyframe = false;
+    bool m_ArtistEdited = true;
+    SAnimationInfo() = default;
     SAnimationInfo(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
                    Qt3DSDMPropertyHandle inProperty, size_t inIndex, EAnimationType inAnimationType,
                    bool inDynamicFirstKeyframe, bool inArtistEdited)
@@ -422,37 +413,6 @@ public:
 
 typedef std::shared_ptr<IStudioAnimationSystem> TStudioAnimationSystemPtr;
 
-inline SLinearKeyframe CreateLinearKeyframe(float inSeconds, float inValue)
-{
-    SLinearKeyframe retval = { inSeconds, inValue };
-    return retval;
-}
-
-inline SBezierKeyframe CreateBezierKeyframe(float inSeconds, float inValue, float inInTangentTime,
-                                            float inInTangentValue, float inOutTangentTime,
-                                            float inOutTangentValue)
-{
-    SBezierKeyframe theBezierKeyframe;
-    theBezierKeyframe.m_KeyframeSeconds = inSeconds;
-    theBezierKeyframe.m_KeyframeValue = inValue;
-    theBezierKeyframe.m_InTangentTime = inInTangentTime;
-    theBezierKeyframe.m_InTangentValue = inInTangentValue;
-    theBezierKeyframe.m_OutTangentTime = inOutTangentTime;
-    theBezierKeyframe.m_OutTangentValue = inOutTangentValue;
-    return theBezierKeyframe;
-}
-
-inline SEaseInEaseOutKeyframe CreateEaseInEaseOutKeyframe(float inSeconds, float inValue,
-                                                          float inEaseIn, float inEaseOut)
-{
-    SEaseInEaseOutKeyframe retval;
-    retval.m_KeyframeSeconds = inSeconds;
-    retval.m_KeyframeValue = inValue;
-    retval.m_EaseIn = inEaseIn;
-    retval.m_EaseOut = inEaseOut;
-    return retval;
-}
-
 inline SAnimationInfo CreateAnimationInfo(Qt3DSDMSlideHandle inSlide,
                                           Qt3DSDMInstanceHandle inInstance,
                                           Qt3DSDMPropertyHandle inProperty, size_t inIndex,
@@ -464,7 +424,7 @@ inline SAnimationInfo CreateAnimationInfo(Qt3DSDMSlideHandle inSlide,
     return retval;
 }
 
-struct SKeyframeValueVisitor
+struct KeyframeValueGetter
 {
     float operator()(const SLinearKeyframe &inKeyframe) const { return inKeyframe.m_KeyframeValue; }
     float operator()(const SBezierKeyframe &inKeyframe) const { return inKeyframe.m_KeyframeValue; }
@@ -479,16 +439,15 @@ struct SKeyframeValueVisitor
     }
 };
 
-inline float KeyframeValueValue(const TKeyframe &inKeyframe)
+inline float getKeyframeValue(const TKeyframe &inKeyframe)
 {
-    return inKeyframe.visit<float>(SKeyframeValueVisitor());
+    return inKeyframe.visit<float>(KeyframeValueGetter());
 }
 
-struct SKeyframeTimeAnalyzer
+struct KeyframeTimeGetter
 {
-    float operator()(const SLinearKeyframe &inValue) const { return inValue.m_KeyframeSeconds; }
-    float operator()(const SBezierKeyframe &inValue) const { return inValue.m_KeyframeSeconds; }
-    float operator()(const SEaseInEaseOutKeyframe &inValue) const
+    template <typename TKeyframeType>
+    float operator()(const TKeyframeType &inValue) const
     {
         return inValue.m_KeyframeSeconds;
     }
@@ -499,17 +458,12 @@ struct SKeyframeTimeAnalyzer
     }
 };
 
-inline float KeyframeTime(const TKeyframe &inValue)
+inline float getKeyframeTime(const TKeyframe &inValue)
 {
-    return inValue.visit<float>(SKeyframeTimeAnalyzer());
+    return inValue.visit<float>(KeyframeTimeGetter());
 }
 
-inline EAnimationType GetKeyframeType(const TKeyframe &inKeyframe)
-{
-    return inKeyframe.getType();
-}
-
-struct SAnimArityVisitor
+struct AnimArityGetter
 {
     size_t operator()(bool) const
     {
@@ -547,12 +501,12 @@ struct SAnimArityVisitor
     }
 };
 
-inline size_t GetVariantAnimatableArity(const SValue &inValue)
+inline size_t getVariantAnimatableArity(const SValue &inValue)
 {
-    return inValue.visit<size_t>(SAnimArityVisitor());
+    return inValue.visit<size_t>(AnimArityGetter());
 }
 
-inline size_t GetDatatypeAnimatableArity(DataModelDataType::Value inDataType)
+inline size_t getDatatypeAnimatableArity(DataModelDataType::Value inDataType)
 {
     switch (inDataType) {
     case DataModelDataType::Long:
@@ -646,23 +600,24 @@ inline float GetAnimationValue(size_t inIndex, const SValue &ioValue)
     return ioValue.visit<float>(theGetter);
 }
 
-struct SKeyframeTimeSetter
+struct KeyframeTimeSetter
 {
     float m_Seconds;
+
     TKeyframe operator()(const SLinearKeyframe &inValue) const
     {
-        return CreateLinearKeyframe(m_Seconds, inValue.m_KeyframeValue);
+        return SLinearKeyframe(m_Seconds, inValue.m_KeyframeValue);
     }
     TKeyframe operator()(const SBezierKeyframe &inValue) const
     {
-        return CreateBezierKeyframe(m_Seconds, inValue.m_KeyframeValue, inValue.m_InTangentTime,
-                                    inValue.m_InTangentValue, inValue.m_OutTangentTime,
-                                    inValue.m_OutTangentValue);
+        return SBezierKeyframe(m_Seconds, inValue.m_KeyframeValue, inValue.m_InTangentTime,
+                               inValue.m_InTangentValue, inValue.m_OutTangentTime,
+                               inValue.m_OutTangentValue);
     }
     TKeyframe operator()(const SEaseInEaseOutKeyframe &inValue) const
     {
-        return CreateEaseInEaseOutKeyframe(m_Seconds, inValue.m_KeyframeValue, inValue.m_EaseIn,
-                                           inValue.m_EaseOut);
+        return SEaseInEaseOutKeyframe(m_Seconds, inValue.m_KeyframeValue, inValue.m_EaseIn,
+                                      inValue.m_EaseOut);
     }
     TKeyframe operator()()
     {
@@ -671,50 +626,29 @@ struct SKeyframeTimeSetter
     }
 };
 
-inline TKeyframe SetKeyframeSeconds(const TKeyframe &inKeyframe, float inSeconds)
+inline TKeyframe SetKeyframeTime(const TKeyframe &inKeyframe, float inSeconds)
 {
-    SKeyframeTimeSetter theSetter;
-    theSetter.m_Seconds = inSeconds;
-    return inKeyframe.visit<TKeyframe>(theSetter);
+    return inKeyframe.visit<TKeyframe>(KeyframeTimeSetter{inSeconds});
 }
 
-struct SKeyframeTimeGetter
-{
-    template <typename TKeyframeType>
-    float operator()(const TKeyframeType &inValue) const
-    {
-        return inValue.m_KeyframeSeconds;
-    }
-    float operator()()
-    {
-        QT3DS_ASSERT(false);
-        return 0.0f;
-    }
-};
-
-inline float GetKeyframeSeconds(const TKeyframe &inKeyframe)
-{
-    SKeyframeTimeGetter theGetter;
-    return inKeyframe.visit<float>(theGetter);
-}
-
-struct SKeyframeValueSetter
+struct KeyframeValueSetter
 {
     float m_Value;
+
     TKeyframe operator()(const SLinearKeyframe &inValue) const
     {
-        return CreateLinearKeyframe(inValue.m_KeyframeSeconds, m_Value);
+        return SLinearKeyframe(inValue.m_KeyframeSeconds, m_Value);
     }
     TKeyframe operator()(const SBezierKeyframe &inValue) const
     {
-        return CreateBezierKeyframe(inValue.m_KeyframeSeconds, m_Value, inValue.m_InTangentTime,
-                                    inValue.m_InTangentValue, inValue.m_OutTangentTime,
-                                    inValue.m_OutTangentValue);
+        return SBezierKeyframe(inValue.m_KeyframeSeconds, m_Value, inValue.m_InTangentTime,
+                               inValue.m_InTangentValue, inValue.m_OutTangentTime,
+                               inValue.m_OutTangentValue);
     }
     TKeyframe operator()(const SEaseInEaseOutKeyframe &inValue) const
     {
-        return CreateEaseInEaseOutKeyframe(inValue.m_KeyframeSeconds, m_Value, inValue.m_EaseIn,
-                                           inValue.m_EaseOut);
+        return SEaseInEaseOutKeyframe(inValue.m_KeyframeSeconds, m_Value, inValue.m_EaseIn,
+                                      inValue.m_EaseOut);
     }
     TKeyframe operator()()
     {
@@ -723,45 +657,35 @@ struct SKeyframeValueSetter
     }
 };
 
-inline TKeyframe SetKeyframeValue(const TKeyframe &inKeyframe, float inValue)
+inline TKeyframe setKeyframeValue(const TKeyframe &inKeyframe, float inValue)
 {
-    SKeyframeValueSetter theSetter;
-    theSetter.m_Value = inValue;
-    return inKeyframe.visit<TKeyframe>(theSetter);
+    return inKeyframe.visit<TKeyframe>(KeyframeValueSetter{inValue});
 }
 
-inline float AnimationClamp(float inLowerBound, float inUpperBound, float inValue)
+inline SBezierKeyframe CreateBezierKeyframeFromEaseInOut(float prevTime,
+                                                    SEaseInEaseOutKeyframe keyframe, float nextTime)
 {
-    if (inValue < inLowerBound)
-        return inLowerBound;
-    if (inValue > inUpperBound)
-        return inUpperBound;
-    return inValue;
-}
+    float kfValue = keyframe.m_KeyframeValue;
+    float kfTime = keyframe.m_KeyframeSeconds; // seconds
+    float timeIn = kfTime;
+    float valueIn = kfValue;
+    float timeOut = kfTime;
+    float valueOut = kfValue;
 
-inline SBezierKeyframe
-CreateBezierKeyframeFromEaseInEaseOutKeyframe(float *inPreviousValue,
-                                              SEaseInEaseOutKeyframe inCurrent, float *inNextValue)
-{
-    float theValue = inCurrent.m_KeyframeValue;
-    float theSeconds = inCurrent.m_KeyframeSeconds;
-    float inSeconds = 0.f;
-    float inValue = 0.f;
-    float outSeconds = 0.f;
-    float outValue = 0.f;
-    if (inPreviousValue) {
-        float thePercent = 1.0f - AnimationClamp(0.0f, 1.0f, inCurrent.m_EaseIn / 100.f);
-        double theAmount = 1.0f - thePercent * .333333333334;
-        inValue = (float)(*inPreviousValue
-                          + ((inCurrent.m_KeyframeValue - *inPreviousValue) * theAmount));
+     // at 100 ease, the control point will be midway between the 2 keyframes
+    float maxEasePerc = .5f;
+
+    if (prevTime != -1.f) {
+        float easeInPerc = qBound(0.f, keyframe.m_EaseIn / 100.f, 1.f) * maxEasePerc;
+        timeIn = prevTime + (kfTime - prevTime) * (1.f - easeInPerc);
     }
-    if (inNextValue) {
-        float thePercent = 1.0f - AnimationClamp(0.0f, 1.0f, inCurrent.m_EaseOut / 100.f);
-        double theAmount = thePercent * .3333333333334;
-        outValue = (float)(inCurrent.m_KeyframeValue
-                           + ((*inNextValue - inCurrent.m_KeyframeValue) * theAmount));
+
+    if (nextTime != -1.f) {
+        float easeOutPerc = qBound(0.f, keyframe.m_EaseOut / 100.f, 1.f) * maxEasePerc;
+        timeOut = kfTime + (nextTime - kfTime) * easeOutPerc;
     }
-    return CreateBezierKeyframe(theSeconds, theValue, inSeconds, inValue, outSeconds, outValue);
+
+    return SBezierKeyframe(kfTime, kfValue, timeIn , valueIn, timeOut, valueOut);
 }
 
 void CopyKeyframes(const IAnimationCore &inSourceAnimationCore, IAnimationCore &inDestAnimationCore,
@@ -773,35 +697,52 @@ Qt3DSDMAnimationHandle CopyAnimation(TAnimationCorePtr inSourceAnimationCore,
                                      Qt3DSDMInstanceHandle inNewInstance,
                                      Qt3DSDMPropertyHandle inNewProperty, size_t inNewIndex);
 
-struct SEaseInGetter
+struct SEaseInOutGetter
 {
-    float operator()(const SLinearKeyframe &) const { return 0.f; }
-    float operator()(const SBezierKeyframe &) const { return 0.f; }
-    float operator()(const SEaseInEaseOutKeyframe &inValue) const { return inValue.m_EaseIn; }
-    float operator()()
+    std::pair<float, float> operator()(const SLinearKeyframe &) const { return {}; }
+    std::pair<float, float> operator()(const SBezierKeyframe &) const { return {}; }
+    std::pair<float, float> operator()(const SEaseInEaseOutKeyframe &inValue) const
     {
-        QT3DS_ASSERT(false);
-        return 0.0f;
+        return {inValue.m_EaseIn, inValue.m_EaseOut};
     }
-};
-struct SEaseOutGetter
-{
-    float operator()(const SLinearKeyframe &) const { return 0.f; }
-    float operator()(const SBezierKeyframe &) const { return 0.f; }
-    float operator()(const SEaseInEaseOutKeyframe &inValue) const { return inValue.m_EaseOut; }
-    float operator()()
-    {
-        QT3DS_ASSERT(false);
-        return 0.0f;
-    }
-};
-inline void GetEaseInOutValues(const TKeyframe &inValue, float &outEaseIn, float &outEaseOut)
-{
-    SEaseInGetter theGetter;
-    outEaseIn = inValue.visit<float>(theGetter);
 
-    SEaseOutGetter theEaseOutGetter;
-    outEaseOut = inValue.visit<float>(theEaseOutGetter);
+    std::pair<float, float> operator()()
+    {
+        QT3DS_ASSERT(false);
+        return {};
+    }
+};
+inline void getEaseInOutValues(const TKeyframe &inValue, float &outEaseIn, float &outEaseOut)
+{
+    std::pair<float, float> ease = inValue.visit<std::pair<float, float>>(SEaseInOutGetter());
+
+    outEaseIn = ease.first;
+    outEaseOut = ease.second;
+}
+
+struct EaseInOutSetter
+{
+    float m_easeIn;
+    float m_easeOut;
+
+    TKeyframe operator()(SLinearKeyframe &inValue) const { return inValue; }
+    TKeyframe operator()(SBezierKeyframe &inValue) const { return inValue; }
+    TKeyframe operator()(SEaseInEaseOutKeyframe &inKeyframe) const
+    {
+        inKeyframe.m_EaseIn = m_easeIn;
+        inKeyframe.m_EaseOut = m_easeOut;
+        return inKeyframe;
+    }
+    TKeyframe operator()()
+    {
+        QT3DS_ASSERT(false);
+        return TKeyframe();
+    }
+};
+
+inline TKeyframe setEaseInOutValues(TKeyframe &inKeyframe, float easeIn, float easeOut)
+{
+    return inKeyframe.visit<TKeyframe>(EaseInOutSetter{easeIn, easeOut});
 }
 
 struct BezierValuesGetter
@@ -819,6 +760,7 @@ struct BezierValuesGetter
         return {};
     }
 };
+
 inline void getBezierValues(const TKeyframe &keyframe, float &tangentInTime, float &tangentInValue,
                             float &tangentOutTime, float &tangentOutValue)
 {
@@ -829,51 +771,6 @@ inline void getBezierValues(const TKeyframe &keyframe, float &tangentInTime, flo
         tangentOutTime = values[2];
         tangentOutValue = values[3];
     }
-}
-
-struct SEaseInSetter
-{
-    float m_Value;
-    TKeyframe operator()(SLinearKeyframe &inValue) const { return inValue; }
-    TKeyframe operator()(SBezierKeyframe &inValue) const { return inValue; }
-    TKeyframe operator()(SEaseInEaseOutKeyframe &inKeyframe) const
-    {
-        inKeyframe.m_EaseIn = m_Value;
-        return inKeyframe;
-    }
-    TKeyframe operator()()
-    {
-        QT3DS_ASSERT(false);
-        return TKeyframe();
-    }
-};
-struct SEaseOutSetter
-{
-    float m_Value;
-    TKeyframe operator()(SLinearKeyframe &inValue) const { return inValue; }
-    TKeyframe operator()(SBezierKeyframe &inValue) const { return inValue; }
-    TKeyframe operator()(SEaseInEaseOutKeyframe &inKeyframe) const
-    {
-        inKeyframe.m_EaseOut = m_Value;
-        return inKeyframe;
-    }
-    TKeyframe operator()()
-    {
-        QT3DS_ASSERT(false);
-        return TKeyframe();
-    }
-};
-inline TKeyframe SetEaseInOutValues(TKeyframe &inKeyframe, float inEaseIn, float inEaseOut)
-{
-    SEaseInSetter theSetter;
-    theSetter.m_Value = inEaseIn;
-    inKeyframe.visit<TKeyframe>(theSetter);
-
-    SEaseOutSetter theEaseOutSetter;
-    theEaseOutSetter.m_Value = inEaseOut;
-    inKeyframe.visit<TKeyframe>(theEaseOutSetter);
-
-    return inKeyframe;
 }
 
 struct BezierOffsetter
@@ -899,14 +796,9 @@ struct BezierOffsetter
 // dt: time offset in seconds
 inline TKeyframe offsetBezier(TKeyframe &inKeyframe, float dt)
 {
-    BezierOffsetter offsetter{dt};
-    inKeyframe.visit<TKeyframe>(offsetter);
-
-    return inKeyframe;
+    return inKeyframe.visit<TKeyframe>(BezierOffsetter{dt});
 }
 
-void GetKeyframesAsBezier(Qt3DSDMAnimationHandle inAnimation, const IAnimationCore &inAnimationCore,
-                          TBezierKeyframeList &outKeyframes);
-}
+} // namespace qt3dsdm
 
 #endif
