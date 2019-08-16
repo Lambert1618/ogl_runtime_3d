@@ -28,6 +28,7 @@
 ****************************************************************************/
 #include "Qt3DSDMPrefix.h"
 #include "SimpleAnimationCore.h"
+#include "Qt3DSBezierEval.h"
 
 #ifdef _WIN32
 #pragma warning(disable : 4503) // decorated name length exceeded
@@ -44,9 +45,6 @@ struct SPerfLogEvent
 
 typedef SPerfLogEvent TPerfLogMathEvent1;
 
-#include "Qt3DSCubicRoots.h"
-#include "Qt3DSCubicRootsImpl.h"
-#include "Qt3DSBezierEval.h"
 using namespace std;
 
 namespace qt3dsdm {

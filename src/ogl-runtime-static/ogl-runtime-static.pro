@@ -139,7 +139,6 @@ SOURCES += \
     ../system/Qt3DSAssert.cpp \
     ../system/Qt3DSBoundingBox.cpp \
     ../system/Qt3DSColor.cpp \
-    ../system/Qt3DSCubicRoots.cpp \
     ../system/Qt3DSDataLogger.cpp \
     ../system/Qt3DSDLLManager.cpp \
     ../system/Qt3DSEulerAngles.cpp \
@@ -373,8 +372,6 @@ HEADERS += \
     ../system/Qt3DSCircularArray.h \
     ../system/Qt3DSColor.h \
     ../system/Qt3DSConfig.h \
-    ../system/Qt3DSCubicRoots.h \
-    ../system/Qt3DSCubicRootsImpl.h \
     ../system/Qt3DSDataLogger.h \
     ../system/Qt3DSDataLogger.hpp \
     ../system/Qt3DSDataLoggerEnums.h \

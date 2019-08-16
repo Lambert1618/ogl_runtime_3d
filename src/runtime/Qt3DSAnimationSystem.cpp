@@ -37,7 +37,6 @@
 #include "foundation/Qt3DSBroadcastingAllocator.h"
 #include "foundation/Qt3DSPool.h"
 #include "Qt3DSElementSystem.h"
-#include "Qt3DSCubicRoots.h"
 #include "Qt3DSBezierEval.h"
 #include "foundation/SerializationTypes.h"
 #include "foundation/IOStreams.h"
