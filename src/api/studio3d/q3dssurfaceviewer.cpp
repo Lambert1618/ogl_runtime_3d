@@ -333,11 +333,10 @@ void Q3DSSurfaceViewer::setPresentationId(const QString &id)
     }
 }
 
-// TODO: QT3DS-3563
-
 /*!
- * \brief Q3DSSurfaceViewer::qmlEngine
- * \return
+ * Returns the QML engine set with setQmlEngine method.
+ *
+ * \sa setQmlEngine
  */
 QQmlEngine *Q3DSSurfaceViewer::qmlEngine() const
 {
@@ -346,8 +345,11 @@ QQmlEngine *Q3DSSurfaceViewer::qmlEngine() const
 }
 
 /*!
- * \brief Q3DSSurfaceViewer::setQmlEngine
- * \param qmlEngine
+ * Sets the QML engine for rendering QML streams of the presentation to \a qmlEngine.
+ * The QML engine must be set before Q3DSSurfaceViewer::create is called.
+ * If the QML engine is not set, a new one will be created during runtime initialization.
+ *
+ * \sa qmlEngine
  */
 void Q3DSSurfaceViewer::setQmlEngine(QQmlEngine *qmlEngine)
 {
