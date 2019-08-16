@@ -542,7 +542,6 @@ void Q3DSRenderer::handleRuntimeInitializedAsync()
         registerCallbacks();
         m_settings->d_ptr->setViewerApp(m_runtime);
         m_presentation->d_ptr->setViewerApp(m_runtime, false);
-        m_window->setClearBeforeRendering(false);
 
         connect(m_runtimeInitializerThread, &QThread::finished, [this]() {
             m_runtimeInitializerThread->deleteLater();

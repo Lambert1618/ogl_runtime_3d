@@ -322,10 +322,6 @@ void Q3DSStudio3D::handleWindowChanged(QQuickWindow *window)
     if (!window)
         return;
 
-    // We need to enable clearing until the presentation starts rendering and takes care of that.
-    // Note that having this flag as false assumes presentation is always full screen.
-    window->setClearBeforeRendering(m_asyncInit);
-
     auto createAsyncSurface = [this](QOpenGLContext *qmlContext) {
         if (qmlContext) {
             m_asyncInitSurface->setFormat(qmlContext->format());
