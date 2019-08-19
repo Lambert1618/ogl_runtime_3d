@@ -121,8 +121,6 @@ namespace render {
         SLayerRenderPreparationData::PrepareForRender(inViewportDimensions);
         SLayerRenderPreparationResult &thePrepResult(*m_LayerPrepResult);
         IResourceManager &theResourceManager(m_Renderer.GetQt3DSContext().GetResourceManager());
-        // at that time all values shoud be updated
-        m_Renderer.UpdateCbAoShadow(&m_Layer, m_Camera, m_LayerDepthTexture);
 
         // Generate all necessary lighting keys
 
@@ -237,6 +235,7 @@ namespace render {
     void SLayerRenderData::RenderAoPass()
     {
         m_Renderer.BeginLayerDepthPassRender(*this);
+        m_Renderer.UpdateCbAoShadow(&m_Layer, m_Camera, m_LayerDepthTexture);
 
         NVRenderContext &theContext(m_Renderer.GetContext());
         SDefaultAoPassShader *shader = m_Renderer.GetDefaultAoPassShader(GetShaderFeatureSet());
