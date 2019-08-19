@@ -626,7 +626,7 @@ struct KeyframeTimeSetter
     }
 };
 
-inline TKeyframe SetKeyframeTime(const TKeyframe &inKeyframe, float inSeconds)
+inline TKeyframe setKeyframeTime(const TKeyframe &inKeyframe, float inSeconds)
 {
     return inKeyframe.visit<TKeyframe>(KeyframeTimeSetter{inSeconds});
 }

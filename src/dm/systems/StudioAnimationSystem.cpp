@@ -179,7 +179,7 @@ Qt3DSDMKeyframeHandle CStudioAnimationSystem::CreateKeyframeExplicit(
         // offset control points time for bezier keyframes
         offsetBezier(keyframeData, inSeconds - getKeyframeTime(keyframeData));
 
-        keyframeData = SetKeyframeTime(keyframeData, inSeconds);
+        keyframeData = setKeyframeTime(keyframeData, inSeconds);
     } else { // empty (insert new keyframe/change value case
         EAnimationType animType = m_AnimationCore->GetAnimationInfo(inAnimation).m_AnimationType;
         switch (animType) {
