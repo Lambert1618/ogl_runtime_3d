@@ -223,6 +223,13 @@ CQmlElementHelper::TypedAttributeAndValue CQmlElementHelper::getTypedAttributeAn
                 theNewValue.m_FLOAT3[2] = qDegreesToRadians(theNewValue.m_FLOAT3[2]);
             }
         } break;
+        case ATTRIBUTETYPE_FLOAT4: {
+            FLOAT *vec4 = (FLOAT *)value;
+            theNewValue.m_FLOAT4[0] = vec4[0];
+            theNewValue.m_FLOAT4[1] = vec4[1];
+            theNewValue.m_FLOAT4[2] = vec4[2];
+            theNewValue.m_FLOAT4[3] = vec4[3];
+        } break;
         case ATTRIBUTETYPE_NONE:
         case ATTRIBUTETYPE_DATADRIVEN_PARENT:
         case ATTRIBUTETYPE_DATADRIVEN_CHILD:
@@ -326,39 +333,39 @@ bool CQmlElementHelper::GetAttribute(TElement *inElement, const char *inAttribut
         case ATTRIBUTETYPE_HASH:
             *(INT32 *)value = theValuePtr->m_INT32;
             break;
-
         case ATTRIBUTETYPE_FLOAT:
             *(FLOAT *)value = theValuePtr->m_FLOAT;
             break;
-
         case ATTRIBUTETYPE_BOOL:
             *(INT32 *)value = (theValuePtr->m_INT32 != 0);
             break;
-
         case ATTRIBUTETYPE_STRING:
             *(char *)value = *inElement->GetBelongedPresentation()
                                   ->GetStringTable()
                                   .HandleToStr(theValuePtr->m_StringHandle)
                                   .c_str();
             break;
-
         case ATTRIBUTETYPE_POINTER:
             qCCritical(INVALID_OPERATION, "getAttribute: pointer attributes not handled.");
             return false;
             break;
-
         case ATTRIBUTETYPE_ELEMENTREF:
             qCCritical(INVALID_OPERATION, "getAttribute: ElementRef attributes are read only.");
             return false;
             break;
-
         case ATTRIBUTETYPE_FLOAT3: {
             FLOAT *vec3 = (FLOAT *)value;
             vec3[0] = theValuePtr->m_FLOAT3[0];
             vec3[1] = theValuePtr->m_FLOAT3[1];
             vec3[2] = theValuePtr->m_FLOAT3[2];
         } break;
-
+        case ATTRIBUTETYPE_FLOAT4: {
+            FLOAT *vec4 = (FLOAT *)value;
+            vec4[0] = theValuePtr->m_FLOAT4[0];
+            vec4[1] = theValuePtr->m_FLOAT4[1];
+            vec4[2] = theValuePtr->m_FLOAT4[2];
+            vec4[3] = theValuePtr->m_FLOAT4[3];
+        } break;
         case ATTRIBUTETYPE_NONE:
         case ATTRIBUTETYPE_DATADRIVEN_PARENT:
         case ATTRIBUTETYPE_DATADRIVEN_CHILD:
