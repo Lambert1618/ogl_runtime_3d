@@ -604,16 +604,33 @@ void CQmlEngineImpl::Initialize()
     }
 }
 
+bool queueAttributeChange(TElement *target, const char *attName, const char *value)
+{
+    TElement *componentElement = target->GetActivityZone().GetItemTimeParent(*target);
+    TComponent *component = static_cast<TComponent *>(componentElement);
+    // Queue changes to elements inside components that have not been activated even once
+    if (component->GetCurrentSlide() == 0) {
+        IPresentation *presentation = target->GetBelongedPresentation();
+        presentation->GetComponentManager().queueChange(componentElement, target,
+                                                        attName, value);
+        return true;
+    }
+    return false;
+}
+
 void CQmlEngineImpl::SetAttribute(TElement *target, const char *attName, const char *value)
 {
     QML_ENGINE_MULTITHREAD_PROTECT_METHOD;
+
     if (target) {
-        bool success = CQmlElementHelper::SetAttribute(target, attName, value);
-        if (!success) {
-            qCCritical(qt3ds::INVALID_OPERATION)
-                    << "CQmlEngineImpl::SetAttribute: "
-                    << "failed to set attribute on element"
-                    << target << ":" << attName << ":" << value;
+        if (!queueAttributeChange(target, attName, value)) {
+            bool success = CQmlElementHelper::SetAttribute(target, attName, value);
+            if (!success) {
+                qCCritical(qt3ds::INVALID_OPERATION)
+                        << "CQmlEngineImpl::SetAttribute: "
+                        << "failed to set attribute on element"
+                        << target->m_Path.c_str() << ":" << attName << ":" << value;
+            }
         }
     }
 }
@@ -624,12 +641,14 @@ void CQmlEngineImpl::SetAttribute(const char *element, const char *attName, cons
 
     TElement *theTarget = getTarget(element);
     if (theTarget) {
-        bool success = CQmlElementHelper::SetAttribute(theTarget, attName, value);
-        if (!success) {
-            qCCritical(qt3ds::INVALID_OPERATION)
-                    << "CQmlEngineImpl::SetAttribute: "
-                    << "failed to set attribute on element"
-                    << element << ":" << attName << ":" << value;
+        if (!queueAttributeChange(theTarget, attName, value)) {
+            bool success = CQmlElementHelper::SetAttribute(theTarget, attName, value);
+            if (!success) {
+                qCCritical(qt3ds::INVALID_OPERATION)
+                        << "CQmlEngineImpl::SetAttribute: "
+                        << "failed to set attribute on element"
+                        << element << ":" << attName << ":" << value;
+            }
         }
     }
 }

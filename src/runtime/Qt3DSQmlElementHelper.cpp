@@ -151,6 +151,94 @@ TElement *CQmlElementHelper::GetElement(qt3ds::runtime::IApplication &inApplicat
     return theElement;
 }
 
+CQmlElementHelper::TypedAttributeAndValue CQmlElementHelper::getTypedAttributeAndValue(
+        TElement *theElement, const char *theAttName, const void *value)
+{
+    TypedAttributeAndValue retVal = { SAttributeKey(), UVariant() };
+    retVal.attribute.m_Hash = 0;
+
+    SAttributeKey theAttributeKey;
+    theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
+
+    // Early out for our single 'read only' attribute
+    if (ATTRIBUTE_URI == theAttributeKey.m_Hash) {
+        // we didn't push anything onto the stack
+        return retVal;
+    }
+
+    // first search if it is a static property
+    Option<qt3ds::runtime::element::TPropertyDescAndValuePtr> thePropertyInfo
+            = theElement->FindProperty(theAttributeKey.m_Hash);
+
+    if (!thePropertyInfo.hasValue() && theAttributeKey.m_Hash != Q3DStudio::ATTRIBUTE_EYEBALL) {
+        // if not search in the dynamic properties
+        thePropertyInfo = theElement->FindDynamicProperty(theAttributeKey.m_Hash);
+        if (!thePropertyInfo.hasValue())
+            return retVal;
+    }
+
+    if (theAttributeKey.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL) {
+        UVariant theNewValue;
+        theNewValue.m_INT32 = *(INT32 *)value;
+        retVal.attribute = theAttributeKey;
+        retVal.value = theNewValue;
+    } else if (thePropertyInfo.hasValue()) {
+        UVariant theNewValue;
+        QString name(thePropertyInfo->first.m_Name.c_str());
+        EAttributeType theAttributeType = thePropertyInfo->first.m_Type;
+        switch (theAttributeType) {
+        case ATTRIBUTETYPE_INT32:
+        case ATTRIBUTETYPE_HASH:
+            theNewValue.m_INT32 = *(INT32 *)value;
+            break;
+        case ATTRIBUTETYPE_FLOAT:
+            theNewValue.m_FLOAT = *(FLOAT *)value;
+            if (name.startsWith(QLatin1String("rotation.")))
+                theNewValue.m_FLOAT = qDegreesToRadians(theNewValue.m_FLOAT);
+            break;
+        case ATTRIBUTETYPE_BOOL:
+            theNewValue.m_INT32 = *(INT32 *)value;
+            break;
+        case ATTRIBUTETYPE_STRING:
+            theNewValue.m_StringHandle
+                    = theElement->GetBelongedPresentation()->GetStringTable().getDynamicHandle(
+                        QByteArray(static_cast<const char *>(value)));
+            break;
+        case ATTRIBUTETYPE_POINTER:
+            qCCritical(INVALID_OPERATION, "getTypedAttributeAndValue: "
+                                          "pointer attributes not handled.");
+            return retVal;
+        case ATTRIBUTETYPE_ELEMENTREF:
+            qCCritical(INVALID_OPERATION, "getTypedAttributeAndValue: "
+                                          "ElementRef attributes are read only.");
+            return retVal;
+        case ATTRIBUTETYPE_FLOAT3: {
+            FLOAT *vec3 = (FLOAT *)value;
+            theNewValue.m_FLOAT3[0] = vec3[0];
+            theNewValue.m_FLOAT3[1] = vec3[1];
+            theNewValue.m_FLOAT3[2] = vec3[2];
+            if (name == QLatin1String("rotation")) {
+                theNewValue.m_FLOAT3[0] = qDegreesToRadians(theNewValue.m_FLOAT3[0]);
+                theNewValue.m_FLOAT3[1] = qDegreesToRadians(theNewValue.m_FLOAT3[1]);
+                theNewValue.m_FLOAT3[2] = qDegreesToRadians(theNewValue.m_FLOAT3[2]);
+            }
+        } break;
+        case ATTRIBUTETYPE_NONE:
+        case ATTRIBUTETYPE_DATADRIVEN_PARENT:
+        case ATTRIBUTETYPE_DATADRIVEN_CHILD:
+        case ATTRIBUTETYPECOUNT:
+        default:
+            qCCritical(INVALID_OPERATION, "getTypedAttributeAndValue: Attribute has no type!");
+            return retVal;
+        }
+
+        retVal.attribute = theAttributeKey;
+        retVal.value = theNewValue;
+    }
+
+    return retVal;
+}
+
 bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttName,
                                      const void *value)
 {
@@ -199,72 +287,19 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
         }
     }
 
-    if (theAttributeKey.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL) {
-        UVariant theNewValue;
-        theNewValue.m_INT32 = *(INT32 *)value;
-        theElement->SetAttribute(theAttributeKey.m_Hash, theNewValue);
-    } else if (thePropertyInfo.hasValue()) {
-        UVariant theNewValue;
-        QString name(thePropertyInfo->first.m_Name.c_str());
-        EAttributeType theAttributeType = thePropertyInfo->first.m_Type;
-        switch (theAttributeType) {
-        case ATTRIBUTETYPE_INT32:
-        case ATTRIBUTETYPE_HASH:
-            theNewValue.m_INT32 = *(INT32 *)value;
-            break;
+    TypedAttributeAndValue attributeAndValue = getTypedAttributeAndValue(theElement, theAttName,
+                                                                         value);
 
-        case ATTRIBUTETYPE_FLOAT:
-            theNewValue.m_FLOAT = *(FLOAT *)value;
-            if (name.startsWith(QLatin1String("rotation.")))
-                theNewValue.m_FLOAT = qDegreesToRadians(theNewValue.m_FLOAT);
-            break;
-
-        case ATTRIBUTETYPE_BOOL:
-            theNewValue.m_INT32 = *(INT32 *)value;
-            break;
-
-        case ATTRIBUTETYPE_STRING:
-            theNewValue.m_StringHandle =
-                theElement->GetBelongedPresentation()->GetStringTable().getDynamicHandle(
-                        QByteArray(static_cast<const char *>(value)));
-            break;
-
-        case ATTRIBUTETYPE_POINTER:
-            qCCritical(INVALID_OPERATION, "setAttribute: pointer attributes not handled.");
-            return false;
-            break;
-
-        case ATTRIBUTETYPE_ELEMENTREF:
-            qCCritical(INVALID_OPERATION, "setAttribute: ElementRef attributes are read only.");
-            return false;
-            break;
-
-        case ATTRIBUTETYPE_FLOAT3: {
-            FLOAT *vec3 = (FLOAT *)value;
-            theNewValue.m_FLOAT3[0] = vec3[0];
-            theNewValue.m_FLOAT3[1] = vec3[1];
-            theNewValue.m_FLOAT3[2] = vec3[2];
-            if (name == QLatin1String("rotation")) {
-                theNewValue.m_FLOAT3[0]= qDegreesToRadians(theNewValue.m_FLOAT3[0]);
-                theNewValue.m_FLOAT3[1]= qDegreesToRadians(theNewValue.m_FLOAT3[1]);
-                theNewValue.m_FLOAT3[2]= qDegreesToRadians(theNewValue.m_FLOAT3[2]);
-            }
-        } break;
-
-        case ATTRIBUTETYPE_NONE:
-        case ATTRIBUTETYPE_DATADRIVEN_PARENT:
-        case ATTRIBUTETYPE_DATADRIVEN_CHILD:
-        case ATTRIBUTETYPECOUNT:
-        default:
-            qCCritical(INVALID_OPERATION, "setAttribute: Attribute has no type!");
-            return false;
-            break;
-        }
-
-        theElement->SetAttribute(*thePropertyInfo, theNewValue, force);
-    } else {
+    if (attributeAndValue.attribute.m_Hash == 0)
         return false;
-    }
+
+    if (attributeAndValue.attribute.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL)
+        theElement->SetAttribute(attributeAndValue.attribute.m_Hash, attributeAndValue.value);
+    else if (thePropertyInfo.hasValue())
+        theElement->SetAttribute(thePropertyInfo, attributeAndValue.value, force);
+    else
+        return false;
+
     return true;
 }
 

@@ -41,6 +41,7 @@
 #include "Qt3DSApplication.h"
 #include "Qt3DSActivationManager.h"
 #include "Qt3DSPresentation.h"
+#include "Qt3DSQmlElementHelper.h"
 
 using qt3ds::runtime::SSlideKey;
 //==============================================================================
@@ -308,6 +309,34 @@ void CComponentManager::PlaythroughToSlide(TElement *inComponent)
         GoToNextSlide(inComponent, 1);
     } else {
         GotoSlideIndex(inComponent, thePlaythroughTo);
+    }
+}
+
+void CComponentManager::applyQueuedChanges(TElement *component)
+{
+    const auto &targetQueue = m_queuedChanges[component];
+    for (auto itTarget = targetQueue.constBegin(); itTarget != targetQueue.constEnd();
+         ++itTarget) {
+        const auto &target = itTarget.key();
+        const auto &attributeQueue = itTarget.value();
+        for (auto itAttribute = attributeQueue.constBegin();
+             itAttribute != attributeQueue.constEnd(); ++itAttribute) {
+            const auto &attribute = itAttribute.key();
+            target->SetAttribute(attribute, itAttribute.value());
+        }
+    }
+    m_queuedChanges.remove(component);
+}
+
+void CComponentManager::queueChange(TElement *component, TElement *target, const char *attName,
+                                    const char *value)
+{
+    CQmlElementHelper::TypedAttributeAndValue attributeAndValue
+            = CQmlElementHelper::getTypedAttributeAndValue(target, attName, value);
+    if (attributeAndValue.attribute.m_Hash != 0) {
+        auto &targetQueue = m_queuedChanges[component];
+        auto &attQueue = targetQueue[target];
+        attQueue[attributeAndValue.attribute.m_Hash] = attributeAndValue.value;
     }
 }
 

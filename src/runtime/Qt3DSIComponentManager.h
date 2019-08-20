@@ -120,6 +120,9 @@ public: // Slides
     virtual UINT8 GetSlideCount(TElement *inComponent) = 0;
     virtual UINT8 GetCurrentSlide(TElement *inComponent) = 0;
     virtual const CHAR *GetCurrentSlideName(TElement *inComponent) = 0;
+    virtual void applyQueuedChanges(TElement *component) = 0;
+    virtual void queueChange(TElement *component, TElement *target, const char *attName,
+                             const char *value) = 0;
 
     virtual void OnElementDeactivated(TElement *inElement) = 0;
 

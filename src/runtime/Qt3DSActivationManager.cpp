@@ -644,7 +644,12 @@ struct STimeContext
             m_AllNodesDirty = true;
             if (isActive) {
                 Mutex::ScopedLock __locker(m_ElementAccessMutex);
-                inComponentManager.GotoSlideIndex(&theContextNode, 1, false);
+                // When the component is activated the first time go to the first slide
+                // Subsequent activations should continue from the deactivated slide
+                if (theContextNode.GetCurrentSlide() == 0) {
+                    inComponentManager.GotoSlideIndex(&theContextNode, 1, false);
+                    inComponentManager.applyQueuedChanges(&theContextNode);
+                }
             } else
                 RemoveOverride();
         }

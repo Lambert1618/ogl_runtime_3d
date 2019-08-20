@@ -91,6 +91,9 @@ public: // Slide
     void GoToNextSlide(TElement *inComponent, const INT32 inDecrement = 1) override;
     void GoToPreviousSlide(TElement *inComponent, const INT32 inDecrement = 1) override;
     void PlaythroughToSlide(TElement *inComponent);
+    void applyQueuedChanges(TElement *component) override;
+    void queueChange(TElement *component, TElement *target, const char *attName,
+                     const char *value) override;
 
     UINT8 GetSlideCount(TElement *inComponent) override;
     UINT8 GetCurrentSlide(TElement *inComponent) override;
@@ -133,6 +136,8 @@ private:
     TComponentGotoSlideDataMap m_ComponentInitialSlideMap;
     TComponentGotoSlideDataMap m_ComponentGotoSlideMap;
     TComponentIntMap m_PlaythroughOverrideMap;
+
+    QHash<TElement *, QHash<TElement *, QHash<TAttributeHash, UVariant>>> m_queuedChanges;
 
     //==============================================================================
     //	Friends

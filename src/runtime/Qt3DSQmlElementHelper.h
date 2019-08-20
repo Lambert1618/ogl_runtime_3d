@@ -50,6 +50,15 @@ public:
 
     static bool SetAttribute(TElement *inElement, const char *inAttribute, const void *value);
     static bool GetAttribute(TElement *inElement, const char *inAttribute, void *value);
+
+    struct TypedAttributeAndValue {
+        SAttributeKey attribute;
+        UVariant value;
+    };
+
+    static TypedAttributeAndValue getTypedAttributeAndValue(TElement *inElement,
+                                                            const char *inAttribute,
+                                                            const void *value);
 };
 }
 
