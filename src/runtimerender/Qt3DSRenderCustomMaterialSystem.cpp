@@ -900,8 +900,18 @@ struct SMaterialSystem : public ICustomMaterialSystem
 
     ~SMaterialSystem()
     {
+        // As per comment on ReleaseBuffer, just empty the allocated buffers cache, but don't
+        // properly release them
         while (m_AllocatedBuffers.size())
             m_AllocatedBuffers.replace_with_last(0);
+
+        clearImageAndBufferCaches();
+    }
+
+    void clearImageAndBufferCaches()
+    {
+        while (m_AllocatedBuffers.size())
+            ReleaseBuffer(0);
 
         for (QT3DSU32 idx = 0; idx < m_AllocatedImages.size(); ++idx) {
             SImage *pImage = m_AllocatedImages[idx].second;
@@ -1884,12 +1894,14 @@ struct SMaterialSystem : public ICustomMaterialSystem
         }
     }
 
-    void clearShaderCache() override
+    void clearCaches() override
     {
         for (const auto &it : m_StringMaterialMap)
             m_CoreContext.GetDynamicObjectSystemCore().Unregister(it.first);
         m_StringMaterialMap.clear();
         m_ShaderMap.clear();
+
+        clearImageAndBufferCaches();
     }
 
     void setRequiresCompilation(const CRegisteredString &name, bool value) override

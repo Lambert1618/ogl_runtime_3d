@@ -531,7 +531,12 @@ struct SEffectSystem : public IEffectSystem
     {
     }
 
-    ~SEffectSystem()
+    ~SEffectSystem() override
+    {
+        clearCaches();
+    }
+
+    void clearCaches() override
     {
         for (QT3DSU32 idx = 0, end = m_Contexts.size(); idx < end; ++idx)
             NVDelete(m_Allocator, m_Contexts[idx]);

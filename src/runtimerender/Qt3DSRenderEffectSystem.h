@@ -203,6 +203,7 @@ namespace render {
                                   bool inEnableBlendWhenRenderToTarget) = 0;
 
         virtual void prepareEffectForRender(SEffect &inEffect) = 0;
+        virtual void clearCaches() = 0;
     };
 }
 }

@@ -128,7 +128,7 @@ namespace render {
         virtual void ApplyShaderPropertyValues(const SCustomMaterial &inMaterial,
                                                NVRenderShaderProgram &inProgram) = 0;
         virtual void renderSubpresentations(SCustomMaterial &inMaterial) = 0;
-        virtual void clearShaderCache() = 0;
+        virtual void clearCaches() = 0;
         virtual void setRequiresCompilation(const CRegisteredString &name, bool value) = 0;
         virtual bool requiresCompilation(const CRegisteredString &name) const = 0;
         // Called by the uiccontext so this system can clear any per-frame render information.
