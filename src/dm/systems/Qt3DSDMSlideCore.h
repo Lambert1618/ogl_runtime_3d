@@ -76,9 +76,9 @@ public:
      */
     virtual void GetSlides(TSlideHandleList &outSlides) const = 0;
 
-    virtual float GetSlideTime(Qt3DSDMSlideHandle inSlide) const = 0;
+    virtual long GetSlideTime(Qt3DSDMSlideHandle inSlide) const = 0;
 
-    virtual void SetSlideTime(Qt3DSDMSlideHandle inSlide, float inNewTime) = 0;
+    virtual void SetSlideTime(Qt3DSDMSlideHandle inSlide, long inNewTime) = 0;
 
     //===============================================================
     // Slide derivation

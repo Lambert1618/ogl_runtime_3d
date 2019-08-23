@@ -436,9 +436,9 @@ public:
     virtual TSignalConnectionPtr ConnectSlideRearranged(
         const std::function<void(Qt3DSDMSlideHandle, int, int)> &inCallback) = 0;
     virtual TSignalConnectionPtr
-    ConnectBeginComponentSeconds(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) = 0;
+    ConnectBeginComponentTime(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) = 0;
     virtual TSignalConnectionPtr
-    ConnectComponentSeconds(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) = 0;
+    ConnectComponentTime(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) = 0;
     virtual TSignalConnectionPtr ConnectPropertyLinked(
         const std::function<void(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle, Qt3DSDMPropertyHandle)>
             &inCallback) = 0;
@@ -525,8 +525,8 @@ public:
     virtual void SendSlideDeleted(Qt3DSDMSlideHandle inSlide) = 0;
     virtual void SendSlideRearranged(Qt3DSDMSlideHandle inMaster, int inOldIndex,
                                      int inNewIndex) = 0;
-    virtual void SendComponentSeconds(Qt3DSDMSlideHandle inMaster) = 0;
-    virtual void SendBeginComponentSeconds(Qt3DSDMSlideHandle inMaster) = 0;
+    virtual void SendComponentTime(Qt3DSDMSlideHandle inMaster) = 0;
+    virtual void SendBeginComponentTime(Qt3DSDMSlideHandle inMaster) = 0;
     virtual void SendPropertyLinked(Qt3DSDMSlideHandle inMaster, Qt3DSDMInstanceHandle inInstance,
                                     Qt3DSDMPropertyHandle inProperty) = 0;
     virtual void SendPropertyUnlinked(Qt3DSDMSlideHandle inMaster, Qt3DSDMInstanceHandle inInstance,

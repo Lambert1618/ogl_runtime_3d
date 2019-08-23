@@ -102,12 +102,12 @@ void CSimpleSlideCore::GetSlides(TSlideHandleList &outSlides) const
                      std::placeholders::_1, std::ref(outSlides)));
 }
 
-float CSimpleSlideCore::GetSlideTime(Qt3DSDMSlideHandle inSlide) const
+long CSimpleSlideCore::GetSlideTime(Qt3DSDMSlideHandle inSlide) const
 {
     return GetSlideNF(inSlide, m_Objects)->m_Time;
 }
 
-void CSimpleSlideCore::SetSlideTime(Qt3DSDMSlideHandle inSlide, float inNewTime)
+void CSimpleSlideCore::SetSlideTime(Qt3DSDMSlideHandle inSlide, long inNewTime)
 {
     GetSlideNF(inSlide, m_Objects)->m_Time = inNewTime;
 }

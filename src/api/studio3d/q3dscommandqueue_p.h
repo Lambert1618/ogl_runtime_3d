@@ -97,6 +97,7 @@ public:
     union {
         bool m_boolValue;
         float m_floatValue;
+        long m_longValue;
         int m_intValues[4];
         qint64 m_int64Value;
     };
@@ -120,8 +121,8 @@ public:
                                  const QString &value);
     ElementCommand &queueCommand(const QString &elementPath, CommandType commandType,
                                  bool value);
-    ElementCommand &queueCommand(const QString &elementPath, CommandType commandType,
-                                 float value);
+    ElementCommand &queueCommand(const QString &elementPath, CommandType commandType, float value);
+    ElementCommand &queueCommand(const QString &elementPath, CommandType commandType, long value);
     ElementCommand &queueCommand(const QString &elementPath, CommandType commandType,
                                  int value0, int value1 = 0,
                                  int value2 = 0, int value3 = 0);

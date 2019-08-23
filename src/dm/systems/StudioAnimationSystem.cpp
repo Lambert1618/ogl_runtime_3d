@@ -108,13 +108,13 @@ inline bool ApplyIfAnimationMatches(TAnimationFloatPair inAnimationFloatPair,
 void CStudioAnimationSystem::OverrideChannelIfAnimated(Qt3DSDMSlideHandle inSlide,
                                                        Qt3DSDMInstanceHandle inInstance,
                                                        Qt3DSDMPropertyHandle inProperty,
-                                                       size_t inIndex, float inSeconds,
+                                                       size_t inIndex, long time,
                                                        bool &ioAnimated, SValue &outValue) const
 {
     Qt3DSDMAnimationHandle theAnimation =
         m_AnimationCore->GetAnimation(inSlide, inInstance, inProperty, inIndex);
     if (theAnimation.Valid() && m_AnimationCore->GetKeyframeCount(theAnimation)) {
-        float theValue = m_AnimationCore->EvaluateAnimation(theAnimation, inSeconds);
+        float theValue = m_AnimationCore->EvaluateAnimation(theAnimation, time);
         SetAnimationValue(theValue, inIndex, outValue);
         ioAnimated |= true;
     }
@@ -140,12 +140,12 @@ bool CStudioAnimationSystem::GetAnimatedInstancePropertyValue(Qt3DSDMSlideHandle
         size_t numChannels = getVariantAnimatableArity(outValue);
         if (numChannels > 0) {
             TGraphSlidePair theGraphSlidePair = m_SlideGraphCore->GetAssociatedGraph(inInstance);
-            float theSeconds = m_SlideCore->GetSlideTime(
+            long slideTime = m_SlideCore->GetSlideTime(
                 m_SlideGraphCore->GetGraphActiveSlide(theGraphSlidePair.first));
 
             do_times(numChannels, std::bind(&CStudioAnimationSystem::OverrideChannelIfAnimated,
                                             this, inSlide, inInstance, inProperty,
-                                            std::placeholders::_1, theSeconds,
+                                            std::placeholders::_1, slideTime,
                                             std::ref(animated), std::ref(outValue)));
         }
 
@@ -156,14 +156,13 @@ bool CStudioAnimationSystem::GetAnimatedInstancePropertyValue(Qt3DSDMSlideHandle
     return retval;
 }
 
-bool KeyframeNear(const TKeyframe &inKeyframe, float inSeconds)
+bool KeyframeNear(const TKeyframe &keyframe, long time)
 {
-    return fabs(getKeyframeTime(inKeyframe) - inSeconds) < .01f;
+    return labs(getKeyframeTime(keyframe) - time) < 10;
 }
 
 Qt3DSDMKeyframeHandle CStudioAnimationSystem::CreateKeyframeExplicit(
-                                Qt3DSDMAnimationHandle inAnimation, float inValue, float inSeconds,
-                                TKeyframe keyframeData)
+        Qt3DSDMAnimationHandle inAnimation, float inValue, long time, TKeyframe keyframeData)
 {
     TKeyframeHandleList theKeyframes;
     m_AnimationCore->GetKeyframes(inAnimation, theKeyframes);
@@ -172,29 +171,30 @@ Qt3DSDMKeyframeHandle CStudioAnimationSystem::CreateKeyframeExplicit(
 
    TKeyframeHandleList::iterator theFind =
            std::find_if(theKeyframes.begin(), theKeyframes.end(),
-                        [theConverter, inSeconds](const Qt3DSDMKeyframeHandle &handle)
-   { return KeyframeNear(theConverter(handle), inSeconds); });
+                        [theConverter, time](const Qt3DSDMKeyframeHandle &handle)
+   { return KeyframeNear(theConverter(handle), time); });
 
     if (keyframeData.getType()) { // not empty (paste keyframe case)
         // offset control points time for bezier keyframes
-        offsetBezier(keyframeData, inSeconds - getKeyframeTime(keyframeData));
+        offsetBezier(keyframeData, time - getKeyframeTime(keyframeData));
 
-        keyframeData = setKeyframeTime(keyframeData, inSeconds);
+        keyframeData = setKeyframeTime(keyframeData, time);
     } else { // empty (insert new keyframe/change value case
         EAnimationType animType = m_AnimationCore->GetAnimationInfo(inAnimation).m_AnimationType;
         switch (animType) {
         case EAnimationTypeLinear:
-            keyframeData = SLinearKeyframe(inSeconds, inValue);
+            keyframeData = SLinearKeyframe(time, inValue);
             break;
 
         case EAnimationTypeEaseInOut: {
             float easeIn = m_SmoothInterpolation ? 100.f : 0.f;
             float easeOut = m_SmoothInterpolation ? 100.f : 0.f;
-            keyframeData = SEaseInEaseOutKeyframe(inSeconds, inValue, easeIn, easeOut);
+            keyframeData = SEaseInEaseOutKeyframe(time, inValue, easeIn, easeOut);
         } break;
 
         case EAnimationTypeBezier: {
-            float timeIn, valueIn, timeOut, valueOut;
+            long timeIn, timeOut;
+            float valueIn, valueOut;
             // if keyframe exists, offset control points values
             if (theFind != theKeyframes.end()) {
                 TKeyframe kfData = m_AnimationCore->GetKeyframeData(*theFind);
@@ -205,10 +205,10 @@ Qt3DSDMKeyframeHandle CStudioAnimationSystem::CreateKeyframeExplicit(
             } else {
                 valueIn = inValue;
                 valueOut = inValue;
-                timeIn = inSeconds - .5f;
-                timeOut = inSeconds + .5f;
+                timeIn = time - 500;
+                timeOut = time + 500;
             }
-            keyframeData = SBezierKeyframe(inSeconds, inValue, timeIn, valueIn, timeOut, valueOut);
+            keyframeData = SBezierKeyframe(time, inValue, timeIn, valueIn, timeOut, valueOut);
         } break;
 
         default:
@@ -227,14 +227,13 @@ Qt3DSDMKeyframeHandle CStudioAnimationSystem::CreateKeyframeExplicit(
     return keyframeHandle;
 }
 
-Qt3DSDMKeyframeHandle CStudioAnimationSystem::CreateKeyframe(Qt3DSDMAnimationHandle inAnimation,
-                                    const SValue &inValue, float inSeconds,
-                                    TAnimationCorePtr inAnimationCore)
+Qt3DSDMKeyframeHandle CStudioAnimationSystem::CreateKeyframe(Qt3DSDMAnimationHandle animation,
+                                                             const SValue &ivalue, long time,
+                                                             TAnimationCorePtr animCore)
 {
-    SAnimationInfo theInfo(inAnimationCore->GetAnimationInfo(inAnimation));
+    SAnimationInfo theInfo(animCore->GetAnimationInfo(animation));
 
-    return CreateKeyframeExplicit(inAnimation, GetAnimationValue(theInfo.m_Index, inValue),
-                                  inSeconds);
+    return CreateKeyframeExplicit(animation, GetAnimationValue(theInfo.m_Index, ivalue), time);
 }
 
 void MaybeAddAnimation(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
@@ -286,15 +285,16 @@ void CreateAnimationAndAdd(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inI
         inSlide, inInstance, inProperty, inIndex, animType, false));
 }
 
-bool AnimationValueDiffers(Qt3DSDMAnimationHandle inAnimation, const SValue &inValue,
-                           float inSeconds, TAnimationCorePtr inAnimationCore)
+bool AnimationValueDiffers(Qt3DSDMAnimationHandle animation, const SValue &value,
+                           long time, TAnimationCorePtr animCore)
 {
-    SAnimationInfo theInfo(inAnimationCore->GetAnimationInfo(inAnimation));
-    if (inAnimationCore->GetKeyframeCount(inAnimation) == 0)
-        return true; // currently there is no keyframe, so return true
-    float theValue = GetAnimationValue(theInfo.m_Index, inValue);
-    float theAnimatedValue = inAnimationCore->EvaluateAnimation(inAnimation, inSeconds);
-    return fabs(theValue - theAnimatedValue) > .001;
+    SAnimationInfo theInfo(animCore->GetAnimationInfo(animation));
+    if (animCore->GetKeyframeCount(animation) == 0)
+        return true;
+
+    float theValue = GetAnimationValue(theInfo.m_Index, value);
+    float theAnimatedValue = animCore->EvaluateAnimation(animation, time);
+    return fabs(theValue - theAnimatedValue) > .001f;
 }
 
 bool AnimationExistsInPresentAnimations(const TAnimationFloatPair &inAnimation,
@@ -310,7 +310,7 @@ void CStudioAnimationSystem::DoKeyframeProperty(Qt3DSDMSlideHandle inSlide,
                         const SValue &inValue, bool inDoDiffValue)
 {
     TGraphSlidePair theGraphSlidePair = m_SlideGraphCore->GetAssociatedGraph(inInstance);
-    float inTimeInSecs = m_SlideCore->GetSlideTime(m_SlideGraphCore
+    long slideTime = m_SlideCore->GetSlideTime(m_SlideGraphCore
                                                    ->GetGraphActiveSlide(theGraphSlidePair.first));
 
     size_t arity = getVariantAnimatableArity(inValue);
@@ -326,11 +326,11 @@ void CStudioAnimationSystem::DoKeyframeProperty(Qt3DSDMSlideHandle inSlide,
     if (!inDoDiffValue
         || find_if(thePresentAnimations.begin(), thePresentAnimations.end(),
                    std::bind(AnimationValueDiffers,
-                             std::placeholders::_1, inValue, inTimeInSecs, m_AnimationCore))
+                             std::placeholders::_1, inValue, slideTime, m_AnimationCore))
             != thePresentAnimations.end()) {
         do_all(thePresentAnimations,
                std::bind(&CStudioAnimationSystem::CreateKeyframe, this, std::placeholders::_1,
-                         std::cref(inValue), inTimeInSecs, m_AnimationCore));
+                         std::cref(inValue), slideTime, m_AnimationCore));
         erase_if(m_AnimationFloatPairs, std::bind(AnimationExistsInPresentAnimations,
                                                   std::placeholders::_1,
                                                   std::ref(thePresentAnimations)));
@@ -521,35 +521,34 @@ void CStudioAnimationSystem::KeyframeProperty(Qt3DSDMInstanceHandle inInstance,
         DoKeyframeProperty(theApplicableSlide, inInstance, inProperty, theValue.toOldSkool(),
                            inDoDiffValue);
 }
-void CStudioAnimationSystem::SetOrCreateKeyframe(Qt3DSDMInstanceHandle inInstance,
-                                                 Qt3DSDMPropertyHandle inProperty,
-                                                 float inTimeInSeconds,
-                                                 SGetOrSetKeyframeInfo *inKeyframeInfo,
-                                                 size_t inNumInfos)
+void CStudioAnimationSystem::SetOrCreateKeyframe(Qt3DSDMInstanceHandle instance,
+                                                 Qt3DSDMPropertyHandle property, long time,
+                                                 SGetOrSetKeyframeInfo *keyframeInfo,
+                                                 size_t numInfos)
 {
-    qt3dsdm::DataModelDataType::Value thePropertyType = m_PropertySystem->GetDataType(inProperty);
+    qt3dsdm::DataModelDataType::Value thePropertyType = m_PropertySystem->GetDataType(property);
     Qt3DSDMSlideHandle theApplicableSlide;
     size_t arity = getDatatypeAnimatableArity(thePropertyType);
     if (arity) {
-        theApplicableSlide = m_SlideSystem->GetApplicableSlide(inInstance, inProperty);
+        theApplicableSlide = m_SlideSystem->GetApplicableSlide(instance, property);
         if (theApplicableSlide.Valid()) {
             TAnimationHandleList thePresentAnimations;
-            GetPresentAnimations(theApplicableSlide, inInstance, inProperty,
+            GetPresentAnimations(theApplicableSlide, instance, property,
                                  std::cref(m_AnimationFloatPairs), m_AnimationCore,
                                  thePresentAnimations);
-            size_t numIterations = std::min(inNumInfos, arity);
+            size_t numIterations = std::min(numInfos, arity);
             if (thePresentAnimations.empty()) {
-                qt3dsdm::EAnimationType animType = inKeyframeInfo[0].m_keyframeData.getType();
+                qt3dsdm::EAnimationType animType = keyframeInfo[0].m_keyframeData.getType();
                 for (size_t idx = 0, end = numIterations; idx < end; ++idx) {
-                    CreateAnimationAndAdd(theApplicableSlide, inInstance, inProperty, animType, idx,
+                    CreateAnimationAndAdd(theApplicableSlide, instance, property, animType, idx,
                                           m_AnimationCore, thePresentAnimations);
                 }
             }
             for (size_t idx = 0, end = numIterations; idx < end; ++idx) {
                 CreateKeyframeExplicit(thePresentAnimations[idx],
-                                       getKeyframeValue(inKeyframeInfo[idx].m_keyframeData),
-                                       inTimeInSeconds, inKeyframeInfo[idx].m_keyframeData);
-                if (inKeyframeInfo[idx].m_AnimationTrackIsDynamic)
+                                       getKeyframeValue(keyframeInfo[idx].m_keyframeData),
+                                       time, keyframeInfo[idx].m_keyframeData);
+                if (keyframeInfo[idx].m_AnimationTrackIsDynamic)
                     m_AnimationCore->SetFirstKeyframeDynamic(thePresentAnimations[idx], true);
             }
             erase_if(m_AnimationFloatPairs, std::bind(AnimationExistsInPresentAnimations,

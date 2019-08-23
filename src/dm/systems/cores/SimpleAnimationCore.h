@@ -157,7 +157,7 @@ public: // Use
     bool IsArtistEdited(Qt3DSDMAnimationHandle inAnimation) const override;
 
     // Animation Evaluation.
-    float EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation, float inSeconds) const override;
+    float EvaluateAnimation(Qt3DSDMAnimationHandle animation, long time) const override;
 
     bool KeyframeValid(Qt3DSDMKeyframeHandle inKeyframe) const override;
     bool AnimationValid(Qt3DSDMAnimationHandle inAnimation) const override;

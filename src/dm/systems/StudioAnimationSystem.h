@@ -92,12 +92,12 @@ public:
     void Deanimate(Qt3DSDMInstanceHandle inInstance, Qt3DSDMPropertyHandle inProperty) override;
     void KeyframeProperty(Qt3DSDMInstanceHandle inInstance, Qt3DSDMPropertyHandle inProperty,
                                   bool inDoDiffValue) override;
-    void SetOrCreateKeyframe(Qt3DSDMInstanceHandle inInstance,
-                                     Qt3DSDMPropertyHandle inProperty, float inTimeInSeconds,
-                                     SGetOrSetKeyframeInfo *inKeyframeInfo, size_t inNumInfos) override;
+    void SetOrCreateKeyframe(Qt3DSDMInstanceHandle instance, Qt3DSDMPropertyHandle property,
+                             long time, SGetOrSetKeyframeInfo *keyframeInfo,
+                             size_t numInfos) override;
     Qt3DSDMAnimationHandle GetControllingAnimation(Qt3DSDMInstanceHandle inInstance,
-                                                          Qt3DSDMPropertyHandle inProperty,
-                                                          size_t inIndex) const override;
+                                                   Qt3DSDMPropertyHandle inProperty,
+                                                   size_t inIndex) const override;
     bool IsPropertyAnimatable(Qt3DSDMInstanceHandle inInstance,
                                       Qt3DSDMPropertyHandle inProperty) const override;
     bool IsPropertyAnimated(Qt3DSDMInstanceHandle inInstance,
@@ -127,16 +127,16 @@ private:
 
     void OverrideChannelIfAnimated(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
                                    Qt3DSDMPropertyHandle inProperty, size_t inIndex,
-                                   float inSeconds, bool &ioAnimated, SValue &outValue) const;
+                                   long time, bool &ioAnimated, SValue &outValue) const;
 
     void DoKeyframeProperty(Qt3DSDMSlideHandle inSlide, Qt3DSDMInstanceHandle inInstance,
                             Qt3DSDMPropertyHandle inProperty, const SValue &inValue,
                             bool inDoDiffValue);
 
-    Qt3DSDMKeyframeHandle CreateKeyframe(Qt3DSDMAnimationHandle inAnimation, const SValue &inValue,
-                                         float inSeconds, TAnimationCorePtr inAnimationCore);
+    Qt3DSDMKeyframeHandle CreateKeyframe(Qt3DSDMAnimationHandle animation, const SValue &ivalue,
+                                         long time, TAnimationCorePtr animCore);
     Qt3DSDMKeyframeHandle CreateKeyframeExplicit(Qt3DSDMAnimationHandle inAnimation, float inValue,
-                                                 float inSeconds, TKeyframe kfData = {});
+                                                 long time, TKeyframe kfData = {});
 
 };
 }

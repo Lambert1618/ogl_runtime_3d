@@ -95,15 +95,15 @@ void CSlideCoreProducer::GetSlides(TSlideHandleList &outSlides) const
     m_Data->GetSlides(outSlides);
 }
 
-float CSlideCoreProducer::GetSlideTime(Qt3DSDMSlideHandle inSlide) const
+long CSlideCoreProducer::GetSlideTime(Qt3DSDMSlideHandle inSlide) const
 {
     return m_Data->GetSlideTime(inSlide);
 }
 
-void CSlideCoreProducer::SetSlideTime(Qt3DSDMSlideHandle inSlide, float inNewTime)
+void CSlideCoreProducer::SetSlideTime(Qt3DSDMSlideHandle inSlide, long inNewTime)
 {
     SSlide *theSlide = CSimpleSlideCore::GetSlideNF(inSlide, m_Data->m_Objects);
-    float oldTime = theSlide->m_Time;
+    long oldTime = theSlide->m_Time;
     theSlide->m_Time = inNewTime;
     if (m_Consumer) {
         m_Consumer->OnTransaction(std::shared_ptr<ITransaction>(CREATE_GENERIC_TRANSACTION(

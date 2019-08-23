@@ -34,12 +34,11 @@
 
 namespace qt3dsdm {
 /**
- *	Some properties point to instances which act like extended properties.
- *	An example of this would be the images on materials.  If a material has an
- *	image in one of its slots, that image should be duplicated upon property unlink
- *	and deleted upon property link.  It (and its animations) should be duplicated upon
- *	create slide and deleted upon slide destruction such that the concept that the image
- *	is really a property on the material stays sound.
+ * Some properties point to instances which act like extended properties. An example of this would
+ * be the images on materials. If a material has an image in one of its slots, that image should be
+ * duplicated upon property unlink and deleted upon property link. It (and its animations) should
+ * be duplicated upon create slide and deleted upon slide destruction such that the concept that
+ * the image is really a property on the material stays sound.
  */
 class IPropertyInstanceInfo
 {
@@ -47,15 +46,15 @@ public:
     virtual ~IPropertyInstanceInfo() {}
 
     /**
-     *	Return the instance that relates to this property
+     * Return the instance that relates to this property
      */
     virtual Qt3DSDMInstanceHandle GetInstanceForProperty(const SValue &inValue) = 0;
 
     /**
-     *	Duplicate this instance and whichever properties and animations you desire,
-     *	returning a new data model value that will be set on the newly created property.
-     *	Don't forget to associate the instance with a the dest slide.  I doubt things
-     *	will work correctly if you do not.
+     * Duplicate this instance and whichever properties and animations you desire,
+     * returning a new data model value that will be set on the newly created property.
+     * Don't forget to associate the instance with a the dest slide.  I doubt things
+     * will work correctly if you do not.
      */
     virtual SValue CreateInstanceForProperty(Qt3DSDMSlideHandle inSourceSlide,
                                              Qt3DSDMSlideHandle inDestSlide,
@@ -72,19 +71,19 @@ struct SInstanceSlideInformation
     Qt3DSDMSlideHandle m_MasterSlide;
     // The active slide of the component.
     Qt3DSDMSlideHandle m_ActiveSlide;
-    // The current milliseconds of the active slide on the component.
-    long m_ComponentMilliseconds;
+    // The current time of the active slide on the component.
+    long m_ComponentTime;
 
     SInstanceSlideInformation()
-        : m_ComponentMilliseconds(0)
+        : m_ComponentTime(0)
     {
     }
     SInstanceSlideInformation(Qt3DSDMSlideHandle inAssoc, Qt3DSDMSlideHandle inMaster,
-                              Qt3DSDMSlideHandle inActive, long inMilliseconds)
+                              Qt3DSDMSlideHandle inActive, long inTime)
         : m_AssociatedSlide(inAssoc)
         , m_MasterSlide(inMaster)
         , m_ActiveSlide(inActive)
-        , m_ComponentMilliseconds(inMilliseconds)
+        , m_ComponentTime(inTime)
     {
     }
 };
@@ -109,21 +108,16 @@ public:
     virtual void RearrangeSlide(Qt3DSDMSlideHandle inMaster, size_t inOldIndex,
                                 size_t inNewIndex) = 0;
     /**
-     *	Set the current component time.  This object will figure out the component from the slide.
+     * Set the current component time. This object will figure out the component from the slide.
      */
-    virtual void SetComponentSeconds(Qt3DSDMSlideHandle inSlide, float inSeconds) = 0;
-    /**
-     *	Return the current time of the component
-     */
-    virtual float GetComponentSeconds(Qt3DSDMSlideHandle inSlide) const = 0;
-    virtual long GetComponentSecondsLong(Qt3DSDMSlideHandle inSlide) const = 0;
-    virtual long GetComponentSecondsLong(Qt3DSDMInstanceHandle inInstance) const = 0;
+    virtual void SetComponentTime(Qt3DSDMSlideHandle slide, long time) = 0;
+    virtual long GetComponentTime(Qt3DSDMSlideHandle inSlide) const = 0;
 
     // The fastest way possible, get all of the slide information for this instance.
     virtual SInstanceSlideInformation
     GetInstanceSlideInformation(Qt3DSDMInstanceHandle inInstance) const = 0;
     /**
-     *	Slide count includes the master slide;
+     * Slide count includes the master slide;
      */
     virtual size_t GetSlideCount(Qt3DSDMSlideHandle inMaster) const = 0;
     /**
@@ -132,11 +126,11 @@ public:
      */
     virtual Qt3DSDMInstanceHandle GetSlideInstance(Qt3DSDMSlideHandle inSlide) const = 0;
     /**
-     *	Reverse lookup into the slide system so you can match slides to instances.
+     * Reverse lookup into the slide system so you can match slides to instances.
      */
     virtual Qt3DSDMSlideHandle GetSlideByInstance(Qt3DSDMInstanceHandle inInstance) const = 0;
     /**
-     *	Slide may be either a master slide
+     * Slide may be either a master slide
      */
     virtual void AssociateInstanceWithSlide(Qt3DSDMSlideHandle inSlide,
                                             Qt3DSDMInstanceHandle inInstance) = 0;
@@ -188,9 +182,9 @@ public:
                                                const SValue &inValue) = 0;
 
     /**
-     *	Let this object know that this property will sometimes reference another property
-     *	and give an outside entity the chance to create new objects and properties when
-     *	the property is unlinked and linked.
+     * Let this object know that this property will sometimes reference another property
+     * and give an outside entity the chance to create new objects and properties when
+     * the property is unlinked and linked.
      */
     virtual void RegisterPropertyInstance(Qt3DSDMPropertyHandle inPropertyHandle,
                                           TPropertyInstanceInfoPtr inPropertyInfo) = 0;

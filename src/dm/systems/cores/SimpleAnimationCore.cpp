@@ -337,17 +337,6 @@ bool CSimpleAnimationCore::IsArtistEdited(Qt3DSDMAnimationHandle inAnimation) co
     return theItem->m_ArtistEdited;
 }
 
-inline bool KeyframeTimeLessThan(int inKeyframe, float inSeconds, const THandleObjectMap &inObjects)
-{
-    const SKeyframe *theKeyframe = CSimpleAnimationCore::GetKeyframeNF(inKeyframe, inObjects);
-    return getKeyframeTime(theKeyframe->m_Keyframe) < inSeconds;
-}
-
-inline bool KeyframeValueTimeLessThan(const TKeyframe &inLeft, const TKeyframe &inRight)
-{
-    return getKeyframeTime(inLeft) < getKeyframeTime(inRight);
-}
-
 TKeyframe IntToKeyframe(int inKeyframe, const THandleObjectMap &inObjects)
 {
     const SKeyframe *theKeyframe = CSimpleAnimationCore::GetKeyframeNF(inKeyframe, inObjects);
@@ -360,38 +349,36 @@ inline float KeyframeValue(int inKeyframe, const THandleObjectMap &inObjects)
     return getKeyframeValue(theKeyframe->m_Keyframe);
 }
 
-inline float EvaluateLinear(float inS1, float inS2, float inV1, float inV2, float inSeconds)
+inline float EvaluateLinear(long inS1, long inS2, float inV1, float inV2, long time)
 {
-    float amount = (inSeconds - inS1) / (inS2 - inS1);
+    float amount = float(time - inS1) / (inS2 - inS1);
     return inV1 + amount * (inV2 - inV1);
 }
 
-inline float EvaluateLinearKeyframe(SLinearKeyframe &inK1, SLinearKeyframe &inK2, float inSeconds)
+inline float EvaluateLinearKeyframe(SLinearKeyframe &inK1, SLinearKeyframe &inK2, long time)
 {
-    return EvaluateLinear(inK1.m_KeyframeSeconds, inK2.m_KeyframeSeconds, inK1.m_KeyframeValue,
-                          inK2.m_KeyframeValue, inSeconds);
+    return EvaluateLinear(inK1.m_time, inK2.m_time, inK1.m_value, inK2.m_value, time);
 }
 
-inline float DoBezierEvaluation(float inSeconds, const SBezierKeyframe &inK1,
+inline float DoBezierEvaluation(long time, const SBezierKeyframe &inK1,
                                 const SBezierKeyframe &inK2)
 {
     return Q3DStudio::EvaluateBezierKeyframe(
-        inSeconds, inK1.m_KeyframeSeconds, inK1.m_KeyframeValue, inK1.m_OutTangentTime,
-        inK1.m_OutTangentValue, inK2.m_InTangentTime, inK2.m_InTangentValue, inK2.m_KeyframeSeconds,
-        inK2.m_KeyframeValue);
+        time, inK1.m_time, inK1.m_value, inK1.m_OutTangentTime,
+        inK1.m_OutTangentValue, inK2.m_InTangentTime, inK2.m_InTangentValue, inK2.m_time,
+        inK2.m_value);
 }
 
 // Animation Evaluation.
-float CSimpleAnimationCore::EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation,
-                                              float inSeconds) const
+float CSimpleAnimationCore::EvaluateAnimation(Qt3DSDMAnimationHandle animation, long time) const
 {
-    const SAnimationTrack *theItem = GetAnimationNF(inAnimation, m_Objects);
+    const SAnimationTrack *theItem = GetAnimationNF(animation, m_Objects);
     if (theItem->m_Keyframes.empty())
         return 0.0f;
     CheckKeyframesSorted(theItem, m_Objects);
     // Default to linear for now.
     SLinearKeyframe theKeyframe;
-    theKeyframe.m_KeyframeSeconds = inSeconds;
+    theKeyframe.m_time = time;
     TKeyframe theSearchKey(theKeyframe);
     function<TKeyframe(int)> theIntToKeyframe(
         std::bind(IntToKeyframe, std::placeholders::_1, std::ref(m_Objects)));
@@ -419,20 +406,20 @@ float CSimpleAnimationCore::EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation
     case EAnimationTypeLinear: {
         SLinearKeyframe k1 = get<SLinearKeyframe>(theIntToKeyframe(theStart));
         SLinearKeyframe k2 = get<SLinearKeyframe>(theIntToKeyframe(theFinish));
-        return EvaluateLinearKeyframe(k1, k2, inSeconds);
+        return EvaluateLinearKeyframe(k1, k2, time);
     }
     case EAnimationTypeBezier: {
         SBezierKeyframe k1 = get<SBezierKeyframe>(theIntToKeyframe(theStart));
         SBezierKeyframe k2 = get<SBezierKeyframe>(theIntToKeyframe(theFinish));
-        return DoBezierEvaluation(inSeconds, k1, k2);
+        return DoBezierEvaluation(time, k1, k2);
     }
     case EAnimationTypeEaseInOut: {
         SEaseInEaseOutKeyframe k1 = get<SEaseInEaseOutKeyframe>(theIntToKeyframe(theStart));
         SEaseInEaseOutKeyframe k2 = get<SEaseInEaseOutKeyframe>(theIntToKeyframe(theFinish));
 
         return DoBezierEvaluation(
-            inSeconds, CreateBezierKeyframeFromEaseInOut(-1, k1, k2.m_KeyframeSeconds),
-            CreateBezierKeyframeFromEaseInOut(k1.m_KeyframeSeconds, k2, -1));
+            time, CreateBezierKeyframeFromEaseInOut(-1, k1, k2.m_time),
+            CreateBezierKeyframeFromEaseInOut(k1.m_time, k2, -1));
     }
     }
 }

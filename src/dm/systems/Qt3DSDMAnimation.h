@@ -37,26 +37,26 @@ namespace qt3dsdm {
 
 struct SLinearKeyframe
 {
-    float m_KeyframeSeconds;
-    float m_KeyframeValue;
+    long m_time; // keyframe time in milliseconds
+    float m_value;
 
     SLinearKeyframe() = default;
-    SLinearKeyframe(float seconds, float value)
-    : m_KeyframeSeconds(seconds)
-    , m_KeyframeValue(value) {}
+    SLinearKeyframe(long time, float value)
+    : m_time(time)
+    , m_value(value) {}
 };
 
 struct SBezierKeyframe : public SLinearKeyframe
 {
-    float m_InTangentTime; // time
-    float m_InTangentValue; // value offset
-    float m_OutTangentTime; // time offset in seconds
-    float m_OutTangentValue; // value offset
+    long m_InTangentTime;
+    float m_InTangentValue;
+    long m_OutTangentTime;
+    float m_OutTangentValue;
 
     SBezierKeyframe() = default;
-    SBezierKeyframe(float seconds, float value, float tangentInTime, float tangentInValue,
-                    float tangentOutTime, float tangentOutValue)
-    : SLinearKeyframe(seconds, value)
+    SBezierKeyframe(long time, float value, long tangentInTime, float tangentInValue,
+                    long tangentOutTime, float tangentOutValue)
+    : SLinearKeyframe(time, value)
     , m_InTangentTime(tangentInTime)
     , m_InTangentValue(tangentInValue)
     , m_OutTangentTime(tangentOutTime)
@@ -78,8 +78,8 @@ struct SEaseInEaseOutKeyframe : public SLinearKeyframe
     float m_EaseOut;
 
     SEaseInEaseOutKeyframe() = default;
-    SEaseInEaseOutKeyframe(float seconds, float value, float easeIn, float easeOut)
-    : SLinearKeyframe(seconds, value)
+    SEaseInEaseOutKeyframe(long time, float value, float easeIn, float easeOut)
+    : SLinearKeyframe(time, value)
     , m_EaseIn(easeIn)
     , m_EaseOut(easeOut) {}
 };
@@ -289,7 +289,7 @@ public:
     virtual bool IsArtistEdited(Qt3DSDMAnimationHandle inAnimation) const = 0;
 
     // Animation Evaluation.
-    virtual float EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation, float inSeconds) const = 0;
+    virtual float EvaluateAnimation(Qt3DSDMAnimationHandle animation, long time) const = 0;
 
     virtual bool KeyframeValid(Qt3DSDMKeyframeHandle inKeyframe) const = 0;
     virtual bool AnimationValid(Qt3DSDMAnimationHandle inAnimation) const = 0;
@@ -355,9 +355,9 @@ public:
      *time.
      *  If ease in or ease out are unset then the keyframe gets the default ease in or out.
      */
-    virtual void SetOrCreateKeyframe(Qt3DSDMInstanceHandle inInstance,
-                                     Qt3DSDMPropertyHandle inProperty, float inTimeInSeconds,
-                                     SGetOrSetKeyframeInfo *inKeyframeInfo, size_t inNumInfos) = 0;
+    virtual void SetOrCreateKeyframe(Qt3DSDMInstanceHandle instance,
+                                     Qt3DSDMPropertyHandle property, long time,
+                                     SGetOrSetKeyframeInfo *keyframeInfo, size_t numInfos) = 0;
     /**
      *	Return the animation that is currently controlling this property.  This function will return
      *	an invalid handle value if there is currently no animation controlling this property.
@@ -426,11 +426,11 @@ inline SAnimationInfo CreateAnimationInfo(Qt3DSDMSlideHandle inSlide,
 
 struct KeyframeValueGetter
 {
-    float operator()(const SLinearKeyframe &inKeyframe) const { return inKeyframe.m_KeyframeValue; }
-    float operator()(const SBezierKeyframe &inKeyframe) const { return inKeyframe.m_KeyframeValue; }
+    float operator()(const SLinearKeyframe &inKeyframe) const { return inKeyframe.m_value; }
+    float operator()(const SBezierKeyframe &inKeyframe) const { return inKeyframe.m_value; }
     float operator()(const SEaseInEaseOutKeyframe &inKeyframe) const
     {
-        return inKeyframe.m_KeyframeValue;
+        return inKeyframe.m_value;
     }
     float operator()()
     {
@@ -447,20 +447,20 @@ inline float getKeyframeValue(const TKeyframe &inKeyframe)
 struct KeyframeTimeGetter
 {
     template <typename TKeyframeType>
-    float operator()(const TKeyframeType &inValue) const
+    long operator()(const TKeyframeType &inValue) const
     {
-        return inValue.m_KeyframeSeconds;
+        return inValue.m_time;
     }
-    float operator()()
+    long operator()()
     {
         QT3DS_ASSERT(false);
-        return 0.0f;
+        return 0;
     }
 };
 
-inline float getKeyframeTime(const TKeyframe &inValue)
+inline long getKeyframeTime(const TKeyframe &inValue)
 {
-    return inValue.visit<float>(KeyframeTimeGetter());
+    return inValue.visit<long>(KeyframeTimeGetter());
 }
 
 struct AnimArityGetter
@@ -602,22 +602,21 @@ inline float GetAnimationValue(size_t inIndex, const SValue &ioValue)
 
 struct KeyframeTimeSetter
 {
-    float m_Seconds;
+    long m_time;
 
     TKeyframe operator()(const SLinearKeyframe &inValue) const
     {
-        return SLinearKeyframe(m_Seconds, inValue.m_KeyframeValue);
+        return SLinearKeyframe(m_time, inValue.m_value);
     }
     TKeyframe operator()(const SBezierKeyframe &inValue) const
     {
-        return SBezierKeyframe(m_Seconds, inValue.m_KeyframeValue, inValue.m_InTangentTime,
+        return SBezierKeyframe(m_time, inValue.m_value, inValue.m_InTangentTime,
                                inValue.m_InTangentValue, inValue.m_OutTangentTime,
                                inValue.m_OutTangentValue);
     }
     TKeyframe operator()(const SEaseInEaseOutKeyframe &inValue) const
     {
-        return SEaseInEaseOutKeyframe(m_Seconds, inValue.m_KeyframeValue, inValue.m_EaseIn,
-                                      inValue.m_EaseOut);
+        return SEaseInEaseOutKeyframe(m_time, inValue.m_value, inValue.m_EaseIn, inValue.m_EaseOut);
     }
     TKeyframe operator()()
     {
@@ -626,28 +625,28 @@ struct KeyframeTimeSetter
     }
 };
 
-inline TKeyframe setKeyframeTime(const TKeyframe &inKeyframe, float inSeconds)
+inline TKeyframe setKeyframeTime(const TKeyframe &keyframe, long time)
 {
-    return inKeyframe.visit<TKeyframe>(KeyframeTimeSetter{inSeconds});
+    return keyframe.visit<TKeyframe>(KeyframeTimeSetter{time});
 }
 
 struct KeyframeValueSetter
 {
-    float m_Value;
+    float m_value;
 
     TKeyframe operator()(const SLinearKeyframe &inValue) const
     {
-        return SLinearKeyframe(inValue.m_KeyframeSeconds, m_Value);
+        return SLinearKeyframe(inValue.m_time, m_value);
     }
     TKeyframe operator()(const SBezierKeyframe &inValue) const
     {
-        return SBezierKeyframe(inValue.m_KeyframeSeconds, m_Value, inValue.m_InTangentTime,
+        return SBezierKeyframe(inValue.m_time, m_value, inValue.m_InTangentTime,
                                inValue.m_InTangentValue, inValue.m_OutTangentTime,
                                inValue.m_OutTangentValue);
     }
     TKeyframe operator()(const SEaseInEaseOutKeyframe &inValue) const
     {
-        return SEaseInEaseOutKeyframe(inValue.m_KeyframeSeconds, m_Value, inValue.m_EaseIn,
+        return SEaseInEaseOutKeyframe(inValue.m_time, m_value, inValue.m_EaseIn,
                                       inValue.m_EaseOut);
     }
     TKeyframe operator()()
@@ -662,25 +661,26 @@ inline TKeyframe setKeyframeValue(const TKeyframe &inKeyframe, float inValue)
     return inKeyframe.visit<TKeyframe>(KeyframeValueSetter{inValue});
 }
 
-inline SBezierKeyframe CreateBezierKeyframeFromEaseInOut(float prevTime,
-                                                    SEaseInEaseOutKeyframe keyframe, float nextTime)
+inline SBezierKeyframe CreateBezierKeyframeFromEaseInOut(long prevTime,
+                                                         SEaseInEaseOutKeyframe keyframe,
+                                                         long nextTime)
 {
-    float kfValue = keyframe.m_KeyframeValue;
-    float kfTime = keyframe.m_KeyframeSeconds; // seconds
-    float timeIn = kfTime;
+    float kfValue = keyframe.m_value;
+    long kfTime = keyframe.m_time;
+    long timeIn = kfTime;
     float valueIn = kfValue;
-    float timeOut = kfTime;
+    long timeOut = kfTime;
     float valueOut = kfValue;
 
      // at 100 ease, the control point will be midway between the 2 keyframes
     float maxEasePerc = .5f;
 
-    if (prevTime != -1.f) {
+    if (prevTime != -1) {
         float easeInPerc = qBound(0.f, keyframe.m_EaseIn / 100.f, 1.f) * maxEasePerc;
         timeIn = prevTime + (kfTime - prevTime) * (1.f - easeInPerc);
     }
 
-    if (nextTime != -1.f) {
+    if (nextTime != -1) {
         float easeOutPerc = qBound(0.f, keyframe.m_EaseOut / 100.f, 1.f) * maxEasePerc;
         timeOut = kfTime + (nextTime - kfTime) * easeOutPerc;
     }
@@ -747,35 +747,36 @@ inline TKeyframe setEaseInOutValues(TKeyframe &inKeyframe, float easeIn, float e
 
 struct BezierValuesGetter
 {
-    QVector<float> operator()(const SLinearKeyframe &) const { return {}; }
-    QVector<float> operator()(const SEaseInEaseOutKeyframe &) const { return {}; }
-    QVector<float> operator()(const SBezierKeyframe &inValue) const
+    std::tuple<long, float, long, float> operator()(const SLinearKeyframe &) const
     {
-        return {inValue.m_InTangentTime, inValue.m_InTangentValue,
-                inValue.m_OutTangentTime, inValue.m_OutTangentValue};
+        return std::make_tuple(-1, 0, -1, 0);
     }
-    QVector<float> operator()()
+    std::tuple<long, float, long, float> operator()(const SEaseInEaseOutKeyframe &) const
+    {
+        return std::make_tuple(-1, 0, -1, 0);
+    }
+    std::tuple<long, float, long, float> operator()(const SBezierKeyframe &inValue) const
+    {
+        return std::make_tuple(inValue.m_InTangentTime, inValue.m_InTangentValue,
+                               inValue.m_OutTangentTime, inValue.m_OutTangentValue);
+    }
+    std::tuple<long, float, long, float> operator()()
     {
         QT3DS_ASSERT(false);
-        return {};
+        return std::make_tuple(-1, 0, -1, 0);
     }
 };
 
-inline void getBezierValues(const TKeyframe &keyframe, float &tangentInTime, float &tangentInValue,
-                            float &tangentOutTime, float &tangentOutValue)
+inline void getBezierValues(const TKeyframe &keyframe, long &tangentInTime, float &tangentInValue,
+                            long &tangentOutTime, float &tangentOutValue)
 {
-    const QVector<float> values = keyframe.visit<QVector<float>>(BezierValuesGetter());
-    if (!values.empty()) {
-        tangentInTime = values[0];
-        tangentInValue = values[1];
-        tangentOutTime = values[2];
-        tangentOutValue = values[3];
-    }
+    std::tie(tangentInTime, tangentInValue, tangentOutTime, tangentOutValue)
+            = keyframe.visit<std::tuple<long, float, long, float>>(BezierValuesGetter());
 }
 
 struct BezierOffsetter
 {
-    float dt; // time offset in seconds
+    long dt; // time offset in millis
 
     TKeyframe operator()(SLinearKeyframe &inValue) const { return inValue; }
     TKeyframe operator()(SEaseInEaseOutKeyframe &inValue) const { return inValue; }
@@ -793,8 +794,8 @@ struct BezierOffsetter
     }
 };
 
-// dt: time offset in seconds
-inline TKeyframe offsetBezier(TKeyframe &inKeyframe, float dt)
+// dt: time offset in milliseconds
+inline TKeyframe offsetBezier(TKeyframe &inKeyframe, long dt)
 {
     return inKeyframe.visit<TKeyframe>(BezierOffsetter{dt});
 }

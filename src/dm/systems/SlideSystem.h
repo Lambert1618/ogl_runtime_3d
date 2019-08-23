@@ -90,13 +90,9 @@ struct SSlideSystem : public ISlideSystem
     size_t GetSlideCount(Qt3DSDMSlideHandle inMaster) const override;
     void RearrangeSlide(Qt3DSDMSlideHandle inMaster, size_t inOldIndex, size_t inNewIndex) override;
 
-    void SetComponentSeconds(Qt3DSDMSlideHandle inSlide, float inSeconds) override;
-    float GetComponentSeconds(Qt3DSDMSlideHandle inSlide) const override;
-    long GetComponentSecondsLong(Qt3DSDMSlideHandle inSlide) const override;
-    // For any given instance, find the current seconds via backtracking to the graph, finding the
-    // active
-    // slide, and return.
-    long GetComponentSecondsLong(Qt3DSDMInstanceHandle inInstance) const override;
+    void SetComponentTime(Qt3DSDMSlideHandle slide, long time) override;
+    long GetComponentTime(Qt3DSDMSlideHandle inSlide) const override;
+
     virtual SInstanceSlideInformation
     GetInstanceSlideInformation(Qt3DSDMInstanceHandle inInstance) const override;
     /**

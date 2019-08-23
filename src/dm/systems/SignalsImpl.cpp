@@ -331,7 +331,6 @@ Q_SIGNALS:
     void instanceAssociated(Qt3DSDMSlideGraphHandle, Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle);
     void instanceDissociated(Qt3DSDMSlideGraphHandle, Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle);
     void graphActiveSlide(Qt3DSDMSlideGraphHandle, Qt3DSDMSlideHandle);
-    void graphSeconds(Qt3DSDMSlideGraphHandle, float);
 
 public:
     TSignalConnectionPtr ConnectGraphCreated(
@@ -361,11 +360,6 @@ public:
     {
         return CONNECT_SIGNAL_QT(&CSlideGraphCoreSignaller::graphActiveSlide);
     }
-    virtual TSignalConnectionPtr
-    ConnectGraphSeconds(const std::function<void(Qt3DSDMSlideGraphHandle, float)> &inCallback)
-    {
-        return CONNECT_SIGNAL_QT(&CSlideGraphCoreSignaller::graphSeconds);
-    }
 
     void SendGraphCreated(Qt3DSDMSlideGraphHandle inGraph, Qt3DSDMSlideHandle inSlide) override
     {
@@ -393,11 +387,6 @@ public:
     {
         CHECK_SIGNALS_ENABLED();
         Q_EMIT graphActiveSlide(inGraph, inSlide);
-    }
-    virtual void SendGraphSeconds(Qt3DSDMSlideGraphHandle inGraph, float inSeconds)
-    {
-        CHECK_SIGNALS_ENABLED();
-        Q_EMIT graphSeconds(inGraph, inSeconds);
     }
 };
 
@@ -696,7 +685,7 @@ Q_SIGNALS:
     void slideCreated(Qt3DSDMSlideHandle, int, Qt3DSDMSlideHandle);
     void slideDeleted(Qt3DSDMSlideHandle, int, Qt3DSDMSlideHandle);
     void slideRearranged(Qt3DSDMSlideHandle, int, int);
-    void componentSeconds(Qt3DSDMSlideHandle, float);
+    void componentTime(Qt3DSDMSlideHandle, long);
     void instanceAssociated(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle);
     void instanceDissociated(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle);
     void propertyLinked(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle, Qt3DSDMPropertyHandle);
@@ -735,9 +724,9 @@ public:
         return CONNECT_SIGNAL_QT(&CSlideSystemSignaller::slideRearranged);
     }
     virtual TSignalConnectionPtr
-    ConnectComponentSeconds(const std::function<void(Qt3DSDMSlideHandle, float)> &inCallback)
+    ConnectComponentTime(const std::function<void(Qt3DSDMSlideHandle, long)> &inCallback)
     {
-        return CONNECT_SIGNAL_QT(&CSlideSystemSignaller::componentSeconds);
+        return CONNECT_SIGNAL_QT(&CSlideSystemSignaller::componentTime);
     }
     TSignalConnectionPtr ConnectInstanceAssociated(
         const std::function<void(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle)> &inCallback) override
@@ -807,10 +796,10 @@ public:
         CHECK_SIGNALS_ENABLED();
         Q_EMIT slideRearranged(inMaster, inOldIndex, inNewIndex);
     }
-    virtual void SendComponentSeconds(Qt3DSDMSlideHandle inMaster, float inSeconds)
+    virtual void SendComponentTime(Qt3DSDMSlideHandle master, long time)
     {
         CHECK_SIGNALS_ENABLED();
-        Q_EMIT componentSeconds(inMaster, inSeconds);
+        Q_EMIT componentTime(master, time);
     }
     void SendInstanceAssociated(Qt3DSDMSlideHandle inMaster, Qt3DSDMInstanceHandle inInstance) override
     {
@@ -1050,8 +1039,8 @@ Q_SIGNALS:
     void slideCreated(Qt3DSDMSlideHandle);
     void slideDeleted(Qt3DSDMSlideHandle);
     void slideRearranged(Qt3DSDMSlideHandle, int, int);
-    void componentSeconds(Qt3DSDMSlideHandle);
-    void beginComponentSeconds(Qt3DSDMSlideHandle);
+    void componentTime(Qt3DSDMSlideHandle);
+    void beginComponentTime(Qt3DSDMSlideHandle);
     void propertyLinked(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle, Qt3DSDMPropertyHandle);
     void propertyUnlinked(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle, Qt3DSDMPropertyHandle);
     void activeSlide(Qt3DSDMSlideHandle, int, Qt3DSDMSlideHandle);
@@ -1129,14 +1118,14 @@ public:
         return CONNECT_SIGNAL_QT(&CStudioFullSystemSignaller::slideRearranged);
     }
     virtual TSignalConnectionPtr
-    ConnectBeginComponentSeconds(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) override
+    ConnectBeginComponentTime(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) override
     {
-        return CONNECT_SIGNAL_QT(&CStudioFullSystemSignaller::beginComponentSeconds);
+        return CONNECT_SIGNAL_QT(&CStudioFullSystemSignaller::beginComponentTime);
     }
     virtual TSignalConnectionPtr
-    ConnectComponentSeconds(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) override
+    ConnectComponentTime(const std::function<void(Qt3DSDMSlideHandle)> &inCallback) override
     {
-        return CONNECT_SIGNAL_QT(&CStudioFullSystemSignaller::componentSeconds);
+        return CONNECT_SIGNAL_QT(&CStudioFullSystemSignaller::componentTime);
     }
     TSignalConnectionPtr ConnectPropertyLinked(
         const std::function<void(Qt3DSDMSlideHandle, Qt3DSDMInstanceHandle, Qt3DSDMPropertyHandle)>
@@ -1351,15 +1340,15 @@ public:
         CHECK_SIGNALS_ENABLED();
         Q_EMIT slideRearranged(inMaster, inOldIndex, inNewIndex);
     }
-    void SendBeginComponentSeconds(Qt3DSDMSlideHandle inMaster) override
+    void SendBeginComponentTime(Qt3DSDMSlideHandle inMaster) override
     {
         CHECK_SIGNALS_ENABLED();
-        Q_EMIT beginComponentSeconds(inMaster);
+        Q_EMIT beginComponentTime(inMaster);
     }
-    void SendComponentSeconds(Qt3DSDMSlideHandle inMaster) override
+    void SendComponentTime(Qt3DSDMSlideHandle inMaster) override
     {
         CHECK_SIGNALS_ENABLED();
-        Q_EMIT componentSeconds(inMaster);
+        Q_EMIT componentTime(inMaster);
     }
     void SendPropertyLinked(Qt3DSDMSlideHandle inMaster, Qt3DSDMInstanceHandle inInstance,
                                     Qt3DSDMPropertyHandle inProperty) override

@@ -338,25 +338,24 @@ size_t CAnimationCoreProducer::GetKeyframeCount(Qt3DSDMAnimationHandle inAnimati
     return m_Data->GetKeyframeCount(inAnimation);
 }
 
-void CAnimationCoreProducer::OffsetAnimations(Qt3DSDMSlideHandle inSlide,
-                                              Qt3DSDMInstanceHandle inInstance,
-                                              long inMillisecondOffset)
+void CAnimationCoreProducer::OffsetAnimations(Qt3DSDMSlideHandle slide,
+                                              Qt3DSDMInstanceHandle instance,
+                                              long timeOffset)
 {
-    float dt = static_cast<float>(inMillisecondOffset) / 1000.f; // time offset in seconds
     for (THandleObjectMap::const_iterator iter = m_Data->m_Objects.begin(),
                                           end = m_Data->m_Objects.end();
          iter != end; ++iter) {
         SAnimationTrack *theTrack = static_cast<SAnimationTrack *>(iter->second.get());
-        if (theTrack->m_Slide == inSlide && theTrack->m_Instance == inInstance) {
+        if (theTrack->m_Slide == slide && theTrack->m_Instance == instance) {
             for (size_t keyframeIdx = 0, keyframeEnd = theTrack->m_Keyframes.size();
                  keyframeIdx < keyframeEnd; ++keyframeIdx) {
                 Qt3DSDMKeyframeHandle theKeyframeHandle(theTrack->m_Keyframes[keyframeIdx]);
                 TKeyframe kfData = m_Data->GetKeyframeData(theKeyframeHandle);
 
                 // offset control points for bezier keyframes
-                offsetBezier(kfData, dt);
+                offsetBezier(kfData, timeOffset);
 
-                kfData = setKeyframeTime(kfData, getKeyframeTime(kfData) + dt);
+                kfData = setKeyframeTime(kfData, getKeyframeTime(kfData) + timeOffset);
                 SetKeyframeData(theKeyframeHandle, kfData);
             }
         }
@@ -374,10 +373,9 @@ bool CAnimationCoreProducer::IsArtistEdited(Qt3DSDMAnimationHandle inAnimation) 
     return m_Data->IsArtistEdited(inAnimation);
 }
 // Animation Evaluation.
-float CAnimationCoreProducer::EvaluateAnimation(Qt3DSDMAnimationHandle inAnimation,
-                                                float inSeconds) const
+float CAnimationCoreProducer::EvaluateAnimation(Qt3DSDMAnimationHandle animation, long time) const
 {
-    return m_Data->EvaluateAnimation(inAnimation, inSeconds);
+    return m_Data->EvaluateAnimation(animation, time);
 }
 
 bool CAnimationCoreProducer::KeyframeValid(Qt3DSDMKeyframeHandle inKeyframe) const

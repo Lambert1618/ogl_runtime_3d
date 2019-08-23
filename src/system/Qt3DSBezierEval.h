@@ -140,8 +140,8 @@ double evaluateForT(double t, double p0, double p1, double p2, double p3)
            + p2 * 3.0 * it * std::pow(t, 2.0) + p3 * std::pow(t, 3.0);
 }
 
-inline float EvaluateBezierKeyframe(float inTime, float inTime1, float inValue1, float inC1Time,
-                                    float inC1Value, float inC2Time, float inC2Value, float inTime2,
+inline float EvaluateBezierKeyframe(long inTime, long inTime1, float inValue1, long inC1Time,
+                                    float inC1Value, long inC2Time, float inC2Value, long inTime2,
                                     float inValue2)
 {
     if (inTime == inTime1)

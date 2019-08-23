@@ -103,8 +103,8 @@ public:
     void DeleteSlide(Qt3DSDMSlideHandle inSlide, TInstanceHandleList &outInstances) override;
     void GetSlides(TSlideHandleList &outSlides) const override;
 
-    float GetSlideTime(Qt3DSDMSlideHandle inSlide) const override;
-    void SetSlideTime(Qt3DSDMSlideHandle inSlide, float inNewTime) override;
+    long GetSlideTime(Qt3DSDMSlideHandle inSlide) const override;
+    void SetSlideTime(Qt3DSDMSlideHandle inSlide, long inNewTime) override;
 
     void DeriveSlide(Qt3DSDMSlideHandle inSlide, Qt3DSDMSlideHandle inParent, int inIndex = -1) override;
     Qt3DSDMSlideHandle GetParentSlide(Qt3DSDMSlideHandle inSlide) const override;

@@ -427,29 +427,16 @@ void SSlideSystem::RearrangeSlide(Qt3DSDMSlideHandle inMaster, size_t inOldIndex
     GetSignalSender()->SendSlideRearranged(inMaster, (int)inOldIndex, (int)inNewIndex);
 }
 
-void SSlideSystem::SetComponentSeconds(Qt3DSDMSlideHandle inSlide, float inSeconds)
+void SSlideSystem::SetComponentTime(Qt3DSDMSlideHandle inSlide, long time)
 {
     Qt3DSDMSlideGraphHandle theGraph = m_SlideGraphCore->GetSlideGraph(GetMasterSlide(inSlide));
-    m_SlideCore->SetSlideTime(m_SlideGraphCore->GetGraphActiveSlide(theGraph), inSeconds);
+    m_SlideCore->SetSlideTime(m_SlideGraphCore->GetGraphActiveSlide(theGraph), time);
 }
 
-float SSlideSystem::GetComponentSeconds(Qt3DSDMSlideHandle inSlide) const
+long SSlideSystem::GetComponentTime(Qt3DSDMSlideHandle inSlide) const
 {
     Qt3DSDMSlideGraphHandle theGraph = m_SlideGraphCore->GetSlideGraph(GetMasterSlide(inSlide));
     return m_SlideCore->GetSlideTime(m_SlideGraphCore->GetGraphActiveSlide(theGraph));
-}
-
-long SSlideSystem::GetComponentSecondsLong(Qt3DSDMSlideHandle inSlide) const
-{
-    float seconds(GetComponentSeconds(inSlide));
-    return static_cast<long>((seconds * 1000) + .5f);
-}
-
-long SSlideSystem::GetComponentSecondsLong(Qt3DSDMInstanceHandle inInstance) const
-{
-    Qt3DSDMSlideGraphHandle theGraph = m_SlideGraphCore->GetAssociatedGraph(inInstance).first;
-    float seconds = m_SlideCore->GetSlideTime(m_SlideGraphCore->GetGraphActiveSlide(theGraph));
-    return static_cast<long>((seconds * 1000) + .5f);
 }
 
 SInstanceSlideInformation
@@ -462,10 +449,8 @@ SSlideSystem::GetInstanceSlideInformation(Qt3DSDMInstanceHandle inInstance) cons
     Qt3DSDMSlideHandle theMasterSlide(GetMasterSlide(theGraphSlidePair.second));
     Qt3DSDMSlideHandle theActiveSlide(
         m_SlideGraphCore->GetGraphActiveSlide(theGraphSlidePair.first));
-    float seconds = m_SlideCore->GetSlideTime(theActiveSlide);
-    long theMilliseconds = static_cast<long>((seconds * 1000) + .5f);
-    return SInstanceSlideInformation(theAssociatedSlide, theMasterSlide, theActiveSlide,
-                                     theMilliseconds);
+    long slideTime = m_SlideCore->GetSlideTime(theActiveSlide);
+    return SInstanceSlideInformation(theAssociatedSlide, theMasterSlide, theActiveSlide, slideTime);
 }
 
 /**

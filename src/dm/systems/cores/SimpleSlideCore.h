@@ -81,7 +81,7 @@ struct SSlide : public CHandleObject
     int m_Parent;
     TIntList m_Children;
     TSlideEntryHash m_Properties;
-    float m_Time;
+    long m_Time;
 
     // Returns true if it was inserted, false if the property value was set.
     bool SetInstancePropertyValue(Qt3DSDMInstanceHandle inInstance, Qt3DSDMPropertyHandle inProperty,
@@ -274,8 +274,8 @@ public: // use
     void DeleteSlide(Qt3DSDMSlideHandle inSlide, TInstanceHandleList &outInstances) override;
     void GetSlides(TSlideHandleList &outSlides) const override;
 
-    float GetSlideTime(Qt3DSDMSlideHandle inSlide) const override;
-    void SetSlideTime(Qt3DSDMSlideHandle inSlide, float inNewTime) override;
+    long GetSlideTime(Qt3DSDMSlideHandle inSlide) const override;
+    void SetSlideTime(Qt3DSDMSlideHandle inSlide, long inNewTime) override;
 
     void DeriveSlide(Qt3DSDMSlideHandle inSlide, Qt3DSDMSlideHandle inParent, int inIndex = -1) override;
     Qt3DSDMSlideHandle GetParentSlide(Qt3DSDMSlideHandle inSlide) const override;

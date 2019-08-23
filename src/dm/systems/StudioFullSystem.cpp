@@ -126,22 +126,22 @@ void RunAnimations(IStudioFullSystemSignalSender *inSender, Qt3DSDMSlideHandle i
     }
 }
 
-void NotifyComponentSeconds(TTransactionConsumerPtr &inConsumer,
-                            IStudioFullSystemSignalSender *inSender, Qt3DSDMSlideHandle inSlide,
-                            TDataCorePtr inCore, TAnimationCorePtr inAnimationCore,
-                            TStudioAnimationSystemPtr inAnimationSystem,
-                            TSlideSystemPtr inSlideSystem)
+void NotifyComponentTime(TTransactionConsumerPtr &inConsumer,
+                         IStudioFullSystemSignalSender *inSender, Qt3DSDMSlideHandle inSlide,
+                         TDataCorePtr inCore, TAnimationCorePtr inAnimationCore,
+                         TStudioAnimationSystemPtr inAnimationSystem,
+                         TSlideSystemPtr inSlideSystem)
 {
     Qt3DSDMSlideHandle theMaster = inSlideSystem->GetMasterSlide(inSlide);
-    NotifyConsumer(inConsumer, bind(&IStudioFullSystemSignalSender::SendBeginComponentSeconds,
+    NotifyConsumer(inConsumer, bind(&IStudioFullSystemSignalSender::SendBeginComponentTime,
                                     inSender, theMaster),
-                   bind(&IStudioFullSystemSignalSender::SendComponentSeconds, inSender, theMaster));
+                   bind(&IStudioFullSystemSignalSender::SendComponentTime, inSender, theMaster));
     RunAnimations(inSender, theMaster, inSlide, inAnimationCore, inCore, inConsumer);
     dynamic_cast<CStudioAnimationSystem *>(inAnimationSystem.get())
         ->ClearTemporaryAnimationValues();
     NotifyConsumer(
-        inConsumer, bind(&IStudioFullSystemSignalSender::SendComponentSeconds, inSender, theMaster),
-        bind(&IStudioFullSystemSignalSender::SendBeginComponentSeconds, inSender, theMaster));
+        inConsumer, bind(&IStudioFullSystemSignalSender::SendComponentTime, inSender, theMaster),
+        bind(&IStudioFullSystemSignalSender::SendBeginComponentTime, inSender, theMaster));
 }
 
 void NotifyPropertyLinked(TTransactionConsumerPtr &inConsumer, TDataCorePtr inCore,
@@ -461,7 +461,7 @@ CStudioFullSystem::CStudioFullSystem(std::shared_ptr<CStudioCoreSystem> inCoreSy
              std::placeholders::_2, std::placeholders::_3,
              std::cref(m_AggregateOperation))));
     m_Connections.push_back(theSlideCoreSignaller->ConnectSlideTimeChanged(
-        bind(NotifyComponentSeconds, ref(m_Consumer), theSystemSender, std::placeholders::_1,
+        bind(NotifyComponentTime, ref(m_Consumer), theSystemSender, std::placeholders::_1,
              dataCore, GetAnimationCore(), GetAnimationSystem(), GetSlideSystem())));
     m_Connections.push_back(theSlideCoreSignaller->ConnectSlideCreated(
         bind(NotifySlideCreated, ref(m_Consumer), theSystemSender, std::placeholders::_1)));

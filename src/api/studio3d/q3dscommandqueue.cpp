@@ -139,6 +139,18 @@ ElementCommand &CommandQueue::queueCommand(const QString &elementPath,
     return cmd;
 }
 
+ElementCommand &CommandQueue::queueCommand(const QString &elementPath, CommandType commandType,
+                                           long value)
+{
+    ElementCommand &cmd = nextFreeCommand();
+
+    cmd.m_commandType = commandType;
+    cmd.m_elementPath = elementPath;
+    cmd.m_longValue = value;
+
+    return cmd;
+}
+
 ElementCommand &CommandQueue::queueCommand(const QString &elementPath,
                                            CommandType commandType, int value0, int value1,
                                            int value2, int value3)
@@ -268,7 +280,7 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
             queueCommand(source.m_elementPath, source.m_commandType, source.m_boolValue);
             break;
         case CommandType_GoToTime:
-            queueCommand(source.m_elementPath, source.m_commandType, source.m_floatValue);
+            queueCommand(source.m_elementPath, source.m_commandType, source.m_longValue);
             break;
         case CommandType_GoToSlide:
         case CommandType_GoToSlideRelative:
