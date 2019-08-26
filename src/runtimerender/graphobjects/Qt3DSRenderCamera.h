@@ -110,6 +110,7 @@ namespace render {
         // Record some values from creating the projection matrix
         // to use during mouse picking.
         QT3DSVec2 m_FrustumScale;
+        bool m_EnableFrustumCulling;
 
         SCamera();
 

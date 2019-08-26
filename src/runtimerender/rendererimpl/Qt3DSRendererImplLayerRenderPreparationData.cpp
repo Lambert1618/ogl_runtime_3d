@@ -1409,17 +1409,21 @@ namespace render {
                     theTextScaleFactor = m_Camera->GetTextScaleFactor(
                         thePrepResult.GetLayerToPresentationViewport(),
                         thePrepResult.GetPresentationDesignDimensions());
-                    SClipPlane nearPlane;
-                    QT3DSMat33 theUpper33(m_Camera->m_GlobalTransform.getUpper3x3InverseTranspose());
+                    if (m_Camera->m_EnableFrustumCulling) {
+                        SClipPlane nearPlane;
+                        QT3DSMat33 theUpper33(m_Camera->m_GlobalTransform.getUpper3x3InverseTranspose());
 
-                    QT3DSVec3 dir(theUpper33.transform(QT3DSVec3(0, 0, -1)));
-                    dir.normalize();
-                    nearPlane.normal = dir;
-                    QT3DSVec3 theGlobalPos = m_Camera->GetGlobalPos() + m_Camera->m_ClipNear * dir;
-                    nearPlane.d = -(dir.dot(theGlobalPos));
-                    // the near plane's bbox edges are calculated in the clipping frustum's
-                    // constructor.
-                    m_ClippingFrustum = SClippingFrustum(m_ViewProjection, nearPlane);
+                        QT3DSVec3 dir(theUpper33.transform(QT3DSVec3(0, 0, -1)));
+                        dir.normalize();
+                        nearPlane.normal = dir;
+                        QT3DSVec3 theGlobalPos = m_Camera->GetGlobalPos() + m_Camera->m_ClipNear * dir;
+                        nearPlane.d = -(dir.dot(theGlobalPos));
+                        // the near plane's bbox edges are calculated in the clipping frustum's
+                        // constructor.
+                        m_ClippingFrustum = SClippingFrustum(m_ViewProjection, nearPlane);
+                    } else if (m_ClippingFrustum.hasValue()) {
+                        m_ClippingFrustum.setEmpty();
+                    }
                 } else {
                     m_ViewProjection = QT3DSMat44::createIdentity();
                 }

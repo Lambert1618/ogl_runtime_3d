@@ -352,6 +352,7 @@ namespace render {
     HANDLE_QT3DS_RENDER_PROPERTY(Camera, ClipFar, Dirty)                                             \
     HANDLE_QT3DS_RENDER_RADIAN_PROPERTY(Camera, FOV, Dirty)                                          \
     HANDLE_QT3DS_RENDER_PROPERTY(Camera, FOVHorizontal, Dirty)                                          \
+    HANDLE_QT3DS_RENDER_PROPERTY(Camera, EnableFrustumCulling, Dirty)                                \
     HANDLE_QT3DS_NODE_FLAGS_PROPERTY(Camera, Orthographic, Dirty)                                    \
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Camera, ScaleMode, Dirty)                                      \
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Camera, ScaleAnchor, Dirty)

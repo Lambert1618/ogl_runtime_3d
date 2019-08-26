@@ -81,6 +81,7 @@ const char *GetAttributeString(const EAttribute inAttribute)
         case ATTRIBUTE_EDGETESS: return "edgetess";
         case ATTRIBUTE_INNERTESS: return "innertess";
         case ATTRIBUTE_ORTHOGRAPHIC: return "orthographic";
+        case ATTRIBUTE_ENABLEFRUSTUMCULLING: return "enablefrustumculling";
         case ATTRIBUTE_CLIPNEAR: return "clipnear";
         case ATTRIBUTE_CLIPFAR: return "clipfar";
         case ATTRIBUTE_FOV: return "fov";

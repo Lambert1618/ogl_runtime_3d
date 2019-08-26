@@ -72,6 +72,7 @@ enum EAttribute {
     ATTRIBUTE_EDGETESS =             0x023933D2, // edgetess
     ATTRIBUTE_INNERTESS =            0x01529259, // innertess
     ATTRIBUTE_ORTHOGRAPHIC =         0x0244BB70, // orthographic
+    ATTRIBUTE_ENABLEFRUSTUMCULLING = 0x01F3E88F, // enablefrustumculling
     ATTRIBUTE_CLIPNEAR =             0x0068FF28, // clipnear
     ATTRIBUTE_CLIPFAR =              0x037EF699, // clipfar
     ATTRIBUTE_FOV =                  0x00D60213, // fov

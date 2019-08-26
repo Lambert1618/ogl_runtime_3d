@@ -544,6 +544,7 @@ struct SRuntimePropertyParser
 #define Camera_ClipFar ATTRIBUTE_CLIPFAR
 #define Camera_FOV ATTRIBUTE_FOV
 #define Camera_FOVHorizontal ATTRIBUTE_FOVHORIZONTAL
+#define Camera_EnableFrustumCulling ATTRIBUTE_ENABLEFRUSTUMCULLING
 #define Camera_Orthographic ATTRIBUTE_ORTHOGRAPHIC
 #define Camera_ScaleMode ATTRIBUTE_SCALEMODE
 #define Camera_ScaleAnchor ATTRIBUTE_SCALEANCHOR

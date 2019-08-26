@@ -159,6 +159,7 @@ SCamera::SCamera()
     , m_ClipFar(10000)
     , m_FOV(60)
     , m_FOVHorizontal(false)
+    , m_EnableFrustumCulling(false)
     , m_ScaleMode(CameraScaleModes::Fit)
     , m_ScaleAnchor(CameraScaleAnchors::Center)
 {

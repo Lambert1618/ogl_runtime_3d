@@ -270,7 +270,7 @@ namespace render {
         TRenderableObjectList m_RenderedOpaqueObjects;
         TRenderableObjectList m_RenderedTransparentObjects;
         QT3DSMat44 m_ViewProjection;
-        SClippingFrustum m_ClippingFrustum;
+        Option<SClippingFrustum> m_ClippingFrustum;
         Option<SLayerRenderPreparationResult> m_LayerPrepResult;
         // Widgets drawn at particular times during the rendering process
         nvvector<IRenderWidget *> m_IRenderWidgets;

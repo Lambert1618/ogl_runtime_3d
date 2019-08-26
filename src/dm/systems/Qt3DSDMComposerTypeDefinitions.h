@@ -265,7 +265,8 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(controlledproperty, m_ControlledProperty, TDataStrPtr, L"")
 
 #define ITERATE_COMPOSER_CAMERA_PROPERTIES                                                         \
-    HANDLE_COMPOSER_PROPERTY(orthographic, m_Orthographic, bool, false)                            \
+    HANDLE_COMPOSER_PROPERTY(orthographic, m_Orthographic, bool, false)                       \
+    HANDLE_COMPOSER_PROPERTY(enablefrustumculling, m_EnableFrustumCulling, bool, false)             \
     HANDLE_COMPOSER_PROPERTY(fov, m_Fov, float, 60.f)                                              \
     HANDLE_COMPOSER_PROPERTY(fovhorizontal, m_FovHorizontal, bool, false)                          \
     HANDLE_COMPOSER_PROPERTY(clipnear, m_ClipNear, float, 10.f)                                    \

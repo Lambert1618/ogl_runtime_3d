@@ -764,6 +764,7 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
 #define Camera_FOV "fov"
 #define Camera_FOVHorizontal "fovhorizontal"
 #define Camera_Orthographic "orthographic"
+#define Camera_EnableFrustumCulling "enablefrustumculling"
 #define Camera_ScaleMode "scalemode"
 #define Camera_ScaleAnchor "scaleanchor"
 #define Light_LightType "lighttype"
