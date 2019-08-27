@@ -493,7 +493,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                               "specularColor * kggxGlossyDefaultMtl( "
                            << "world_normal, tangent, -" << inLightDir << ".xyz, view_vector, "
                            << inLightSpecColor
-                           << ".rgb, vec3(material_specular.xyz), roughnessAmount, "
+                           << ".rgb, vec3(material_specular.xyz), "
                               "roughnessAmount ).rgb;"
                            << Endl;
         } break;
@@ -504,8 +504,8 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                               "specularColor * wardGlossyDefaultMtl( "
                            << "world_normal, tangent, -" << inLightDir << ".xyz, view_vector, "
                            << inLightSpecColor
-                           << ".rgb, vec3(material_specular.xyz), roughnessAmount, "
-                              "roughnessAmount ).rgb;"
+                           << ".rgb, vec3(material_specular.xyz), "
+                              "roughnessAmount).rgb;"
                            << Endl;
         } break;
         default:
