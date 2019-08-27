@@ -347,7 +347,7 @@
 
         <!-- Advanced -->
         <Property name="disabledepthtest"    formalName="Disable Depth Test"    type="Boolean" animatable="False" category="Advanced" description="Optimize render speed for layers with\nmostly transparent objects?" />
-        <Property name="disabledepthprepass" formalName="Disable Depth Prepass" type="Boolean" animatable="False" category="Advanced" description="Optimize render speed for layers\nwith low depth complexity" />
+        <Property name="disabledepthprepass" formalName="Disable Depth Prepass" type="Boolean" animatable="False" default="True" category="Advanced" description="Optimize render speed for layers\nwith low depth complexity" />
 
         <!-- Hidden props -->
         <Property name="position"     formalName="Position"               type="Vector"                        category="Basic Properties" hidden="True" description="Location in local space" />

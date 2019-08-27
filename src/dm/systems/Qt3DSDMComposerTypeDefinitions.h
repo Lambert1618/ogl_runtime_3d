@@ -200,7 +200,7 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY(multisampleaa, m_MultisampleAA, TDataStrPtr, L"None")                 \
     HANDLE_COMPOSER_PROPERTY(temporalaa, m_TemporalAA, bool, false)                                \
     HANDLE_COMPOSER_PROPERTY(disabledepthtest, m_DisableDepthTest, bool, false)                    \
-    HANDLE_COMPOSER_PROPERTY(disabledepthprepass, m_DisableDepthPrepass, bool, false)              \
+    HANDLE_COMPOSER_PROPERTY(disabledepthprepass, m_DisableDepthPrepass, bool, true)              \
     HANDLE_COMPOSER_PROPERTY(background, m_Background, TDataStrPtr, L"Transparent")                \
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(backgroundcolor, m_BackgroundColor, SFloat4,                \
                                        SFloat4(0, 0, 0, 1))                                        \
