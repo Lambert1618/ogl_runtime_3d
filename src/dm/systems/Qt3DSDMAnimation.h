@@ -672,17 +672,17 @@ inline SBezierKeyframe CreateBezierKeyframeFromEaseInOut(long prevTime,
     long timeOut = kfTime;
     float valueOut = kfValue;
 
-     // at 100 ease, the control point will be midway between the 2 keyframes
+    // at 100 ease, the control point will be midway between the 2 keyframes
     float maxEasePerc = .5f;
 
     if (prevTime != -1) {
         float easeInPerc = qBound(0.f, keyframe.m_EaseIn / 100.f, 1.f) * maxEasePerc;
-        timeIn = prevTime + (kfTime - prevTime) * (1.f - easeInPerc);
+        timeIn = prevTime + long((kfTime - prevTime) * (1.f - easeInPerc));
     }
 
     if (nextTime != -1) {
         float easeOutPerc = qBound(0.f, keyframe.m_EaseOut / 100.f, 1.f) * maxEasePerc;
-        timeOut = kfTime + (nextTime - kfTime) * easeOutPerc;
+        timeOut = kfTime + long((nextTime - kfTime) * easeOutPerc);
     }
 
     return SBezierKeyframe(kfTime, kfValue, timeIn , valueIn, timeOut, valueOut);
@@ -749,11 +749,11 @@ struct BezierValuesGetter
 {
     std::tuple<long, float, long, float> operator()(const SLinearKeyframe &) const
     {
-        return std::make_tuple(-1, 0, -1, 0);
+        return std::make_tuple(-1, 0.f, -1, 0.f);
     }
     std::tuple<long, float, long, float> operator()(const SEaseInEaseOutKeyframe &) const
     {
-        return std::make_tuple(-1, 0, -1, 0);
+        return std::make_tuple(-1, 0.f, -1, 0.f);
     }
     std::tuple<long, float, long, float> operator()(const SBezierKeyframe &inValue) const
     {
@@ -763,7 +763,7 @@ struct BezierValuesGetter
     std::tuple<long, float, long, float> operator()()
     {
         QT3DS_ASSERT(false);
-        return std::make_tuple(-1, 0, -1, 0);
+        return std::make_tuple(-1, 0.f, -1, 0.f);
     }
 };
 

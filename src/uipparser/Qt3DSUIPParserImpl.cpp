@@ -2461,7 +2461,7 @@ void CUIPParserImpl::CreateBezierKeyframeFromEaseInEaseOutKeyframe(
     float timeOut = kfTime;
     float valueOut = kfValue;
 
-     // at 100 ease, the control point will be midway between the 2 keyframes
+    // at 100 ease, the control point will be midway between the 2 keyframes
     float maxEasePerc = .5f;
 
     if (prevTime != -1.f) {
