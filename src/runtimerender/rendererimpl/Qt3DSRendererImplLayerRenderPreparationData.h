@@ -310,7 +310,7 @@ namespace render {
                                    SRenderableImage *&ioFirstImage, SRenderableImage *&ioNextImage,
                                    SRenderableObjectFlags &ioFlags,
                                    SShaderDefaultMaterialKey &ioGeneratedShaderKey,
-                                   QT3DSU32 inImageIndex);
+                                   QT3DSU32 inImageIndex, bool *opaqueCheck);
 
         SDefaultMaterialPreparationResult
         PrepareDefaultMaterialForRender(SDefaultMaterial &inMaterial,

@@ -103,6 +103,9 @@ namespace render {
         , m_StringTable(ctx.GetStringTable())
         , m_LayerShaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_LayerShaders")
         , m_Shaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_Shaders")
+        , m_DepthShaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_DepthShaders")
+        , m_ShadowMapShaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_ShadowMapShaders")
+        , m_ShadowCubeShaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_ShadowCubeShaders")
         , m_ConstantBuffers(ctx.GetAllocator(), "Qt3DSRendererImpl::m_ConstantBuffers")
         , m_TextShader(ctx.GetAllocator())
         , m_TextPathShader(ctx.GetAllocator())
@@ -110,13 +113,13 @@ namespace render {
         , m_TextOnscreenShader(ctx.GetAllocator())
 #ifdef ADVANCED_BLEND_SW_FALLBACK
         , m_LayerBlendTexture(ctx.GetResourceManager())
-        , m_BlendFB(NULL)
+        , m_BlendFB(nullptr)
 #endif
         , m_InstanceRenderMap(ctx.GetAllocator(), "Qt3DSRendererImpl::m_InstanceRenderMap")
         , m_LastFrameLayers(ctx.GetAllocator(), "Qt3DSRendererImpl::m_LastFrameLayers")
         , mRefCount(0)
         , m_LastPickResults(ctx.GetAllocator(), "Qt3DSRendererImpl::m_LastPickResults")
-        , m_CurrentLayer(NULL)
+        , m_CurrentLayer(nullptr)
         , m_WidgetVertexBuffers(ctx.GetAllocator(), "Qt3DSRendererImpl::m_WidgetVertexBuffers")
         , m_WidgetIndexBuffers(ctx.GetAllocator(), "Qt3DSRendererImpl::m_WidgetIndexBuffers")
         , m_WidgetShaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_WidgetShaders")
@@ -131,10 +134,25 @@ namespace render {
     {
         m_LayerShaders.clear();
         for (TShaderMap::iterator iter = m_Shaders.begin(), end = m_Shaders.end(); iter != end;
-             ++iter)
+             ++iter) {
             NVDelete(m_Context->GetAllocator(), iter->second);
-
+        }
+        for (TShaderMap::iterator iter = m_DepthShaders.begin(), end = m_DepthShaders.end();
+             iter != end; ++iter) {
+            NVDelete(m_Context->GetAllocator(), iter->second);
+        }
+        for (TShadowShaderMap::iterator iter = m_ShadowMapShaders.begin(),
+             end = m_ShadowMapShaders.end(); iter != end; ++iter) {
+            NVDelete(m_Context->GetAllocator(), iter->second);
+        }
+        for (TShadowShaderMap::iterator iter = m_ShadowCubeShaders.begin(),
+             end = m_ShadowCubeShaders.end(); iter != end; ++iter) {
+            NVDelete(m_Context->GetAllocator(), iter->second);
+        }
+        m_ShadowMapShaders.clear();
+        m_ShadowCubeShaders.clear();
         m_Shaders.clear();
+        m_DepthShaders.clear();
         m_InstanceRenderMap.clear();
         m_ConstantBuffers.clear();
     }
@@ -177,7 +195,7 @@ namespace render {
     {
         if (inLayer.m_NextSibling && inLayer.m_NextSibling->m_Type == GraphObjectTypes::Layer)
             return static_cast<SLayer *>(inLayer.m_NextSibling);
-        return NULL;
+        return nullptr;
     }
 
     static inline void MaybePushLayer(SLayer &inLayer, nvvector<SLayer *> &outLayerList)
@@ -290,7 +308,7 @@ namespace render {
                 m_LayerBlendTexture.EnsureTexture(viewport.m_Width + viewport.m_X,
                                                   viewport.m_Height + viewport.m_Y,
                                                   NVRenderTextureFormats::RGBA8);
-                if (m_BlendFB == NULL)
+                if (m_BlendFB == nullptr)
                     m_BlendFB = theRenderContext.CreateFrameBuffer();
                 m_BlendFB->Attach(NVRenderFrameBufferAttachments::Color0, *m_LayerBlendTexture);
                 theRenderContext.SetRenderTarget(m_BlendFB);
@@ -333,7 +351,7 @@ namespace render {
         }
         if (inNode.m_Parent)
             return GetLayerForNode(*inNode.m_Parent);
-        return NULL;
+        return nullptr;
     }
 
     SLayerRenderData *Qt3DSRendererImpl::GetOrCreateLayerRenderDataForNode(const SNode &inNode,
@@ -356,7 +374,7 @@ namespace render {
 
             return theRenderData;
         }
-        return NULL;
+        return nullptr;
     }
 
     SCamera *Qt3DSRendererImpl::GetCameraForNode(const SNode &inNode) const
@@ -365,7 +383,7 @@ namespace render {
             const_cast<Qt3DSRendererImpl &>(*this).GetOrCreateLayerRenderDataForNode(inNode);
         if (theLayer)
             return theLayer->m_Camera;
-        return NULL;
+        return nullptr;
     }
 
     Option<SCuboidRect> Qt3DSRendererImpl::GetCameraBounds(const SGraphObject &inObject)
@@ -552,8 +570,8 @@ namespace render {
             IResourceManager &theManager(m_qt3dsContext.GetResourceManager());
             theManager.Release(*m_WidgetFBO);
             theManager.Release(*m_WidgetTexture);
-            m_WidgetTexture = NULL;
-            m_WidgetFBO = NULL;
+            m_WidgetTexture = nullptr;
+            m_WidgetFBO = nullptr;
         }
     }
 
@@ -652,7 +670,7 @@ namespace render {
             // If picking against the sub object doesn't return a valid result *and*
             // the current object isn't globally pickable then we move onto the next object returned
             // by the pick query.
-            if (thePickResult.m_HitObject != NULL && thePickResult.m_FirstSubObject != NULL
+            if (thePickResult.m_HitObject != nullptr && thePickResult.m_FirstSubObject != nullptr
                 && m_PickRenderPlugins) {
                 QT3DSVec2 theUVCoords(thePickResult.m_LocalUVCoords.x,
                                    thePickResult.m_LocalUVCoords.y);
@@ -686,7 +704,7 @@ namespace render {
                     bool wasPickConsumed =
                         theSubRenderer->Pick(theMouseCoords, theViewportDimensions, this);
                     if (wasPickConsumed) {
-                        thePickResult.m_HitObject = NULL;
+                        thePickResult.m_HitObject = nullptr;
                         foundValidResult = true;
                     }
                 }
@@ -728,8 +746,8 @@ namespace render {
             if (inPickSiblings)
                 theLayer = GetNextLayer(*theLayer);
             else
-                theLayer = NULL;
-        } while (theLayer != NULL);
+                theLayer = nullptr;
+        } while (theLayer != nullptr);
 
         return Qt3DSRenderPickResult();
     }
@@ -787,15 +805,15 @@ namespace render {
                                                   SBasisPlanes::Enum inPlane)
     {
         SLayerRenderData *theLayerData = GetOrCreateLayerRenderDataForNode(inNode);
-        if (theLayerData == NULL)
+        if (theLayerData == nullptr)
             return Empty();
         // This function assumes the layer was rendered to the scene itself.  There is another
         // function
         // for completely offscreen layers that don't get rendered to the scene.
         bool wasRenderToTarget(theLayerData->m_Layer.m_Flags.IsLayerRenderToTarget());
-        if (wasRenderToTarget == false || theLayerData->m_Camera == NULL
+        if (wasRenderToTarget == false || theLayerData->m_Camera == nullptr
             || theLayerData->m_LayerPrepResult.hasValue() == false
-            || theLayerData->m_LastFrameOffscreenRenderer.mPtr != NULL)
+            || theLayerData->m_LastFrameOffscreenRenderer.mPtr != nullptr)
             return Empty();
 
         QT3DSVec2 theMouseCoords(inMouseCoords);
@@ -808,7 +826,7 @@ namespace render {
                 // This is extremely counter intuitive but a good sign.
             } else if (currentObject.m_Type == GraphObjectTypes::Image) {
                 SImage &theImage = static_cast<SImage &>(currentObject);
-                SModel *theParentModel = NULL;
+                SModel *theParentModel = nullptr;
                 if (theImage.m_Parent
                     && theImage.m_Parent->m_Type == GraphObjectTypes::DefaultMaterial) {
                     SDefaultMaterial *theMaterial =
@@ -817,7 +835,7 @@ namespace render {
                         theParentModel = theMaterial->m_Parent;
                     }
                 }
-                if (theParentModel == NULL) {
+                if (theParentModel == nullptr) {
                     QT3DS_ASSERT(false);
                     return Empty();
                 }
@@ -871,7 +889,7 @@ namespace render {
         // Translate mouse into layer's coordinates
         SLayerRenderData *theData =
             const_cast<Qt3DSRendererImpl &>(*this).GetOrCreateLayerRenderDataForNode(inNode);
-        if (theData == NULL || theData->m_Camera == NULL) {
+        if (theData == nullptr || theData->m_Camera == nullptr) {
             return QT3DSVec3(0, 0, 0);
         } // QT3DS_ASSERT( false ); return QT3DSVec3(0,0,0); }
 
@@ -890,7 +908,7 @@ namespace render {
         // Translate mouse into layer's coordinates
         SLayerRenderData *theData =
             const_cast<Qt3DSRendererImpl &>(*this).GetOrCreateLayerRenderDataForNode(inNode);
-        if (theData == NULL || theData->m_Camera == NULL) {
+        if (theData == nullptr || theData->m_Camera == nullptr) {
             return QT3DSVec3(0, 0, 0);
         } // QT3DS_ASSERT( false ); return QT3DSVec3(0,0,0); }
 
@@ -903,7 +921,7 @@ namespace render {
         SRay theRay = thePrepResult.GetPickRay(
             theMouse, QT3DSVec2((QT3DSF32)theWindow.width(), (QT3DSF32)theWindow.height()), true);
         QT3DSVec3 theTargetPosition = theRay.m_Origin + theRay.m_Direction * theDepth;
-        if (inNode.m_Parent != NULL && inNode.m_Parent->m_Type != GraphObjectTypes::Layer)
+        if (inNode.m_Parent != nullptr && inNode.m_Parent->m_Type != GraphObjectTypes::Layer)
             theTargetPosition =
                 inNode.m_Parent->m_GlobalTransform.getInverse().transform(theTargetPosition);
         // Our default global space is right handed, so if you are left handed z means something
@@ -918,7 +936,7 @@ namespace render {
         // Translate mouse into layer's coordinates
         SLayerRenderData *theData =
             const_cast<Qt3DSRendererImpl &>(*this).GetOrCreateLayerRenderDataForNode(inNode);
-        if (theData == NULL || theData->m_Camera == NULL) {
+        if (theData == nullptr || theData->m_Camera == nullptr) {
             return QT3DSVec3(0, 0, 0);
         }
 
@@ -955,7 +973,7 @@ namespace render {
                                                                 const QSize &inPickDims)
     {
         SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inLayer);
-        if (theData == NULL || theData->m_Camera == NULL) {
+        if (theData == nullptr || theData->m_Camera == nullptr) {
             QT3DS_ASSERT(false);
             return Empty();
         }
@@ -968,7 +986,7 @@ namespace render {
         }
 
         SLayerRenderPreparationResult &thePrepResult(*theData->m_LayerPrepResult);
-        if (thePrepResult.GetCamera() == NULL) {
+        if (thePrepResult.GetCamera() == nullptr) {
             return Empty();
         }
         // Perform gluPickMatrix and pre-multiply it into the view projection
@@ -1009,7 +1027,7 @@ namespace render {
     Option<NVRenderRectF> Qt3DSRendererImpl::GetLayerRect(SLayer &inLayer)
     {
         SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inLayer);
-        if (theData == NULL || theData->m_Camera == NULL) {
+        if (theData == nullptr || theData->m_Camera == nullptr) {
             QT3DS_ASSERT(false);
             return Empty();
         }
@@ -1021,7 +1039,7 @@ namespace render {
     void Qt3DSRendererImpl::RunLayerRender(SLayer &inLayer, const QT3DSMat44 &inViewProjection)
     {
         SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inLayer);
-        if (theData == NULL || theData->m_Camera == NULL) {
+        if (theData == nullptr || theData->m_Camera == nullptr) {
             QT3DS_ASSERT(false);
             return;
         }
@@ -1077,7 +1095,7 @@ namespace render {
                                                                    const QT3DSVec3 &inWorldPoint)
     {
         SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inLayer);
-        if (theData == NULL || theData->m_Camera == NULL) {
+        if (theData == nullptr || theData->m_Camera == nullptr) {
             QT3DS_ASSERT(false);
             return SScaleAndPosition();
         }
@@ -1141,7 +1159,7 @@ namespace render {
         m_CurrentLayer = &inLayer;
     }
 
-    void Qt3DSRendererImpl::EndLayerDepthPassRender() { m_CurrentLayer = NULL; }
+    void Qt3DSRendererImpl::EndLayerDepthPassRender() { m_CurrentLayer = nullptr; }
 
     void Qt3DSRendererImpl::BeginLayerRender(SLayerRenderData &inLayer)
     {
@@ -1151,7 +1169,7 @@ namespace render {
         // shaders that are in the layer.
         m_LayerShaders.clear();
     }
-    void Qt3DSRendererImpl::EndLayerRender() { m_CurrentLayer = NULL; }
+    void Qt3DSRendererImpl::EndLayerRender() { m_CurrentLayer = nullptr; }
 
 // Allocate an object that lasts only this frame.
 #define RENDER_FRAME_NEW(type)                                                                     \
@@ -1170,7 +1188,7 @@ namespace render {
 
     bool NodeContainsBoneRoot(SNode &childNode, QT3DSI32 rootID)
     {
-        for (SNode *childChild = childNode.m_FirstChild; childChild != NULL;
+        for (SNode *childChild = childNode.m_FirstChild; childChild != nullptr;
              childChild = childChild->m_NextSibling) {
             if (childChild->m_SkeletonId == rootID)
                 return true;
@@ -1183,7 +1201,7 @@ namespace render {
     {
         if (childNode.m_SkeletonId >= 0)
             ioMap[childNode.m_SkeletonId] = &childNode;
-        for (SNode *childChild = childNode.m_FirstChild; childChild != NULL;
+        for (SNode *childChild = childNode.m_FirstChild; childChild != nullptr;
              childChild = childChild->m_NextSibling)
             FillBoneIdNodeMap(*childChild, ioMap);
     }
@@ -1191,7 +1209,7 @@ namespace render {
     bool Qt3DSRendererImpl::PrepareTextureAtlasForRender()
     {
         ITextTextureAtlas *theTextureAtlas = m_qt3dsContext.GetTextureAtlas();
-        if (theTextureAtlas == NULL)
+        if (theTextureAtlas == nullptr)
             return false;
 
         // this is a one time creation
@@ -1344,13 +1362,13 @@ namespace render {
         // function
         // for completely offscreen layers that don't get rendered to the scene.
         bool wasRenderToTarget(inLayerRenderData.m_Layer.m_Flags.IsLayerRenderToTarget());
-        if (wasRenderToTarget && inLayerRenderData.m_Camera != NULL) {
+        if (wasRenderToTarget && inLayerRenderData.m_Camera != nullptr) {
             Option<SRay> theHitRay;
             if (inLayerRenderData.m_LayerPrepResult.hasValue()) {
                 theHitRay = inLayerRenderData.m_LayerPrepResult->GetPickRay(
                     inPresCoords, inViewportDimensions, false, m_Context->isSceneCameraView());
             }
-            if (inLayerRenderData.m_LastFrameOffscreenRenderer.mPtr == NULL) {
+            if (inLayerRenderData.m_LastFrameOffscreenRenderer.mPtr == nullptr) {
                 if (theHitRay.hasValue()) {
                     // Scale the mouse coords to change them into the camera's numerical space.
                     SRay thePickRay = *theHitRay;
@@ -1410,7 +1428,7 @@ namespace render {
         SRayIntersectionResult &theResult(*theIntersectionResultOpt);
 
         // Leave the coordinates relative for right now.
-        const SGraphObject *thePickObject = NULL;
+        const SGraphObject *thePickObject = nullptr;
         if (inRenderableObject.m_RenderableFlags.IsDefaultMaterialMeshSubset())
             thePickObject =
                 &static_cast<SSubsetRenderable *>(&inRenderableObject)->m_ModelContext.m_Model;
@@ -1426,26 +1444,26 @@ namespace render {
         else if (inRenderableObject.m_RenderableFlags.IsPath())
             thePickObject = &static_cast<SPathRenderable *>(&inRenderableObject)->m_Path;
 
-        if (thePickObject != NULL) {
+        if (thePickObject != nullptr) {
             outIntersectionResultList.push_back(Qt3DSRenderPickResult(
                 *thePickObject, theResult.m_RayLengthSquared, theResult.m_RelXY));
 
             // For subsets, we know we can find images on them which may have been the result
             // of rendering a sub-presentation.
             if (inRenderableObject.m_RenderableFlags.IsDefaultMaterialMeshSubset()) {
-                Qt3DSRenderPickSubResult *theLastResult = NULL;
+                Qt3DSRenderPickSubResult *theLastResult = nullptr;
                 for (SRenderableImage *theImage =
                          static_cast<SSubsetRenderable *>(&inRenderableObject)->m_FirstImage;
-                     theImage != NULL; theImage = theImage->m_NextImage) {
-                    if (theImage->m_Image.m_LastFrameOffscreenRenderer != NULL
-                        && theImage->m_Image.m_TextureData.m_Texture != NULL) {
+                     theImage != nullptr; theImage = theImage->m_NextImage) {
+                    if (theImage->m_Image.m_LastFrameOffscreenRenderer != nullptr
+                        && theImage->m_Image.m_TextureData.m_Texture != nullptr) {
                         Qt3DSRenderPickSubResult *theSubResult =
                             (Qt3DSRenderPickSubResult *)inTempAllocator.allocate(
                                 sizeof(Qt3DSRenderPickSubResult), "Qt3DSRenderPickSubResult",
                                 __FILE__, __LINE__);
 
                         new (theSubResult) Qt3DSRenderPickSubResult(ConstructSubResult(*theImage));
-                        if (theLastResult == NULL)
+                        if (theLastResult == nullptr)
                             outIntersectionResultList.back().m_FirstSubObject = theSubResult;
                         else
                             theLastResult->m_NextSibling = theSubResult;
@@ -1493,17 +1511,20 @@ namespace render {
     }
 
     SShaderGeneratorGeneratedShader *Qt3DSRendererImpl::GetShader(SSubsetRenderable &inRenderable,
-                                                                 TShaderFeatureSet inFeatureSet)
+                                                                  TShaderFeatureSet inFeatureSet,
+                                                                  bool depth)
     {
-        if (m_CurrentLayer == NULL) {
+        if (m_CurrentLayer == nullptr) {
             QT3DS_ASSERT(false);
-            return NULL;
+            return nullptr;
         }
-        TShaderMap::iterator theFind = m_Shaders.find(inRenderable.m_ShaderDescription);
-        SShaderGeneratorGeneratedShader *retval = NULL;
-        if (theFind == m_Shaders.end()) {
+
+        SShaderGeneratorGeneratedShader *retval = nullptr;
+        TShaderMap &map = depth ? m_DepthShaders : m_Shaders;
+        TShaderMap::iterator theFind = map.find(inRenderable.m_ShaderDescription);
+        if (theFind == map.end()) {
             // Generate the shader.
-            NVRenderShaderProgram *theShader(GenerateShader(inRenderable, inFeatureSet));
+            NVRenderShaderProgram *theShader(GenerateShader(inRenderable, inFeatureSet, depth));
             if (theShader) {
                 SShaderGeneratorGeneratedShader *theGeneratedShader =
                     (SShaderGeneratorGeneratedShader *)m_Context->GetAllocator().allocate(
@@ -1511,18 +1532,18 @@ namespace render {
                         __FILE__, __LINE__);
                 new (theGeneratedShader) SShaderGeneratorGeneratedShader(
                     m_StringTable->RegisterStr(m_GeneratedShaderString.c_str()), *theShader);
-                m_Shaders.insert(make_pair(inRenderable.m_ShaderDescription, theGeneratedShader));
+                map.insert(make_pair(inRenderable.m_ShaderDescription, theGeneratedShader));
                 retval = theGeneratedShader;
             }
-            // We still insert something because we don't to attempt to generate the same bad shader
-            // twice.
+            // We still insert something because we don't want to attempt to generate the same
+            // bad shader twice.
             else
-                m_Shaders.insert(make_pair(inRenderable.m_ShaderDescription,
-                                           (SShaderGeneratorGeneratedShader *)NULL));
+                map.insert(make_pair(inRenderable.m_ShaderDescription,
+                                           (SShaderGeneratorGeneratedShader *)nullptr));
         } else
             retval = theFind->second;
 
-        if (retval != NULL) {
+        if (retval != nullptr && !depth) {
             if (!m_LayerShaders.contains(*retval)) {
                 m_LayerShaders.insert(*retval);
             }
@@ -1534,6 +1555,45 @@ namespace render {
         }
         return retval;
     }
+
+    SRenderableDepthPrepassShader *Qt3DSRendererImpl::GetShadowShader(
+            SSubsetRenderable &inRenderable, TShaderFeatureSet inFeatureSet,
+            RenderLightTypes::Enum lightType)
+    {
+        if (m_CurrentLayer == nullptr) {
+            QT3DS_ASSERT(false);
+            return nullptr;
+        }
+
+        SRenderableDepthPrepassShader *retval = nullptr;
+        TShadowShaderMap &map = lightType == RenderLightTypes::Point ? m_ShadowCubeShaders
+                                                               : m_ShadowMapShaders;
+        TShadowShaderMap::iterator theFind = map.find(inRenderable.m_ShaderDescription);
+        if (theFind == map.end()) {
+            // Generate the shader.
+            NVRenderShaderProgram *theShader(GenerateShadowShader(inRenderable, inFeatureSet,
+                                                                  lightType));
+            if (theShader) {
+                SRenderableDepthPrepassShader *theGeneratedShader =
+                    (SRenderableDepthPrepassShader *)m_Context->GetAllocator().allocate(
+                        sizeof(SRenderableDepthPrepassShader), "SRenderableDepthPrepassShader",
+                        __FILE__, __LINE__);
+                new (theGeneratedShader) SRenderableDepthPrepassShader(*theShader, GetContext());
+                map.insert(make_pair(inRenderable.m_ShaderDescription, theGeneratedShader));
+                retval = theGeneratedShader;
+            }
+            // We still insert something because we don't want to attempt to generate the same
+            // bad shader twice.
+            else {
+                map.insert(make_pair(inRenderable.m_ShaderDescription, nullptr));
+            }
+        } else {
+            retval = theFind->second;
+        }
+
+        return retval;
+    }
+
     static QT3DSVec3 g_fullScreenRectFace[] = {
         QT3DSVec3(-1, -1, 0), QT3DSVec3(-1, 1, 0), QT3DSVec3(1, 1, 0), QT3DSVec3(1, -1, 0),
     };
@@ -1613,7 +1673,7 @@ namespace render {
         QT3DSU32 strides = m_PointVertexBuffer->GetStride();
         QT3DSU32 offsets = 0;
         m_PointInputAssembler = m_Context->CreateInputAssembler(
-            m_PointAttribLayout, toConstDataRef(&m_PointVertexBuffer.mPtr, 1), NULL,
+            m_PointAttribLayout, toConstDataRef(&m_PointVertexBuffer.mPtr, 1), nullptr,
             toConstDataRef(&strides, 1), toConstDataRef(&offsets, 1));
     }
 
@@ -1666,7 +1726,7 @@ namespace render {
         QT3DSU32 strides = m_QuadStripVertexBuffer->GetStride();
         QT3DSU32 offsets = 0;
         m_QuadStripInputAssembler = m_Context->CreateInputAssembler(
-            m_QuadStripAttribLayout, toConstDataRef(&m_QuadStripVertexBuffer.mPtr, 1), NULL,
+            m_QuadStripAttribLayout, toConstDataRef(&m_QuadStripVertexBuffer.mPtr, 1), nullptr,
             toConstDataRef(&strides, 1), toConstDataRef(&offsets, 1));
     }
 
@@ -1796,7 +1856,7 @@ namespace render {
         TStrVertBufMap::iterator theIter = m_WidgetVertexBuffers.find(inStr);
         if (theIter != m_WidgetVertexBuffers.end())
             return theIter->second;
-        return NULL;
+        return nullptr;
     }
 
     NVRenderIndexBuffer *Qt3DSRendererImpl::GetIndexBuffer(CRegisteredString &inStr)
@@ -1804,7 +1864,7 @@ namespace render {
         TStrIndexBufMap::iterator theIter = m_WidgetIndexBuffers.find(inStr);
         if (theIter != m_WidgetIndexBuffers.end())
             return theIter->second;
-        return NULL;
+        return nullptr;
     }
 
     NVRenderInputAssembler *Qt3DSRendererImpl::GetInputAssembler(CRegisteredString &inStr)
@@ -1812,7 +1872,7 @@ namespace render {
         TStrIAMap::iterator theIter = m_WidgetInputAssembler.find(inStr);
         if (theIter != m_WidgetInputAssembler.end())
             return theIter->second;
-        return NULL;
+        return nullptr;
     }
 
     NVRenderShaderProgram *Qt3DSRendererImpl::GetShader(CRegisteredString inStr)
@@ -1820,7 +1880,7 @@ namespace render {
         TStrShaderMap::iterator theIter = m_WidgetShaders.find(inStr);
         if (theIter != m_WidgetShaders.end())
             return theIter->second;
-        return NULL;
+        return nullptr;
     }
 
     NVRenderShaderProgram *Qt3DSRendererImpl::CompileAndStoreShader(CRegisteredString inStr)
@@ -1838,7 +1898,7 @@ namespace render {
 
     STextDimensions Qt3DSRendererImpl::MeasureText(const STextRenderInfo &inText)
     {
-        if (m_qt3dsContext.GetTextRenderer() != NULL)
+        if (m_qt3dsContext.GetTextRenderer() != nullptr)
             return m_qt3dsContext.GetTextRenderer()->MeasureText(inText, 0);
         return STextDimensions();
     }
@@ -1846,14 +1906,14 @@ namespace render {
     void Qt3DSRendererImpl::RenderText(const STextRenderInfo &inText, const QT3DSVec3 &inTextColor,
                                       const QT3DSVec3 &inBackgroundColor, const QT3DSMat44 &inMVP)
     {
-        if (m_qt3dsContext.GetTextRenderer() != NULL) {
+        if (m_qt3dsContext.GetTextRenderer() != nullptr) {
             ITextRenderer &theTextRenderer(*m_qt3dsContext.GetTextRenderer());
             NVRenderTexture2D *theTexture = m_qt3dsContext.GetResourceManager().AllocateTexture2D(
                 32, 32, NVRenderTextureFormats::RGBA8);
             STextTextureDetails theTextTextureDetails =
                 theTextRenderer.RenderText(inText, *theTexture);
             STextRenderHelper theTextHelper(GetTextWidgetShader());
-            if (theTextHelper.m_Shader != NULL) {
+            if (theTextHelper.m_Shader != nullptr) {
                 m_qt3dsContext.GetRenderContext().SetBlendingEnabled(false);
                 STextScaleAndOffset theScaleAndOffset(*theTexture, theTextTextureDetails, inText);
                 theTextHelper.m_Shader->Render(*theTexture, theScaleAndOffset,
@@ -1870,7 +1930,7 @@ namespace render {
                                         qt3ds::foundation::Option<qt3ds::QT3DSVec3> inColor,
                                         const char *text)
     {
-        if (m_qt3dsContext.GetOnscreenTextRenderer() != NULL) {
+        if (m_qt3dsContext.GetOnscreenTextRenderer() != nullptr) {
             GenerateXYQuadStrip();
 
             if (PrepareTextureAtlasForRender()) {
@@ -1892,7 +1952,7 @@ namespace render {
 
                 if (theRenderTextDetails.first.m_Vertices.size()) {
                     STextRenderHelper theTextHelper(GetOnscreenTextShader());
-                    if (theTextHelper.m_Shader != NULL) {
+                    if (theTextHelper.m_Shader != nullptr) {
                         // setup 2D projection
                         SCamera theCamera;
                         theCamera.m_ClipNear = -1.0;
@@ -1900,7 +1960,8 @@ namespace render {
 
                         theCamera.MarkDirty(NodeTransformDirtyFlag::TransformIsDirty);
                         theCamera.m_Flags.SetOrthographic(true);
-                        QT3DSVec2 theWindowDim((QT3DSF32)theWindow.width(), (QT3DSF32)theWindow.height());
+                        QT3DSVec2 theWindowDim((QT3DSF32)theWindow.width(),
+                                               (QT3DSF32)theWindow.height());
                         theCamera.CalculateGlobalVariables(
                             NVRenderRect(0, 0, theWindow.width(), theWindow.height()),
                             theWindowDim);
@@ -1973,12 +2034,12 @@ namespace render {
     {
         SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inNode);
         SCamera *theCamera = theData->m_Camera;
-        if (theCamera == NULL || theData->m_LayerPrepResult.hasValue() == false) {
+        if (theCamera == nullptr || theData->m_LayerPrepResult.hasValue() == false) {
             QT3DS_ASSERT(false);
             return SWidgetRenderInformation();
         }
         QT3DSMat44 theGlobalTransform(QT3DSMat44::createIdentity());
-        if (inNode.m_Parent != NULL && inNode.m_Parent->m_Type != GraphObjectTypes::Layer
+        if (inNode.m_Parent != nullptr && inNode.m_Parent->m_Type != GraphObjectTypes::Layer
             && !inNode.m_Flags.IsIgnoreParentTransform())
             theGlobalTransform = inNode.m_Parent->m_GlobalTransform;
         QT3DSMat44 theCameraInverse(theCamera->m_GlobalTransform.getInverse());

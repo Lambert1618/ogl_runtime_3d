@@ -154,11 +154,13 @@ struct SBufferManager : public IBufferManager
         return m_StrTable->RegisterStr(m_PathBuilder.c_str());
     }
 
-    void SetImageHasTransparency(CRegisteredString inImagePath, bool inHasTransparency) override
+    void SetImageHasTransparency(CRegisteredString inImagePath, bool inHasTransparency,
+                                 bool hasOpaque) override
     {
         pair<TImageMap::iterator, bool> theImage =
             m_ImageMap.insert(make_pair(inImagePath, SImageEntry()));
         theImage.first->second.m_TextureFlags.SetHasTransparency(inHasTransparency);
+        theImage.first->second.m_TextureFlags.setHasOpaquePixels(hasOpaque);
     }
 
     bool GetImageHasTransparency(CRegisteredString inSourcePath) const override
@@ -166,6 +168,14 @@ struct SBufferManager : public IBufferManager
         TImageMap::const_iterator theIter = m_ImageMap.find(inSourcePath);
         if (theIter != m_ImageMap.end())
             return theIter->second.m_TextureFlags.HasTransparency();
+        return false;
+    }
+
+    bool GetImageHasOpaquePixels(CRegisteredString inSourcePath) const override
+    {
+        TImageMap::const_iterator theIter = m_ImageMap.find(inSourcePath);
+        if (theIter != m_ImageMap.end())
+            return theIter->second.m_TextureFlags.HasOpaquePixels();
         return false;
     }
 
@@ -512,9 +522,12 @@ struct SBufferManager : public IBufferManager
             if (theDecompressedImage.data)
                 inLoadedImage.ReleaseDecompressedTexture(theDecompressedImage);
         }
-        if (wasInserted == true || inForceScanForTransparency)
-            theImage.first->second.m_TextureFlags.SetHasTransparency(
-                inLoadedImage.ScanForTransparency());
+        if (wasInserted || inForceScanForTransparency) {
+            auto &flags = theImage.first->second.m_TextureFlags;
+            bool alsoOpaquePixels = false;
+            flags.SetHasTransparency(inLoadedImage.ScanForTransparency(alsoOpaquePixels));
+            flags.setHasOpaquePixels(alsoOpaquePixels);
+        }
         theImage.first->second.m_Texture = theTexture;
         return theImage.first->second;
     }

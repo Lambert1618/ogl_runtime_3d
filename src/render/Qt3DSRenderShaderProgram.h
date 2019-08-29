@@ -106,7 +106,7 @@ namespace render {
                              NVConstDataRef<QT3DSI8> fragmentShaderSource, bool binaryProgram = false);
 
         /**
-         * @brief create tesselation control shader
+         * @brief create tessellation control shader
          *
          * @param[in] context					Pointer to render context
          * @param[in] tessControlShaderSource	Tessellation control shader source code
@@ -120,7 +120,7 @@ namespace render {
                                 bool binaryProgram = false);
 
         /**
-         * @brief create tesselation evaluation shader
+         * @brief create tessellation evaluation shader
          *
          * @param[in] context						Pointer to render context
          * @param[in] tessEvaluationShaderSource	Tessellation evaluation shader source code

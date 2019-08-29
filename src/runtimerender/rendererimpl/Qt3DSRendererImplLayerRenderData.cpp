@@ -497,7 +497,7 @@ namespace render {
     }
 
     inline void RenderRenderableShadowMapPass(SLayerRenderData &inData, SRenderableObject &inObject,
-                                              const QT3DSVec2 &inCameraProps, TShaderFeatureSet,
+                                              const QT3DSVec2 &inCameraProps, TShaderFeatureSet set,
                                               QT3DSU32 lightIndex, const SCamera &inCamera)
     {
         if (!inObject.m_RenderableFlags.IsShadowCaster())
@@ -505,10 +505,15 @@ namespace render {
 
         SShadowMapEntry *pEntry = inData.m_ShadowMapManager->GetShadowMapEntry(lightIndex);
 
-        if (inObject.m_RenderableFlags.IsDefaultMaterialMeshSubset())
-            static_cast<SSubsetRenderableBase &>(inObject).RenderShadowMapPass(
-                inCameraProps, inData.m_Lights[lightIndex], inCamera, pEntry);
-        else if (inObject.m_RenderableFlags.IsCustomMaterialMeshSubset()) {
+        if (inObject.m_RenderableFlags.IsDefaultMaterialMeshSubset()) {
+            auto &sub = static_cast<SSubsetRenderable &>(inObject);
+            if (sub.m_Generator.alphaTestEnabled()) {
+                sub.RenderShadow(inCameraProps, set, inData.m_Lights[lightIndex], inCamera, pEntry);
+            } else {
+                sub.RenderShadowMapPass(inCameraProps, inData.m_Lights[lightIndex], inCamera,
+                                        pEntry);
+            }
+        } else if (inObject.m_RenderableFlags.IsCustomMaterialMeshSubset()) {
             static_cast<SSubsetRenderableBase &>(inObject).RenderShadowMapPass(
                 inCameraProps, inData.m_Lights[lightIndex], inCamera, pEntry);
         } else if (inObject.m_RenderableFlags.IsPath()) {
@@ -667,8 +672,10 @@ namespace render {
             return;
 
         // Check if we have anything to render
-        if (m_OpaqueObjects.size() == 0 || m_Lights.size() == 0)
+        if ((m_OpaqueObjects.size() == 0 && GetTransparentRenderableObjects().size() == 0)
+                || m_Lights.size() == 0) {
             return;
+        }
 
         m_Renderer.BeginLayerDepthPassRender(*this);
 
@@ -786,11 +793,15 @@ namespace render {
     }
 
     inline void RenderRenderableDepthPass(SLayerRenderData &inData, SRenderableObject &inObject,
-                                          const QT3DSVec2 &inCameraProps, TShaderFeatureSet, QT3DSU32,
-                                          const SCamera &inCamera)
+                                          const QT3DSVec2 &inCameraProps, TShaderFeatureSet set,
+                                          QT3DSU32, const SCamera &inCamera)
     {
         if (inObject.m_RenderableFlags.IsDefaultMaterialMeshSubset()) {
-            static_cast<SSubsetRenderable &>(inObject).RenderDepthPass(inCameraProps);
+            SSubsetRenderable &sub = static_cast<SSubsetRenderable &>(inObject);
+            if (sub.m_Generator.alphaTestEnabled())
+                sub.Render(inCameraProps, set, true);
+            else
+                sub.RenderDepthPass(inCameraProps);
         } else if (inObject.m_RenderableFlags.IsText()) {
             static_cast<STextRenderable &>(inObject).RenderDepthPass(inCameraProps);
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,2)
@@ -817,7 +828,7 @@ namespace render {
 
         // Avoid running this method if possible.
         if ((inEnableTransparentDepthWrite == false
-             && (m_OpaqueObjects.size() == 0
+             && ((m_OpaqueObjects.size() == 0 && m_TransparentObjects.size() == 0)
                  || m_Layer.m_Flags.IsLayerEnableDepthPrepass() == false))
             || m_Layer.m_Flags.IsLayerEnableDepthTest() == false)
             return;
@@ -844,11 +855,11 @@ namespace render {
     }
 
     inline void RenderRenderable(SLayerRenderData &inData, SRenderableObject &inObject,
-                                 const QT3DSVec2 &inCameraProps, TShaderFeatureSet inFeatureSet, QT3DSU32,
-                                 const SCamera &inCamera)
+                                 const QT3DSVec2 &inCameraProps, TShaderFeatureSet inFeatureSet,
+                                 QT3DSU32, const SCamera &inCamera)
     {
         if (inObject.m_RenderableFlags.IsDefaultMaterialMeshSubset())
-            static_cast<SSubsetRenderable &>(inObject).Render(inCameraProps, inFeatureSet);
+            static_cast<SSubsetRenderable &>(inObject).Render(inCameraProps, inFeatureSet, false);
         else if (inObject.m_RenderableFlags.IsText())
             static_cast<STextRenderable &>(inObject).Render(inCameraProps);
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,2)
@@ -880,42 +891,18 @@ namespace render {
         }
     }
 
-    void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
-                                         bool inEnableBlending, bool inEnableDepthWrite,
-                                         bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
-                                         const SCamera &inCamera, CResourceFrameBuffer *theFB)
+    void SLayerRenderData::renderTransparentObjectsPass(
+            TRenderRenderableFunction inRenderFn, bool inEnableBlending,
+            bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
+            const SCamera &inCamera, CResourceFrameBuffer *theFB)
     {
+        NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
         NVRenderContext &theRenderContext(m_Renderer.GetContext());
-        theRenderContext.SetDepthFunction(qt3ds::render::NVRenderBoolOp::LessThanOrEqual);
-        theRenderContext.SetBlendingEnabled(false);
         QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
-        NVDataRef<SRenderableObject *> theOpaqueObjects = GetOpaqueRenderableObjects();
-        bool usingDepthBuffer =
-            m_Layer.m_Flags.IsLayerEnableDepthTest() && theOpaqueObjects.size() > 0;
-
-        if (usingDepthBuffer) {
-            theRenderContext.SetDepthTestEnabled(true);
-            theRenderContext.SetDepthWriteEnabled(inEnableDepthWrite);
-        } else {
-            theRenderContext.SetDepthWriteEnabled(false);
-            theRenderContext.SetDepthTestEnabled(false);
-        }
-
-        for (QT3DSU32 idx = 0, end = theOpaqueObjects.size(); idx < end; ++idx) {
-            SRenderableObject &theObject(*theOpaqueObjects[idx]);
-            SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
-                                               theObject.m_ScopedLights);
-            SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
-            inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
-                       inCamera);
-        }
-
-        // transparent objects
         if (inEnableBlending || m_Layer.m_Flags.IsLayerEnableDepthTest() == false) {
             theRenderContext.SetBlendingEnabled(true && inEnableBlending);
             theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
 
-            NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
             // Assume all objects have transparency if the layer's depth test enabled flag is true.
             if (m_Layer.m_Flags.IsLayerEnableDepthTest() == true) {
                 for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
@@ -953,7 +940,8 @@ namespace render {
                             // restore blending status
                             theRenderContext.SetBlendingEnabled(inEnableBlending);
                             // restore depth test status
-                            theRenderContext.SetDepthTestEnabled(usingDepthBuffer);
+                            theRenderContext.SetDepthTestEnabled(
+                                        m_Layer.m_Flags.IsLayerEnableDepthTest());
                             theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
                         }
 #endif
@@ -1004,6 +992,59 @@ namespace render {
                 }
             }
         }
+    };
+
+    void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
+                                         bool inEnableBlending, bool inEnableDepthWrite,
+                                         bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
+                                         const SCamera &inCamera, CResourceFrameBuffer *theFB)
+    {
+        NVRenderContext &theRenderContext(m_Renderer.GetContext());
+        theRenderContext.SetDepthFunction(qt3ds::render::NVRenderBoolOp::LessThanOrEqual);
+        theRenderContext.SetBlendingEnabled(false);
+        QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
+        NVDataRef<SRenderableObject *> theOpaqueObjects = GetOpaqueRenderableObjects();
+
+        if (m_Layer.m_Flags.IsLayerEnableDepthTest()) {
+            theRenderContext.SetDepthTestEnabled(true);
+            theRenderContext.SetDepthWriteEnabled(inEnableDepthWrite);
+        } else {
+            theRenderContext.SetDepthWriteEnabled(false);
+            theRenderContext.SetDepthTestEnabled(false);
+        }
+
+        for (QT3DSU32 idx = 0, end = theOpaqueObjects.size(); idx < end; ++idx) {
+            SRenderableObject &theObject(*theOpaqueObjects[idx]);
+            SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
+                                               theObject.m_ScopedLights);
+            SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+            inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
+                       inCamera);
+        }
+
+        NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
+        // Also draw opaque parts of transparent objects
+        m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
+        for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
+            SRenderableObject &theObject(*theTransparentObjects[idx]);
+            SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
+                                               theObject.m_ScopedLights);
+            SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+            inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
+                       inCamera);
+        }
+
+        m_Renderer.setAlphaTest(true, -1.0f, 1.0f);
+        // transparent parts of transparent objects
+        // does not render objects without alpha test enabled so
+        // we need another pass without alpha test
+        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
+                                     indexLight, inCamera, theFB);
+
+        m_Renderer.setAlphaTest(false, 1.0, 1.0);
+        // transparent objects without alpha test
+        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
+                                     indexLight, inCamera, theFB);
     }
 
     void SLayerRenderData::Render(CResourceFrameBuffer *theFB)
@@ -1483,7 +1524,7 @@ namespace render {
         // to that frame buffer.
         theFB.EnsureFrameBuffer();
 
-        bool hasDepthObjects = m_OpaqueObjects.size() > 0;
+        bool hasDepthObjects = m_OpaqueObjects.size() > 0 || m_TransparentObjects.size() > 0;
         bool requiresDepthStencilBuffer =
             hasDepthObjects || thePrepResult.m_Flags.RequiresStencilBuffer();
         NVRenderRect theNewViewport(0, 0, theLayerTextureDimensions.width(),
@@ -1543,7 +1584,9 @@ namespace render {
 
             if (thePrepResult.m_Flags.RequiresShadowMapPass() && m_ProgressiveAAPassIndex == 0) {
                 // shadow map path
+                StartProfiling("Shadow pass", false);
                 RenderShadowMapPass(&theFB);
+                EndProfiling("Shadow pass");
             }
 
             if (sampleCount > 1) {

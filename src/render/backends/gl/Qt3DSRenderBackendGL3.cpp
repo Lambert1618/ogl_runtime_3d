@@ -43,10 +43,10 @@
 
 #if defined(QT_OPENGL_ES)
 #define GL_CALL_TIMER_EXT(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
-#define GL_CALL_TESSELATION_EXT(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
+#define GL_CALL_TESSELLATION_EXT(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
 #else
 #define GL_CALL_TIMER_EXT(x) m_timerExtension->x; RENDER_LOG_ERROR_PARAMS(x);
-#define GL_CALL_TESSELATION_EXT(x) m_tessellationShader->x; RENDER_LOG_ERROR_PARAMS(x);
+#define GL_CALL_TESSELLATION_EXT(x) m_tessellationShader->x; RENDER_LOG_ERROR_PARAMS(x);
 #define GL_CALL_MULTISAMPLE_EXT(x) m_multiSample->x; RENDER_LOG_ERROR_PARAMS(x);
 #endif
 
@@ -408,9 +408,9 @@ namespace render {
             && m_pCurrentMiscState->m_PatchVertexCount != inputAssembler->m_PatchVertexCount) {
             m_pCurrentMiscState->m_PatchVertexCount = inputAssembler->m_PatchVertexCount;
 #if defined(QT_OPENGL_ES)
-            GL_CALL_TESSELATION_EXT(glPatchParameteriEXT(GL_PATCH_VERTICES, inputAssembler->m_PatchVertexCount));
+            GL_CALL_TESSELLATION_EXT(glPatchParameteriEXT(GL_PATCH_VERTICES, inputAssembler->m_PatchVertexCount));
 #else
-            GL_CALL_TESSELATION_EXT(glPatchParameteri(GL_PATCH_VERTICES, inputAssembler->m_PatchVertexCount));
+            GL_CALL_TESSELLATION_EXT(glPatchParameteri(GL_PATCH_VERTICES, inputAssembler->m_PatchVertexCount));
 #endif
         }
 

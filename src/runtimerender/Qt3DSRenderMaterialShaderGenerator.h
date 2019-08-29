@@ -144,7 +144,8 @@ namespace render {
                               const QT3DSVec2 &inCameraVec, const QT3DSMat44 &inModelViewProjection,
                               const QT3DSMat33 &inNormalMatrix, const QT3DSMat44 &inGlobalTransform,
                               SRenderableImage *inFirstImage, QT3DSF32 inOpacity,
-                              SLayerGlobalRenderProperties inRenderProperties) = 0;
+                              SLayerGlobalRenderProperties inRenderProperties,
+                              const QT3DSVec2 &alphaOpRef) = 0;
     };
 }
 }

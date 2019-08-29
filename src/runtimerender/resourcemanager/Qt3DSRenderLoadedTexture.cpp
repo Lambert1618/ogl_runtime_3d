@@ -370,9 +370,10 @@ struct STextureDataWriter
 struct STextureAlphaScanner
 {
     bool &m_Alpha;
+    bool *m_alsoOpaque = nullptr;
 
-    STextureAlphaScanner(bool &inAlpha)
-        : m_Alpha(inAlpha)
+    STextureAlphaScanner(bool &inAlpha, bool *alsoOpaque)
+        : m_Alpha(inAlpha), m_alsoOpaque(alsoOpaque)
     {
     }
 
@@ -381,12 +382,19 @@ struct STextureAlphaScanner
         Q_UNUSED(X)
         Q_UNUSED(Y)
         QT3DSU32 offset = 0;
-        for (QT3DSU32 yidx = 0; yidx < height; ++yidx) {
-            for (QT3DSU32 xidx = 0; xidx < width; ++xidx, offset += 4) {
+        bool opq = false;
+        bool exitLoop = false;
+        for (QT3DSU32 yidx = 0; yidx < height && !exitLoop; ++yidx) {
+            for (QT3DSU32 xidx = 0; xidx < width && !exitLoop; ++xidx, offset += 4) {
                 if (pixelData[offset + 3] < 255)
                     m_Alpha = true;
+                else
+                    opq = true;
+                exitLoop = m_Alpha && (opq || !m_alsoOpaque);
             }
         }
+        if (m_alsoOpaque)
+            *m_alsoOpaque = opq;
     }
 
     // If we detect alpha we can stop right there.
@@ -423,21 +431,27 @@ static void DecompressDDS(void *inSrc, QT3DSU32 inDataSize, QT3DSU32 inWidth, QT
     }
 }
 
-bool ScanDDSForAlpha(Qt3DSDDSImage *dds)
+bool ScanDDSForAlpha(Qt3DSDDSImage *dds, bool *alsoOpaquePixels = nullptr)
 {
     bool hasAlpha = false;
     switch (dds->format) {
     case qt3ds::render::NVRenderTextureFormats::RGBA_DXT1:
         DecompressDDS<DXT_BLOCKDECODER_1>(dds->data[0], dds->size[0], dds->mipwidth[0],
-                                          dds->mipheight[0], STextureAlphaScanner(hasAlpha));
+                                          dds->mipheight[0], STextureAlphaScanner(hasAlpha,
+                                                                                  alsoOpaquePixels)
+                );
         break;
     case qt3ds::render::NVRenderTextureFormats::RGBA_DXT3:
         DecompressDDS<DXT_BLOCKDECODER_3>(dds->data[0], dds->size[0], dds->mipwidth[0],
-                                          dds->mipheight[0], STextureAlphaScanner(hasAlpha));
+                                          dds->mipheight[0], STextureAlphaScanner(hasAlpha,
+                                                                                  alsoOpaquePixels)
+                );
         break;
     case qt3ds::render::NVRenderTextureFormats::RGBA_DXT5:
         DecompressDDS<DXT_BLOCKDECODER_5>(dds->data[0], dds->size[0], dds->mipwidth[0],
-                                          dds->mipheight[0], STextureAlphaScanner(hasAlpha));
+                                          dds->mipheight[0], STextureAlphaScanner(hasAlpha,
+                                                                                  alsoOpaquePixels)
+                );
         break;
     default:
         QT3DS_ASSERT(false);
@@ -447,10 +461,11 @@ bool ScanDDSForAlpha(Qt3DSDDSImage *dds)
 }
 
 bool ScanImageForAlpha(const void *inData, QT3DSU32 inWidth, QT3DSU32 inHeight, QT3DSU32 inPixelSizeInBytes,
-                       QT3DSU8 inAlphaSizeInBits)
+                       QT3DSU8 inAlphaSizeInBits, bool *alsoOpaque = nullptr)
 {
     const QT3DSU8 *rowPtr = reinterpret_cast<const QT3DSU8 *>(inData);
     bool hasAlpha = false;
+    bool hasOpaque = false;
     if (inAlphaSizeInBits == 0)
         return hasAlpha;
     if (inPixelSizeInBytes != 2 && inPixelSizeInBytes != 4) {
@@ -476,8 +491,12 @@ bool ScanImageForAlpha(const void *inData, QT3DSU32 inWidth, QT3DSU32 inHeight, 
             pixelValue = pixelValue >> alphaRightShift;
             if (pixelValue < maxAlphaValue)
                 hasAlpha = true;
+            else
+                hasOpaque = true;
         }
     }
+    if (alsoOpaque)
+        *alsoOpaque = hasOpaque;
     return hasAlpha;
 }
 }
@@ -505,7 +524,7 @@ void SLoadedTexture::release()
     theAllocator->deallocate(this);
 }
 
-bool SLoadedTexture::ScanForTransparency()
+bool SLoadedTexture::ScanForTransparency(bool &alsoOpaquePixels)
 {
     switch (format) {
     case NVRenderTextureFormats::SRGB8A8:
@@ -513,7 +532,7 @@ bool SLoadedTexture::ScanForTransparency()
         if (!data) { // dds
             return true;
         } else {
-            return ScanImageForAlpha(data, width, height, 4, 8);
+            return ScanImageForAlpha(data, width, height, 4, 8, &alsoOpaquePixels);
         }
         break;
     // Scan the image.
@@ -528,7 +547,7 @@ bool SLoadedTexture::ScanForTransparency()
         if (!data) { // dds
             return true;
         } else {
-            return ScanImageForAlpha(data, width, height, 2, 1);
+            return ScanImageForAlpha(data, width, height, 2, 1, &alsoOpaquePixels);
         }
         break;
     case NVRenderTextureFormats::Alpha8:
@@ -551,7 +570,7 @@ bool SLoadedTexture::ScanForTransparency()
     case NVRenderTextureFormats::RGBA_DXT1:
     case NVRenderTextureFormats::RGBA_DXT5:
         if (dds) {
-            return ScanDDSForAlpha(dds);
+            return ScanDDSForAlpha(dds, &alsoOpaquePixels);
         } else {
             QT3DS_ASSERT(false);
             return false;

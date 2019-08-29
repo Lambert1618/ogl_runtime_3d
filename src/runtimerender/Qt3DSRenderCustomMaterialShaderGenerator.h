@@ -58,7 +58,8 @@ namespace render {
                               const QT3DSVec2 &inCameraVec, const QT3DSMat44 &inModelViewProjection,
                               const QT3DSMat33 &inNormalMatrix, const QT3DSMat44 &inGlobalTransform,
                               SRenderableImage *inFirstImage, QT3DSF32 inOpacity,
-                              SLayerGlobalRenderProperties inRenderProperties) override = 0;
+                              SLayerGlobalRenderProperties inRenderProperties,
+                              const QT3DSVec2 &alphaOpRef) override = 0;
 
         static ICustomMaterialShaderGenerator &
         CreateCustomMaterialShaderGenerator(IQt3DSRenderContext &inRenderContext);

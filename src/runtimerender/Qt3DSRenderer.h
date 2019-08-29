@@ -100,6 +100,8 @@ namespace render {
         virtual void EnableLayerGpuProfiling(bool inEnabled) = 0;
         virtual bool IsLayerGpuProfilingEnabled() const = 0;
 
+        virtual void setAlphaTest(bool enable, float op, float ref) = 0;
+
         // Get the camera that rendered this node last render
         virtual SCamera *GetCameraForNode(const SNode &inNode) const = 0;
         virtual Option<SCuboidRect> GetCameraBounds(const SGraphObject &inObject) = 0;

@@ -134,7 +134,7 @@ class Qt3DSOpenGLES2Extensions : public Qt3DSOpenGLExtensions
 public:
     Qt3DSOpenGLES2Extensions();
 
-    // tesselation shader
+    // tessellation shader
     void glPatchParameteriEXT(GLenum pname, GLint value);
 
     // timer

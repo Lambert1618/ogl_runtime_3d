@@ -170,6 +170,7 @@ struct SShaderGeneratorGeneratedShader
     NVRenderCachedShaderProperty<NVRenderTexture2D *> m_LightProbe2;
     NVRenderCachedShaderProperty<QT3DSVec4> m_LightProbe2Props;
     NVRenderCachedShaderProperty<QT3DSVec2> m_LightProbe2Size;
+    NVRenderCachedShaderProperty<QT3DSVec2> m_alphaTestOp;
 
     NVRenderCachedShaderBuffer<qt3ds::render::NVRenderShaderConstantBuffer *> m_AoShadowParams;
     NVRenderCachedShaderBuffer<qt3ds::render::NVRenderShaderConstantBuffer *> m_LightsBuffer;
@@ -216,9 +217,10 @@ struct SShaderGeneratorGeneratedShader
         , m_LightProbe2("light_probe2", inShader)
         , m_LightProbe2Props("light_probe2_props", inShader)
         , m_LightProbe2Size("light_probe2_size", inShader)
+        , m_alphaTestOp("alphaOpRef", inShader)
         , m_AoShadowParams("cbAoShadow", inShader)
         , m_LightsBuffer("cbBufferLights", inShader)
-        , m_lightConstantProperties(NULL)
+        , m_lightConstantProperties(nullptr)
         , m_Images(inContext.GetAllocator(), "SShaderGeneratorGeneratedShader::m_Images")
         , m_Lights(inContext.GetAllocator(), "SShaderGeneratorGeneratedShader::m_Lights")
         , m_ShadowMaps(inContext.GetAllocator(), "SShaderGeneratorGeneratedShader::m_ShadowMaps")
@@ -316,11 +318,11 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     SShaderGenerator(IQt3DSRenderContext &inRc)
         : m_RenderContext(inRc)
         , m_ProgramGenerator(m_RenderContext.GetShaderProgramGenerator())
-        , m_CurrentMaterial(NULL)
-        , m_CurrentKey(NULL)
-        , m_ShadowMapManager(NULL)
-        , m_CurrentPipeline(NULL)
-        , m_FirstImage(NULL)
+        , m_CurrentMaterial(nullptr)
+        , m_CurrentKey(nullptr)
+        , m_ShadowMapManager(nullptr)
+        , m_CurrentPipeline(nullptr)
+        , m_FirstImage(nullptr)
         , m_LightsAsSeparateUniforms(false)
         , m_ProgramToShaderMap(inRc.GetAllocator(), "m_ProgramToShaderMap")
         , m_ConstantBuffers(inRc.GetAllocator(), "m_ConstantBuffers")
@@ -546,7 +548,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     void AddTranslucencyIrradiance(IShaderStageGenerator &infragmentShader, SRenderableImage *image,
                                    TStrType inLightPrefix, bool areaLight)
     {
-        if (image == NULL)
+        if (image == nullptr)
             return;
 
         addFunction(infragmentShader, "diffuseReflectionWrapBSDF");
@@ -792,7 +794,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
         // we only create if if we have lights
         if (!inLightCount || !theContext.GetConstantBufferSupport())
-            return NULL;
+            return nullptr;
 
         CRegisteredString theName = theContext.GetStringTable().RegisterStr("cbBufferLights");
         NVRenderConstantBuffer *pCB = theContext.GetConstantBuffer(theName);
@@ -807,7 +809,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 (sizeof(SLightSourceShader) * QT3DS_MAX_NUM_LIGHTS) + (4 * sizeof(QT3DSI32)), cBuffer);
             if (!pCB) {
                 QT3DS_ASSERT(false);
-                return NULL;
+                return nullptr;
             }
             // init first set
             memset(&s[0], 0x0, sizeof(SLightSourceShader));
@@ -888,10 +890,10 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     {
         // vertex displacement
         QT3DSU32 imageIdx = 0;
-        SRenderableImage *displacementImage = NULL;
+        SRenderableImage *displacementImage = nullptr;
         QT3DSU32 displacementImageIdx = 0;
 
-        for (SRenderableImage *img = m_FirstImage; img != NULL;
+        for (SRenderableImage *img = m_FirstImage; img != nullptr;
              img = img->m_NextImage, ++imageIdx) {
             if (img->m_MapType == ImageMapTypes::Displacement) {
                 displacementImage = img;
@@ -910,7 +912,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         bool vertexColorsEnabled = Material().IsVertexColorsEnabled();
 
         bool hasLighting = Material().HasLighting();
-        bool hasImage = m_FirstImage != NULL;
+        bool hasImage = m_FirstImage != nullptr;
 
         bool hasIblProbe = m_DefaultMaterialShaderKeyProperties.m_HasIbl.GetValue(inKey);
         bool hasSpecMap = false;
@@ -918,30 +920,30 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         bool hasEmissiveMap = false;
         bool hasLightmaps = false;
         // Pull the bump out as
-        SRenderableImage *bumpImage = NULL;
+        SRenderableImage *bumpImage = nullptr;
         QT3DSU32 imageIdx = 0;
         QT3DSU32 bumpImageIdx = 0;
-        SRenderableImage *specularAmountImage = NULL;
+        SRenderableImage *specularAmountImage = nullptr;
         QT3DSU32 specularAmountImageIdx = 0;
-        SRenderableImage *roughnessImage = NULL;
+        SRenderableImage *roughnessImage = nullptr;
         QT3DSU32 roughnessImageIdx = 0;
         // normal mapping
-        SRenderableImage *normalImage = NULL;
+        SRenderableImage *normalImage = nullptr;
         QT3DSU32 normalImageIdx = 0;
         // translucency map
-        SRenderableImage *translucencyImage = NULL;
+        SRenderableImage *translucencyImage = nullptr;
         QT3DSU32 translucencyImageIdx = 0;
         // lightmaps
-        SRenderableImage *lightmapIndirectImage = NULL;
+        SRenderableImage *lightmapIndirectImage = nullptr;
         QT3DSU32 lightmapIndirectImageIdx = 0;
-        SRenderableImage *lightmapRadiosityImage = NULL;
+        SRenderableImage *lightmapRadiosityImage = nullptr;
         QT3DSU32 lightmapRadiosityImageIdx = 0;
-        SRenderableImage *lightmapShadowImage = NULL;
+        SRenderableImage *lightmapShadowImage = nullptr;
         QT3DSU32 lightmapShadowImageIdx = 0;
         const bool supportStandardDerivatives
                 = m_RenderContext.GetRenderContext().IsStandardDerivativesSupported();
 
-        for (SRenderableImage *img = m_FirstImage; img != NULL;
+        for (SRenderableImage *img = m_FirstImage; img != nullptr;
              img = img->m_NextImage, ++imageIdx) {
             hasSpecMap = img->m_MapType == ImageMapTypes::Specular;
             if (img->m_MapType == ImageMapTypes::Bump) {
@@ -983,6 +985,8 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         bool enableSSDO = false;
         bool enableShadowMaps = false;
         bool enableBumpNormal = normalImage || bumpImage;
+        bool enableAlphaTest
+                = m_DefaultMaterialShaderKeyProperties.m_AlphaTestEnabled.GetValue(inKey);
 
         for (QT3DSU32 idx = 0; idx < FeatureSet().size(); ++idx) {
             eastl::string name(FeatureSet()[idx].m_Name.c_str());
@@ -1051,7 +1055,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             fragmentShader.Append("\tvec3 vertColor = vec3(1.0);");
 
         // You do bump or normal mapping but not both
-        if (bumpImage != NULL) {
+        if (bumpImage != nullptr) {
             GenerateImageUVCoordinates(bumpImageIdx, *bumpImage);
             fragmentShader.AddUniform("bumpAmount", "float");
 
@@ -1065,7 +1069,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             fragmentShader << "\tbinormal = normalize(cross(world_normal, tangent) );\n";
             fragmentShader << "\ttangent = normalize(cross(binormal, world_normal) );\n";
 
-        } else if (normalImage != NULL) {
+        } else if (normalImage != nullptr) {
             GenerateImageUVCoordinates(normalImageIdx, *normalImage);
 
             fragmentShader.AddInclude("defaultMaterialFileNormalTexture.glsllib");
@@ -1098,7 +1102,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 fragmentShader.AddUniform("material_properties", "vec4");
             }
 
-            if (lightmapIndirectImage != NULL) {
+            if (lightmapIndirectImage != nullptr) {
                 GenerateImageUVCoordinates(lightmapIndirectImageIdx, *lightmapIndirectImage, 1);
                 fragmentShader << "\tvec4 indirect_light = texture2D( " << m_ImageSampler << ", "
                                << m_ImageFragCoords << ");" << Endl;
@@ -1110,7 +1114,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 }
             }
 
-            if (lightmapRadiosityImage != NULL) {
+            if (lightmapRadiosityImage != nullptr) {
                 GenerateImageUVCoordinates(lightmapRadiosityImageIdx, *lightmapRadiosityImage, 1);
                 fragmentShader << "\tvec4 direct_light = texture2D( " << m_ImageSampler << ", "
                                << m_ImageFragCoords << ");" << Endl;
@@ -1122,7 +1126,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 }
             }
 
-            if (translucencyImage != NULL) {
+            if (translucencyImage != nullptr) {
                 fragmentShader.AddUniform("translucentFalloff", "float");
                 fragmentShader.AddUniform("diffuseLightWrap", "float");
 
@@ -1478,6 +1482,14 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             }
         }
 
+        // Alpha test
+        if (enableAlphaTest) {
+            fragmentShader.AddUniform("alphaOpRef", "vec2");
+            fragmentShader.Append(
+                        "\tif (dot(vec2(global_diffuse_light.a, 1.0), alphaOpRef) <= 0.0)\n"
+                        "\t\tdiscard;");
+        }
+
         if (hasEmissiveMap) {
             fragmentShader.Append("\tglobal_diffuse_light.rgb += global_emission.rgb;");
         }
@@ -1498,6 +1510,343 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         }
     }
 
+    // generate default material shader for depth only pass
+    NVRenderShaderProgram *GenerateDepthPassShader(
+        const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+        IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+        SRenderableImage *inFirstImage, bool inHasTransparency,
+        const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") override
+    {
+        QT3DS_ASSERT(inMaterial.m_Type == GraphObjectTypes::DefaultMaterial);
+        m_CurrentMaterial = static_cast<const SDefaultMaterial *>(&inMaterial);
+        m_CurrentKey = &inShaderDescription;
+        m_CurrentPipeline = static_cast<IDefaultMaterialVertexPipeline *>(&inVertexPipeline);
+        m_CurrentFeatureSet = inFeatureSet;
+        m_FirstImage = inFirstImage;
+        m_HasTransparency = inHasTransparency;
+
+        ProgramGenerator().BeginProgram();
+
+        bool enableAlphaTest = m_DefaultMaterialShaderKeyProperties
+                .m_AlphaTestEnabled.GetValue(inShaderDescription);
+
+        QT3DS_ASSERT(m_FirstImage != nullptr);
+        if (!enableAlphaTest)
+            return nullptr;
+        QT3DS_ASSERT(enableAlphaTest);
+
+        m_GeneratedShaderString.clear();
+        m_GeneratedShaderString.assign(nonNull(inVertexPipelineName));
+        m_GeneratedShaderString.append("depth--");
+
+        SShaderDefaultMaterialKey theKey(Key());
+        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties,
+                        SShaderDefaultMaterialKeyProperties::DepthKey);
+
+        m_LightsAsSeparateUniforms = !m_RenderContext.GetRenderContext().GetConstantBufferSupport();
+
+        VertexGenerator().BeginFragmentGeneration();
+        IShaderStageGenerator &fragmentShader(FragmentGenerator());
+        IDefaultMaterialVertexPipeline &vertexShader(VertexGenerator());
+
+        vertexShader.AddIncoming("attr_pos", "vec3");
+        vertexShader.AddUniform("model_view_projection", "mat4");
+        vertexShader.Append("void main() {");
+        vertexShader.Append("\tgl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("\tvec3 uTransform;");
+        vertexShader.Append("\tvec3 vTransform;");
+
+        fragmentShader << "\tfloat global_opacity = object_opacity;" << Endl;
+
+        fragmentShader.Append("\tvec4 texture_color;");
+        QT3DSU32 idx = 0;
+        for (SRenderableImage *image = m_FirstImage; image; image = image->m_NextImage, ++idx) {
+            // Various maps are handled on a different locations
+            if (image->m_MapType == ImageMapTypes::Bump
+                || image->m_MapType == ImageMapTypes::Normal
+                || image->m_MapType == ImageMapTypes::Displacement
+                || image->m_MapType == ImageMapTypes::SpecularAmountMap
+                || image->m_MapType == ImageMapTypes::Roughness
+                || image->m_MapType == ImageMapTypes::Translucency
+                || image->m_MapType == ImageMapTypes::LightmapIndirect
+                || image->m_MapType == ImageMapTypes::LightmapRadiosity
+                || image->m_MapType == ImageMapTypes::Emissive) {
+                continue;
+            }
+
+            eastl::basic_string<char8_t> texSwizzle, lookupSwizzle, texLodStr;
+
+            GenerateImageUVCoordinates(idx, *image, 0);
+
+            GenerateTextureSwizzle(
+                image->m_Image.m_TextureData.m_Texture->GetTextureSwizzleMode(), texSwizzle,
+                lookupSwizzle);
+
+            if (texLodStr.empty()) {
+                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << " = texture2D( "
+                               << m_ImageSampler << ", " << m_ImageFragCoords << ")"
+                               << lookupSwizzle.c_str() << ";" << Endl;
+            } else {
+                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << "= textureLod( "
+                               << m_ImageSampler << ", " << m_ImageFragCoords << ", "
+                               << texLodStr.c_str() << " )" << lookupSwizzle.c_str() << ";"
+                               << Endl;
+            }
+
+            switch (image->m_MapType) {
+            case ImageMapTypes::Diffuse: // assume images are premultiplied.
+            case ImageMapTypes::LightmapShadow:
+            case ImageMapTypes::Specular:
+            case ImageMapTypes::Opacity:
+                fragmentShader.Append("\tglobal_opacity *= texture_color.a;");
+                break;
+            default:
+                break;
+            }
+        }
+
+        fragmentShader.AddUniform("alphaOpRef", "vec2");
+        fragmentShader.Append("\tif (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
+                              "\t\tdiscard;");
+        fragmentShader.Append("\tfragOutput = vec4(0.0);");
+        fragmentShader.Append("}");
+        vertexShader.Append("}");
+
+        return ProgramGenerator().CompileGeneratedShader(m_GeneratedShaderString.c_str(),
+                                                         SShaderCacheProgramFlags(), FeatureSet());
+
+    }
+
+    // generate default material shader cube depth shader
+    NVRenderShaderProgram *GenerateCubeDepthShader(
+        const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+        IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+        SRenderableImage *inFirstImage, bool inHasTransparency,
+        const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") override
+    {
+        QT3DS_ASSERT(inMaterial.m_Type == GraphObjectTypes::DefaultMaterial);
+        m_CurrentMaterial = static_cast<const SDefaultMaterial *>(&inMaterial);
+        m_CurrentKey = &inShaderDescription;
+        m_CurrentPipeline = static_cast<IDefaultMaterialVertexPipeline *>(&inVertexPipeline);
+        m_CurrentFeatureSet = inFeatureSet;
+        m_FirstImage = inFirstImage;
+        m_HasTransparency = inHasTransparency;
+
+        ProgramGenerator().BeginProgram();
+
+        bool enableAlphaTest = m_DefaultMaterialShaderKeyProperties
+                .m_AlphaTestEnabled.GetValue(inShaderDescription);
+
+        QT3DS_ASSERT(m_FirstImage != nullptr);
+        if (!enableAlphaTest)
+            return nullptr;
+        QT3DS_ASSERT(enableAlphaTest);
+
+        m_GeneratedShaderString.clear();
+        m_GeneratedShaderString.assign(nonNull(inVertexPipelineName));
+        m_GeneratedShaderString.append("shadowcube--");
+
+        SShaderDefaultMaterialKey theKey(Key());
+        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties,
+                        SShaderDefaultMaterialKeyProperties::DepthKey);
+
+        m_LightsAsSeparateUniforms = !m_RenderContext.GetRenderContext().GetConstantBufferSupport();
+
+        VertexGenerator().BeginFragmentGeneration();
+        IShaderStageGenerator &fragmentShader(FragmentGenerator());
+        IDefaultMaterialVertexPipeline &vertexShader(VertexGenerator());
+
+        vertexShader.AddIncoming("attr_pos", "vec3");
+        vertexShader.AddUniform("model_matrix", "mat4");
+        vertexShader.AddUniform("model_view_projection", "mat4");
+        vertexShader.AddOutgoing("raw_pos", "vec4");
+        vertexShader.AddOutgoing("world_pos", "vec4");
+
+        vertexShader.Append("void main() {");
+        vertexShader.Append("\tvec3 uTransform;");
+        vertexShader.Append("\tvec3 vTransform;");
+        vertexShader.Append("\tworld_pos = model_matrix * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("\tworld_pos /= world_pos.w;");
+        vertexShader.Append("\tgl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("\traw_pos = vec4( attr_pos, 1.0 );");
+
+        fragmentShader << "\tfloat global_opacity = object_opacity;" << Endl;
+
+        fragmentShader.Append("\tvec4 texture_color;");
+        QT3DSU32 idx = 0;
+        for (SRenderableImage *image = m_FirstImage; image; image = image->m_NextImage, ++idx) {
+            // Various maps are handled on different locations
+            if (image->m_MapType == ImageMapTypes::Bump
+                || image->m_MapType == ImageMapTypes::Normal
+                || image->m_MapType == ImageMapTypes::Displacement
+                || image->m_MapType == ImageMapTypes::SpecularAmountMap
+                || image->m_MapType == ImageMapTypes::Roughness
+                || image->m_MapType == ImageMapTypes::Translucency
+                || image->m_MapType == ImageMapTypes::LightmapIndirect
+                || image->m_MapType == ImageMapTypes::LightmapRadiosity
+                || image->m_MapType == ImageMapTypes::Emissive) {
+                continue;
+            }
+
+            eastl::basic_string<char8_t> texSwizzle, lookupSwizzle, texLodStr;
+
+            GenerateImageUVCoordinates(idx, *image, 0);
+
+            GenerateTextureSwizzle(
+                image->m_Image.m_TextureData.m_Texture->GetTextureSwizzleMode(), texSwizzle,
+                lookupSwizzle);
+
+            if (texLodStr.empty()) {
+                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << " = texture2D( "
+                               << m_ImageSampler << ", " << m_ImageFragCoords << ")"
+                               << lookupSwizzle.c_str() << ";" << Endl;
+            } else {
+                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << "= textureLod( "
+                               << m_ImageSampler << ", " << m_ImageFragCoords << ", "
+                               << texLodStr.c_str() << " )" << lookupSwizzle.c_str() << ";"
+                               << Endl;
+            }
+
+            switch (image->m_MapType) {
+            case ImageMapTypes::Diffuse: // assume images are premultiplied.
+            case ImageMapTypes::LightmapShadow:
+            case ImageMapTypes::Specular:
+            case ImageMapTypes::Opacity:
+                fragmentShader.Append("\tglobal_opacity *= texture_color.a;");
+                break;
+            default:
+                break;
+            }
+        }
+
+        fragmentShader.AddUniform("camera_position", "vec3");
+        fragmentShader.AddUniform("camera_properties", "vec2");
+        fragmentShader.Append("\tvec3 camPos = vec3(camera_position.x, camera_position.y, "
+                              "-camera_position.z);");
+        fragmentShader.Append("\tfloat dist = length(world_pos.xyz - camPos);");
+        fragmentShader.Append("\tdist = max((dist - 1.0) / (camera_properties.y - 1.0), 0.0);");
+        fragmentShader.AddUniform("alphaOpRef", "vec2");
+        fragmentShader.Append("\tif (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
+                              "\t\tdist = 1.0;");
+        fragmentShader.Append("\tfragOutput = vec4(dist);");
+        fragmentShader.Append("}");
+
+        vertexShader.Append("}");
+
+        return ProgramGenerator().CompileGeneratedShader(m_GeneratedShaderString.c_str(),
+                                                         SShaderCacheProgramFlags(), FeatureSet());
+    }
+
+    // generate default material shader orthographic depth shader
+    NVRenderShaderProgram *GenerateOrthoDepthShader(
+        const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+        IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+        SRenderableImage *inFirstImage, bool inHasTransparency,
+        const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") override
+    {
+        QT3DS_ASSERT(inMaterial.m_Type == GraphObjectTypes::DefaultMaterial);
+        m_CurrentMaterial = static_cast<const SDefaultMaterial *>(&inMaterial);
+        m_CurrentKey = &inShaderDescription;
+        m_CurrentPipeline = static_cast<IDefaultMaterialVertexPipeline *>(&inVertexPipeline);
+        m_CurrentFeatureSet = inFeatureSet;
+        m_FirstImage = inFirstImage;
+        m_HasTransparency = inHasTransparency;
+
+        ProgramGenerator().BeginProgram();
+
+        bool enableAlphaTest = m_DefaultMaterialShaderKeyProperties
+                .m_AlphaTestEnabled.GetValue(inShaderDescription);
+
+        QT3DS_ASSERT(m_FirstImage != nullptr);
+        if (!enableAlphaTest)
+            return nullptr;
+        QT3DS_ASSERT(enableAlphaTest);
+
+        m_GeneratedShaderString.clear();
+        m_GeneratedShaderString.assign(nonNull(inVertexPipelineName));
+        m_GeneratedShaderString.append("shadowmap--");
+
+        SShaderDefaultMaterialKey theKey(Key());
+        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties,
+                        SShaderDefaultMaterialKeyProperties::DepthKey);
+
+        m_LightsAsSeparateUniforms = !m_RenderContext.GetRenderContext().GetConstantBufferSupport();
+
+        VertexGenerator().BeginFragmentGeneration();
+        IShaderStageGenerator &fragmentShader(FragmentGenerator());
+        IDefaultMaterialVertexPipeline &vertexShader(VertexGenerator());
+
+        vertexShader.AddIncoming("attr_pos", "vec3");
+        vertexShader.AddUniform("model_view_projection", "mat4");
+        vertexShader.AddOutgoing("outDepth", "vec3");
+
+        vertexShader.Append("void main() {");
+        vertexShader.Append("\tvec3 uTransform;");
+        vertexShader.Append("\tvec3 vTransform;");
+        vertexShader.Append("\tgl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("\toutDepth.x = gl_Position.z / gl_Position.w;");
+
+        fragmentShader << "\tfloat global_opacity = object_opacity;" << Endl;
+
+        fragmentShader.Append("\tvec4 texture_color;");
+        QT3DSU32 idx = 0;
+        for (SRenderableImage *image = m_FirstImage; image; image = image->m_NextImage, ++idx) {
+            // Various maps are handled on different locations
+            if (image->m_MapType == ImageMapTypes::Bump
+                || image->m_MapType == ImageMapTypes::Normal
+                || image->m_MapType == ImageMapTypes::Displacement
+                || image->m_MapType == ImageMapTypes::SpecularAmountMap
+                || image->m_MapType == ImageMapTypes::Roughness
+                || image->m_MapType == ImageMapTypes::Translucency
+                || image->m_MapType == ImageMapTypes::LightmapIndirect
+                || image->m_MapType == ImageMapTypes::LightmapRadiosity
+                || image->m_MapType == ImageMapTypes::Emissive) {
+                continue;
+            }
+
+            eastl::basic_string<char8_t> texSwizzle, lookupSwizzle, texLodStr;
+
+            GenerateImageUVCoordinates(idx, *image, 0);
+
+            GenerateTextureSwizzle(
+                image->m_Image.m_TextureData.m_Texture->GetTextureSwizzleMode(), texSwizzle,
+                lookupSwizzle);
+
+            if (texLodStr.empty()) {
+                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << " = texture2D( "
+                               << m_ImageSampler << ", " << m_ImageFragCoords << ")"
+                               << lookupSwizzle.c_str() << ";" << Endl;
+            } else {
+                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << "= textureLod( "
+                               << m_ImageSampler << ", " << m_ImageFragCoords << ", "
+                               << texLodStr.c_str() << " )" << lookupSwizzle.c_str() << ";"
+                               << Endl;
+            }
+
+            switch (image->m_MapType) {
+            case ImageMapTypes::Diffuse: // assume images are premultiplied.
+            case ImageMapTypes::LightmapShadow:
+            case ImageMapTypes::Specular:
+            case ImageMapTypes::Opacity:
+                fragmentShader.Append("\tglobal_opacity *= texture_color.a;");
+                break;
+            default:
+                break;
+            }
+        }
+
+        fragmentShader.AddUniform("alphaOpRef", "vec2");
+        fragmentShader.Append("\tfloat depth = (outDepth.x + 1.0) * 0.5;");
+        fragmentShader.Append("\tif (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
+                              "\t\tdepth = 1.0;");
+        fragmentShader.Append("\tfragOutput = vec4(depth);");
+        fragmentShader.Append("}");
+        vertexShader.Append("}");
+
+        return ProgramGenerator().CompileGeneratedShader(m_GeneratedShaderString.c_str(),
+                                                         SShaderCacheProgramFlags(), FeatureSet());
+    }
+
     NVRenderShaderProgram *GenerateMaterialShader(const char8_t *inShaderPrefix)
     {
         // build a string that allows us to print out the shader we are generating to the log.
@@ -1509,7 +1858,8 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         m_GeneratedShaderString.assign(nonNull(inShaderPrefix));
 
         SShaderDefaultMaterialKey theKey(Key());
-        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties);
+        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties,
+                        SShaderDefaultMaterialKeyProperties::DefaultKey);
 
         m_LightsAsSeparateUniforms = !m_RenderContext.GetRenderContext().GetConstantBufferSupport();
 
@@ -1545,7 +1895,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     {
         eastl::pair<TProgramToShaderMap::iterator, bool> inserter =
             m_ProgramToShaderMap.insert(eastl::make_pair(
-                &inProgram, NVScopedRefCounted<SShaderGeneratorGeneratedShader>(NULL)));
+                &inProgram, NVScopedRefCounted<SShaderGeneratorGeneratedShader>(nullptr)));
         if (inserter.second) {
             NVAllocatorCallback &alloc(m_RenderContext.GetRenderContext().GetAllocator());
             inserter.first->second = QT3DS_NEW(alloc, SShaderGeneratorGeneratedShader)(
@@ -1671,7 +2021,8 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                                NVRenderTexture2D *inDepthTexture, NVRenderTexture2D *inSSaoTexture,
                                SImage *inLightProbe, SImage *inLightProbe2, QT3DSF32 inProbeHorizon,
                                QT3DSF32 inProbeBright, QT3DSF32 inProbe2Window, QT3DSF32 inProbe2Pos,
-                               QT3DSF32 inProbe2Fade, QT3DSF32 inProbeFOV)
+                               QT3DSF32 inProbe2Fade, QT3DSF32 inProbeFOV,
+                               const QT3DSVec2 &alphaOpRef)
     {
 
         NVRenderContext &context(m_RenderContext.GetRenderContext());
@@ -1776,6 +2127,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         shader.m_MaterialSpecular.Set(material_specular);
         shader.m_CameraProperties.Set(inCameraVec);
         shader.m_FresnelPower.Set(inMaterial.m_FresnelPower);
+        shader.m_alphaTestOp.Set(alphaOpRef);
 
         if (context.GetConstantBufferSupport()) {
             NVRenderConstantBuffer *pLightCb = GetLightConstantBuffer(shader.m_Lights.size());
@@ -1885,12 +2237,13 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         context.SetBlendEquation(blendEqua);
     }
     void SetMaterialProperties(NVRenderShaderProgram &inProgram,
-                                       const SGraphObject &inMaterial, const QT3DSVec2 &inCameraVec,
-                                       const QT3DSMat44 &inModelViewProjection,
-                                       const QT3DSMat33 &inNormalMatrix,
-                                       const QT3DSMat44 &inGlobalTransform,
-                                       SRenderableImage *inFirstImage, QT3DSF32 inOpacity,
-                                       SLayerGlobalRenderProperties inRenderProperties) override
+                               const SGraphObject &inMaterial, const QT3DSVec2 &inCameraVec,
+                               const QT3DSMat44 &inModelViewProjection,
+                               const QT3DSMat33 &inNormalMatrix,
+                               const QT3DSMat44 &inGlobalTransform,
+                               SRenderableImage *inFirstImage, QT3DSF32 inOpacity,
+                               SLayerGlobalRenderProperties inRenderProperties,
+                               const QT3DSVec2 &alphaOpRef) override
     {
         const SDefaultMaterial &theMaterial(static_cast<const SDefaultMaterial &>(inMaterial));
         QT3DS_ASSERT(inMaterial.m_Type == GraphObjectTypes::DefaultMaterial);
@@ -1905,7 +2258,8 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                               inRenderProperties.m_LightProbe, inRenderProperties.m_LightProbe2,
                               inRenderProperties.m_ProbeHorizon, inRenderProperties.m_ProbeBright,
                               inRenderProperties.m_Probe2Window, inRenderProperties.m_Probe2Pos,
-                              inRenderProperties.m_Probe2Fade, inRenderProperties.m_ProbeFOV);
+                              inRenderProperties.m_Probe2Fade, inRenderProperties.m_ProbeFOV,
+                              alphaOpRef);
     }
 
     SLightConstantProperties<SShaderGeneratorGeneratedShader> *GetLightConstantProperties(SShaderGeneratorGeneratedShader &shader)

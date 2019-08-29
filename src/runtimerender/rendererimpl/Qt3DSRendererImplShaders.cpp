@@ -554,19 +554,23 @@ namespace render {
     };
 
     NVRenderShaderProgram *Qt3DSRendererImpl::GenerateShader(SSubsetRenderable &inRenderable,
-                                                            TShaderFeatureSet inFeatureSet)
+                                                             TShaderFeatureSet inFeatureSet,
+                                                             bool depth)
     {
         // build a string that allows us to print out the shader we are generating to the log.
         // This is time consuming but I feel like it doesn't happen all that often and is very
-        // useful to users
-        // looking at the log file.
+        // useful to users looking at the log file.
         QLatin1String logPrefix("mesh subset pipeline-- ");
 
         m_GeneratedShaderString.clear();
         m_GeneratedShaderString.assign(logPrefix.data());
+        if (depth)
+            m_GeneratedShaderString.append("depth--");
 
         SShaderDefaultMaterialKey theKey(inRenderable.m_ShaderDescription);
-        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties);
+        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties,
+                        depth ? SShaderDefaultMaterialKeyProperties::DepthKey
+                              : SShaderDefaultMaterialKeyProperties::DefaultKey);
         IShaderCache &theCache = m_qt3dsContext.GetShaderCache();
         CRegisteredString theCacheKey =
             m_qt3dsContext.GetStringTable().RegisterStr(m_GeneratedShaderString.c_str());
@@ -577,10 +581,58 @@ namespace render {
         SSubsetMaterialVertexPipeline pipeline(
             *this, inRenderable,
             m_DefaultMaterialShaderKeyProperties.m_WireframeMode.GetValue(theKey));
+        if (depth) {
+            return m_qt3dsContext.GetDefaultMaterialShaderGenerator().GenerateDepthPassShader(
+                inRenderable.m_Material, inRenderable.m_ShaderDescription, pipeline, inFeatureSet,
+                inRenderable.m_FirstImage,
+                inRenderable.m_RenderableFlags.HasTransparency(),
+                logPrefix.data());
+        }
         return m_qt3dsContext.GetDefaultMaterialShaderGenerator().GenerateShader(
             inRenderable.m_Material, inRenderable.m_ShaderDescription, pipeline, inFeatureSet,
             m_CurrentLayer->m_Lights, inRenderable.m_FirstImage,
             inRenderable.m_RenderableFlags.HasTransparency(),
+            logPrefix.data());
+    }
+
+    NVRenderShaderProgram *Qt3DSRendererImpl::GenerateShadowShader(SSubsetRenderable &inRenderable,
+                                                                   TShaderFeatureSet inFeatureSet,
+                                                                   RenderLightTypes::Enum lightType)
+    {
+        // build a string that allows us to print out the shader we are generating to the log.
+        // This is time consuming but I feel like it doesn't happen all that often and is very
+        // useful to users looking at the log file.
+        QLatin1String logPrefix("mesh subset pipeline-- ");
+
+        m_GeneratedShaderString.clear();
+        m_GeneratedShaderString.assign(logPrefix.data());
+        if (lightType == RenderLightTypes::Point)
+            m_GeneratedShaderString.append("shadowcube--");
+        else
+            m_GeneratedShaderString.append("shadowmap--");
+
+        SShaderDefaultMaterialKey theKey(inRenderable.m_ShaderDescription);
+        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties,
+                        SShaderDefaultMaterialKeyProperties::DepthKey);
+        IShaderCache &theCache = m_qt3dsContext.GetShaderCache();
+        CRegisteredString theCacheKey
+                = m_qt3dsContext.GetStringTable().RegisterStr(m_GeneratedShaderString.c_str());
+        NVRenderShaderProgram *cachedProgram = theCache.GetProgram(theCacheKey, inFeatureSet);
+        if (cachedProgram)
+            return cachedProgram;
+
+        SSubsetMaterialVertexPipeline pipeline(
+            *this, inRenderable,
+            m_DefaultMaterialShaderKeyProperties.m_WireframeMode.GetValue(theKey));
+        if (lightType == RenderLightTypes::Point) {
+            return m_qt3dsContext.GetDefaultMaterialShaderGenerator().GenerateCubeDepthShader(
+                inRenderable.m_Material, inRenderable.m_ShaderDescription, pipeline, inFeatureSet,
+                inRenderable.m_FirstImage, inRenderable.m_RenderableFlags.HasTransparency(),
+                logPrefix.data());
+        }
+        return m_qt3dsContext.GetDefaultMaterialShaderGenerator().GenerateOrthoDepthShader(
+            inRenderable.m_Material, inRenderable.m_ShaderDescription, pipeline, inFeatureSet,
+            inRenderable.m_FirstImage, inRenderable.m_RenderableFlags.HasTransparency(),
             logPrefix.data());
     }
 

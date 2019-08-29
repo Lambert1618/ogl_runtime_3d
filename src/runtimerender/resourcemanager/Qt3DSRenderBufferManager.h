@@ -54,8 +54,9 @@ namespace render {
         virtual CRegisteredString CombineBaseAndRelative(const char8_t *inBase,
                                                          const char8_t *inRelative) = 0;
         virtual void SetImageHasTransparency(CRegisteredString inSourcePath,
-                                             bool inHasTransparency) = 0;
+                                             bool inHasTransparency, bool alsoOpaque) = 0;
         virtual bool GetImageHasTransparency(CRegisteredString inSourcePath) const = 0;
+        virtual bool GetImageHasOpaquePixels(CRegisteredString inSourcePath) const = 0;
         virtual void SetImageTransparencyToFalseIfNotSet(CRegisteredString inSourcePath) = 0;
         virtual void SetInvertImageUVCoords(CRegisteredString inSourcePath,
                                             bool inShouldInvertCoords) = 0;

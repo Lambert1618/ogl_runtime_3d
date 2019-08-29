@@ -44,8 +44,8 @@ namespace render {
      */
     struct SShaderTessellationProperties
     {
-        NVRenderCachedShaderProperty<QT3DSF32> m_EdgeTessLevel; ///< tesselation value for the edges
-        NVRenderCachedShaderProperty<QT3DSF32> m_InsideTessLevel; ///< tesselation value for the inside
+        NVRenderCachedShaderProperty<QT3DSF32> m_EdgeTessLevel; ///< tessellation value for the edges
+        NVRenderCachedShaderProperty<QT3DSF32> m_InsideTessLevel; ///< tessellation value for the inside
         NVRenderCachedShaderProperty<QT3DSF32>
             m_PhongBlend; ///< blending between linear and phong component
         NVRenderCachedShaderProperty<QT3DSVec2>
@@ -95,34 +95,6 @@ namespace render {
         static void SetLayerIndex(SShaderGeneratorGeneratedShader &inShader, QT3DSU32 idx)
         {
             inShader.m_LayerSetIndex = idx;
-        }
-    };
-
-    struct SDefaultMaterialRenderableDepthShader
-    {
-        NVAllocatorCallback &m_Allocator;
-        NVRenderShaderProgram &m_Shader;
-        NVRenderCachedShaderProperty<QT3DSMat44> m_MVP;
-
-        QT3DSI32 m_RefCount;
-        SDefaultMaterialRenderableDepthShader(NVRenderShaderProgram &inShader,
-                                              NVRenderContext &inContext)
-            : m_Allocator(inContext.GetAllocator())
-            , m_Shader(inShader)
-            , m_MVP("model_view_projection", inShader)
-            , m_RefCount(0)
-        {
-            m_Shader.addRef();
-        }
-
-        ~SDefaultMaterialRenderableDepthShader() { m_Shader.release(); }
-
-        void addRef() { ++m_RefCount; }
-        void release()
-        {
-            --m_RefCount;
-            if (m_RefCount <= 0)
-                NVDelete(m_Allocator, this);
         }
     };
 

@@ -1110,7 +1110,9 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
             if (theSourcePathStr.size() > 4) {
                 CRegisteredString theObjectPath = m_SourcePaths[idx].first;
                 if (qt3ds::runtime::isImagePath(theSourcePathStr.c_str())) {
-                    theManager.SetImageHasTransparency(theObjectPath, hasTransparency);
+                    theManager.SetImageHasTransparency(
+                                theObjectPath, hasTransparency,
+                                theManager.GetImageHasOpaquePixels(theObjectPath));
                     if (isIbl)
                         iblImagePathList.push_back(theObjectPath);
                     else

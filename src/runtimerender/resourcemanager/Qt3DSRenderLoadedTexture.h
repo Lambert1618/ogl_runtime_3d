@@ -141,7 +141,8 @@ namespace render {
 
         void EnsureMultiplerOfFour(NVFoundationBase &inFoundation, const char *inPath);
         // Returns true if this image has a pixel less than 255.
-        bool ScanForTransparency();
+        // If yes, then alsoOpaquePixels is true if some are not
+        bool ScanForTransparency(bool &alsoOpaquePixels);
 
         // Be sure to call this or risk leaking an enormous amount of memory
         void release() override;

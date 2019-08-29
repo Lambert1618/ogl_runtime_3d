@@ -178,6 +178,10 @@ struct AdvancedBlendModes
         void BlendAdvancedToFB(DefaultMaterialBlendMode::Enum blendMode, bool depthEnabled,
                                CResourceFrameBuffer *theFB);
 #endif
+        void renderTransparentObjectsPass(TRenderRenderableFunction inRenderFn,
+                                          bool inEnableBlending, bool inEnableTransparentDepthWrite,
+                                          QT3DSU32 indexLight, const SCamera &inCamera,
+                                          CResourceFrameBuffer *theFB);
     };
 }
 }

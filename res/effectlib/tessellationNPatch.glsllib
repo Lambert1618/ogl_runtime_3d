@@ -213,7 +213,7 @@ bool doLinear(int i, int j)
 
 vec4 tessShader ( )
 {
-    // pre compute square tesselation coord
+    // pre compute square tessellation coord
     vec3 tessSquared = gl_TessCoord * gl_TessCoord;
     vec3 tessCubed = tessSquared * gl_TessCoord;
 

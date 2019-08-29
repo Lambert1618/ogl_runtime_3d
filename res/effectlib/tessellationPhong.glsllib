@@ -138,7 +138,7 @@ uniform float phongBlend;
 
 vec4 tessShader ( )
 {
-    // pre compute square tesselation coord
+    // pre compute square tessellation coord
     vec3 tessSquared = gl_TessCoord * gl_TessCoord;
 
     // barycentric linear position

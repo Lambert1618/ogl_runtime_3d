@@ -66,6 +66,7 @@
 #include "Qt3DSRenderShaderCache.h"
 #include "Qt3DSRenderProfiler.h"
 #include "Qt3DSRenderDefaultMaterialShaderGenerator.h"
+#include "Qt3DSRenderLight.h"
 
 namespace qt3ds {
 namespace render {
@@ -150,9 +151,12 @@ namespace render {
         operator STextShader *() { return m_Shader; }
     };
 
-    class QT3DS_AUTOTEST_EXPORT Qt3DSRendererImpl : public IQt3DSRenderer, public IRenderWidgetContext
+    class QT3DS_AUTOTEST_EXPORT Qt3DSRendererImpl : public IQt3DSRenderer,
+                                                    public IRenderWidgetContext
     {
         typedef nvhash_map<SShaderDefaultMaterialKey, SShaderGeneratorGeneratedShader *> TShaderMap;
+        typedef nvhash_map<SShaderDefaultMaterialKey, SRenderableDepthPrepassShader *>
+            TShadowShaderMap;
         typedef nvhash_map<CRegisteredString, NVScopedRefCounted<NVRenderConstantBuffer>>
             TStrConstanBufMap;
         typedef nvhash_map<SRenderInstanceId, NVScopedRefCounted<SLayerRenderData>,
@@ -210,11 +214,12 @@ namespace render {
         Option<NVScopedRefCounted<SLayerProgAABlendShader>> m_LayerProgAAShader;
 
         TShaderMap m_Shaders;
+        TShaderMap m_DepthShaders;
+        TShadowShaderMap m_ShadowMapShaders;
+        TShadowShaderMap m_ShadowCubeShaders;
         TStrConstanBufMap m_ConstantBuffers; ///< store the the shader constant buffers
         // Option is true if we have attempted to generate the shader.
         // This does not mean we were successul, however.
-        Option<NVScopedRefCounted<SDefaultMaterialRenderableDepthShader>>
-            m_DefaultMaterialDepthPrepassShader;
         Option<NVScopedRefCounted<SRenderableDepthPrepassShader>> m_DepthPrepassShader;
         Option<NVScopedRefCounted<SRenderableDepthPrepassShader>> m_DepthPrepassShaderDisplaced;
         Option<NVScopedRefCounted<SRenderableDepthPrepassShader>> m_DepthTessLinearPrepassShader;
@@ -295,6 +300,10 @@ namespace render {
         QHash<SLayer *, SLayerRenderData *> m_initialPrepareData;
         QSet<SGraphObject *> m_materialClearDirty;
 
+        bool m_alphaTest = false;
+        float m_alphaOp = 1.0f;
+        float m_alphaRef = 1.0f;
+
     public:
         Qt3DSRendererImpl(IQt3DSRenderContext &ctx);
         virtual ~Qt3DSRendererImpl();
@@ -312,6 +321,23 @@ namespace render {
 
         void EnableLayerGpuProfiling(bool inEnabled) override;
         bool IsLayerGpuProfilingEnabled() const override { return m_LayerGPuProfilingEnabled; }
+
+        void setAlphaTest(bool enable, float op, float ref) override
+        {
+            m_alphaTest = enable;
+            m_alphaOp = op;
+            m_alphaRef = ref;
+        }
+
+        bool alphaTestEnabled() const
+        {
+            return m_alphaTest;
+        }
+
+        QT3DSVec2 alphaOpRef() const
+        {
+            return QT3DSVec2(m_alphaOp, m_alphaRef);
+        }
 
         // Calls prepare layer for render
         // and then do render layer.
@@ -411,14 +437,19 @@ namespace render {
                                              const char8_t *inFrame);
 
         NVRenderShaderProgram *GenerateShader(SSubsetRenderable &inRenderable,
-                                              TShaderFeatureSet inFeatureSet);
+                                              TShaderFeatureSet inFeatureSet, bool depth);
+        NVRenderShaderProgram *GenerateShadowShader(SSubsetRenderable &inRenderable,
+                                                    TShaderFeatureSet inFeatureSet,
+                                                    RenderLightTypes::Enum lightType);
         SShaderGeneratorGeneratedShader *GetShader(SSubsetRenderable &inRenderable,
-                                                   TShaderFeatureSet inFeatureSet);
+                                                   TShaderFeatureSet inFeatureSet, bool depth);
+        SRenderableDepthPrepassShader *GetShadowShader(SSubsetRenderable &inRenderable,
+                                                       TShaderFeatureSet inFeatureSet,
+                                                       RenderLightTypes::Enum lightType);
 
         SDefaultAoPassShader *GetDefaultAoPassShader(TShaderFeatureSet inFeatureSet);
         SDefaultAoPassShader *GetFakeDepthShader(TShaderFeatureSet inFeatureSet);
         SDefaultAoPassShader *GetFakeCubeDepthShader(TShaderFeatureSet inFeatureSet);
-        SDefaultMaterialRenderableDepthShader *GetRenderableDepthShader();
 
         SRenderableDepthPrepassShader *GetParaboloidDepthShader(TessModeValues::Enum inTessMode);
         SRenderableDepthPrepassShader *GetParaboloidDepthNoTessShader();

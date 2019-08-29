@@ -73,10 +73,10 @@ namespace render {
         typedef struct _NVRenderBackendVertexShaderObject *NVRenderBackendVertexShaderObject;
         /// opaque fragment shader object handle
         typedef struct _NVRenderBackendFragmentShaderObject *NVRenderBackendFragmentShaderObject;
-        /// opaque tesselation control shader object handle
+        /// opaque tessellation control shader object handle
         typedef struct _NVRenderBackendTessControlShaderObject
             *NVRenderBackendTessControlShaderObject;
-        /// opaque tesselation evaluation shader object handle
+        /// opaque tessellation evaluation shader object handle
         typedef struct _NVRenderBackendTessEvaluationShaderObject
             *NVRenderBackendTessEvaluationShaderObject;
         /// opaque geometry shader object handle

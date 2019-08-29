@@ -42,13 +42,13 @@
 
 #if defined(QT_OPENGL_ES) || defined(QT_OPENGL_ES_2_ANGLE)
 #define GL_CALL_TIMER_EXT(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
-#define GL_CALL_TESSELATION_EXT(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
+#define GL_CALL_TESSELLATION_EXT(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
 #define GL_CALL_MULTISAMPLE_EXT(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
 #define GL_CALL_EXTRA_FUNCTION(x) m_glExtraFunctions->x; RENDER_LOG_ERROR_PARAMS(x);
 #define GL_CALL_EXTENSION_FUNCTION(x) m_qt3dsExtensions->x; RENDER_LOG_ERROR_PARAMS(x);
 #else
 #define GL_CALL_TIMER_EXT(x)
-#define GL_CALL_TESSELATION_EXT(x)
+#define GL_CALL_TESSELLATION_EXT(x)
 #define GL_CALL_MULTISAMPLE_EXT(x)
 #define GL_CALL_EXTRA_FUNCTION(x)  m_glExtraFunctions->x; RENDER_LOG_ERROR_PARAMS(x);
 #define GL_CALL_EXTENSION_FUNCTION(x)

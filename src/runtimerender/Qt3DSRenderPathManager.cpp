@@ -1433,7 +1433,7 @@ struct SPathManager : public IPathManager
             inShader, inRenderContext.m_Material, inRenderContext.m_CameraVec,
             inRenderContext.m_ModelViewProjection, inRenderContext.m_NormalMatrix,
             inRenderContext.m_Path.m_GlobalTransform, inRenderContext.m_FirstImage,
-            inRenderContext.m_Opacity, inRenderProperties);
+            inRenderContext.m_Opacity, inRenderProperties, QT3DSVec2());
     }
 
     void DoRenderGeometryPath(SPathGeneratedShader &inShader, SPathRenderContext &inRenderContext,

@@ -1757,7 +1757,7 @@ namespace render {
             return NVRenderClearFlags(retval);
         }
 
-        static GLenum fromDrawModeToGL(NVRenderDrawMode::Enum value, bool inTesselationSupported)
+        static GLenum fromDrawModeToGL(NVRenderDrawMode::Enum value, bool inTessellationSupported)
         {
             switch (value) {
             case NVRenderDrawMode::Points:
@@ -1775,7 +1775,7 @@ namespace render {
             case NVRenderDrawMode::Triangles:
                 return GL_TRIANGLES;
             case NVRenderDrawMode::Patches:
-                return (inTesselationSupported) ? GL_PATCHES : GL_TRIANGLES;
+                return (inTessellationSupported) ? GL_PATCHES : GL_TRIANGLES;
             default:
                 break;
             }

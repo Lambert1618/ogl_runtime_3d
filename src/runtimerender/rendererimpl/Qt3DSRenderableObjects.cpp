@@ -96,8 +96,8 @@ namespace render {
                                                     SShadowMapEntry *inShadowMapEntry)
     {
         NVRenderContext &context(m_Generator.GetContext());
-        SRenderableDepthPrepassShader *shader = NULL;
-        NVRenderInputAssembler *pIA = NULL;
+        SRenderableDepthPrepassShader *shader = nullptr;
+        NVRenderInputAssembler *pIA = nullptr;
 
         /*
         if ( inLight->m_LightType == RenderLightTypes::Area )
@@ -114,7 +114,7 @@ namespace render {
         else
             shader = m_Generator.GetCubeShadowDepthShader(m_TessellationMode);
 
-        if (shader == NULL || inShadowMapEntry == NULL)
+        if (shader == nullptr || inShadowMapEntry == nullptr)
             return;
 
         // for phong and npatch tesselleation we need the normals too
@@ -144,7 +144,7 @@ namespace render {
         shader->m_Projection.Set( inCamera.m_Projection );
         */
 
-        // tesselation
+        // tessellation
         if (m_TessellationMode != TessModeValues::NoTess) {
             // set uniforms we need
             shader->m_Tessellation.m_EdgeTessLevel.Set(m_Subset.m_EdgeTessFactor);
@@ -166,17 +166,18 @@ namespace render {
                                                 float inDisplacementAmount)
     {
         NVRenderContext &context(m_Generator.GetContext());
-        SRenderableDepthPrepassShader *shader = NULL;
-        NVRenderInputAssembler *pIA = NULL;
+        SRenderableDepthPrepassShader *shader = nullptr;
+        NVRenderInputAssembler *pIA = nullptr;
         SRenderableImage *displacementImage = inDisplacementImage;
 
-        if (m_Subset.m_PrimitiveType != NVRenderDrawMode::Patches)
-            shader = m_Generator.GetDepthPrepassShader(displacementImage != NULL);
-        else
+        if (m_Subset.m_PrimitiveType != NVRenderDrawMode::Patches) {
+            shader = m_Generator.GetDepthPrepassShader(displacementImage != nullptr);
+        } else {
             shader = m_Generator.GetDepthTessPrepassShader(m_TessellationMode,
-                                                           displacementImage != NULL);
+                                                           displacementImage != nullptr);
+        }
 
-        if (shader == NULL)
+        if (shader == nullptr)
             return;
 
         // for phong and npatch tesselleation or displacement mapping we need the normals (and uv's)
@@ -214,7 +215,7 @@ namespace render {
                 displacementImage->m_Image.m_TextureData.m_Texture);
         }
 
-        // tesselation
+        // tessellation
         if (m_TessellationMode != TessModeValues::NoTess) {
             // set uniforms we need
             shader->m_GlobalTransform.Set(m_GlobalTransform);
@@ -241,12 +242,18 @@ namespace render {
 
     // An interface to the shader generator that is available to the renderables
 
-    void SSubsetRenderable::Render(const QT3DSVec2 &inCameraVec, TShaderFeatureSet inFeatureSet)
+    void SSubsetRenderable::Render(const QT3DSVec2 &inCameraVec, TShaderFeatureSet inFeatureSet,
+                                   bool depth)
     {
         NVRenderContext &context(m_Generator.GetContext());
+        SShaderGeneratorGeneratedShader *shader = nullptr;
 
-        SShaderGeneratorGeneratedShader *shader = m_Generator.GetShader(*this, inFeatureSet);
-        if (shader == NULL)
+        // Do not render if alpha test is enabled, but no alpha test in object or vice versa
+        if (m_Generator.alphaTestEnabled() ^ m_RenderableFlags.hasAlphaTest())
+            return;
+
+        shader = m_Generator.GetShader(*this, inFeatureSet, depth);
+        if (shader == nullptr)
             return;
 
         context.SetActiveShader(&shader->m_Shader);
@@ -254,9 +261,10 @@ namespace render {
         m_Generator.GetQt3DSContext().GetDefaultMaterialShaderGenerator().SetMaterialProperties(
             shader->m_Shader, m_Material, inCameraVec, m_ModelContext.m_ModelViewProjection,
             m_ModelContext.m_NormalMatrix, m_ModelContext.m_Model.m_GlobalTransform, m_FirstImage,
-            m_Opacity, m_Generator.GetLayerGlobalRenderProperties());
+            m_Opacity, m_Generator.GetLayerGlobalRenderProperties(),
+            QT3DSVec2(m_Generator.alphaOpRef()));
 
-        // tesselation
+        // tessellation
         if (m_Subset.m_PrimitiveType == NVRenderDrawMode::Patches) {
             shader->m_Tessellation.m_EdgeTessLevel.Set(m_Subset.m_EdgeTessFactor);
             shader->m_Tessellation.m_InsideTessLevel.Set(m_Subset.m_InnerTessFactor);
@@ -287,11 +295,56 @@ namespace render {
         context.Draw(m_Subset.m_PrimitiveType, m_Subset.m_Count, m_Subset.m_Offset);
     }
 
+    void SSubsetRenderable::RenderShadow(const QT3DSVec2 &inCameraVec,
+                                         TShaderFeatureSet inFeatureSet, const SLight *inLight,
+                                         const SCamera &inCamera, SShadowMapEntry *inShadowMapEntry)
+    {
+        NVRenderContext &context(m_Generator.GetContext());
+        SRenderableDepthPrepassShader *shader = nullptr;
+
+        // Do not render if alpha test is enabled, but no alpha test in object or vice versa
+        if (m_Generator.alphaTestEnabled() ^ m_RenderableFlags.hasAlphaTest())
+            return;
+
+        shader = m_Generator.GetShadowShader(*this, inFeatureSet, inLight->m_LightType);
+        if (shader == nullptr || inShadowMapEntry == nullptr)
+            return;
+
+        QT3DSMat44 theModelViewProjection = inShadowMapEntry->m_LightVP * m_GlobalTransform;
+
+        context.SetActiveShader(&shader->m_Shader);
+        m_Generator.GetQt3DSContext().GetDefaultMaterialShaderGenerator().SetMaterialProperties(
+            shader->m_Shader, m_Material, inCameraVec, m_ModelContext.m_ModelViewProjection,
+            m_ModelContext.m_NormalMatrix, m_ModelContext.m_Model.m_GlobalTransform, m_FirstImage,
+            m_Opacity, m_Generator.GetLayerGlobalRenderProperties(),
+            QT3DSVec2(m_Generator.alphaOpRef()));
+
+        shader->m_MVP.Set(theModelViewProjection);
+        shader->m_CameraPosition.Set(inCamera.m_Position);
+        shader->m_GlobalTransform.Set(m_GlobalTransform);
+        shader->m_CameraProperties.Set(inCameraVec);
+
+        // tessellation
+        if (m_Subset.m_PrimitiveType == NVRenderDrawMode::Patches) {
+            shader->m_Tessellation.m_EdgeTessLevel.Set(m_Subset.m_EdgeTessFactor);
+            shader->m_Tessellation.m_InsideTessLevel.Set(m_Subset.m_InnerTessFactor);
+            // the blend value is hardcoded
+            shader->m_Tessellation.m_PhongBlend.Set(0.75);
+            // this should finally be based on some user input
+            shader->m_Tessellation.m_DistanceRange.Set(inCameraVec);
+            // enable culling
+            shader->m_Tessellation.m_DisableCulling.Set(0.0);
+        }
+
+        context.SetInputAssembler(m_Subset.m_InputAssembler);
+        context.Draw(m_Subset.m_PrimitiveType, m_Subset.m_Count, m_Subset.m_Offset);
+    }
+
     void SSubsetRenderable::RenderDepthPass(const QT3DSVec2 &inCameraVec)
     {
-        SRenderableImage *displacementImage = NULL;
+        SRenderableImage *displacementImage = nullptr;
         for (SRenderableImage *theImage = m_FirstImage;
-             theImage != NULL && displacementImage == NULL; theImage = theImage->m_NextImage) {
+             theImage != nullptr && displacementImage == nullptr; theImage = theImage->m_NextImage) {
             if (theImage->m_MapType == ImageMapTypes::Displacement)
                 displacementImage = theImage;
         }
@@ -302,11 +355,13 @@ namespace render {
     void STextRenderable::Render(const QT3DSVec2 &inCameraVec)
     {
         NVRenderContext &context(m_Generator.GetContext());
+        if (m_Generator.alphaTestEnabled())
+            return;
 
         if (!m_Text.m_PathFontDetails) {
 
             STextRenderHelper theInfo = m_Generator.GetShader(*this, false);
-            if (theInfo.m_Shader == NULL)
+            if (theInfo.m_Shader == nullptr)
                 return;
             // All of our shaders produce premultiplied values.
             qt3ds::render::NVRenderBlendFunctionArgument blendFunc(
@@ -330,7 +385,7 @@ namespace render {
             QT3DS_ASSERT(context.IsPathRenderingSupported() && context.IsProgramPipelineSupported());
 
             STextRenderHelper theInfo = m_Generator.GetShader(*this, true);
-            if (theInfo.m_Shader == NULL)
+            if (theInfo.m_Shader == nullptr)
                 return;
 
             // All of our shaders produce premultiplied values.
@@ -357,7 +412,7 @@ namespace render {
     {
         NVRenderContext &context(m_Generator.GetContext());
         STextDepthShader *theDepthShader = m_Generator.GetTextDepthShader();
-        if (theDepthShader == NULL)
+        if (theDepthShader == nullptr || m_Generator.alphaTestEnabled())
             return;
 
         if (!m_Text.m_PathFontDetails) {
@@ -403,7 +458,7 @@ namespace render {
                                                 theDepthFunction, false, theArg, theArg, theOpArg,
                                                 theOpArg);
 
-            context.SetActiveShader(NULL);
+            context.SetActiveShader(nullptr);
             context.SetCullingEnabled(false);
 
             context.SetDepthStencilState(depthStencilState);
@@ -451,6 +506,8 @@ namespace render {
                                            const NVRenderTexture2D *inSsaoTexture,
                                            TShaderFeatureSet inFeatureSet)
     {
+        if (m_Generator.alphaTestEnabled())
+            return;
         IQt3DSRenderContext &qt3dsContext(m_Generator.GetQt3DSContext());
         SCustomMaterialRenderContext theRenderContext(
             inLayer, inLayerData, inLights, inCamera, m_ModelContext.m_Model, m_Subset,
@@ -468,13 +525,15 @@ namespace render {
                                                     const SCamera & /*inCamera*/,
                                                     const NVRenderTexture2D * /*inDepthTexture*/)
     {
-
+        if (m_Generator.alphaTestEnabled())
+            return;
         IQt3DSRenderContext &qt3dsContext(m_Generator.GetQt3DSContext());
         if (!qt3dsContext.GetCustomMaterialSystem().RenderDepthPrepass(
                 m_ModelContext.m_ModelViewProjection, m_Material, m_Subset)) {
-            SRenderableImage *displacementImage = NULL;
+            SRenderableImage *displacementImage = nullptr;
             for (SRenderableImage *theImage = m_FirstImage;
-                 theImage != NULL && displacementImage == NULL; theImage = theImage->m_NextImage) {
+                 theImage != nullptr && displacementImage == nullptr;
+                 theImage = theImage->m_NextImage) {
                 if (theImage->m_MapType == ImageMapTypes::Displacement)
                     displacementImage = theImage;
             }

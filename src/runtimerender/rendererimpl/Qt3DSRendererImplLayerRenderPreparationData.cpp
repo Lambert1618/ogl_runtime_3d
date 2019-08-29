@@ -595,7 +595,8 @@ namespace render {
     void SLayerRenderPreparationData::PrepareImageForRender(
         SImage &inImage, ImageMapTypes::Enum inMapType, SRenderableImage *&ioFirstImage,
         SRenderableImage *&ioNextImage, SRenderableObjectFlags &ioFlags,
-        SShaderDefaultMaterialKey &inShaderKey, QT3DSU32 inImageIndex)
+        SShaderDefaultMaterialKey &inShaderKey, QT3DSU32 inImageIndex,
+        bool *opaqueCheck)
     {
         IQt3DSRenderContext &qt3dsContext(m_Renderer.GetQt3DSContext());
         IBufferManager &bufferManager = qt3dsContext.GetBufferManager();
@@ -619,6 +620,8 @@ namespace render {
                     || inMapType == ImageMapTypes::Opacity
                     || inMapType == ImageMapTypes::Translucency)) {
                 ioFlags |= RenderPreparationResultFlagValues::HasTransparency;
+                if (opaqueCheck)
+                    *opaqueCheck = inImage.m_TextureData.m_TextureFlags.HasOpaquePixels();
             }
             // Textures used in general have linear characteristics.
             // PKC -- The filters are properly set already.  Setting them here only overrides what
@@ -683,6 +686,9 @@ namespace render {
 
         SRenderableImage *firstImage = NULL;
 
+        // Combined check for images for having opaque pixels
+        bool transparencyImagesHaveOpaquePixels = true;
+
         // set wireframe mode
         m_Renderer.DefaultMaterialShaderKeyProperties().m_WireframeMode.SetValue(
             theGeneratedKey, m_Renderer.GetQt3DSContext().GetWireframeMode());
@@ -725,46 +731,47 @@ namespace render {
             // this may in fact set pickable on the renderable flags if one of the images
             // links to a sub presentation or any offscreen rendered object.
             SRenderableImage *nextImage = NULL;
-#define CHECK_IMAGE_AND_PREPARE(img, imgtype, shadercomponent)                                     \
+#define CHECK_IMAGE_AND_PREPARE(img, imgtype, shadercomponent, checkOpaque)                        \
     if ((img))                                                                                     \
         PrepareImageForRender(*(img), imgtype, firstImage, nextImage, renderableFlags,             \
-                              theGeneratedKey, shadercomponent);
+                              theGeneratedKey, shadercomponent,                                    \
+            checkOpaque ? &transparencyImagesHaveOpaquePixels : nullptr);
 
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_DiffuseMaps[0], ImageMapTypes::Diffuse,
-                                    SShaderDefaultMaterialKeyProperties::DiffuseMap0);
+                                    SShaderDefaultMaterialKeyProperties::DiffuseMap0, true);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_DiffuseMaps[1], ImageMapTypes::Diffuse,
-                                    SShaderDefaultMaterialKeyProperties::DiffuseMap1);
+                                    SShaderDefaultMaterialKeyProperties::DiffuseMap1, true);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_DiffuseMaps[2], ImageMapTypes::Diffuse,
-                                    SShaderDefaultMaterialKeyProperties::DiffuseMap2);
+                                    SShaderDefaultMaterialKeyProperties::DiffuseMap2, true);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_EmissiveMap, ImageMapTypes::Emissive,
-                                    SShaderDefaultMaterialKeyProperties::EmissiveMap);
+                                    SShaderDefaultMaterialKeyProperties::EmissiveMap, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_EmissiveMap2, ImageMapTypes::Emissive,
-                                    SShaderDefaultMaterialKeyProperties::EmissiveMap2);
+                                    SShaderDefaultMaterialKeyProperties::EmissiveMap2, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_SpecularReflection, ImageMapTypes::Specular,
-                                    SShaderDefaultMaterialKeyProperties::SpecularMap);
+                                    SShaderDefaultMaterialKeyProperties::SpecularMap, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_RoughnessMap, ImageMapTypes::Roughness,
-                                    SShaderDefaultMaterialKeyProperties::RoughnessMap);
+                                    SShaderDefaultMaterialKeyProperties::RoughnessMap, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_OpacityMap, ImageMapTypes::Opacity,
-                                    SShaderDefaultMaterialKeyProperties::OpacityMap);
+                                    SShaderDefaultMaterialKeyProperties::OpacityMap, true);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_BumpMap, ImageMapTypes::Bump,
-                                    SShaderDefaultMaterialKeyProperties::BumpMap);
+                                    SShaderDefaultMaterialKeyProperties::BumpMap, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_SpecularMap, ImageMapTypes::SpecularAmountMap,
-                                    SShaderDefaultMaterialKeyProperties::SpecularAmountMap);
+                                    SShaderDefaultMaterialKeyProperties::SpecularAmountMap, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_NormalMap, ImageMapTypes::Normal,
-                                    SShaderDefaultMaterialKeyProperties::NormalMap);
+                                    SShaderDefaultMaterialKeyProperties::NormalMap, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_DisplacementMap, ImageMapTypes::Displacement,
-                                    SShaderDefaultMaterialKeyProperties::DisplacementMap);
+                                    SShaderDefaultMaterialKeyProperties::DisplacementMap, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_TranslucencyMap, ImageMapTypes::Translucency,
-                                    SShaderDefaultMaterialKeyProperties::TranslucencyMap);
+                                    SShaderDefaultMaterialKeyProperties::TranslucencyMap, true);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_Lightmaps.m_LightmapIndirect,
                                     ImageMapTypes::LightmapIndirect,
-                                    SShaderDefaultMaterialKeyProperties::LightmapIndirect);
+                                    SShaderDefaultMaterialKeyProperties::LightmapIndirect, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_Lightmaps.m_LightmapRadiosity,
                                     ImageMapTypes::LightmapRadiosity,
-                                    SShaderDefaultMaterialKeyProperties::LightmapRadiosity);
+                                    SShaderDefaultMaterialKeyProperties::LightmapRadiosity, false);
             CHECK_IMAGE_AND_PREPARE(theMaterial->m_Lightmaps.m_LightmapShadow,
                                     ImageMapTypes::LightmapShadow,
-                                    SShaderDefaultMaterialKeyProperties::LightmapShadow);
+                                    SShaderDefaultMaterialKeyProperties::LightmapShadow, false);
         }
 #undef CHECK_IMAGE_AND_PREPARE
 
@@ -779,6 +786,17 @@ namespace render {
 
         if (IsNotOne(subsetOpacity))
             renderableFlags |= RenderPreparationResultFlagValues::HasTransparency;
+
+        // Enable alpha test, but only if the whole object opacity is full
+        // so parts of the object might be fully opaque
+        if (renderableFlags & RenderPreparationResultFlagValues::HasTransparency
+                && subsetOpacity >= 1.0f && transparencyImagesHaveOpaquePixels) {
+            m_Renderer.DefaultMaterialShaderKeyProperties()
+                    .m_AlphaTestEnabled.SetValue(theGeneratedKey, true);
+            renderableFlags.setAlphaTest(true);
+        } else {
+            renderableFlags.setAlphaTest(false);
+        }
 
         retval.m_FirstImage = firstImage;
         if (retval.m_RenderableFlags.IsDirty())
@@ -826,7 +844,7 @@ namespace render {
 #define CHECK_IMAGE_AND_PREPARE(img, imgtype, shadercomponent)                                     \
     if ((img))                                                                                     \
         PrepareImageForRender(*(img), imgtype, firstImage, nextImage, renderableFlags,             \
-                              theGeneratedKey, shadercomponent);
+                              theGeneratedKey, shadercomponent, nullptr);
 
         CHECK_IMAGE_AND_PREPARE(inMaterial.m_DisplacementMap, ImageMapTypes::Displacement,
                                 SShaderDefaultMaterialKeyProperties::DisplacementMap);
@@ -1205,7 +1223,8 @@ namespace render {
                             if (iter->second) {
                                 PrepareImageForRender(*iter->second, ImageMapTypes::Unknown,
                                        firstImage, nextImage, flags, key,
-                                       SShaderDefaultMaterialKeyProperties::ImageMapCount);
+                                       SShaderDefaultMaterialKeyProperties::ImageMapCount,
+                                       nullptr);
                             }
                         }
                     }

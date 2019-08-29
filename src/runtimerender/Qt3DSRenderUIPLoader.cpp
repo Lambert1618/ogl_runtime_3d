@@ -1825,7 +1825,10 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
                         CRegisteredString imgPath = m_StrTable.RegisterStr(srcPath);
                         bool hasTransparency = false;
                         m_Reader.Att("hasTransparency", hasTransparency);
-                        m_BufferManager.SetImageHasTransparency(imgPath, hasTransparency);
+                        bool hasOpaque = false;
+                        m_Reader.Att("hasOpaquePixels", hasOpaque);
+                        m_BufferManager.SetImageHasTransparency(imgPath, hasTransparency,
+                                                                hasOpaque);
                     }
                 }
             }

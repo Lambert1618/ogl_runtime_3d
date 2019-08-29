@@ -558,6 +558,12 @@ namespace render {
             ImageMapCount
         };
 
+        enum KeyMode
+        {
+            DefaultKey,
+            DepthKey,
+        };
+
         SShaderKeyBoolean m_HasLighting;
         SShaderKeyBoolean m_HasIbl;
         SShaderKeyUnsigned<3> m_LightCount;
@@ -566,6 +572,7 @@ namespace render {
         SShaderKeyBoolean m_LightShadowFlags[LightCount];
         SShaderKeyBoolean m_SpecularEnabled;
         SShaderKeyBoolean m_FresnelEnabled;
+        SShaderKeyBoolean m_AlphaTestEnabled;
         SShaderKeyBoolean m_VertexColorsEnabled;
         SShaderKeySpecularModel m_SpecularModel;
         SShaderKeyImageMap m_ImageMaps[ImageMapCount];
@@ -580,6 +587,7 @@ namespace render {
             , m_LightCount("lightCount")
             , m_SpecularEnabled("specularEnabled")
             , m_FresnelEnabled("fresnelEnabled")
+            , m_AlphaTestEnabled("alphaTestEnabled")
             , m_VertexColorsEnabled("vertexColorsEnabled")
             , m_SpecularModel("specularModel")
             , m_TessellationMode("tessellationMode")
@@ -642,38 +650,50 @@ namespace render {
             SetPropertyOffsets();
         }
 
-        template <typename TVisitor>
-        void VisitProperties(TVisitor &inVisitor)
+        bool isDepthKeyImage(QT3DSU32 idx) const
         {
-            inVisitor.Visit(m_HasLighting);
-            inVisitor.Visit(m_HasIbl);
-            inVisitor.Visit(m_LightCount);
-
-            for (QT3DSU32 idx = 0, end = LightCount; idx < end; ++idx) {
-                inVisitor.Visit(m_LightFlags[idx]);
+            if (idx == DiffuseMap0 || idx == DiffuseMap1 || idx == DiffuseMap2 || idx == SpecularMap
+                    || idx == OpacityMap || idx == LightmapShadow) {
+                return true;
             }
+            return false;
+        }
 
-            for (QT3DSU32 idx = 0, end = LightCount; idx < end; ++idx) {
-                inVisitor.Visit(m_LightAreaFlags[idx]);
+        template <typename TVisitor>
+        void VisitProperties(TVisitor &inVisitor, KeyMode mode)
+        {
+            if (mode == DefaultKey) {
+                inVisitor.Visit(m_HasLighting);
+                inVisitor.Visit(m_HasIbl);
+                inVisitor.Visit(m_LightCount);
+
+                for (QT3DSU32 idx = 0, end = LightCount; idx < end; ++idx)
+                    inVisitor.Visit(m_LightFlags[idx]);
+
+                for (QT3DSU32 idx = 0, end = LightCount; idx < end; ++idx)
+                    inVisitor.Visit(m_LightAreaFlags[idx]);
+
+                for (QT3DSU32 idx = 0, end = LightCount; idx < end; ++idx)
+                    inVisitor.Visit(m_LightShadowFlags[idx]);
+
+                inVisitor.Visit(m_SpecularEnabled);
+                inVisitor.Visit(m_FresnelEnabled);
+                inVisitor.Visit(m_VertexColorsEnabled);
+                inVisitor.Visit(m_SpecularModel);
             }
-
-            for (QT3DSU32 idx = 0, end = LightCount; idx < end; ++idx) {
-                inVisitor.Visit(m_LightShadowFlags[idx]);
-            }
-
-            inVisitor.Visit(m_SpecularEnabled);
-            inVisitor.Visit(m_FresnelEnabled);
-            inVisitor.Visit(m_VertexColorsEnabled);
-            inVisitor.Visit(m_SpecularModel);
+            inVisitor.Visit(m_AlphaTestEnabled);
 
             for (QT3DSU32 idx = 0, end = ImageMapCount; idx < end; ++idx) {
-                inVisitor.Visit(m_ImageMaps[idx]);
-                inVisitor.Visit(m_TextureSwizzle[idx]);
+                if (mode == DefaultKey || isDepthKeyImage(idx)) {
+                    inVisitor.Visit(m_ImageMaps[idx]);
+                    inVisitor.Visit(m_TextureSwizzle[idx]);
+                }
             }
-
-            inVisitor.Visit(m_TessellationMode);
-            inVisitor.Visit(m_HasSkinning);
-            inVisitor.Visit(m_WireframeMode);
+            if (mode == DefaultKey) {
+                inVisitor.Visit(m_TessellationMode);
+                inVisitor.Visit(m_HasSkinning);
+                inVisitor.Visit(m_WireframeMode);
+            }
         }
 
         struct SOffsetVisitor
@@ -703,7 +723,7 @@ namespace render {
         void SetPropertyOffsets()
         {
             SOffsetVisitor visitor;
-            VisitProperties(visitor);
+            VisitProperties(visitor, DefaultKey);
             // If this assert fires, then the default material key needs more bits.
             QT3DS_ASSERT(visitor.m_Offset < 224);
         }
@@ -779,10 +799,11 @@ namespace render {
         };
 
         void ToString(eastl::string &ioString,
-                      SShaderDefaultMaterialKeyProperties &inProperties) const
+                      SShaderDefaultMaterialKeyProperties &inProperties,
+                      SShaderDefaultMaterialKeyProperties::KeyMode mode) const
         {
             SStringVisitor theVisitor(ioString, *this);
-            inProperties.VisitProperties(theVisitor);
+            inProperties.VisitProperties(theVisitor, mode);
         }
     };
 }

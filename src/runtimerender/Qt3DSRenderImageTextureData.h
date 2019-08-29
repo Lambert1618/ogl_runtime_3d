@@ -48,6 +48,7 @@ namespace render {
             HasTransparency = 1,
             InvertUVCoords = 1 << 1,
             PreMultiplied = 1 << 2,
+            HasOpaquePixels = 1 << 3,
         };
     };
 
@@ -55,7 +56,7 @@ namespace render {
     {
         bool HasTransparency() const
         {
-            return this->operator&(ImageTextureFlagValues::HasTransparency);
+            return *this & ImageTextureFlagValues::HasTransparency;
         }
         void SetHasTransparency(bool inValue)
         {
@@ -64,7 +65,7 @@ namespace render {
 
         bool IsInvertUVCoords() const
         {
-            return this->operator&(ImageTextureFlagValues::InvertUVCoords);
+            return *this & ImageTextureFlagValues::InvertUVCoords;
         }
         void SetInvertUVCoords(bool inValue)
         {
@@ -73,11 +74,20 @@ namespace render {
 
         bool IsPreMultiplied() const
         {
-            return this->operator&(ImageTextureFlagValues::PreMultiplied);
+            return *this & ImageTextureFlagValues::PreMultiplied;
         }
         void SetPreMultiplied(bool inValue)
         {
             clearOrSet(inValue, ImageTextureFlagValues::PreMultiplied);
+        }
+
+        bool HasOpaquePixels() const
+        {
+            return *this & ImageTextureFlagValues::HasOpaquePixels;
+        }
+        void setHasOpaquePixels(bool inValue)
+        {
+            clearOrSet(inValue, ImageTextureFlagValues::HasOpaquePixels);
         }
     };
 

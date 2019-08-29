@@ -662,8 +662,8 @@ typedef eastl::pair<CRegisteredString, NVScopedRefCounted<SCustomMaterialTexture
  */
 struct SCustomMaterialsTessellationProperties
 {
-    NVRenderCachedShaderProperty<QT3DSF32> m_EdgeTessLevel; ///< tesselation value for the edges
-    NVRenderCachedShaderProperty<QT3DSF32> m_InsideTessLevel; ///< tesselation value for the inside
+    NVRenderCachedShaderProperty<QT3DSF32> m_EdgeTessLevel; ///< tessellation value for the edges
+    NVRenderCachedShaderProperty<QT3DSF32> m_InsideTessLevel; ///< tessellation value for the inside
     NVRenderCachedShaderProperty<QT3DSF32>
         m_PhongBlend; ///< blending between linear and phong component
     NVRenderCachedShaderProperty<QT3DSVec2>
@@ -1684,7 +1684,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
             *inShader.m_Shader, inRenderContext.m_Material, QT3DSVec2(1.0, 1.0),
             inRenderContext.m_ModelViewProjection, inRenderContext.m_NormalMatrix,
             inRenderContext.m_ModelMatrix, inRenderContext.m_FirstImage, inRenderContext.m_Opacity,
-            GetLayerGlobalRenderProperties(inRenderContext));
+            GetLayerGlobalRenderProperties(inRenderContext), QT3DSVec2());
 
         NVRenderContext &theContext(m_Context->GetRenderContext());
         theContext.SetRenderTarget(inFrameBuffer);
@@ -1702,7 +1702,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
         // for this frame
         NVRenderDrawMode::Enum theDrawMode = inAssembler.GetPrimitiveType();
 
-        // tesselation
+        // tessellation
         if (inRenderContext.m_Subset.m_PrimitiveType == NVRenderDrawMode::Patches) {
             QT3DSVec2 camProps(inRenderContext.m_Camera.m_ClipNear,
                             inRenderContext.m_Camera.m_ClipFar);

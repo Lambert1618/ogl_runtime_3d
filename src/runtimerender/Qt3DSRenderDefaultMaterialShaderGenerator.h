@@ -103,13 +103,35 @@ namespace render {
             NVDataRef<SLight *> inLights, SRenderableImage *inFirstImage, bool inHasTransparency,
             const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") override = 0;
 
+        // generate default material shader for depth only pass
+        virtual NVRenderShaderProgram *GenerateDepthPassShader(
+            const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+            IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+            SRenderableImage *inFirstImage, bool inHasTransparency,
+            const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") = 0;
+
+        // generate default material shader cube depth shader
+        virtual NVRenderShaderProgram *GenerateCubeDepthShader(
+            const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+            IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+            SRenderableImage *inFirstImage, bool inHasTransparency,
+            const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") = 0;
+
+        // generate default material shader orthographic depth shader
+        virtual NVRenderShaderProgram *GenerateOrthoDepthShader(
+            const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+            IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+            SRenderableImage *inFirstImage, bool inHasTransparency,
+            const char8_t *inVertexPipelineName, const char8_t *inCustomMaterialName = "") = 0;
+
         // Also sets the blend function on the render context.
         virtual void
         SetMaterialProperties(NVRenderShaderProgram &inProgram, const SGraphObject &inMaterial,
                               const QT3DSVec2 &inCameraVec, const QT3DSMat44 &inModelViewProjection,
                               const QT3DSMat33 &inNormalMatrix, const QT3DSMat44 &inGlobalTransform,
                               SRenderableImage *inFirstImage, QT3DSF32 inOpacity,
-                              SLayerGlobalRenderProperties inRenderProperties) override = 0;
+                              SLayerGlobalRenderProperties inRenderProperties,
+                              const QT3DSVec2 &alphaOpRef) override = 0;
 
         static IDefaultMaterialShaderGenerator &
         CreateDefaultMaterialShaderGenerator(IQt3DSRenderContext &inRenderContext);

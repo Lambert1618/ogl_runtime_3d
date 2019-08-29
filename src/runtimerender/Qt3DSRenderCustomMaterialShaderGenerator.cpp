@@ -755,7 +755,8 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
                                NVRenderTexture2D *inDepthTexture, NVRenderTexture2D *inSSaoTexture,
                                SImage *inLightProbe, SImage *inLightProbe2, QT3DSF32 inProbeHorizon,
                                QT3DSF32 inProbeBright, QT3DSF32 inProbe2Window, QT3DSF32 inProbe2Pos,
-                               QT3DSF32 inProbe2Fade, QT3DSF32 inProbeFOV)
+                               QT3DSF32 inProbe2Fade, QT3DSF32 inProbeFOV,
+                               const QT3DSVec2 &alphaOpRef)
     {
         ICustomMaterialSystem &theMaterialSystem(m_RenderContext.GetCustomMaterialSystem());
         SShaderGeneratorGeneratedShader &theShader(GetShaderForProgram(inProgram));
@@ -858,12 +859,13 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
     }
 
     void SetMaterialProperties(NVRenderShaderProgram &inProgram,
-                                       const SGraphObject &inMaterial, const QT3DSVec2 &inCameraVec,
-                                       const QT3DSMat44 &inModelViewProjection,
-                                       const QT3DSMat33 &inNormalMatrix,
-                                       const QT3DSMat44 &inGlobalTransform,
-                                       SRenderableImage *inFirstImage, QT3DSF32 inOpacity,
-                                       SLayerGlobalRenderProperties inRenderProperties) override
+                               const SGraphObject &inMaterial, const QT3DSVec2 &inCameraVec,
+                               const QT3DSMat44 &inModelViewProjection,
+                               const QT3DSMat33 &inNormalMatrix,
+                               const QT3DSMat44 &inGlobalTransform,
+                               SRenderableImage *inFirstImage, QT3DSF32 inOpacity,
+                               SLayerGlobalRenderProperties inRenderProperties,
+                               const QT3DSVec2 &alphaOpRef) override
     {
         const SCustomMaterial &theCustomMaterial(
             reinterpret_cast<const SCustomMaterial &>(inMaterial));
@@ -880,7 +882,8 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
                               inRenderProperties.m_LightProbe, inRenderProperties.m_LightProbe2,
                               inRenderProperties.m_ProbeHorizon, inRenderProperties.m_ProbeBright,
                               inRenderProperties.m_Probe2Window, inRenderProperties.m_Probe2Pos,
-                              inRenderProperties.m_Probe2Fade, inRenderProperties.m_ProbeFOV);
+                              inRenderProperties.m_Probe2Fade, inRenderProperties.m_ProbeFOV,
+                              alphaOpRef);
     }
 
     void GenerateLightmapIndirectFunc(IShaderStageGenerator &inFragmentShader,
@@ -1207,7 +1210,8 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
         m_GeneratedShaderString.assign(nonNull(inShaderPrefix));
         m_GeneratedShaderString.append(inCustomMaterialName);
         SShaderDefaultMaterialKey theKey(Key());
-        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties);
+        theKey.ToString(m_GeneratedShaderString, m_DefaultMaterialShaderKeyProperties,
+                        SShaderDefaultMaterialKeyProperties::DefaultKey);
 
         // Add hash of the shader code to the cache key so that custom materials with the same name
         // can have different shaders and the shaders are recompiled when the code is changed

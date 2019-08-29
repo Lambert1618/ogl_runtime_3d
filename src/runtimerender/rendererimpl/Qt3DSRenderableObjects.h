@@ -62,6 +62,7 @@ namespace render {
             Path = 1 << 9,
             ShadowCaster = 1 << 10,
             DistanceField = 1 << 11,
+            HasAlphaTest = 1 << 12,
         };
     };
 
@@ -70,7 +71,7 @@ namespace render {
         void ClearOrSet(bool value, RenderPreparationResultFlagValues::Enum enumVal)
         {
             if (value)
-                this->operator|=(enumVal);
+                *this |= enumVal;
             else
                 clear(enumVal);
         }
@@ -81,11 +82,11 @@ namespace render {
         }
         bool HasTransparency() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::HasTransparency);
+            return *this & RenderPreparationResultFlagValues::HasTransparency;
         }
         bool HasRefraction() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::HasRefraction);
+            return *this & RenderPreparationResultFlagValues::HasRefraction;
         }
         void SetCompletelyTransparent(bool inTransparent)
         {
@@ -93,20 +94,20 @@ namespace render {
         }
         bool IsCompletelyTransparent() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::CompletelyTransparent);
+            return *this & RenderPreparationResultFlagValues::CompletelyTransparent;
         }
         void SetDirty(bool inDirty)
         {
             ClearOrSet(inDirty, RenderPreparationResultFlagValues::Dirty);
         }
-        bool IsDirty() const { return this->operator&(RenderPreparationResultFlagValues::Dirty); }
+        bool IsDirty() const { return *this & RenderPreparationResultFlagValues::Dirty; }
         void SetPickable(bool inPickable)
         {
             ClearOrSet(inPickable, RenderPreparationResultFlagValues::Pickable);
         }
         bool GetPickable() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::Pickable);
+            return *this & RenderPreparationResultFlagValues::Pickable;
         }
 
         // Mutually exclusive values
@@ -116,7 +117,7 @@ namespace render {
         }
         bool IsDefaultMaterialMeshSubset() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::DefaultMaterialMeshSubset);
+            return *this & RenderPreparationResultFlagValues::DefaultMaterialMeshSubset;
         }
 
         void SetCustomMaterialMeshSubset(bool inMeshSubset)
@@ -125,11 +126,11 @@ namespace render {
         }
         bool IsCustomMaterialMeshSubset() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::CustomMaterialMeshSubset);
+            return *this & RenderPreparationResultFlagValues::CustomMaterialMeshSubset;
         }
 
         void SetText(bool inText) { ClearOrSet(inText, RenderPreparationResultFlagValues::Text); }
-        bool IsText() const { return this->operator&(RenderPreparationResultFlagValues::Text); }
+        bool IsText() const { return *this & RenderPreparationResultFlagValues::Text; }
 
         void setDistanceField(bool inText)
         {
@@ -138,17 +139,17 @@ namespace render {
 
         bool isDistanceField() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::DistanceField);
+            return *this & RenderPreparationResultFlagValues::DistanceField;
         }
 
         void SetCustom(bool inCustom)
         {
             ClearOrSet(inCustom, RenderPreparationResultFlagValues::Custom);
         }
-        bool IsCustom() const { return this->operator&(RenderPreparationResultFlagValues::Custom); }
+        bool IsCustom() const { return *this & RenderPreparationResultFlagValues::Custom; }
 
         void SetPath(bool inPath) { ClearOrSet(inPath, RenderPreparationResultFlagValues::Path); }
-        bool IsPath() const { return this->operator&(RenderPreparationResultFlagValues::Path); }
+        bool IsPath() const { return *this & RenderPreparationResultFlagValues::Path; }
 
         void SetShadowCaster(bool inCaster)
         {
@@ -156,7 +157,15 @@ namespace render {
         }
         bool IsShadowCaster() const
         {
-            return this->operator&(RenderPreparationResultFlagValues::ShadowCaster);
+            return *this & RenderPreparationResultFlagValues::ShadowCaster;
+        }
+        void setAlphaTest(bool set)
+        {
+            ClearOrSet(set, RenderPreparationResultFlagValues::HasAlphaTest);
+        }
+        bool hasAlphaTest() const
+        {
+            return *this & RenderPreparationResultFlagValues::HasAlphaTest;
         }
     };
 
@@ -311,8 +320,10 @@ namespace render {
             m_RenderableFlags.setDistanceField(false);
         }
 
-        void Render(const QT3DSVec2 &inCameraVec, TShaderFeatureSet inFeatureSet);
-
+        void Render(const QT3DSVec2 &inCameraVec, TShaderFeatureSet inFeatureSet, bool depth);
+        void RenderShadow(const QT3DSVec2 &inCameraVec, TShaderFeatureSet inFeatureSet,
+                          const SLight *inLight, const SCamera &inCamera,
+                          SShadowMapEntry *inShadowMapEntry);
         void RenderDepthPass(const QT3DSVec2 &inCameraVec);
 
         DefaultMaterialBlendMode::Enum getBlendingMode()
