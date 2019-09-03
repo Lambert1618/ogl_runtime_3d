@@ -343,8 +343,9 @@ namespace render {
                                   NVRenderBackendComputeShaderObject cso) override;
         NVRenderBackendShaderProgramObject CreateShaderProgram(bool isSeparable) override;
         void ReleaseShaderProgram(NVRenderBackendShaderProgramObject po) override;
-        bool LinkProgram(NVRenderBackendShaderProgramObject po,
-                                 eastl::string &errorMessage) override;
+        bool linkProgram(NVRenderBackendShaderProgramObject po,
+                         eastl::string &errorMessage,
+                         QT3DSU32 binaryFormat, const QByteArray *binary) override;
         void SetActiveProgram(NVRenderBackendShaderProgramObject po) override;
         void DispatchCompute(NVRenderBackendShaderProgramObject po, QT3DSU32 numGroupsX,
                                      QT3DSU32 numGroupsY, QT3DSU32 numGroupsZ) override;
@@ -488,6 +489,9 @@ namespace render {
         {
             return m_format;
         }
+
+        void getProgramBinary(NVRenderBackendShaderProgramObject po, QT3DSU32 &outFormat,
+                              QByteArray &outBinary) override;
 
     protected:
         virtual NVFoundationBase &GetFoundation() { return m_Foundation; }

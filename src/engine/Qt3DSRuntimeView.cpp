@@ -171,7 +171,7 @@ public:
     bool BeginLoad(const QString &sourcePath, const QStringList &variantList) override;
     bool HasOfflineLoadingCompleted() override;
     bool InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
-                            bool initInRenderThread) override;
+                            bool initInRenderThread, const QByteArray &shaderCache) override;
     void connectSignals() override;
     void finishAsyncInit() override;
 
@@ -237,6 +237,7 @@ public:
     void unloadSlide(const QString &slide) override;
     void setDelayedLoading(bool enable) override;
     void BootupPreGraphicsInitObjects();
+    QByteArray exportShaderCache(bool binaryShaders);
 };
 
 CRuntimeView::CRuntimeView(ITimeProvider &inTimeProvider, IWindowSystem &inWindowSystem,
@@ -298,7 +299,7 @@ bool CRuntimeView::HasOfflineLoadingCompleted()
 }
 
 bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
-                                      bool initInRenderThread)
+                                      bool initInRenderThread, const QByteArray &shaderCache)
 {
     m_ApplicationCore->EndLoad();
     // Next call will initialize the render portion of the scenes.  This *must* have a loaded
@@ -306,7 +307,8 @@ bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayed
     m_RuntimeFactory = m_RuntimeFactoryCore->CreateRenderFactory(format, delayedLoading);
     m_Application
             = m_ApplicationCore->CreateApplication(*m_InputEngine, m_AudioPlayer,
-                                                   *m_RuntimeFactory, initInRenderThread);
+                                                   *m_RuntimeFactory, shaderCache,
+                                                   initInRenderThread);
     if (!m_Application->createSuccessful())
         return false;
 

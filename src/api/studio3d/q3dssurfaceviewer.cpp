@@ -662,6 +662,7 @@ bool Q3DSSurfaceViewerPrivate::initializeRuntime()
                                     m_context->format(), int(m_fboId), localSource,
                                     m_presentation->variantList(),
                                     m_presentation->delayedLoading(), true,
+                                    m_presentation->d_ptr->loadShaderCache(),
                                     m_presentation->d_ptr->streamProxy())) {
         setError(m_viewerApp->error());
         releaseRuntime();

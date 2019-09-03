@@ -100,7 +100,7 @@ namespace render {
         , m_Context(ctx.GetRenderContext())
         , m_BufferManager(ctx.GetBufferManager())
         , m_OffscreenRenderManager(ctx.GetOffscreenRenderManager())
-        , m_StringTable(IStringTable::CreateStringTable(ctx.GetAllocator()))
+        , m_StringTable(ctx.GetStringTable())
         , m_LayerShaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_LayerShaders")
         , m_Shaders(ctx.GetAllocator(), "Qt3DSRendererImpl::m_Shaders")
         , m_ConstantBuffers(ctx.GetAllocator(), "Qt3DSRendererImpl::m_ConstantBuffers")

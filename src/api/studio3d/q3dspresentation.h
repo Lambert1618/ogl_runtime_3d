@@ -58,6 +58,7 @@ class Q_STUDIO3D_EXPORT Q3DSPresentation : public QObject
     Q_PROPERTY(QStringList createdElements READ createdElements NOTIFY elementsCreated)
     Q_PROPERTY(QStringList createdMaterials READ createdMaterials NOTIFY materialsCreated)
     Q_PROPERTY(QStringList createdMeshes READ createdMeshes NOTIFY meshesCreated)
+    Q_PROPERTY(QUrl shaderCacheFile READ shaderCacheFile WRITE setShaderCacheFile NOTIFY shaderCacheFileChanged )
 
 public:
     explicit Q3DSPresentation(QObject *parent = nullptr);
@@ -89,6 +90,10 @@ public:
 
     Q_INVOKABLE void preloadSlide(const QString &elementPath);
     Q_INVOKABLE void unloadSlide(const QString &elementPath);
+
+    Q_INVOKABLE void exportShaderCache(const QUrl &shaderCacheFile, bool binaryShaders);
+    Q_INVOKABLE void exportShaderCache(bool binaryShaders);
+    QUrl shaderCacheFile() const;
 
     // Input event handlers
     void mousePressEvent(QMouseEvent *e);
@@ -131,6 +136,7 @@ public Q_SLOTS:
     void fireEvent(const QString &elementPath, const QString &eventName);
     void setGlobalAnimationTime(qint64 milliseconds);
     void setDataInputValue(const QString &name, const QVariant &value, bool force = false);
+    void setShaderCacheFile(const QUrl &fileName);
 
 Q_SIGNALS:
     void variantListChanged(const QStringList &variantList);
@@ -144,6 +150,8 @@ Q_SIGNALS:
     void elementsCreated(const QStringList &elementPaths, const QString &error);
     void materialsCreated(const QStringList &materialNames, const QString &error);
     void meshesCreated(const QStringList &meshNames, const QString &error);
+    void shaderCacheFileChanged(const QUrl &fileName);
+    void shaderCacheExported(bool success);
 
 private:
     Q_DISABLE_COPY(Q3DSPresentation)

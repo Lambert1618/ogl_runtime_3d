@@ -433,7 +433,6 @@ struct SApplicationSettings
 {
     Option<bool> m_LayerCacheEnabled;
     Option<bool> m_LayerGpuProfilingEnabled;
-    Option<bool> m_ShaderCachePersistenceEnabled;
 
     SApplicationSettings() {}
 
@@ -452,8 +451,6 @@ struct SApplicationSettings
               Choose(inCommandLine.m_LayerCacheEnabled, inUIAFileSettings.m_LayerCacheEnabled))
         , m_LayerGpuProfilingEnabled(Choose(inCommandLine.m_LayerGpuProfilingEnabled,
                                             inUIAFileSettings.m_LayerGpuProfilingEnabled))
-        , m_ShaderCachePersistenceEnabled(Choose(inCommandLine.m_ShaderCachePersistenceEnabled,
-                                                 inUIAFileSettings.m_ShaderCachePersistenceEnabled))
     {
     }
 
@@ -511,7 +508,6 @@ struct SApplicationSettings
     {
         ParseBoolEnableDisableItem(inReader, LayerCacheName(), m_LayerCacheEnabled);
         ParseBoolEnableDisableItem(inReader, LayerGpuProfilerName(), m_LayerGpuProfilingEnabled);
-        ParseBoolEnableDisableItem(inReader, ShaderCacheName(), m_ShaderCachePersistenceEnabled);
     }
 
     void Parse(IDOMReader &inReader) { ParseItems(inReader); }
@@ -543,7 +539,6 @@ struct SApplicationSettings
     {
         outStream.Write(SOptionSerializer(m_LayerCacheEnabled));
         outStream.Write(SOptionSerializer(m_LayerGpuProfilingEnabled));
-        outStream.Write(SOptionSerializer(m_ShaderCachePersistenceEnabled));
     }
 
     void Load(IInStream &inStream)
@@ -553,8 +548,6 @@ struct SApplicationSettings
         m_LayerCacheEnabled = s;
         inStream.Read(s);
         m_LayerGpuProfilingEnabled = s;
-        inStream.Read(s);
-        m_ShaderCachePersistenceEnabled = s;
     }
 };
 
@@ -1745,6 +1738,7 @@ struct SApp : public IApplication
     IApplication &CreateApplication(Q3DStudio::CInputEngine &inInputEngine,
                                     Q3DStudio::IAudioPlayer *inAudioPlayer,
                                     Q3DStudio::IRuntimeFactory &inFactory,
+                                    const QByteArray &shaderCache,
                                     bool initInRenderThread) override
     {
         {
@@ -1810,6 +1804,10 @@ struct SApp : public IApplication
             inFactory.GetQt3DSRenderContext().GetRenderer().EnableLayerCaching(
                         *finalSettings.m_LayerCacheEnabled);
         }
+
+
+        if (!shaderCache.isEmpty())
+            inFactory.GetQt3DSRenderContext().GetShaderCache().importShaderCache(shaderCache);
 
         m_CoreFactory->GetPerfTimer().OutputTimerData();
 

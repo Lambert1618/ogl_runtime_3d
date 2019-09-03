@@ -250,6 +250,7 @@ public:
     virtual IApplication &CreateApplication(Q3DStudio::CInputEngine &inInputEngine,
                                             Q3DStudio::IAudioPlayer *inAudioPlayer,
                                             Q3DStudio::IRuntimeFactory &inFactory,
+                                            const QByteArray &shaderCache,
                                             bool initInRenderThread) = 0;
 
     // maintains reference to runtime factory core.  AppDir is where the executable is located;

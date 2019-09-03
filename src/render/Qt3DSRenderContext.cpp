@@ -610,15 +610,30 @@ namespace render {
             *this, shaderName, vertShader, fragShader, tessControlShaderSource,
             tessEvaluationShaderSource, geometryShaderSource, false, type, true);
 
-        if (result.mShader != NULL)
+        if (result.mShader != nullptr) {
             m_ShaderToImpMap.insert(
                 make_pair(result.mShader->GetShaderProgramHandle(), result.mShader));
+        }
 
         return result;
 #else
         QT3DS_ASSERT(false);
         return NVRenderVertFragCompilationResult();
 #endif
+    }
+
+    NVRenderVertFragCompilationResult NVRenderContextImpl::CompileBinary(
+            const char *shaderName, QT3DSU32 format, const QByteArray &binary)
+    {
+        NVRenderVertFragCompilationResult result = NVRenderShaderProgram::createFromBinary(
+            *this, shaderName, format, binary);
+
+        if (result.mShader != nullptr) {
+            m_ShaderToImpMap.insert(
+                make_pair(result.mShader->GetShaderProgramHandle(), result.mShader));
+        }
+
+        return result;
     }
 
     NVRenderVertFragCompilationResult
@@ -628,9 +643,10 @@ namespace render {
         NVRenderVertFragCompilationResult result =
             NVRenderShaderProgram::CreateCompute(*this, shaderName, computeShaderSource);
 
-        if (result.mShader != NULL)
+        if (result.mShader != nullptr) {
             m_ShaderToImpMap.insert(
                 make_pair(result.mShader->GetShaderProgramHandle(), result.mShader));
+        }
 
         return result;
     }

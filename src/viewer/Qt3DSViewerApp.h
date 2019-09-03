@@ -229,6 +229,7 @@ public:
                        int offscreenID, const QString &source,
                        const QStringList &variantList,
                        bool delayedLoading, bool initInRenderThread,
+                       const QByteArray &shaderCache,
                        qt3ds::Qt3DSAssetVisitor *assetVisitor = nullptr);
 
     void connectSignals();
@@ -495,6 +496,8 @@ public:
     void unloadSlide(const QString &slide);
     void setDelayedLoading(bool enable);
     void setMatteEnabled(bool enabled);
+
+    QByteArray exportShaderCache(bool binaryShaders);
 
 private:
     /*

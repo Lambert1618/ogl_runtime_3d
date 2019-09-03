@@ -814,8 +814,6 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
             qt3ds::foundation::CFileTools::AppendDirectoryInPathToFile(theBinaryPath, "binary");
             eastl::string theBinaryDir(theBinaryPath);
             qt3ds::foundation::CFileTools::GetDirectory(theBinaryDir);
-            if (m_Context->m_WriteOutShaderCache)
-                qt3ds::foundation::CFileTools::CreateDir(theBinaryDir.c_str());
         }
         inScene.m_RuntimePresentation = &inPresentation;
         m_Scenes.push_back(make_pair(&inPresentation, &inScene));

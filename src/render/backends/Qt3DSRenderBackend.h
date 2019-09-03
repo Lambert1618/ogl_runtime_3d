@@ -128,7 +128,8 @@ namespace render {
                 AdvancedBlendKHR, ///< Driver supports advanced blend modes
                 VertexArrayObject,
                 StandardDerivatives,
-                TextureLod
+                TextureLod,
+                BinaryProgram
             };
         } NVRenderBackendCaps;
 
@@ -1547,8 +1548,9 @@ namespace render {
          *
          * @return True if program is succesful linked.
          */
-        virtual bool LinkProgram(NVRenderBackendShaderProgramObject po,
-                                 eastl::string &errorMessage) = 0;
+        virtual bool linkProgram(NVRenderBackendShaderProgramObject po,
+                                 eastl::string &errorMessage,
+                                 QT3DSU32 binaryFormat, const QByteArray *binary) = 0;
 
         /**
          * @brief Make a program current
@@ -2194,6 +2196,9 @@ namespace render {
 
         virtual QSurfaceFormat format() const = 0;
 
+        virtual void getProgramBinary(NVRenderBackendShaderProgramObject po, QT3DSU32 &outFormat,
+                                      QByteArray &outBinary) = 0;
+
     protected:
         /// struct for what the backend supports
         typedef struct NVRenderBackendSupport
@@ -2231,6 +2236,7 @@ namespace render {
                     bool bVertexArrayObjectSupported : 1;
                     bool bStandardDerivativesSupported : 1;
                     bool bTextureLodSupported : 1;
+                    bool bBinaryProgramsSupported : 1;
                 } bits;
 
                 QT3DSU32 u32Values;

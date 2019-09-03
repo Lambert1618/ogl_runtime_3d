@@ -152,6 +152,7 @@ namespace render {
         virtual bool IsAdvancedBlendHwSupportedKHR() const = 0;
         virtual bool IsStandardDerivativesSupported() const = 0;
         virtual bool IsTextureLodSupported() const = 0;
+        virtual bool isBinaryProgramSupported() const = 0;
         virtual bool isSceneCameraView() const = 0;
 
         virtual void SetDefaultRenderTarget(QT3DSU64 targetID) = 0;
@@ -268,6 +269,8 @@ namespace render {
                       NVDataRef<QT3DSI8> tessControlShaderSource = NVDataRef<QT3DSI8>(),
                       NVDataRef<QT3DSI8> tessEvaluationShaderSource = NVDataRef<QT3DSI8>(),
                       NVConstDataRef<QT3DSI8> geometryShaderSource = NVConstDataRef<QT3DSI8>()) = 0;
+        virtual NVRenderVertFragCompilationResult
+        CompileBinary(const char *shaderName, QT3DSU32 format, const QByteArray &binary) = 0;
 
         virtual NVRenderVertFragCompilationResult
         CompileComputeSource(const char *shaderName, NVConstDataRef<QT3DSI8> computeShaderSource) = 0;
@@ -779,6 +782,10 @@ namespace render {
         {
             return GetRenderBackendCap(NVRenderBackend::NVRenderBackendCaps::TextureLod);
         }
+        bool isBinaryProgramSupported() const override
+        {
+            return GetRenderBackendCap(NVRenderBackend::NVRenderBackendCaps::BinaryProgram);
+        }
 
         bool isSceneCameraView() const override
         {
@@ -913,7 +920,8 @@ namespace render {
                       NVDataRef<QT3DSI8> tessControlShaderSource = NVDataRef<QT3DSI8>(),
                       NVDataRef<QT3DSI8> tessEvaluationShaderSource = NVDataRef<QT3DSI8>(),
                       NVConstDataRef<QT3DSI8> geometryShaderSource = NVConstDataRef<QT3DSI8>()) override;
-
+        NVRenderVertFragCompilationResult CompileBinary(const char *shaderName, QT3DSU32 format,
+                                                        const QByteArray &binary) override;
         virtual NVRenderVertFragCompilationResult
         CompileComputeSource(const char *shaderName, NVConstDataRef<QT3DSI8> computeShaderSource) override;
 

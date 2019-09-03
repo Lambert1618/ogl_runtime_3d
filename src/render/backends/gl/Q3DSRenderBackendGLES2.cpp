@@ -143,6 +143,9 @@ NVRenderBackendGLES2Impl::NVRenderBackendGLES2Impl(NVFoundationBase &fnd,
     // constant buffers support is always not true
     m_backendSupport.caps.bits.bConstantBufferSupported = false;
 
+    // Binary programs are never supported
+    m_backendSupport.caps.bits.bBinaryProgramsSupported = false;
+
     // query hardware
     GL_CALL_EXTRA_FUNCTION(glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &m_MaxAttribCount));
 

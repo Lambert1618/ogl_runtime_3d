@@ -553,16 +553,17 @@ namespace render {
                                                                cbSize, cbCount, pBuffer, alloc);
     }
 
-    bool NVRenderShaderProgram::Link()
+    bool NVRenderShaderProgram::link(QT3DSU32 binaryFormat, const QByteArray *binary)
     {
-        bool success = m_Backend->LinkProgram(m_ProgramHandle, m_ErrorMessage);
+        bool success = m_Backend->linkProgram(m_ProgramHandle, m_ErrorMessage,
+                                              binaryFormat, binary);
 
         if (success) {
             char nameBuf[512];
             QT3DSI32 location, elementCount, binding;
             NVRenderShaderDataTypes::Enum type;
 
-            QT3DSI32 constantCount = m_Backend->GetConstantCount(m_ProgramHandle);
+            QT3DSU32 constantCount = QT3DSU32(m_Backend->GetConstantCount(m_ProgramHandle));
 
             QT3DS_FOREACH(idx, constantCount)
             {
@@ -578,20 +579,23 @@ namespace render {
                 }
                 if (location != -1) {
                     CRegisteredString theName(m_Context.GetStringTable().RegisterStr(nameBuf));
-                    m_Constants.insert(eastl::make_pair(
-                        theName,
-                        ShaderConstantFactory(m_Backend, theName, m_Context.GetFoundation(),
-                                              location, elementCount, type, binding)));
+                    m_Constants.insert(
+                                eastl::make_pair(
+                                    theName,
+                                    ShaderConstantFactory(m_Backend, theName,
+                                                          m_Context.GetFoundation(),
+                                                          location, elementCount, type, binding)));
                 }
             }
 
             // next query constant buffers info
             QT3DSI32 length, bufferSize, paramCount;
-            QT3DSI32 constantBufferCount = m_Backend->GetConstantBufferCount(m_ProgramHandle);
+            QT3DSU32 constantBufferCount = QT3DSU32(
+                        m_Backend->GetConstantBufferCount(m_ProgramHandle));
             QT3DS_FOREACH(idx, constantBufferCount)
             {
                 location = m_Backend->GetConstantBufferInfoByID(
-                    m_ProgramHandle, idx, 512, &paramCount, &bufferSize, &length, nameBuf);
+                            m_ProgramHandle, idx, 512, &paramCount, &bufferSize, &length, nameBuf);
 
                 if (location != -1) {
                     CRegisteredString theName(m_Context.GetStringTable().RegisterStr(nameBuf));
@@ -603,20 +607,23 @@ namespace render {
                         cb->addRef();
                     }
 
-                    m_ShaderBuffers.insert(eastl::make_pair(
-                        theName,
-                        ShaderBufferFactory<NVRenderShaderConstantBuffer, NVRenderConstantBuffer>(
-                            m_Context, theName, m_Context.GetFoundation(), location, -1, bufferSize,
-                            paramCount, cb)));
+                    m_ShaderBuffers.insert(
+                                eastl::make_pair(
+                                    theName,
+                                    ShaderBufferFactory<NVRenderShaderConstantBuffer,
+                                                        NVRenderConstantBuffer>(
+                                        m_Context, theName, m_Context.GetFoundation(), location, -1,
+                                        bufferSize, paramCount, cb)));
                 }
             }
 
             // next query storage buffers
-            QT3DSI32 storageBufferCount = m_Backend->GetStorageBufferCount(m_ProgramHandle);
+            QT3DSU32 storageBufferCount = QT3DSU32(
+                        m_Backend->GetStorageBufferCount(m_ProgramHandle));
             QT3DS_FOREACH(idx, storageBufferCount)
             {
                 location = m_Backend->GetStorageBufferInfoByID(
-                    m_ProgramHandle, idx, 512, &paramCount, &bufferSize, &length, nameBuf);
+                            m_ProgramHandle, idx, 512, &paramCount, &bufferSize, &length, nameBuf);
 
                 if (location != -1) {
                     CRegisteredString theName(m_Context.GetStringTable().RegisterStr(nameBuf));
@@ -627,11 +634,13 @@ namespace render {
                         sb->addRef();
                     }
 
-                    m_ShaderBuffers.insert(eastl::make_pair(
-                        theName,
-                        ShaderBufferFactory<NVRenderShaderStorageBuffer, NVRenderStorageBuffer>(
-                            m_Context, theName, m_Context.GetFoundation(), location, -1, bufferSize,
-                            paramCount, sb)));
+                    m_ShaderBuffers.insert(
+                                eastl::make_pair(
+                                    theName,
+                                    ShaderBufferFactory<NVRenderShaderStorageBuffer,
+                                                        NVRenderStorageBuffer>(
+                                        m_Context, theName, m_Context.GetFoundation(), location, -1,
+                                        bufferSize, paramCount, sb)));
                 }
             }
 
@@ -640,7 +649,7 @@ namespace render {
             QT3DS_FOREACH(idx, atomicBufferCount)
             {
                 location = m_Backend->GetAtomicCounterBufferInfoByID(
-                    m_ProgramHandle, idx, 512, &paramCount, &bufferSize, &length, nameBuf);
+                            m_ProgramHandle, idx, 512, &paramCount, &bufferSize, &length, nameBuf);
 
                 if (location != -1) {
                     CRegisteredString theName(m_Context.GetStringTable().RegisterStr(nameBuf));
@@ -655,16 +664,18 @@ namespace render {
                     // We get the actual buffer name by searching for this uniform name
                     // See NVRenderTestAtomicCounterBuffer.cpp how the setup works
                     NVRenderAtomicCounterBuffer *acb =
-                        m_Context.GetAtomicCounterBufferByParam(theName);
+                            m_Context.GetAtomicCounterBufferByParam(theName);
                     if (acb) {
                         acb->addRef();
 
-                        m_ShaderBuffers.insert(eastl::make_pair(
-                            acb->GetBufferName(),
-                            ShaderBufferFactory<NVRenderShaderAtomicCounterBuffer,
-                                                NVRenderAtomicCounterBuffer>(
-                                m_Context, acb->GetBufferName(), m_Context.GetFoundation(),
-                                location, -1, bufferSize, paramCount, acb)));
+                        m_ShaderBuffers.insert(
+                                    eastl::make_pair(
+                                        acb->GetBufferName(),
+                                        ShaderBufferFactory<NVRenderShaderAtomicCounterBuffer,
+                                                            NVRenderAtomicCounterBuffer>(
+                                            m_Context, acb->GetBufferName(),
+                                            m_Context.GetFoundation(),
+                                            location, -1, bufferSize, paramCount, acb)));
                     }
                 }
             }
@@ -1096,7 +1107,7 @@ namespace render {
                     pProgram->Attach(geShader.getValue());
 
                 // link program
-                bProgramIsValid = pProgram->Link();
+                bProgramIsValid = pProgram->link();
             }
         }
 
@@ -1189,6 +1200,35 @@ namespace render {
         return result;
     }
 
+    NVRenderVertFragCompilationResult NVRenderShaderProgram::createFromBinary(
+            NVRenderContextImpl &context, const char *programName, QT3DSU32 format,
+            const QByteArray &binary)
+    {
+        NVRenderVertFragCompilationResult result;
+        NVRenderShaderProgram *pProgram = nullptr;
+        bool bProgramIsValid = false;
+
+        result.mShaderName = programName;
+
+        pProgram = QT3DS_NEW(context.GetFoundation().getAllocator(), NVRenderShaderProgram)(
+            context, context.GetFoundation(), programName, false);
+
+        bProgramIsValid = pProgram->link(format, &binary);
+
+        if (!bProgramIsValid && pProgram) {
+            NVFoundationBase &foundation(context.GetFoundation());
+            qCCritical(INTERNAL_ERROR, "Failed to link binary program!!");
+            WriteErrorMessage(foundation, "Program link output:", pProgram->GetErrorMessage());
+
+            // delete program
+            QT3DS_FREE(context.GetFoundation().getAllocator(), pProgram);
+            pProgram = nullptr;
+        }
+
+        result.mShader = pProgram;
+        return result;
+    }
+
     NVRenderVertFragCompilationResult
     NVRenderShaderProgram::CreateCompute(NVRenderContextImpl &context, const char *programName,
                                          NVConstDataRef<QT3DSI8> computeShaderSource)
@@ -1219,7 +1259,7 @@ namespace render {
                 pProgram->Attach(&computeShader);
 
                 // link program
-                bProgramIsValid = pProgram->Link();
+                bProgramIsValid = pProgram->link();
 
                 // set program type
                 pProgram->SetProgramType(ProgramType::Compute);

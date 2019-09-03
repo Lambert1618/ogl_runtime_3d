@@ -46,27 +46,6 @@ QString ElementCommand::toString() const
 }
 
 CommandQueue::CommandQueue()
-    : m_visibleChanged(false)
-    , m_scaleModeChanged(false)
-    , m_stereoModeChanged(false)
-    , m_stereoEyeSeparationChanged(false)
-    , m_shadeModeChanged(false)
-    , m_showRenderStatsChanged(false)
-    , m_matteColorChanged(false)
-    , m_sourceChanged(false)
-    , m_variantListChanged(false)
-    , m_globalAnimationTimeChanged(false)
-    , m_delayedLoadingChanged(false)
-    , m_visible(false)
-    , m_scaleMode(Q3DSViewerSettings::ScaleModeCenter)
-    , m_stereoMode(Q3DSViewerSettings::StereoModeMono)
-    , m_stereoEyeSeparation(0.4)
-    , m_shadeMode(Q3DSViewerSettings::ShadeModeShaded)
-    , m_showRenderStats(false)
-    , m_matteColor(Qt::black)
-    , m_delayedLoading(false)
-    , m_matteEnabled(false)
-    , m_size(0)
 {
     qRegisterMetaType<CommandType>();
 }
@@ -212,6 +191,25 @@ ElementCommand &CommandQueue::queueCommand(const QString &elementPath, CommandTy
     return cmd;
 }
 
+ElementCommand &CommandQueue::queueCommand(CommandType commandType)
+{
+    ElementCommand &cmd = nextFreeCommand();
+
+    cmd.m_commandType = commandType;
+
+    return cmd;
+}
+
+ElementCommand &CommandQueue::queueCommand(CommandType commandType, bool value)
+{
+    ElementCommand &cmd = nextFreeCommand();
+
+    cmd.m_commandType = commandType;
+    cmd.m_boolValue = value;
+
+    return cmd;
+}
+
 void CommandQueue::copyCommands(CommandQueue &fromQueue)
 {
     m_visibleChanged = m_visibleChanged || fromQueue.m_visibleChanged;
@@ -228,6 +226,7 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
             = m_globalAnimationTimeChanged || fromQueue.m_globalAnimationTimeChanged;
     m_delayedLoadingChanged = m_delayedLoadingChanged || fromQueue.m_delayedLoadingChanged;
     m_matteEnabledChanged = m_matteEnabledChanged || fromQueue.m_matteEnabledChanged;
+    m_shaderCacheFileChanged = m_shaderCacheFileChanged || fromQueue.m_shaderCacheFileChanged;
 
     if (fromQueue.m_visibleChanged)
        m_visible = fromQueue.m_visible;
@@ -253,6 +252,8 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
         m_delayedLoading = fromQueue.m_delayedLoading;
     if (fromQueue.m_matteEnabledChanged)
         m_matteEnabled = fromQueue.m_matteEnabled;
+    if (fromQueue.m_shaderCacheFileChanged)
+        m_shaderCacheFile = fromQueue.m_shaderCacheFile;
 
     // Pending queue may be synchronized multiple times between queue processing, so let's append
     // to the existing queue rather than clearing it.
@@ -313,9 +314,12 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
         case CommandType_RequestSlideInfo:
         case CommandType_UnloadSlide:
         case CommandType_PreloadSlide:
+            queueCommand(source.m_elementPath, source.m_commandType);
+            break;
         case CommandType_RequestDataInputs:
         case CommandType_RequestDataOutputs:
-            queueCommand(source.m_elementPath, source.m_commandType);
+        case CommandType_RequestExportShaderCache:
+            queueCommand(source.m_commandType, source.m_boolValue);
             break;
         default:
             queueCommand(QString(), CommandType_Invalid, false);
@@ -339,6 +343,7 @@ void CommandQueue::clear(bool deleteCommandData)
     m_globalAnimationTimeChanged = false;
     m_delayedLoadingChanged = false;
     m_matteEnabledChanged = false;
+    m_shaderCacheFileChanged = false;
 
     if (deleteCommandData) {
         for (int i = 0; i < m_size; ++i) {

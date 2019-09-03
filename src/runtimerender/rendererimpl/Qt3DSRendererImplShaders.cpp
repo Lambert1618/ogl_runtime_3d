@@ -624,10 +624,10 @@ namespace render {
                     *GetProgramGenerator().GetStage(ShaderGeneratorStages::Fragment));
                 IShaderProgramGenerator::OutputParaboloidDepthVertex(vertexShader);
                 IShaderProgramGenerator::OutputParaboloidDepthFragment(fragmentShader);
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -699,9 +699,10 @@ namespace render {
                 tessEvalShader.Append("}");
 
                 IShaderProgramGenerator::OutputParaboloidDepthFragment(fragmentShader);
+
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
             }
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -773,9 +774,10 @@ namespace render {
                 tessEvalShader.Append("}");
 
                 IShaderProgramGenerator::OutputParaboloidDepthFragment(fragmentShader);
+
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
             }
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -847,9 +849,10 @@ namespace render {
                 tessEvalShader.Append("}");
 
                 IShaderProgramGenerator::OutputParaboloidDepthFragment(fragmentShader);
+
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
             }
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -909,13 +912,10 @@ namespace render {
                 IShaderProgramGenerator::OutputCubeFaceDepthVertex(vertexShader);
                 // IShaderProgramGenerator::OutputCubeFaceDepthGeometry( geometryShader );
                 IShaderProgramGenerator::OutputCubeFaceDepthFragment(fragmentShader);
-            } else if (theCache.IsShaderCachePersistenceEnabled()) {
-                // we load from shader cache set default shader stages
-                GetProgramGenerator().BeginProgram();
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -988,10 +988,10 @@ namespace render {
                 tessEvalShader.Append("\tworld_pos /= world_pos.w;");
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;");
                 tessEvalShader.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1070,10 +1070,10 @@ namespace render {
                 tessEvalShader.Append("\tworld_pos /= world_pos.w;");
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;");
                 tessEvalShader.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1158,10 +1158,10 @@ namespace render {
                 tessEvalShader.Append("\tworld_pos /= world_pos.w;");
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;");
                 tessEvalShader.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1223,10 +1223,10 @@ namespace render {
                 fragmentShader.Append("\tfloat depth = (outDepth.x + 1.0) * 0.5;");
                 fragmentShader.Append("\tfragOutput = vec4(depth);");
                 fragmentShader.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1294,10 +1294,10 @@ namespace render {
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;");
                 tessEvalShader.Append("\toutDepth.x = gl_Position.z / gl_Position.w;");
                 tessEvalShader.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1371,10 +1371,10 @@ namespace render {
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;");
                 tessEvalShader.Append("\toutDepth.x = gl_Position.z / gl_Position.w;");
                 tessEvalShader.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1457,10 +1457,10 @@ namespace render {
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;");
                 tessEvalShader.Append("\toutDepth.x = gl_Position.z / gl_Position.w;");
                 tessEvalShader.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1515,13 +1515,10 @@ namespace render {
                 fragmentShader.Append("void main() {");
                 fragmentShader.Append("\tfragOutput = vec4(0.0, 0.0, 0.0, 0.0);");
                 fragmentShader.Append("}");
-            } else if (theCache.IsShaderCachePersistenceEnabled()) {
-                // we load from shader cache set default shader stages
-                GetProgramGenerator().BeginProgram();
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), SShaderCacheProgramFlags(), TShaderFeatureSet());
+            }
 
             if (depthShaderProgram) {
                 theDepthPrePassShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1667,18 +1664,13 @@ namespace render {
                     tessEvalShader.Append("\tgl_Position = model_view_projection * pos;");
 
                 tessEvalShader.Append("}");
-            } else if (theCache.IsShaderCachePersistenceEnabled()) {
-                // we load from shader cache set default shader stages
-                GetProgramGenerator().BeginProgram(TShaderGeneratorStageFlags(
-                    ShaderGeneratorStages::Vertex | ShaderGeneratorStages::TessControl
-                    | ShaderGeneratorStages::TessEval | ShaderGeneratorStages::Fragment));
+
+                SShaderCacheProgramFlags theFlags;
+                theFlags.SetTessellationEnabled(true);
+
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    name.c_str(), theFlags, TShaderFeatureSet());
             }
-
-            SShaderCacheProgramFlags theFlags;
-            theFlags.SetTessellationEnabled(true);
-
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                name.c_str(), theFlags, TShaderFeatureSet());
 
             if (depthShaderProgram) {
                 theDepthPrePassShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1747,18 +1739,13 @@ namespace render {
                 tessEvalShader.Append("\tvec4 pos = tessShader( );\n");
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;\n");
                 tessEvalShader.Append("}");
-            } else if (theCache.IsShaderCachePersistenceEnabled()) {
-                // we load from shader cache set default shader stages
-                GetProgramGenerator().BeginProgram(TShaderGeneratorStageFlags(
-                    ShaderGeneratorStages::Vertex | ShaderGeneratorStages::TessControl
-                    | ShaderGeneratorStages::TessEval | ShaderGeneratorStages::Fragment));
+
+                SShaderCacheProgramFlags theFlags;
+                theFlags.SetTessellationEnabled(true);
+
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    "depth tess phong prepass shader", theFlags, TShaderFeatureSet());
             }
-
-            SShaderCacheProgramFlags theFlags;
-            theFlags.SetTessellationEnabled(true);
-
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                "depth tess phong prepass shader", theFlags, TShaderFeatureSet());
 
             if (depthShaderProgram) {
                 m_DepthTessPhongPrepassShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1841,18 +1828,13 @@ namespace render {
                 tessEvalShader.Append("\tvec4 pos = tessShader( );\n");
                 tessEvalShader.Append("\tgl_Position = model_view_projection * pos;\n");
                 tessEvalShader.Append("}");
-            } else if (theCache.IsShaderCachePersistenceEnabled()) {
-                // we load from shader cache set default shader stages
-                GetProgramGenerator().BeginProgram(TShaderGeneratorStageFlags(
-                    ShaderGeneratorStages::Vertex | ShaderGeneratorStages::TessControl
-                    | ShaderGeneratorStages::TessEval | ShaderGeneratorStages::Fragment));
+
+                SShaderCacheProgramFlags theFlags;
+                theFlags.SetTessellationEnabled(true);
+
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    "depth tess npatch prepass shader", theFlags, TShaderFeatureSet());
             }
-
-            SShaderCacheProgramFlags theFlags;
-            theFlags.SetTessellationEnabled(true);
-
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                "depth tess npatch prepass shader", theFlags, TShaderFeatureSet());
 
             if (depthShaderProgram) {
                 m_DepthTessNPatchPrepassShader = NVScopedRefCounted<SRenderableDepthPrepassShader>(
@@ -1974,10 +1956,10 @@ namespace render {
                     "\tgl_FragColor = vec4(aoFactor, aoFactor, aoFactor, 1.0);");
 
                 theFragmentGenerator.Append("}");
-            }
 
-            aoPassShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                "fullscreen AO pass shader", SShaderCacheProgramFlags(), inFeatureSet);
+                aoPassShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    "fullscreen AO pass shader", SShaderCacheProgramFlags(), inFeatureSet);
+            }
 
             if (aoPassShaderProgram) {
                 m_DefaultAoPassShader = NVScopedRefCounted<SDefaultAoPassShader>(
@@ -2021,10 +2003,10 @@ namespace render {
                     "\tgl_FragColor = vec4( depSample, depSample, depSample, 1.0 );");
                 theFragmentGenerator.Append("\treturn;");
                 theFragmentGenerator.Append("}");
-            }
 
-            depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                "depth display shader", SShaderCacheProgramFlags(), inFeatureSet);
+                depthShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    "depth display shader", SShaderCacheProgramFlags(), inFeatureSet);
+            }
 
             if (depthShaderProgram) {
                 m_FakeDepthShader = NVScopedRefCounted<SDefaultAoPassShader>(
@@ -2066,10 +2048,10 @@ namespace render {
                 theFragmentGenerator.Append(
                     "\tgl_FragColor = vec4(smpDepth, smpDepth, smpDepth, 1.0);");
                 theFragmentGenerator.Append("}");
-            }
 
-            cubeShaderProgram = GetProgramGenerator().CompileGeneratedShader(
-                "cube depth display shader", SShaderCacheProgramFlags(), inFeatureSet);
+                cubeShaderProgram = GetProgramGenerator().CompileGeneratedShader(
+                    "cube depth display shader", SShaderCacheProgramFlags(), inFeatureSet);
+            }
 
             if (cubeShaderProgram) {
                 m_FakeCubemapDepthShader = NVScopedRefCounted<SDefaultAoPassShader>(

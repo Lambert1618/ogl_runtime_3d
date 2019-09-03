@@ -366,7 +366,11 @@ void Q3DSStudio3D::reset()
     m_pendingCommands.m_sourceChanged = true;
     m_pendingCommands.m_source = m_presentation ? m_presentation->source() : QString();
     m_pendingCommands.m_variantListChanged = true;
-    m_pendingCommands.m_variantList = m_presentation ? m_presentation->variantList() : QStringList();
+    m_pendingCommands.m_variantList = m_presentation ? m_presentation->variantList()
+                                                     : QStringList();
+    m_pendingCommands.m_shaderCacheFileChanged = true;
+    m_pendingCommands.m_shaderCacheFile = m_presentation ? m_presentation->shaderCacheFile()
+                                                         : QString();
 }
 
 /*!
@@ -385,23 +389,16 @@ void Q3DSStudio3D::requestResponseHandler(const QString &elementPath, CommandTyp
             qWarning() << __FUNCTION__ << "RequestSlideInfo response got for unregistered scene.";
         break;
     }
-    case CommandType_RequestDataInputs: {
+    case CommandType_RequestDataInputs:
+    case CommandType_RequestDataOutputs:
+    case CommandType_RequestExportShaderCache:
+    {
         Q3DSPresentation *handler = qobject_cast<Q3DSPresentation *>(m_presentation);
         if (handler) {
             handler->d_ptr->requestResponseHandler(commandType, requestData);
         } else {
-            qWarning() << __FUNCTION__
-                       << "RequestDataInputs response got for invalid presentation.";
-        }
-        break;
-    }
-    case CommandType_RequestDataOutputs: {
-        Q3DSPresentation *handler = qobject_cast<Q3DSPresentation *>(m_presentation);
-        if (handler) {
-            handler->d_ptr->requestResponseHandler(commandType, requestData);
-        } else {
-            qWarning() << __FUNCTION__
-                       << "RequestDataOutputs response got for invalid presentation.";
+            qWarning() << __FUNCTION__ << "Command " << commandType
+                       << "response got for invalid presentation.";
         }
         break;
     }

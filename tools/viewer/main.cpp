@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
                       "Output filename base for the image\n"
                       "sequence.\n"
                       "The default value is derived from the presentation filename."),
-                      QCoreApplication::translate("main", "file"), QStringLiteral("")});
+                      QCoreApplication::translate("main", "file"), QString()});
     parser.addOption({"connect",
                       QCoreApplication::translate("main",
                       "If this parameter is specified, the viewer\n"
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
                       "Specifies the initial\n"
                       "window geometry using the X11-syntax.\n"
                       "For example: 1000x800+50+50"),
-                      QCoreApplication::translate("main", "geometry"), QStringLiteral("")});
+                      QCoreApplication::translate("main", "geometry"), QString()});
     parser.addOption({"mattecolor",
                       QCoreApplication::translate("main",
                       "Specifies custom matte color\n"
@@ -220,6 +220,10 @@ int main(int argc, char *argv[])
                       "The default value is 0.4"),
                       QCoreApplication::translate("main", "separation"),
                       QString::number(0.4)});
+    parser.addOption({"convert-shader-cache",
+                      QCoreApplication::translate("main",
+                      "Convert base64 dump to shader cache file."),
+                      QCoreApplication::translate("main", "fileName"), QString()});
     QCommandLineOption variantListOption({QStringLiteral("v"),
                                           QStringLiteral("variants")},
                                           QObject::tr("Gives list of variant groups and variants\n"
@@ -348,6 +352,24 @@ int main(int argc, char *argv[])
             appWindow->setProperty("scaleMode", Q3DSViewerSettings::ScaleModeFill);
         else
             appWindow->setProperty("scaleMode", Q3DSViewerSettings::ScaleModeCenter);
+    }
+    if (parser.isSet(QStringLiteral("convert-shader-cache"))) {
+        QString fileName(parser.value(QStringLiteral("convert-shader-cache")));
+        QString cacheFileName = fileName + QStringLiteral(".shadercache");
+        QFile base64File(fileName);
+        bool success = false;
+        if (base64File.open(QIODevice::ReadOnly)) {
+            QByteArray shaderCache = QByteArray::fromBase64(base64File.readAll());
+            QFile cacheFile(cacheFileName);
+            if (cacheFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                cacheFile.write(shaderCache);
+                success = true;
+            }
+        }
+        if (success)
+            qInfo() << "Saved shader cache to file:" << cacheFileName;
+        else
+            qWarning() << "Failed to convert" << base64File << "from base64 to a shader cache file";
     }
     if (parser.isSet(QStringLiteral("stereomode"))) {
         QString stereoStr(parser.value("stereomode"));

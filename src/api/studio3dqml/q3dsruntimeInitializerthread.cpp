@@ -39,7 +39,7 @@ Q3DSRuntimeInitializerThread::Q3DSRuntimeInitializerThread(
         Q3DSViewer::Q3DSViewerApp *runtime,
         int width, int height, const QSurfaceFormat &format, int offscreenID, const QString &source,
         const QStringList &variantList, bool delayedLoading, qt3ds::Qt3DSAssetVisitor *assetVisitor,
-        QOpenGLContext *context, QSurface *surface)
+        QOpenGLContext *context, QSurface *surface, const QByteArray &shaderCache)
     : m_runtime(runtime)
     , m_width(width)
     , m_height(height)
@@ -51,6 +51,7 @@ Q3DSRuntimeInitializerThread::Q3DSRuntimeInitializerThread(
     , m_assetVisitor(assetVisitor)
     , m_context(context)
     , m_surface(surface)
+    , m_shaderCache(shaderCache)
 {
 
 }
@@ -60,7 +61,7 @@ void Q3DSRuntimeInitializerThread::run()
     m_context->makeCurrent(m_surface);
     m_success = m_runtime->InitializeApp(m_width, m_height, m_format, m_offscreenId,
                                          m_source, m_variantList, m_delayedLoading, false,
-                                         m_assetVisitor);
+                                         m_shaderCache, m_assetVisitor);
     m_context->doneCurrent();
     delete m_context;
 

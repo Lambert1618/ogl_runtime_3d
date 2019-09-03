@@ -44,134 +44,18 @@
 #include "foundation/Qt3DSPerfTimer.h"
 #include "EASTL/sort.h"
 
-#include <QRegularExpression>
-#include <QString>
+#include <QtCore/qstring.h>
+#include <QtCore/qdatastream.h>
 
 using namespace qt3ds::render;
 
 namespace {
 using qt3ds::render::NVRenderContextScopedProperty;
-const char *TessellationEnabledStr = "TessellationStageEnabled";
-const char *GeometryEnabledStr = "GeometryStageEnabled";
-inline void AppendFlagValue(Qt3DSString &inStr, const char *flag)
-{
-    if (inStr.length())
-        inStr.append(QLatin1Char(','));
-    inStr.append(flag);
-}
-inline void CacheFlagsToStr(const SShaderCacheProgramFlags &inFlags, Qt3DSString &inString)
-{
-    inString.clear();
-    if (inFlags.IsTessellationEnabled())
-        AppendFlagValue(inString, TessellationEnabledStr);
-    if (inFlags.IsGeometryShaderEnabled())
-        AppendFlagValue(inString, GeometryEnabledStr);
-}
 
 struct ShaderType
 {
     enum Enum { Vertex, TessControl, TessEval, Fragment, Geometry, Compute };
 };
-
-inline ShaderType::Enum StringToShaderType(Qt3DSString &inShaderType)
-{
-    ShaderType::Enum retval = ShaderType::Vertex;
-
-    if (inShaderType.size() == 0)
-        return retval;
-
-    if (!inShaderType.compare("VertexCode"))
-        retval = ShaderType::Vertex;
-    else if (!inShaderType.compare("FragmentCode"))
-        retval = ShaderType::Fragment;
-    else if (!inShaderType.compare("TessControlCode"))
-        retval = ShaderType::TessControl;
-    else if (!inShaderType.compare("TessEvalCode"))
-        retval = ShaderType::TessEval;
-    else if (!inShaderType.compare("GeometryCode"))
-        retval = ShaderType::Geometry;
-    else
-        QT3DS_ASSERT(false);
-
-    return retval;
-}
-
-inline SShaderCacheProgramFlags CacheFlagsToStr(const Qt3DSString &inString)
-{
-    SShaderCacheProgramFlags retval;
-    if (inString.indexOf(TessellationEnabledStr) != Qt3DSString::npos)
-        retval.SetTessellationEnabled(true);
-    if (inString.indexOf(GeometryEnabledStr) != Qt3DSString::npos)
-        retval.SetGeometryShaderEnabled(true);
-    return retval;
-}
-
-typedef eastl::pair<const char *, NVRenderContextValues::Enum> TStringToContextValuePair;
-
-/*GLES2	= 1 << 0,
-GL2		= 1 << 1,
-GLES3	= 1 << 2,
-GL3		= 1 << 3,
-GL4		= 1 << 4,
-NullContext = 1 << 5,*/
-TStringToContextValuePair g_StringToContextTypeValue[] = {
-    TStringToContextValuePair("GLES2", NVRenderContextValues::GLES2),
-    TStringToContextValuePair("GL2", NVRenderContextValues::GL2),
-    TStringToContextValuePair("GLES3", NVRenderContextValues::GLES3),
-    TStringToContextValuePair("GLES3PLUS", NVRenderContextValues::GLES3PLUS),
-    TStringToContextValuePair("GL3", NVRenderContextValues::GL3),
-    TStringToContextValuePair("GL4", NVRenderContextValues::GL4),
-    TStringToContextValuePair("NullContext", NVRenderContextValues::NullContext),
-};
-
-size_t g_NumStringToContextValueEntries =
-    sizeof(g_StringToContextTypeValue) / sizeof(*g_StringToContextTypeValue);
-
-inline void ContextTypeToString(qt3ds::render::NVRenderContextType inType,
-                                Qt3DSString &outContextType)
-{
-    outContextType.clear();
-    for (size_t idx = 0, end = g_NumStringToContextValueEntries; idx < end; ++idx) {
-        if (inType & g_StringToContextTypeValue[idx].second) {
-            if (outContextType.size())
-                outContextType.append('|');
-            outContextType.append(g_StringToContextTypeValue[idx].first);
-        }
-    }
-}
-
-inline qt3ds::render::NVRenderContextType StringToContextType(const Qt3DSString &inContextType)
-{
-    qt3ds::render::NVRenderContextType retval;
-    char tempBuffer[128];
-    memZero(tempBuffer, 128);
-    const QString::size_type lastTempBufIdx = 127;
-    QString::size_type pos = 0, lastpos = 0;
-    if (inContextType.size() == 0)
-        return retval;
-
-    do {
-        pos = int(inContextType.indexOf(QLatin1Char('|'), lastpos));
-        if (pos == Qt3DSString::npos)
-            pos = int(inContextType.size());
-        {
-
-            QString::size_type sectionLen = NVMin(pos - lastpos, lastTempBufIdx);
-            qt3ds::intrinsics::memCopy(tempBuffer, inContextType.toUtf8().constData() + lastpos,
-                                       sectionLen);
-            tempBuffer[lastTempBufIdx] = 0;
-            for (size_t idx = 0, end = g_NumStringToContextValueEntries; idx < end; ++idx) {
-                if (strcmp(g_StringToContextTypeValue[idx].first, tempBuffer) == 0)
-                    retval = retval | g_StringToContextTypeValue[idx].second;
-            }
-        }
-        // iterate past the bar
-        ++pos;
-        lastpos = pos;
-    } while (pos < inContextType.size() && pos != Qt3DSString::npos);
-
-    return retval;
-}
 
 struct SShaderCacheKey
 {
@@ -204,7 +88,7 @@ struct SShaderCacheKey
     {
         m_HashCode = m_Key.hash();
         m_HashCode = m_HashCode
-            ^ HashShaderFeatureSet(toDataRef(m_Features.data(), (QT3DSU32)m_Features.size()));
+            ^ HashShaderFeatureSet(toDataRef(m_Features.data(), QT3DSU32(m_Features.size())));
     }
     bool operator==(const SShaderCacheKey &inOther) const
     {
@@ -236,14 +120,26 @@ struct ShaderCache : public IShaderCache
     Qt3DSString m_GeometryCode;
     Qt3DSString m_FragmentCode;
     Qt3DSString m_InsertStr;
-    Qt3DSString m_FlagString;
     Qt3DSString m_ContextTypeString;
     SShaderCacheKey m_TempKey;
 
-    NVScopedRefCounted<IDOMWriter> m_ShaderCache;
     IInputStreamFactory &m_InputStreamFactory;
-    bool m_ShaderCompilationEnabled;
-    volatile QT3DSI32 mRefCount;
+    bool m_ShaderCompilationEnabled = true;
+    bool m_shadersInitializedFromCache = false;
+    volatile QT3DSI32 mRefCount = 0;
+
+    struct ShaderSource
+    {
+        QVector<SShaderPreprocessorFeature> features;
+        CRegisteredString key;
+        SShaderCacheProgramFlags flags;
+        QByteArray vertexCode;
+        QByteArray tessCtrlCode;
+        QByteArray tessEvalCode;
+        QByteArray geometryCode;
+        QByteArray fragmentCode;
+    };
+    QVector<ShaderSource> m_shaderSourceCache;
 
     ShaderCache(NVRenderContext &ctx, IInputStreamFactory &inInputStreamFactory,
                 IPerfTimer &inPerfTimer)
@@ -251,14 +147,12 @@ struct ShaderCache : public IShaderCache
         , m_PerfTimer(inPerfTimer)
         , m_Shaders(ctx.GetAllocator(), "ShaderCache::m_Shaders")
         , m_InputStreamFactory(inInputStreamFactory)
-        , m_ShaderCompilationEnabled(true)
-        , mRefCount(0)
     {
     }
     QT3DS_IMPLEMENT_REF_COUNT_ADDREF_RELEASE_OVERRIDE(m_RenderContext.GetAllocator())
 
-    NVRenderShaderProgram *GetProgram(CRegisteredString inKey,
-                                              NVConstDataRef<SShaderPreprocessorFeature> inFeatures) override
+    NVRenderShaderProgram *GetProgram(
+            CRegisteredString inKey, NVConstDataRef<SShaderPreprocessorFeature> inFeatures) override
     {
         m_TempKey.m_Key = inKey;
         m_TempKey.m_Features.assign(inFeatures.begin(), inFeatures.end());
@@ -266,7 +160,7 @@ struct ShaderCache : public IShaderCache
         TShaderMap::iterator theIter = m_Shaders.find(m_TempKey);
         if (theIter != m_Shaders.end())
             return theIter->second;
-        return NULL;
+        return nullptr;
     }
 
     void AddBackwardCompatibilityDefines(ShaderType::Enum shaderType)
@@ -332,7 +226,8 @@ struct ShaderCache : public IShaderCache
 
     void AddShaderPreprocessor(Qt3DSString &str, CRegisteredString inKey,
                                ShaderType::Enum shaderType,
-                               NVConstDataRef<SShaderPreprocessorFeature> inFeatures)
+                               NVConstDataRef<SShaderPreprocessorFeature> inFeatures,
+                               bool forCache)
     {
         // Don't use shading language version returned by the driver as it might
         // differ from the context version. Instead use the context type to specify
@@ -343,7 +238,7 @@ struct ShaderCache : public IShaderCache
         QString versionStr;
         QTextStream stream(&versionStr);
         stream << "#version ";
-        const QT3DSU32 type = (QT3DSU32)m_RenderContext.GetRenderContextType();
+        const QT3DSU32 type = QT3DSU32(m_RenderContext.GetRenderContextType());
         switch (type) {
         case NVRenderContextValues::GLES2:
             stream << "1" << minor << "0\n";
@@ -436,7 +331,9 @@ struct ShaderCache : public IShaderCache
             }
         }
 
-        if (inKey.IsValid()) {
+        // Adding shader name is useful debugging feature, but it is not particularly useful when
+        // creating shaders for cache, and it can be long
+        if (inKey.IsValid() && !forCache) {
             m_InsertStr += "//Shader name -";
             m_InsertStr += inKey.c_str();
             m_InsertStr += "\n";
@@ -452,7 +349,35 @@ struct ShaderCache : public IShaderCache
 
         str.insert(0, m_InsertStr);
     }
+
     // Compile this program overwriting any existing ones.
+    void addShaderPreprocessors(CRegisteredString inKey,
+                                const SShaderCacheProgramFlags &inFlags,
+                                NVConstDataRef<SShaderPreprocessorFeature> inFeatures,
+                                bool separableProgram, bool forCache)
+    {
+        // Add defines and such so we can write unified shaders that work across platforms.
+        // vertex and fragment shaders are optional for separable shaders
+        if (!separableProgram || !m_VertexCode.isEmpty())
+            AddShaderPreprocessor(m_VertexCode, inKey, ShaderType::Vertex, inFeatures, forCache);
+        if (!separableProgram || !m_FragmentCode.isEmpty()) {
+            AddShaderPreprocessor(m_FragmentCode, inKey, ShaderType::Fragment, inFeatures,
+                                  forCache);
+        }
+        // optional shaders
+        if (inFlags.IsTessellationEnabled()) {
+            QT3DS_ASSERT(m_TessCtrlCode.size() && m_TessEvalCode.size());
+            AddShaderPreprocessor(m_TessCtrlCode, inKey, ShaderType::TessControl, inFeatures,
+                                  forCache);
+            AddShaderPreprocessor(m_TessEvalCode, inKey, ShaderType::TessEval, inFeatures,
+                                  forCache);
+        }
+        if (inFlags.IsGeometryShaderEnabled()) {
+            AddShaderPreprocessor(m_GeometryCode, inKey, ShaderType::Geometry, inFeatures,
+                                  forCache);
+        }
+    }
+
     NVRenderShaderProgram *
     ForceCompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
                         const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
@@ -461,7 +386,7 @@ struct ShaderCache : public IShaderCache
                         bool separableProgram, bool fromDisk = false) override
     {
         if (m_ShaderCompilationEnabled == false)
-            return NULL;
+            return nullptr;
         SShaderCacheKey tempKey(inKey);
         tempKey.m_Features.assign(inFeatures.begin(), inFeatures.end());
         tempKey.GenerateHashCode();
@@ -492,20 +417,9 @@ struct ShaderCache : public IShaderCache
         m_TessEvalCode.assign(inTessEval);
         m_GeometryCode.assign(inGeom);
         m_FragmentCode.assign(inFrag);
-        // Add defines and such so we can write unified shaders that work across platforms.
-        // vertex and fragment shaders are optional for separable shaders
-        if (!separableProgram || !m_VertexCode.isEmpty())
-            AddShaderPreprocessor(m_VertexCode, inKey, ShaderType::Vertex, inFeatures);
-        if (!separableProgram || !m_FragmentCode.isEmpty())
-            AddShaderPreprocessor(m_FragmentCode, inKey, ShaderType::Fragment, inFeatures);
-        // optional shaders
-        if (inFlags.IsTessellationEnabled()) {
-            QT3DS_ASSERT(m_TessCtrlCode.size() && m_TessEvalCode.size());
-            AddShaderPreprocessor(m_TessCtrlCode, inKey, ShaderType::TessControl, inFeatures);
-            AddShaderPreprocessor(m_TessEvalCode, inKey, ShaderType::TessEval, inFeatures);
-        }
-        if (inFlags.IsGeometryShaderEnabled())
-            AddShaderPreprocessor(m_GeometryCode, inKey, ShaderType::Geometry, inFeatures);
+
+        if (!fromDisk)
+            addShaderPreprocessors(inKey, inFlags, inFeatures, separableProgram, false);
 
         theInserter.first->second =
             m_RenderContext
@@ -515,49 +429,26 @@ struct ShaderCache : public IShaderCache
                                m_TessEvalCode.c_str(), QT3DSU32(m_TessEvalCode.size()),
                                m_GeometryCode.c_str(), QT3DSU32(m_GeometryCode.size()),
                                separableProgram).mShader;
-        if (theInserter.first->second) {
-            if (m_ShaderCache) {
-                IDOMWriter::Scope __writeScope(*m_ShaderCache, "Program");
-                m_ShaderCache->Att("key", inKey.c_str());
-                CacheFlagsToStr(inFlags, m_FlagString);
-                if (m_FlagString.size())
-                    m_ShaderCache->Att("glflags", m_FlagString.c_str());
-                // write out the GL version.
-                {
-                    qt3ds::render::NVRenderContextType theContextType =
-                        m_RenderContext.GetRenderContextType();
-                    ContextTypeToString(theContextType, m_ContextTypeString);
-                    m_ShaderCache->Att("gl-context-type", m_ContextTypeString.c_str());
-                }
-                if (inFeatures.size()) {
-                    IDOMWriter::Scope __writeScope(*m_ShaderCache, "Features");
-                    for (QT3DSU32 idx = 0, end = inFeatures.size(); idx < end; ++idx) {
-                        m_ShaderCache->Att(inFeatures[idx].m_Name, inFeatures[idx].m_Enabled);
-                    }
-                }
 
-                {
-                    IDOMWriter::Scope __writeScope(*m_ShaderCache, "VertexCode");
-                    m_ShaderCache->Value(inVert);
-                }
-                {
-                    IDOMWriter::Scope __writeScope(*m_ShaderCache, "FragmentCode");
-                    m_ShaderCache->Value(inFrag);
-                }
-                if (m_TessCtrlCode.size()) {
-                    IDOMWriter::Scope __writeScope(*m_ShaderCache, "TessControlCode");
-                    m_ShaderCache->Value(inTessCtrl);
-                }
-                if (m_TessEvalCode.size()) {
-                    IDOMWriter::Scope __writeScope(*m_ShaderCache, "TessEvalCode");
-                    m_ShaderCache->Value(inTessEval);
-                }
-                if (m_GeometryCode.size()) {
-                    IDOMWriter::Scope __writeScope(*m_ShaderCache, "GeometryCode");
-                    m_ShaderCache->Value(inGeom);
-                }
-            }
+        // This is unnecessary memory waste in final deployed product, so we don't store this
+        // information when shaders were initialized from a cache.
+        // Unfortunately it is not practical to just regenerate shader source from scratch, when we
+        // want to export it, as the triggers and original sources are spread all over the place.
+        if (!m_shadersInitializedFromCache && theInserter.first->second) {
+            // Store sources for possible cache generation later
+            ShaderSource ss;
+            for (QT3DSU32 i = 0, end = inFeatures.size(); i < end; ++i)
+                ss.features.append(inFeatures[i]);
+            ss.key = inKey;
+            ss.flags = inFlags;
+            ss.vertexCode = inVert;
+            ss.fragmentCode = inFrag;
+            ss.tessCtrlCode = inTessCtrl;
+            ss.tessEvalCode = inTessEval;
+            ss.geometryCode = inGeom;
+            m_shaderSourceCache.append(ss);
         }
+
         return theInserter.first->second;
     }
 
@@ -574,161 +465,182 @@ struct ShaderCache : public IShaderCache
         NVRenderShaderProgram *retval =
             ForceCompileProgram(inKey, inVert, inFrag, inTessCtrl, inTessEval, inGeom, inFlags,
                                 inFeatures, separableProgram);
-        if (m_CacheFilePath.c_str() && m_ShaderCache && m_ShaderCompilationEnabled) {
-            CFileSeekableIOStream theStream(m_CacheFilePath.c_str(), FileWriteFlags());
-            if (theStream.IsOpen()) {
-                NVScopedRefCounted<IStringTable> theStringTable(
-                    IStringTable::CreateStringTable(m_RenderContext.GetAllocator()));
-                CDOMSerializer::WriteXMLHeader(theStream);
-                CDOMSerializer::Write(m_RenderContext.GetAllocator(),
-                                      *m_ShaderCache->GetTopElement(), theStream, *theStringTable);
+        return retval;
+    }
+
+    // Magic number to identify cache file type
+    const quint32 shaderCacheFileId = 0x26a9b358;
+
+    QByteArray exportShaderCache(bool binaryShaders) override
+    {
+        if (m_shadersInitializedFromCache) {
+            qWarning() << __FUNCTION__ << "Warning: Shader cache export is not supported when"
+                                          " shaders were originally imported from a cache file.";
+            return {};
+        }
+
+        // The assumption is that cache was generated on the same environment it will be read.
+        // Attempting to load a cache generated on another environment will likely lead to crash.
+
+        QByteArray retval;
+        QDataStream data(&retval, QIODevice::WriteOnly);
+        bool saveBinary = binaryShaders && m_RenderContext.isBinaryProgramSupported();
+        data << shaderCacheFileId;
+        data << saveBinary;
+        data << IShaderCache::shaderCacheVersion();
+        data << m_shaderSourceCache.size();
+
+        for (const auto &ss : qAsConst(m_shaderSourceCache))
+        {
+            data << QByteArray(ss.key.c_str());
+            data << ss.features.size();
+            for (int i = 0, end = ss.features.size(); i < end; ++i) {
+                data << QByteArray(ss.features[i].m_Name.c_str());
+                data << ss.features[i].m_Enabled;
+            }
+
+            if (saveBinary) {
+                TShaderFeatureSet features(ss.features.constData(), QT3DSU32(ss.features.size()));
+                NVRenderShaderProgram *program = GetProgram(ss.key, features);
+                QT3DSU32 format;
+                QByteArray binaryData;
+                program->getProgramBinary(format, binaryData);
+                data << format;
+                data << binaryData;
+            } else {
+                m_VertexCode.assign(ss.vertexCode.constData());
+                m_FragmentCode.assign(ss.fragmentCode.constData());
+                m_TessCtrlCode.assign(ss.tessCtrlCode.constData());
+                m_TessEvalCode.assign(ss.tessEvalCode.constData());
+                m_GeometryCode.assign(ss.geometryCode.constData());
+                addShaderPreprocessors(
+                            ss.key, ss.flags,
+                            qt3ds::foundation::toConstDataRef(
+                                ss.features.constData(), static_cast<QT3DSU32>(ss.features.size())),
+                            false, true);
+                auto writeShaderElement = [&data](const QByteArray &shaderSource) {
+                    QByteArray stripped = shaderSource;
+                    int start = stripped.indexOf(QLatin1String("/*"));
+                    while (start != -1) {
+                        int end = stripped.indexOf(QLatin1String("*/"));
+                        if (end == -1)
+                            break; // Mismatched comment
+                        stripped.replace(start, end - start + 2, QByteArray());
+                        start = stripped.indexOf(QLatin1String("/*"));
+                    }
+                    data << stripped;
+                };
+
+                writeShaderElement(m_VertexCode.toUtf8());
+                writeShaderElement(m_FragmentCode.toUtf8());
+                writeShaderElement(m_TessCtrlCode.toUtf8());
+                writeShaderElement(m_TessEvalCode.toUtf8());
+                writeShaderElement(m_GeometryCode.toUtf8());
             }
         }
         return retval;
     }
 
-    void BootupDOMWriter()
+    void importShaderCache(const QByteArray &shaderCache) override
     {
-        NVScopedRefCounted<IStringTable> theStringTable(
-            IStringTable::CreateStringTable(m_RenderContext.GetAllocator()));
-        m_ShaderCache = IDOMWriter::CreateDOMWriter(m_RenderContext.GetAllocator(),
-                                                    "Qt3DSShaderCache", theStringTable)
-                            .first;
-        m_ShaderCache->Att("cache_version", IShaderCache::GetShaderVersion());
-    }
-
-    void SetShaderCachePersistenceEnabled(const char8_t *inDirectory) override
-    {
-        if (inDirectory == NULL) {
-            m_ShaderCache = NULL;
-            return;
+        #define BAILOUT(details) { \
+            qWarning() << "importShaderCache failed to import shader cache:" << details; \
+            return; \
         }
-        BootupDOMWriter();
-        m_CacheFilePath = QDir(inDirectory).filePath(GetShaderCacheFileName());
 
-        NVScopedRefCounted<IRefCountedInputStream> theInStream =
-            m_InputStreamFactory.GetStreamForFile(m_CacheFilePath.c_str());
-        if (theInStream) {
-            SStackPerfTimer __perfTimer(m_PerfTimer, "ShaderCache - Load");
-            NVScopedRefCounted<IStringTable> theStringTable(
-                IStringTable::CreateStringTable(m_RenderContext.GetAllocator()));
-            NVScopedRefCounted<IDOMFactory> theFactory(
-                IDOMFactory::CreateDOMFactory(m_RenderContext.GetAllocator(), theStringTable));
-            eastl::vector<SShaderPreprocessorFeature> theFeatures;
+        if (shaderCache.isEmpty())
+            BAILOUT("Shader cache Empty")
 
-            SDOMElement *theElem = CDOMSerializer::Read(*theFactory, *theInStream).second;
-            if (theElem) {
-                NVScopedRefCounted<IDOMReader> theReader = IDOMReader::CreateDOMReader(
-                    m_RenderContext.GetAllocator(), *theElem, theStringTable, theFactory);
-                QT3DSU32 theAttValue = 0;
-                theReader->Att("cache_version", theAttValue);
-                if (theAttValue == IShaderCache::GetShaderVersion()) {
-                    Qt3DSString loadVertexData;
-                    Qt3DSString loadFragmentData;
-                    Qt3DSString loadTessControlData;
-                    Qt3DSString loadTessEvalData;
-                    Qt3DSString loadGeometryData;
-                    Qt3DSString shaderTypeString;
-                    IStringTable &theStringTable(m_RenderContext.GetStringTable());
-                    for (bool success = theReader->MoveToFirstChild(); success;
-                         success = theReader->MoveToNextSibling()) {
-                        const char8_t *theKeyStr = NULL;
-                        theReader->UnregisteredAtt("key", theKeyStr);
+        SStackPerfTimer __perfTimer(m_PerfTimer, "ShaderCache - Import");
 
-                        CRegisteredString theKey = theStringTable.RegisterStr(theKeyStr);
-                        if (theKey.IsValid()) {
-                            m_FlagString.clear();
-                            const char8_t *theFlagStr = "";
-                            SShaderCacheProgramFlags theFlags;
-                            if (theReader->UnregisteredAtt("glflags", theFlagStr)) {
-                                m_FlagString.assign(theFlagStr);
-                                theFlags = CacheFlagsToStr(m_FlagString);
-                            }
+        QDataStream data(shaderCache);
+        quint32 type;
+        quint32 version;
+        bool isBinary;
+        data >> type;
+        if (type != shaderCacheFileId)
+            BAILOUT("Not a shader cache")
+        data >> isBinary;
+        if (isBinary && !m_RenderContext.isBinaryProgramSupported())
+            BAILOUT("Binary shaders are not supported")
+        data >> version;
+        if (version != IShaderCache::shaderCacheVersion())
+            BAILOUT("Version mismatch")
 
-                            m_ContextTypeString.clear();
-                            if (theReader->UnregisteredAtt("gl-context-type", theFlagStr))
-                                m_ContextTypeString.assign(theFlagStr);
+        #undef BAILOUT
 
-                            theFeatures.clear();
-                            {
-                                IDOMReader::Scope __featureScope(*theReader);
-                                if (theReader->MoveToFirstChild("Features")) {
-                                    for (SDOMAttribute *theAttribute =
-                                             theReader->GetFirstAttribute();
-                                         theAttribute;
-                                         theAttribute = theAttribute->m_NextAttribute) {
-                                        bool featureValue = false;
-                                        StringConversion<bool>().StrTo(theAttribute->m_Value,
-                                                                       featureValue);
-                                        theFeatures.push_back(SShaderPreprocessorFeature(
-                                            theStringTable.RegisterStr(
-                                                theAttribute->m_Name.c_str()),
-                                            featureValue));
-                                    }
-                                }
-                            }
+        IStringTable &stringTable(m_RenderContext.GetStringTable());
 
-                            qt3ds::render::NVRenderContextType theContextType =
-                                StringToContextType(m_ContextTypeString);
-                            if (((QT3DSU32)theContextType != 0)
-                                && (theContextType & m_RenderContext.GetRenderContextType())
-                                    == theContextType) {
-                                IDOMReader::Scope __readerScope(*theReader);
-                                loadVertexData.clear();
-                                loadFragmentData.clear();
-                                loadTessControlData.clear();
-                                loadTessEvalData.clear();
-                                loadGeometryData.clear();
+        int progCount;
+        data >> progCount;
+        m_shadersInitializedFromCache = progCount > 0;
+        for (int i = 0; i < progCount; ++i) {
+            QByteArray key;
+            int featCount;
+            CRegisteredString theKey;
+            data >> key;
+            data >> featCount;
+            theKey = stringTable.RegisterStr(key);
+            eastl::vector<SShaderPreprocessorFeature> features;
+            for (int j = 0; j < featCount; ++j) {
+                QByteArray featName;
+                bool featVal;
+                data >> featName;
+                data >> featVal;
+                CRegisteredString regName = stringTable.RegisterStr(featName);
+                features.push_back(SShaderPreprocessorFeature(regName, featVal));
+            }
+            NVRenderShaderProgram *theShader = nullptr;
+            if (isBinary) {
+                QT3DSU32 format;
+                QByteArray binary;
+                data >> format;
+                data >> binary;
 
-                                // Vertex *MUST* be the first
-                                // Todo deal with pure compute shader programs
-                                if (theReader->MoveToFirstChild("VertexCode")) {
-                                    const char8_t *theValue = NULL;
-                                    theReader->Value(theValue);
-                                    loadVertexData.assign(theValue);
-                                    while (theReader->MoveToNextSibling()) {
-                                        theReader->Value(theValue);
+                SShaderCacheKey tempKey(theKey);
+                tempKey.m_Features.assign(features.begin(), features.end());
+                tempKey.GenerateHashCode();
 
-                                        shaderTypeString.assign(
-                                            theReader->GetElementName().c_str());
-                                        ShaderType::Enum shaderType =
-                                            StringToShaderType(shaderTypeString);
+                qCInfo(TRACE_INFO) << "Loading binary program from shader cache: '<" << key << ">'";
 
-                                        if (shaderType == ShaderType::Fragment)
-                                            loadFragmentData.assign(theValue);
-                                        else if (shaderType == ShaderType::TessControl)
-                                            loadTessControlData.assign(theValue);
-                                        else if (shaderType == ShaderType::TessEval)
-                                            loadTessEvalData.assign(theValue);
-                                        else if (shaderType == ShaderType::Geometry)
-                                            loadGeometryData.assign(theValue);
-                                    }
-                                }
+                eastl::pair<TShaderMap::iterator, bool> theInserter = m_Shaders.insert(tempKey);
+                theInserter.first->second
+                    = m_RenderContext.CompileBinary(theKey, format, binary).mShader;
+                theShader = theInserter.first->second;
+            } else {
+                QByteArray loadVertexData;
+                QByteArray loadFragmentData;
+                QByteArray loadTessControlData;
+                QByteArray loadTessEvalData;
+                QByteArray loadGeometryData;
 
-                                if (loadVertexData.size()
-                                    && (loadFragmentData.size() || loadGeometryData.size())) {
+                data >> loadVertexData;
+                data >> loadFragmentData;
+                data >> loadTessControlData;
+                data >> loadTessEvalData;
+                data >> loadGeometryData;
 
-                                    NVRenderShaderProgram *theShader = ForceCompileProgram(
-                                        theKey, loadVertexData.c_str(), loadFragmentData.c_str(),
-                                        loadTessControlData.c_str(), loadTessEvalData.c_str(),
-                                        loadGeometryData.c_str(), theFlags,
-                                        qt3ds::foundation::toDataRef(theFeatures.data(),
-                                                                  (QT3DSU32)theFeatures.size()),
-                                        false, true /*fromDisk*/);
-                                    // If something doesn't save or load correctly, get the runtime
-                                    // to re-generate.
-                                    if (!theShader)
-                                        m_Shaders.erase(theKey);
-                                }
-                            }
-                        }
-                    }
+                if (!loadVertexData.isEmpty() && (!loadFragmentData.isEmpty()
+                                                  || !loadGeometryData.isEmpty())) {
+                    theShader = ForceCompileProgram(
+                                theKey, loadVertexData.constData(),
+                                loadFragmentData.constData(),
+                                loadTessControlData.constData(),
+                                loadTessEvalData.constData(),
+                                loadGeometryData.constData(),
+                                SShaderCacheProgramFlags(),
+                                qt3ds::foundation::toDataRef(
+                                    features.data(), static_cast<QT3DSU32>(features.size())),
+                                false, true);
                 }
+            }
+            // If something doesn't save or load correctly, get the runtime to re-generate.
+            if (!theShader) {
+                qWarning() << __FUNCTION__ << "Failed to load a cached a shader:" << key;
+                m_Shaders.erase(theKey);
             }
         }
     }
-
-    bool IsShaderCachePersistenceEnabled() const override { return m_ShaderCache != NULL; }
 
     void SetShaderCompilationEnabled(bool inEnableShaderCompilation) override
     {

@@ -73,6 +73,7 @@ public:
     void setDelayedLoading(bool enable);
     void setDataInputsChanged(bool changed);
     void setDataInputDirty(const QString &name, bool dirty);
+    void setShaderCacheFile(const QUrl &fileName);
 
     void registerElement(Q3DSElement *element);
     void unregisterElement(Q3DSElement *element);
@@ -100,6 +101,11 @@ public:
 
     void requestResponseHandler(CommandType commandType, void *requestData);
 
+    void writeShaderCache(const QUrl &shaderCacheFile);
+    QByteArray loadShaderCache() const;
+    void exportShaderCache(bool binaryShaders, bool dumpCache);
+    void dumpShaderCache();
+
 public Q_SLOTS:
     void handleSlideEntered(const QString &elementPath, unsigned int index, const QString &name);
     void handleDataOutputValueUpdate(const QString &name, const QVariant &newValue);
@@ -124,6 +130,10 @@ private:
     QStringList m_createdMaterials;
     QStringList m_createdMeshes;
     bool m_dataInputsChanged;
+    QUrl m_shaderCacheFile;
+    QByteArray m_shaderCacheExport;
+    QUrl m_shaderCacheWritePending;
+    bool m_shaderCacheDumpPending = false;
 
     friend class Q3DSStudio3D;
 };

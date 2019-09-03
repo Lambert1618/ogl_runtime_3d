@@ -98,18 +98,12 @@ namespace render {
     protected:
         virtual ~IShaderCache() {}
     public:
-        // If directory is nonnull, then we attempt to load any shaders from shadercache.xml in
-        // inDirectory
-        // and save any new ones out to the same file.  The shaders are marked by the gl version
-        // used when saving.
-        // If we can't open shadercache.xml from inDirectory for writing (at least), then we still
-        // consider the
-        // shadercache to be disabled.
-        // This call immediately blocks and attempts to load all applicable shaders from the
-        // shadercache.xml file in
-        // the given directory.
-        virtual void SetShaderCachePersistenceEnabled(const char8_t *inDirectory) = 0;
-        virtual bool IsShaderCachePersistenceEnabled() const = 0;
+        // Generates a shader cache file from the current contents of the shader cache
+        // If binaryShaders is true, the precompiled shaders are exported. Otherwise shader
+        // source code is exported
+        virtual QByteArray exportShaderCache(bool binaryShaders) = 0;
+        // This call immediately blocks and attempts to load all shaders from the shaderCache
+        virtual void importShaderCache(const QByteArray &shaderCache) = 0;
         // It is up to the caller to ensure that inFeatures contains unique keys.
         // It is also up the the caller to ensure the keys are ordered in some way.
         virtual NVRenderShaderProgram *
@@ -147,8 +141,7 @@ namespace render {
         virtual void SetShaderCompilationEnabled(bool inEnableShaderCompilation) = 0;
 
         // Upping the shader version invalidates all previous cache files.
-        static QT3DSU32 GetShaderVersion() { return 4; }
-        static const char8_t *GetShaderCacheFileName() { return "shadercache.xml"; }
+        static quint32 shaderCacheVersion() { return 1; }
 
         static IShaderCache &CreateShaderCache(NVRenderContext &inContext,
                                                IInputStreamFactory &inInputStreamFactory,

@@ -391,6 +391,7 @@ bool Q3DSViewerApp::InitializeApp(int winWidth, int winHeight, const QSurfaceFor
                                   int offscreenID, const QString &source,
                                   const QStringList &variantList,
                                   bool delayedLoading, bool initInRenderThread,
+                                  const QByteArray &shaderCache,
                                   qt3ds::Qt3DSAssetVisitor *assetVisitor)
 {
     bool hasValidPresentationFile = !source.isEmpty();
@@ -428,7 +429,8 @@ bool Q3DSViewerApp::InitializeApp(int winWidth, int winHeight, const QSurfaceFor
         }
 
         bool success = m_Impl.m_view->InitializeGraphics(format, delayedLoading,
-                                                         initInRenderThread);
+                                                         initInRenderThread,
+                                                         shaderCache);
         if (!success) {
             m_Impl.m_error = QObject::tr("Viewer launch failure! Failed to load: '%1'").arg(source);
             m_Impl.m_error.append("\n");
@@ -878,6 +880,14 @@ void Q3DSViewerApp::setMatteEnabled(bool enable)
 {
     if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
         m_Impl.m_view->GetTegraRenderEngine()->setMatteEnabled(enable);
+}
+
+QByteArray Q3DSViewerApp::exportShaderCache(bool binaryShaders)
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
+        return m_Impl.m_view->GetTegraRenderEngine()->exportShaderCache(binaryShaders);
+
+    return {};
 }
 
 void Q3DSViewerApp::setShowOnScreenStats(bool inShow)

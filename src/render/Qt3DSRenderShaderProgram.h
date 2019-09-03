@@ -192,7 +192,7 @@ namespace render {
          *
          * @return true if succesfuly linked.
          */
-        bool Link();
+        bool link(QT3DSU32 binaryFormat = 0, const QByteArray *binary = nullptr);
 
         /**
          * @brief set a shader type
@@ -356,6 +356,11 @@ namespace render {
             return m_ProgramHandle;
         }
 
+        void getProgramBinary(QT3DSU32 &outFormat, QByteArray &outBinary) const
+        {
+            m_Backend->getProgramBinary(m_ProgramHandle, outFormat, outBinary);
+        }
+
         /**
          * @brief get the context object
          *
@@ -388,6 +393,10 @@ namespace render {
             bool separateProgram = false,
             NVRenderShaderProgramBinaryType::Enum type = NVRenderShaderProgramBinaryType::Unknown,
             bool binaryProgram = false);
+
+        static NVRenderVertFragCompilationResult createFromBinary(
+                NVRenderContextImpl &context, const char *programName, QT3DSU32 format,
+                const QByteArray &binary);
 
         /**
          * @brief Create a compute shader program

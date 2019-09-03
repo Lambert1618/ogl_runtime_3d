@@ -409,7 +409,8 @@ struct SNullBackend : public NVRenderBackend
     }
     void ReleaseProgramPipeline(NVRenderBackendProgramPipeline) override {}
 
-    bool LinkProgram(NVRenderBackendShaderProgramObject, eastl::string &) override { return false; }
+    bool linkProgram(NVRenderBackendShaderProgramObject, eastl::string &,
+                     QT3DSU32, const QByteArray *) override { return false; }
     void SetActiveProgram(NVRenderBackendShaderProgramObject) override {}
     void SetActiveProgramPipeline(NVRenderBackendProgramPipeline) override {}
     void SetProgramStages(NVRenderBackendProgramPipeline, NVRenderShaderTypeFlags,
@@ -578,6 +579,9 @@ struct SNullBackend : public NVRenderBackend
     QSurfaceFormat format() const override
     {
         return QSurfaceFormat();
+    }
+    void getProgramBinary(NVRenderBackendShaderProgramObject, QT3DSU32 &, QByteArray &) override
+    {
     }
 };
 }

@@ -104,8 +104,11 @@ void Q3DSRenderer::synchronize(QQuickFramebufferObject *inView)
         m_presentation->setVariantList(m_commands.m_variantList);
         m_presentation->setSource(m_commands.m_source);
         m_presentation->setDelayedLoading(m_commands.m_delayedLoading);
+        m_presentation->setShaderCacheFile(m_commands.m_shaderCacheFile);
         m_commands.m_sourceChanged = false;
         m_commands.m_variantListChanged = false;
+        m_commands.m_delayedLoadingChanged = false;
+        m_commands.m_shaderCacheFileChanged = false;
         m_initialized = false;
         m_initializationFailure = false;
         m_error.clear();
@@ -243,7 +246,7 @@ bool Q3DSRenderer::initializeRuntime(QOpenGLFramebufferObject *inFbo)
                     m_runtime, theWidth, theHeight, QOpenGLContext::currentContext()->format(),
                     int(inFbo->handle()), localSource, m_presentation->variantList(),
                     m_presentation->delayedLoading(), m_visitor, context,
-                    m_asyncInitSurface);
+                    m_asyncInitSurface, m_presentation->d_ptr->loadShaderCache());
         connect(m_runtimeInitializerThread, &Q3DSRuntimeInitializerThread::initDone,
                 this, &Q3DSRenderer::handleRuntimeInitializedAsync, Qt::QueuedConnection);
         context->moveToThread(m_runtimeInitializerThread);
@@ -254,6 +257,7 @@ bool Q3DSRenderer::initializeRuntime(QOpenGLFramebufferObject *inFbo)
                                       int(inFbo->handle()), localSource,
                                       m_presentation->variantList(),
                                       m_presentation->delayedLoading(), true,
+                                      m_presentation->d_ptr->loadShaderCache(),
                                       m_visitor)) {
             m_error = m_runtime->error();
             releaseRuntime();
@@ -472,6 +476,12 @@ void Q3DSRenderer::processCommands()
             command.m_data = nullptr;
             break;
         }
+        case CommandType_PreloadSlide:
+            m_runtime->preloadSlide(cmd.m_elementPath);
+            break;
+        case CommandType_UnloadSlide:
+            m_runtime->unloadSlide(cmd.m_elementPath);
+            break;
         case CommandType_RequestSlideInfo: {
             int current = 0;
             int previous = 0;
@@ -486,7 +496,6 @@ void Q3DSRenderer::processCommands()
             requestData->append(QVariant(previousName));
 
             Q_EMIT requestResponse(cmd.m_elementPath, cmd.m_commandType, requestData);
-
             break;
         }
         case CommandType_RequestDataInputs: {
@@ -518,12 +527,15 @@ void Q3DSRenderer::processCommands()
             Q_EMIT requestResponse(cmd.m_elementPath, cmd.m_commandType, requestData);
             break;
         }
-        case CommandType_PreloadSlide:
-            m_runtime->preloadSlide(cmd.m_elementPath);
+        case CommandType_RequestExportShaderCache: {
+            QByteArray shaderCache = m_runtime->exportShaderCache(cmd.m_boolValue);
+            QVariantList *requestData = new QVariantList();
+            requestData->append(QVariant(shaderCache));
+
+            Q_EMIT requestResponse({}, cmd.m_commandType, requestData);
             break;
-        case CommandType_UnloadSlide:
-            m_runtime->unloadSlide(cmd.m_elementPath);
-            break;
+        }
+
         default:
             qWarning() << __FUNCTION__ << "Unrecognized CommandType in command list!";
         }

@@ -75,13 +75,14 @@ enum CommandType {
     CommandType_DeleteMaterials,
     CommandType_CreateMeshes,
     CommandType_DeleteMeshes,
+    CommandType_PreloadSlide,
+    CommandType_UnloadSlide,
 
     // Requests
     CommandType_RequestSlideInfo,
     CommandType_RequestDataInputs,
-    CommandType_PreloadSlide,
-    CommandType_UnloadSlide,
-    CommandType_RequestDataOutputs
+    CommandType_RequestDataOutputs,
+    CommandType_RequestExportShaderCache
 };
 
 class Q_STUDIO3D_EXPORT ElementCommand
@@ -132,34 +133,38 @@ public:
     ElementCommand &queueCommand(const QString &elementPath, CommandType commandType);
     ElementCommand &queueCommand(const QString &elementPath, CommandType commandType,
                                  void *commandData);
+    ElementCommand &queueCommand(CommandType commandType);
+    ElementCommand &queueCommand(CommandType commandType, bool value);
 
     void copyCommands(CommandQueue &fromQueue);
 
-    bool m_visibleChanged;
-    bool m_scaleModeChanged;
-    bool m_stereoModeChanged;
-    bool m_stereoEyeSeparationChanged;
-    bool m_shadeModeChanged;
-    bool m_showRenderStatsChanged;
-    bool m_matteColorChanged;
-    bool m_sourceChanged;
-    bool m_variantListChanged;
-    bool m_globalAnimationTimeChanged;
-    bool m_delayedLoadingChanged;
-    bool m_matteEnabledChanged;
+    bool m_visibleChanged = false;
+    bool m_scaleModeChanged = false;
+    bool m_stereoModeChanged = false;
+    bool m_stereoEyeSeparationChanged = false;
+    bool m_shadeModeChanged = false;
+    bool m_showRenderStatsChanged = false;
+    bool m_matteColorChanged = false;
+    bool m_sourceChanged = false;
+    bool m_variantListChanged = false;
+    bool m_globalAnimationTimeChanged = false;
+    bool m_delayedLoadingChanged = false;
+    bool m_matteEnabledChanged = false;
+    bool m_shaderCacheFileChanged = false;
 
-    bool m_visible;
-    Q3DSViewerSettings::ScaleMode m_scaleMode;
-    Q3DSViewerSettings::StereoMode m_stereoMode;
-    double m_stereoEyeSeparation;
-    Q3DSViewerSettings::ShadeMode m_shadeMode;
-    bool m_showRenderStats;
-    QColor m_matteColor;
+    bool m_visible = false;
+    Q3DSViewerSettings::ScaleMode m_scaleMode = Q3DSViewerSettings::ScaleModeCenter;
+    Q3DSViewerSettings::StereoMode m_stereoMode = Q3DSViewerSettings::StereoModeMono;
+    double m_stereoEyeSeparation = 0.4;
+    Q3DSViewerSettings::ShadeMode m_shadeMode = Q3DSViewerSettings::ShadeModeShaded;
+    bool m_showRenderStats = false;
+    QColor m_matteColor = QColor(Qt::black);
     QUrl m_source;
     QStringList m_variantList;
-    qint64 m_globalAnimationTime;
-    bool m_delayedLoading;
-    bool m_matteEnabled;
+    qint64 m_globalAnimationTime = 0;
+    bool m_delayedLoading = false;
+    bool m_matteEnabled = false;
+    QUrl m_shaderCacheFile;
 
     void clear(bool deleteCommandData);
     int size() const { return m_size; }
@@ -170,7 +175,7 @@ private:
     ElementCommand &nextFreeCommand();
 
     CommandList m_elementCommands;
-    int m_size;
+    int m_size = 0;
 };
 
 QT_END_NAMESPACE

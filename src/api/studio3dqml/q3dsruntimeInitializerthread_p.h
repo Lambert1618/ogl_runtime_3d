@@ -64,7 +64,7 @@ public:
                                  int offscreenID, const QString &source,
                                  const QStringList &variantList, bool delayedLoading,
                                  qt3ds::Qt3DSAssetVisitor *assetVisitor, QOpenGLContext *context,
-                                 QSurface *surface);
+                                 QSurface *surface, const QByteArray &shaderCache);
 
     void run() override;
 
@@ -86,6 +86,7 @@ private:
     qt3ds::Qt3DSAssetVisitor *m_assetVisitor;
     QOpenGLContext *m_context;
     QSurface *m_surface;
+    QByteArray m_shaderCache;
     bool m_success = false;
 };
 

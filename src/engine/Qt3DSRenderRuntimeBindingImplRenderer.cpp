@@ -91,7 +91,10 @@ struct SRenderer : public Q3DStudio::ITegraApplicationRenderEngine
         m_BindingCore->m_WindowDimensions = theWindowDims;
         m_BindingCore->m_Context->SetWindowDimensions(m_BindingCore->m_WindowDimensions);
     }
-    Q3DStudio::BOOL LoadShaderCache(const char * /*inFilePath*/) override { return true; }
+    QByteArray exportShaderCache(bool binaryShaders) override
+    {
+        return m_BindingCore->m_Context->GetShaderCache().exportShaderCache(binaryShaders);
+    }
 
     void AbandonLoadingImages(Q3DStudio::IScene & /*inScene*/) override {}
 
@@ -166,11 +169,6 @@ struct SRenderer : public Q3DStudio::ITegraApplicationRenderEngine
     void EnableRenderRotation(bool inEnable) override
     {
         m_BindingCore->m_RenderRotationsEnabled = inEnable;
-    }
-
-    void SetWriteOutShaderCache(bool inWriteOutShaderCache) override
-    {
-        m_BindingCore->m_WriteOutShaderCache = inWriteOutShaderCache;
     }
 
     Q3DStudio::ITegraRenderStateManager &GetTegraRenderStateManager() override { return m_RSM; }

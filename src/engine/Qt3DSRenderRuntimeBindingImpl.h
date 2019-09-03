@@ -96,7 +96,6 @@ namespace render {
         QSize m_WindowDimensions;
         eastl::string m_PrimitivePath;
         bool m_RenderRotationsEnabled;
-        bool m_WriteOutShaderCache;
         volatile QT3DSI32 mRefCount;
         Q3DStudio::IWindowSystem &m_WindowSystem;
         Q3DStudio::ITimeProvider &m_TimeProvider;
@@ -110,7 +109,6 @@ namespace render {
             , m_CoreContext(IQt3DSRenderContextCore::Create(*m_Foundation, *m_StringTable))
             , m_PrimitivePath(inPrimitivePath)
             , m_RenderRotationsEnabled(false)
-            , m_WriteOutShaderCache(false)
             , mRefCount(0)
             , m_WindowSystem(inWindowSystem)
             , m_TimeProvider(inTimeProvider)

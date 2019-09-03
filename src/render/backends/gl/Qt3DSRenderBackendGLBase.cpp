@@ -241,6 +241,9 @@ bool NVRenderBackendGLBase::GetRenderBackendCap(
     case NVRenderBackendCaps::TextureLod:
         bSupported = m_backendSupport.caps.bits.bTextureLodSupported;
         break;
+    case NVRenderBackendCaps::BinaryProgram:
+        bSupported = m_backendSupport.caps.bits.bBinaryProgramsSupported;
+        break;
     default:
         QT3DS_ASSERT(false);
         bSupported = false;
@@ -1584,14 +1587,21 @@ void NVRenderBackendGLBase::ReleaseShaderProgram(NVRenderBackendShaderProgramObj
     NVDelete(m_Foundation.getAllocator(), pProgram);
 }
 
-bool NVRenderBackendGLBase::LinkProgram(NVRenderBackendShaderProgramObject po,
-                                        eastl::string &errorMessage)
+bool NVRenderBackendGLBase::linkProgram(NVRenderBackendShaderProgramObject po,
+                                        eastl::string &errorMessage,
+                                        QT3DSU32 binaryFormat, const QByteArray *binary)
 {
     NVRenderBackendShaderProgramGL *pProgram = (NVRenderBackendShaderProgramGL *)po;
     GLuint programID = static_cast<GLuint>(pProgram->m_ProgramID);
 
-    GL_CALL_FUNCTION(glLinkProgram(programID));
+    if (binary) {
+        GL_CALL_EXTRA_FUNCTION(glProgramBinary(programID, GLenum(binaryFormat), binary->constData(),
+                                               binary->size()));
+    } else {
+        GL_CALL_FUNCTION(glLinkProgram(programID));
+    }
 
+    // TODO: Move to a another function to be also used after binary link?
     GLint linkStatus, logLen;
     GL_CALL_FUNCTION(glGetProgramiv(programID, GL_LINK_STATUS, &linkStatus));
     GL_CALL_FUNCTION(glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &logLen));
@@ -1617,7 +1627,7 @@ bool NVRenderBackendGLBase::LinkProgram(NVRenderBackendShaderProgramObject po,
             GLint maxLength;
             GL_CALL_FUNCTION(glGetProgramiv(programID, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength));
             QT3DSI8 *nameBuf =
-                (QT3DSI8 *)QT3DS_ALLOC(m_Foundation.getAllocator(), maxLength, "LinkProgram");
+                (QT3DSI8 *)QT3DS_ALLOC(m_Foundation.getAllocator(), maxLength, "linkProgram");
 
             // fill in data
             QT3DSU32 count = 0;
@@ -2145,6 +2155,22 @@ void NVRenderBackendGLBase::CoverStrokePathInstanced(NVRenderBackendPathObject, 
 {
     // Needs GL 4 backend
     qCCritical(INVALID_OPERATION) << QObject::tr("Unsupported method: ") << __FUNCTION__;
+}
+
+void NVRenderBackendGLBase::getProgramBinary(NVRenderBackend::NVRenderBackendShaderProgramObject po,
+                                             QT3DSU32 &outFormat, QByteArray &outBinary)
+{
+    NVRenderBackendShaderProgramGL *pProgram
+            = reinterpret_cast<NVRenderBackendShaderProgramGL *>(po);
+    GLuint programID = static_cast<GLuint>(pProgram->m_ProgramID);
+    GLint binLen = 0;
+
+    GL_CALL_FUNCTION(glGetProgramiv(programID, GL_PROGRAM_BINARY_LENGTH, &binLen));
+
+    outBinary.resize(binLen);
+
+    GL_CALL_EXTRA_FUNCTION(glGetProgramBinary(programID, binLen, nullptr, &outFormat,
+                                              outBinary.data()));
 }
 
 ///< private calls

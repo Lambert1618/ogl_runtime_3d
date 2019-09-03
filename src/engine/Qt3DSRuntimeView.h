@@ -133,7 +133,7 @@ public:
     virtual void SetApplicationViewport(const qt3ds::render::NVRenderRect &inViewport) = 0;
     virtual void ensureRenderTarget() = 0;
     virtual void CheckResize(bool inForce, IPresentation &inActivePresentation) = 0;
-    virtual BOOL LoadShaderCache(const CHAR *inFilePath) = 0;
+    virtual QByteArray exportShaderCache(bool binaryShaders) = 0;
     virtual void AbandonLoadingImages(IScene &inScene) = 0;
     virtual BOOL IsPickValid(FLOAT &outX, FLOAT &outY,
                              const IPresentation &inPresentation) const = 0;
@@ -159,7 +159,6 @@ public:
     virtual void SetMatteColor(qt3ds::foundation::Option<qt3ds::QT3DSVec4> inColor) = 0;
     virtual void setMatteEnabled(bool enable) = 0;
     virtual void EnableRenderRotation(bool inEnable) = 0;
-    virtual void SetWriteOutShaderCache(bool inWriteOutShaderCache) = 0;
     virtual void Release() = 0;
     virtual void RenderText2D(FLOAT x, FLOAT y, qt3ds::foundation::Option<qt3ds::QT3DSVec3> inColor,
                               const char *text) = 0;
@@ -176,7 +175,7 @@ public: // loading
     virtual bool BeginLoad(const QString &sourcePath, const QStringList &variantList) = 0;
     virtual bool HasOfflineLoadingCompleted() = 0;
     virtual bool InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
-                                    bool initInRenderThread) = 0;
+                                    bool initInRenderThread, const QByteArray &shaderCache) = 0;
     virtual void connectSignals() = 0;
     virtual void finishAsyncInit() = 0;
 

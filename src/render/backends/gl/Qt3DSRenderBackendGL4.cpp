@@ -130,6 +130,7 @@ namespace render {
         // always true for GL4.1 and GLES 3.1 devices
         m_backendSupport.caps.bits.bMsTextureSupported = true;
         m_backendSupport.caps.bits.bProgramPipelineSupported = true;
+        m_backendSupport.caps.bits.bBinaryProgramsSupported = true;
 
         if (!isESCompatible()) {
             // TODO: investigate GL 4.0 support

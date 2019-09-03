@@ -134,6 +134,7 @@ namespace render {
         m_backendSupport.caps.bits.bStandardDerivativesSupported = true;
         m_backendSupport.caps.bits.bVertexArrayObjectSupported = true;
         m_backendSupport.caps.bits.bTextureLodSupported = true;
+        m_backendSupport.caps.bits.bBinaryProgramsSupported = true;
 
         if (!isESCompatible()) {
             // render to float textures is always supported on none ES systems which support >=GL3
