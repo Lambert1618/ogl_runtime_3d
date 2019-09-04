@@ -208,6 +208,18 @@ int main(int argc, char *argv[])
                       "The default value is 'center'."),
                       QCoreApplication::translate("main", "center|fit|fill"),
                       QStringLiteral("center")});
+    parser.addOption({"stereomode",
+                      QCoreApplication::translate("main",
+                      "Specifies stereo mode.\n"
+                      "The default value is 'mono'."),
+                      QCoreApplication::translate("main", "mono|topbottom|leftright"),
+                      QStringLiteral("mono")});
+    parser.addOption({"stereoeyeseparation",
+                      QCoreApplication::translate("main",
+                      "Specifies stereo eye separation.\n"
+                      "The default value is 0.4"),
+                      QCoreApplication::translate("main", "separation"),
+                      QString::number(0.4)});
     QCommandLineOption variantListOption({QStringLiteral("v"),
                                           QStringLiteral("variants")},
                                           QObject::tr("Gives list of variant groups and variants\n"
@@ -345,6 +357,13 @@ int main(int argc, char *argv[])
             appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeLeftRight);
         else
             appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeMono);
+    }
+    if (parser.isSet(QStringLiteral("stereoeyeseparation"))) {
+        QString separationStr(parser.value("stereoeyeseparation"));
+        bool ok;
+        double separation = separationStr.toDouble(&ok);
+        if (ok)
+            appWindow->setProperty("stereoEyeSeparation", separation);
     }
 
     viewer.setVariantList(variantList);
