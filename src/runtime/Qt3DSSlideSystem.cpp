@@ -703,6 +703,7 @@ struct SSlideSystem : public ISlideSystem
                     if (slideElement->m_ElementHandle == element.m_Handle)
                         return true;
                 }
+                return false;
             }
         }
         return false;
