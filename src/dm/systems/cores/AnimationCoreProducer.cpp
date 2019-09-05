@@ -378,6 +378,13 @@ float CAnimationCoreProducer::EvaluateAnimation(Qt3DSDMAnimationHandle animation
     return m_Data->EvaluateAnimation(animation, time);
 }
 
+std::pair<float, float> CAnimationCoreProducer::getAnimationExtrema(
+                                                        Qt3DSDMAnimationHandle animation,
+                                                        long startTime, long endTime) const
+{
+    return m_Data->getAnimationExtrema(animation, startTime, endTime);
+}
+
 bool CAnimationCoreProducer::KeyframeValid(Qt3DSDMKeyframeHandle inKeyframe) const
 {
     return m_Data->KeyframeValid(inKeyframe);

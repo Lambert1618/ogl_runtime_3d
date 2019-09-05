@@ -37,7 +37,7 @@ namespace qt3dsdm {
 
 struct SLinearKeyframe
 {
-    long m_time; // keyframe time in milliseconds
+    float m_time; // keyframe time in milliseconds
     float m_value;
 
     SLinearKeyframe() = default;
@@ -48,14 +48,14 @@ struct SLinearKeyframe
 
 struct SBezierKeyframe : public SLinearKeyframe
 {
-    long m_InTangentTime;
+    float m_InTangentTime;
     float m_InTangentValue;
-    long m_OutTangentTime;
+    float m_OutTangentTime;
     float m_OutTangentValue;
 
     SBezierKeyframe() = default;
-    SBezierKeyframe(long time, float value, long tangentInTime, float tangentInValue,
-                    long tangentOutTime, float tangentOutValue)
+    SBezierKeyframe(float time, float value, float tangentInTime, float tangentInValue,
+                    float tangentOutTime, float tangentOutValue)
     : SLinearKeyframe(time, value)
     , m_InTangentTime(tangentInTime)
     , m_InTangentValue(tangentInValue)
@@ -78,7 +78,7 @@ struct SEaseInEaseOutKeyframe : public SLinearKeyframe
     float m_EaseOut;
 
     SEaseInEaseOutKeyframe() = default;
-    SEaseInEaseOutKeyframe(long time, float value, float easeIn, float easeOut)
+    SEaseInEaseOutKeyframe(float time, float value, float easeIn, float easeOut)
     : SLinearKeyframe(time, value)
     , m_EaseIn(easeIn)
     , m_EaseOut(easeOut) {}
@@ -290,6 +290,8 @@ public:
 
     // Animation Evaluation.
     virtual float EvaluateAnimation(Qt3DSDMAnimationHandle animation, long time) const = 0;
+    virtual std::pair<float, float> getAnimationExtrema(Qt3DSDMAnimationHandle animation,
+                                                        long startTime, long endTime) const = 0;
 
     virtual bool KeyframeValid(Qt3DSDMKeyframeHandle inKeyframe) const = 0;
     virtual bool AnimationValid(Qt3DSDMAnimationHandle inAnimation) const = 0;

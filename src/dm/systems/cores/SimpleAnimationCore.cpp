@@ -424,6 +424,76 @@ float CSimpleAnimationCore::EvaluateAnimation(Qt3DSDMAnimationHandle animation, 
     }
 }
 
+/**
+ * Get max and min values of a segment of an animation channel between startTime and endTime. If
+ * startTime or endTime is -1 the segment start/end is the starting/ending keyframe
+ *
+ * @param animation animation channel handle
+ * @param startTime only include keyframes in the range starting at this time value
+ * @param endTime only include keyframes in the range ending at this time value
+ * @return <max, min> values pair
+ */
+std::pair<float, float> CSimpleAnimationCore::getAnimationExtrema(
+                                                        Qt3DSDMAnimationHandle animation,
+                                                        long startTime, long endTime) const
+{
+    const SAnimationTrack *track = GetAnimationNF(animation, m_Objects);
+    TKeyframeHandleList keyframeHandles;
+    GetKeyframes(animation, keyframeHandles);
+    size_t idxFrom = 0;
+    size_t idxTo = keyframeHandles.size() - 1;
+
+    if (startTime != -1) {
+        for (size_t i = 1; i < keyframeHandles.size(); ++i) {
+            if (getKeyframeTime(GetKeyframeData(keyframeHandles[i])) > startTime) {
+                idxFrom = i - 1;
+                break;
+            }
+        }
+    }
+
+    if (endTime != -1) {
+        for (size_t i = idxFrom; i < keyframeHandles.size(); ++i) {
+            if (getKeyframeTime(GetKeyframeData(keyframeHandles[i])) > endTime) {
+                idxTo = i;
+                break;
+            }
+        }
+    }
+
+    std::pair<float, float> extrema {-FLT_MAX, FLT_MAX}; // <max, min>
+    if (track->m_AnimationType == EAnimationTypeBezier) {
+        for (size_t i = idxFrom + 1; i <= idxTo; ++i) {
+            SBezierKeyframe kf1 = get<SBezierKeyframe>(GetKeyframeData(keyframeHandles[i - 1]));
+            SBezierKeyframe kf2 = get<SBezierKeyframe>(GetKeyframeData(keyframeHandles[i]));
+            std::pair<float, float> extrema_i = Q3DStudio::getBezierCurveExtrema(
+                        kf1.m_time, kf1.m_value, kf1.m_OutTangentTime, kf1.m_OutTangentValue,
+                        kf2.m_InTangentTime, kf2.m_InTangentValue, kf2.m_time, kf2.m_value);
+
+            if (extrema_i.first > extrema.first)
+                extrema.first = extrema_i.first;
+            if (extrema_i.second < extrema.second)
+                extrema.second = extrema_i.second;
+        }
+    } else { // Linear and EaseInOut
+        for (size_t i = idxFrom; i <= idxTo; ++i) {
+            float kfValue = getKeyframeValue(GetKeyframeData(keyframeHandles[i]));
+
+            if (kfValue > extrema.first)
+                extrema.first = kfValue;
+            if (kfValue < extrema.second)
+                extrema.second = kfValue;
+        }
+    }
+
+    if (qFuzzyCompare(extrema.first, -FLT_MAX))
+        extrema.first = 0;
+    if (qFuzzyCompare(extrema.second, FLT_MAX))
+        extrema.second = 0;
+
+    return extrema;
+}
+
 bool CSimpleAnimationCore::KeyframeValid(Qt3DSDMKeyframeHandle inKeyframe) const
 {
     return HandleObjectValid<SKeyframe>(inKeyframe, m_Objects);

@@ -109,6 +109,9 @@ public:
 
     // Animation Evaluation.
     float EvaluateAnimation(Qt3DSDMAnimationHandle animation, long time) const override;
+    std::pair<float, float> getAnimationExtrema(Qt3DSDMAnimationHandle animation,
+                                                long startTime = -1,
+                                                long endTime = -1) const override;
 
     bool KeyframeValid(Qt3DSDMKeyframeHandle inKeyframe) const override;
     bool AnimationValid(Qt3DSDMAnimationHandle inAnimation) const override;

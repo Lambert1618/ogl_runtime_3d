@@ -166,4 +166,24 @@ inline float EvaluateBezierKeyframe(long inTime, long inTime1, float inValue1, l
     return 0.0;
 }
 
+inline std::pair<float, float> getBezierCurveExtrema(float inTime1, float inValue1,
+                                                     float inC1Time, float inC1Value,
+                                                     float inC2Time, float inC2Value,
+                                                     float inTime2, float inValue2)
+{
+        auto polynomial = CubicPolynomial(inValue1, inC1Value, inC2Value, inValue2);
+
+        std::pair<float, float> extrema {-FLT_MAX, FLT_MAX}; // <max, min>
+        for (double t : polynomial.extrema()) {
+            const float val = float(evaluateForT(t, inValue1, inC1Value, inC2Value, inValue2));
+
+            if (val > extrema.first)
+                extrema.first = val;
+            if (val < extrema.second)
+                extrema.second = val;
+        }
+
+    return extrema;
+}
+
 } // namespace Qt3DStudio
