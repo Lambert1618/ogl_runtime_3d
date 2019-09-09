@@ -41,7 +41,7 @@ struct SLinearKeyframe
     float m_value;
 
     SLinearKeyframe() = default;
-    SLinearKeyframe(long time, float value)
+    SLinearKeyframe(float time, float value)
     : m_time(time)
     , m_value(value) {}
 };
