@@ -625,8 +625,10 @@ ApplicationWindow {
                                 shortcut: "Ctrl+Shift+-"
                                 enabled: _viewerHelper.contentView === ViewerHelper.StudioView
                                 onTriggered: {
-                                    if (enabled)
-                                        window.stereoEyeSeparation -= 0.1;
+                                    if (enabled) {
+                                        window.stereoEyeSeparation
+                                                = Math.max(0, window.stereoEyeSeparation - 0.1);
+                                    }
                                 }
                             }
                         }

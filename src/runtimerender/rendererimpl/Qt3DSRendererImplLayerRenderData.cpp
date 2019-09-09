@@ -76,7 +76,8 @@ namespace render {
     SLayerRenderData::SLayerRenderData(SLayer &inLayer, Qt3DSRendererImpl &inRenderer)
         : SLayerRenderPreparationData(inLayer, inRenderer)
         , m_LayerTexture(inRenderer.GetQt3DSContext().GetResourceManager())
-        , m_TemporalAATexture(inRenderer.GetQt3DSContext().GetResourceManager())
+        , m_TemporalAATexture{inRenderer.GetQt3DSContext().GetResourceManager(),
+                              inRenderer.GetQt3DSContext().GetResourceManager()}
         , m_LayerDepthTexture(inRenderer.GetQt3DSContext().GetResourceManager())
         , m_LayerPrepassDepthTexture(inRenderer.GetQt3DSContext().GetResourceManager())
         , m_LayerWidgetTexture(inRenderer.GetQt3DSContext().GetResourceManager())
@@ -96,6 +97,7 @@ namespace render {
         , mRefCount(0)
         , m_DepthBufferFormat(NVRenderTextureFormats::Unknown)
     {
+
     }
 
     SLayerRenderData::~SLayerRenderData()
@@ -163,7 +165,8 @@ namespace render {
             m_LayerSsaoTexture.ReleaseTexture();
             m_LayerWidgetTexture.ReleaseTexture();
             m_LayerPrepassDepthTexture.ReleaseTexture();
-            m_TemporalAATexture.ReleaseTexture();
+            m_TemporalAATexture[0].ReleaseTexture();
+            m_TemporalAATexture[1].ReleaseTexture();
             m_LayerMultisampleTexture.ReleaseTexture();
             m_LayerMultisamplePrepassDepthTexture.ReleaseTexture();
             m_LayerMultisampleWidgetTexture.ReleaseTexture();
@@ -1373,6 +1376,11 @@ namespace render {
             m_ProgressiveAAPassIndex && m_ProgressiveAAPassIndex < thePrepResult.m_MaxAAPassIndex;
         bool isTemporalAABlendPass = m_Layer.m_TemporalAAEnabled && m_ProgressiveAAPassIndex == 0;
 
+        // Select correct temporal AA texture
+        StereoViews::Enum stereoView = m_Renderer.GetQt3DSContext().GetStereoView();
+        int temporalIndex = (stereoView == StereoViews::Right) ? 1 : 0;
+        CResourceTexture2D &temporalAATexture = m_TemporalAATexture[temporalIndex];
+
         if (isProgressiveAABlendPass || isTemporalAABlendPass) {
             theBlendShader = m_Renderer.GetLayerProgAABlendShader();
             if (theBlendShader) {
@@ -1385,13 +1393,11 @@ namespace render {
                     aaFactorIndex = (m_ProgressiveAAPassIndex - 1);
                     theVertexOffsets = s_VertexOffsets[aaFactorIndex];
                 } else {
-                    if (m_TemporalAATexture.GetTexture())
-                        theLastLayerTexture.StealTexture(m_TemporalAATexture);
-                    else {
-                        if (hadLayerTexture) {
-                            theLastLayerTexture.StealTexture(m_LayerTexture);
-                        }
-                    }
+                    if (temporalAATexture.GetTexture())
+                        theLastLayerTexture.StealTexture(temporalAATexture);
+                    else if (hadLayerTexture)
+                        theLastLayerTexture.StealTexture(m_LayerTexture);
+
                     theVertexOffsets = s_TemporalVertexOffsets[m_TemporalAAPassIndex];
                     ++m_TemporalAAPassIndex;
                     ++m_NonDirtyTemporalAAPassIndex;
@@ -1454,7 +1460,7 @@ namespace render {
                                           sampleCount);
 
         if (!isTemporalAABlendPass)
-            m_TemporalAATexture.ReleaseTexture();
+            temporalAATexture.ReleaseTexture();
 
         // Allocating a frame buffer can cause it to be bound, so we need to save state before this
         // happens.
@@ -1648,7 +1654,7 @@ namespace render {
                 theFB->Attach(NVRenderFrameBufferAttachments::Color0,
                               qt3ds::render::NVRenderTextureOrRenderBuffer());
                 if (isTemporalAABlendPass)
-                    m_TemporalAATexture.StealTexture(m_LayerTexture);
+                    temporalAATexture.StealTexture(m_LayerTexture);
                 m_LayerTexture.StealTexture(targetTexture);
             }
 

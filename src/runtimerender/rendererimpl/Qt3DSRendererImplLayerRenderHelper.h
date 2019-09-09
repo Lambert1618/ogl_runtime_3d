@@ -60,8 +60,8 @@ namespace render {
         QT3DSVec2 m_PresentationDesignDimensions;
         SLayer *m_Layer;
         SCamera *m_Camera;
-        SCamera m_CameraLeftEye;
-        SCamera m_CameraRightEye;
+        SCamera *m_CameraLeftEye;
+        SCamera *m_CameraRightEye;
         bool m_Offscreen;
 
         NVRenderRectF m_Viewport;
@@ -130,6 +130,7 @@ namespace render {
         // different than the layer to presentation viewport.
         NVRenderRectF GetLayerRenderViewport() const;
 
+        void copyCameraProperties(SCamera *sourceCamera, SCamera *destinationCamera);
         void adjustCameraStereoSeparation();
     };
 }

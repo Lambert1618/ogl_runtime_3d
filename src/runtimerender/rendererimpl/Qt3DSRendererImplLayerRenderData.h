@@ -53,7 +53,9 @@ struct AdvancedBlendModes
         // or just because a flag forces it.  If they are rendered offscreen we can then
         // cache the result so we don't render the layer again if it isn't dirty.
         CResourceTexture2D m_LayerTexture;
-        CResourceTexture2D m_TemporalAATexture;
+        // Multiple temporal AA textures for stereoscopic needs.
+        // First used for mono/left view, second for right view.
+        CResourceTexture2D m_TemporalAATexture[2];
         // Sometimes we need to render our depth buffer to a depth texture.
         CResourceTexture2D m_LayerDepthTexture;
         CResourceTexture2D m_LayerPrepassDepthTexture;

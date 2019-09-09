@@ -68,8 +68,10 @@ QT3DSVec2 ToRectRelativeCoords(const QT3DSVec2 &inCoords, const NVRenderRectF &i
 }
 
 SLayerRenderHelper::SLayerRenderHelper()
-    : m_Layer(NULL)
-    , m_Camera(NULL)
+    : m_Layer(nullptr)
+    , m_Camera(nullptr)
+    , m_CameraLeftEye(nullptr)
+    , m_CameraRightEye(nullptr)
     , m_Offscreen(false)
 {
 }
@@ -87,6 +89,9 @@ SLayerRenderHelper::SLayerRenderHelper(const NVRenderRectF &inPresentationViewpo
     , m_PresentationScissor(inPresentationScissor)
     , m_PresentationDesignDimensions(inPresentationDesignDimensions)
     , m_Layer(&inLayer)
+    , m_Camera(nullptr)
+    , m_CameraLeftEye(nullptr)
+    , m_CameraRightEye(nullptr)
     , m_Offscreen(inOffscreen)
     , m_ScaleMode(inScaleMode)
     , m_StereoMode(inStereoMode)
@@ -260,9 +265,9 @@ QSize SLayerRenderHelper::GetTextureDimensions() const
 
 SCamera *SLayerRenderHelper::GetCamera()  {
     if (m_StereoView == StereoViews::Left)
-        return &m_CameraLeftEye;
+        return m_CameraLeftEye;
     if (m_StereoView == StereoViews::Right)
-        return &m_CameraRightEye;
+        return m_CameraRightEye;
     return m_Camera;
 }
 
@@ -312,7 +317,7 @@ Option<SRay> SLayerRenderHelper::GetPickRay(const QT3DSVec2 &inMouseCoords,
                                             bool inForceIntersect,
                                             bool sceneCameraView) const
 {
-    if (m_Camera == NULL)
+    if (!m_Camera)
         return Empty();
     Option<QT3DSVec2> theCoords(
         GetLayerMouseCoords(inMouseCoords, inWindowDimensions, inForceIntersect));
@@ -336,11 +341,45 @@ bool SLayerRenderHelper::isStereoscopic() const
     return m_StereoMode != StereoModes::Mono;
 }
 
+void SLayerRenderHelper::copyCameraProperties(SCamera *sourceCamera,
+                                              SCamera *destinationCamera)
+{
+    if (!sourceCamera || !destinationCamera)
+        return;
+
+    destinationCamera->m_FOV = sourceCamera->m_FOV;
+    destinationCamera->m_ClipFar = sourceCamera->m_ClipFar;
+    destinationCamera->m_ClipNear = sourceCamera->m_ClipNear;
+    destinationCamera->m_ScaleMode = sourceCamera->m_ScaleMode;
+    destinationCamera->m_Projection = sourceCamera->m_Projection;
+    destinationCamera->m_ScaleAnchor = sourceCamera->m_ScaleAnchor;
+    destinationCamera->m_FrustumScale = sourceCamera->m_FrustumScale;
+    destinationCamera->m_FOVHorizontal = sourceCamera->m_FOVHorizontal;
+    destinationCamera->m_EnableFrustumCulling = sourceCamera->m_EnableFrustumCulling;
+    destinationCamera->m_Flags = sourceCamera->m_Flags;
+    destinationCamera->m_Pivot = sourceCamera->m_Pivot;
+    destinationCamera->m_Scale = sourceCamera->m_Scale;
+    destinationCamera->m_DFSIndex = sourceCamera->m_DFSIndex;
+    destinationCamera->m_Position = sourceCamera->m_Position;
+    destinationCamera->m_Rotation = sourceCamera->m_Rotation;
+    destinationCamera->m_UserData = sourceCamera->m_UserData;
+    destinationCamera->m_LocalOpacity = sourceCamera->m_LocalOpacity;
+    destinationCamera->m_GlobalOpacity = sourceCamera->m_GlobalOpacity;
+    destinationCamera->m_RotationOrder = sourceCamera->m_RotationOrder;
+    destinationCamera->m_LocalTransform = sourceCamera->m_LocalTransform;
+    destinationCamera->m_GlobalTransform = sourceCamera->m_GlobalTransform;
+}
+
 void SLayerRenderHelper::adjustCameraStereoSeparation()
 {
+    if (!m_CameraLeftEye)
+        m_CameraLeftEye = new SCamera();
+    if (!m_CameraRightEye)
+        m_CameraRightEye = new SCamera();
+
     // Copy m_Camera properties into left & right cameras
-    m_CameraLeftEye = SCamera(*m_Camera);
-    m_CameraRightEye = SCamera(*m_Camera);
+    copyCameraProperties(m_Camera, m_CameraLeftEye);
+    copyCameraProperties(m_Camera, m_CameraRightEye);
 
     // Adjust left & right camera positions by eye separation
     QT3DSMat44 mat = QT3DSMat44::createIdentity();
@@ -349,12 +388,12 @@ void SLayerRenderHelper::adjustCameraStereoSeparation()
     camPos.x = m_Camera->m_Position.x - m_StereoEyeSeparation;
     mat.scale(QT3DSVec4(m_Camera->m_Scale, 1.0f));
     mat.setPosition(camPos);
-    m_CameraLeftEye.SetLocalTransformFromMatrix(mat);
+    m_CameraLeftEye->SetLocalTransformFromMatrix(mat);
     camPos.x = m_Camera->m_Position.x + m_StereoEyeSeparation;
     mat.scale(QT3DSVec4(m_Camera->m_Scale, 1.0f));
     mat.setPosition(camPos);
-    m_CameraRightEye.SetLocalTransformFromMatrix(mat);
+    m_CameraRightEye->SetLocalTransformFromMatrix(mat);
 
-    m_CameraLeftEye.MarkDirty();
-    m_CameraRightEye.MarkDirty();
+    m_CameraLeftEye->MarkDirty();
+    m_CameraRightEye->MarkDirty();
 }
