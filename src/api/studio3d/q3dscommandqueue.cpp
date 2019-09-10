@@ -311,6 +311,9 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
             queueCommand(source.m_elementPath, source.m_commandType, source.m_data);
             fromQueue.commandAt(i).m_data = nullptr; // This queue takes ownership of data
             break;
+        case CommandType_AddImageProvider:
+            queueCommand(source.m_elementPath, source.m_commandType, source.m_data);
+            break;
         case CommandType_RequestSlideInfo:
         case CommandType_UnloadSlide:
         case CommandType_PreloadSlide:

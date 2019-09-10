@@ -1043,6 +1043,14 @@ void Q3DSViewerApp::deleteMeshes(const QStringList &meshNames)
     m_Impl.m_view->deleteMeshes(meshNames);
 }
 
+void Q3DSViewerApp::addImageProvider(const QString &providerId, QQmlImageProviderBase *provider)
+{
+    if (!m_Impl.m_view)
+        return;
+
+    m_Impl.m_view->addImageProvider(providerId, provider);
+}
+
 Q3DSViewerApp &Q3DSViewerApp::Create(void *glContext, Q3DStudio::IAudioPlayer *inAudioPlayer,
                                      QElapsedTimer *startupTimer)
 {

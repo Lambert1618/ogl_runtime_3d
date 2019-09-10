@@ -37,19 +37,41 @@
 #include "foundation/Qt3DSBroadcastingAllocator.h"
 #include "Qt3DSRenderImageScaler.h"
 #include "Qt3DSTextRenderer.h"
-#include <QImage>
+#include "Qt3DSRenderBufferManager.h"
+#include <QtQuick/qquickimageprovider.h>
+#include <QtGui/qimage.h>
 
 using namespace qt3ds::render;
 
 SLoadedTexture *SLoadedTexture::LoadQImage(const QString &inPath, QT3DSI32 flipVertical,
                                            NVFoundationBase &fnd,
-                                           NVRenderContextType renderContextType)
+                                           NVRenderContextType renderContextType,
+                                           IBufferManager *bufferManager)
 {
     Q_UNUSED(flipVertical)
     Q_UNUSED(renderContextType)
     SLoadedTexture *retval(NULL);
     NVAllocatorCallback &alloc(fnd.getAllocator());
-    QImage image(inPath);
+
+    QImage image;
+    const QUrl url(inPath);
+    if (bufferManager && url.scheme() == QLatin1String("image")) {
+        QQuickImageProvider *provider = static_cast<QQuickImageProvider *>(
+                    bufferManager->imageProvider(url.host()));
+        if (!provider)
+            return nullptr;
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        QSize outSize;
+        if (provider->imageType() == QQuickImageProvider::Pixmap)
+            image = provider->requestPixmap(imageId, &outSize, QSize()).toImage();
+        else if (provider->imageType() == QQuickImageProvider::Image)
+            image = provider->requestImage(imageId, &outSize, QSize());
+        if (outSize.isEmpty())
+            return nullptr;
+    } else {
+        image = QImage(inPath);
+    }
+
     const QImage::Format format = image.format();
     switch (format) {
     case QImage::Format_RGBA64:
@@ -682,10 +704,14 @@ void SLoadedTexture::ReleaseDecompressedTexture(STextureData inImage)
 
 SLoadedTexture *SLoadedTexture::Load(const QString &inPath, NVFoundationBase &inFoundation,
                                      IInputStreamFactory &inFactory, bool inFlipY,
-                                     NVRenderContextType renderContextType, bool preferKTX)
+                                     NVRenderContextType renderContextType, bool preferKTX,
+                                     IBufferManager *bufferManager)
 {
     if (inPath.isEmpty())
         return nullptr;
+
+    if (QUrl(inPath).scheme() == QLatin1String("image"))
+        return LoadQImage(inPath, inFlipY, inFoundation, renderContextType, bufferManager);
 
     // Check KTX path first
     QString path = inPath;

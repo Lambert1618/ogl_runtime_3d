@@ -388,7 +388,8 @@ void SLoadingImage::LoadImage(void *inImg)
             theThis->m_SourcePath.c_str(), theThis->m_Batch->m_Loader.m_Foundation,
             theThis->m_Batch->m_Loader.m_InputStreamFactory, true,
             theThis->m_Batch->m_contextType,
-            theThis->m_Batch->m_preferKTX);
+            theThis->m_Batch->m_preferKTX,
+            &theThis->m_Batch->m_Loader.m_BufferManager);
         // if ( theTexture )
         //	theTexture->EnsureMultiplerOfFour( theThis->m_Batch->m_Loader.m_Foundation,
         //theThis->m_SourcePath.c_str() );

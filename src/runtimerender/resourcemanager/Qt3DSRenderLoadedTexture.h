@@ -155,7 +155,9 @@ namespace render {
         static SLoadedTexture *Load(const QString &inPath, NVFoundationBase &inAllocator,
                                     IInputStreamFactory &inFactory, bool inFlipY = true,
                                     NVRenderContextType renderContextType
-                                        = NVRenderContextValues::NullContext, bool preferKTX = false);
+                                        = NVRenderContextValues::NullContext,
+                                    bool preferKTX = false,
+                                    IBufferManager *bufferManager = nullptr);
         static SLoadedTexture *LoadDDS(IInStream &inStream, QT3DSI32 flipVertical,
                                        NVFoundationBase &fnd,
                                        NVRenderContextType renderContextType);
@@ -173,7 +175,8 @@ namespace render {
 
         static SLoadedTexture *LoadQImage(const QString &inPath, QT3DSI32 flipVertical,
                                           NVFoundationBase &fnd,
-                                          NVRenderContextType renderContextType);
+                                          NVRenderContextType renderContextType,
+                                          IBufferManager *bufferManager = nullptr);
 
     private:
         // Implemented in the bmp loader.

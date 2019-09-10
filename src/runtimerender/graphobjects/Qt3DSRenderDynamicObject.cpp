@@ -133,6 +133,9 @@ void SDynamicObject::SetStrPropertyValueT(dynamic::SPropertyDefinition &inDefini
             inDefinition.m_ImagePath = inStrTable.RegisterStr(ioWorkspace.c_str());
         } else {
             SetPropertyValueT(inDefinition, inStrTable.RegisterStr(inValue));
+            // If the image path is not adjusted here, an invalid textures flashes for one frame
+            // before the proper texture is set by the custom material render task
+            inDefinition.m_ImagePath = inStrTable.RegisterStr(inValue);
         }
     } else if (inDefinition.m_DataType == NVRenderShaderDataTypes::NVRenderImage2DPtr) {
         SetPropertyValueT(inDefinition, inStrTable.RegisterStr(inValue));

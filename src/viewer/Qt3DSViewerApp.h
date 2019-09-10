@@ -43,6 +43,10 @@
 #include <QtCore/qstringlist.h>
 #include <QtGui/qsurfaceformat.h>
 
+QT_BEGIN_NAMESPACE
+class QQmlImageProviderBase;
+QT_END_NAMESPACE
+
 namespace Q3DStudio {
 class IRuntimeView;
 class IWindowSystem;
@@ -488,6 +492,8 @@ public:
     void deleteMaterials(const QStringList &materialNames);
     void createMeshes(const QHash<QString, Q3DSViewer::MeshData> &meshData);
     void deleteMeshes(const QStringList &meshNames);
+
+    void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
 
     QString error();
 

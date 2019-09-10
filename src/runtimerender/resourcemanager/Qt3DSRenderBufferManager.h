@@ -37,6 +37,10 @@
 #include "Qt3DSRenderImageTextureData.h"
 #include "foundation/Qt3DSBounds3.h"
 
+QT_BEGIN_NAMESPACE
+class QQmlImageProviderBase;
+QT_END_NAMESPACE
+
 namespace qt3dsimp {
     struct Mesh;
 }
@@ -104,6 +108,10 @@ namespace render {
         virtual SRenderMesh *CreateMesh(const char *inSourcePath, QT3DSU8 *inVertData,
                                         QT3DSU32 inNumVerts, QT3DSU32 inVertStride, QT3DSU32 *inIndexData,
                                         QT3DSU32 inIndexCount, qt3ds::NVBounds3 inBounds) = 0;
+
+        virtual void addImageProvider(const QString &providerId,
+                                      QQmlImageProviderBase *provider) = 0;
+        virtual QQmlImageProviderBase *imageProvider(const QString &providerId) = 0;
 
         // Remove *all* buffers from the buffer manager;
         virtual void Clear() = 0;

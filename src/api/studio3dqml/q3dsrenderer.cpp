@@ -482,6 +482,10 @@ void Q3DSRenderer::processCommands()
         case CommandType_UnloadSlide:
             m_runtime->unloadSlide(cmd.m_elementPath);
             break;
+        case CommandType_AddImageProvider:
+            m_runtime->addImageProvider(cmd.m_elementPath,
+                                        static_cast<QQmlImageProviderBase *>(cmd.m_data));
+            break;
         case CommandType_RequestSlideInfo: {
             int current = 0;
             int previous = 0;

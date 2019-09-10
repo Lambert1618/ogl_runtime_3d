@@ -119,6 +119,7 @@ struct SBufferManager : public IBufferManager
     nvvector<qt3ds::render::NVRenderVertexBufferEntry> m_EntryBuffer;
     bool m_GPUSupportsDXT;
     bool m_reloadableResources;
+    QHash<QString, QSharedPointer<QQmlImageProviderBase> > m_imageProviders;
 
     QHash<QString, ReloadableTexturePtr> m_reloadableTextures;
 
@@ -377,7 +378,7 @@ struct SBufferManager : public IBufferManager
         SStackPerfTimer __perfTimer(m_PerfTimer, "Image Decompression");
         theLoadedImage = SLoadedTexture::Load(
                     inImagePath.c_str(), m_Context->GetFoundation(), *m_InputStreamFactory,
-                    true, m_Context->GetRenderContextType());
+                    true, m_Context->GetRenderContextType(), false, this);
         // Hackish solution to custom materials not finding their textures if they are used
         // in sub-presentations.
         if (!theLoadedImage) {
@@ -390,7 +391,7 @@ struct SBufferManager : public IBufferManager
                     theLoadedImage = SLoadedTexture::Load(
                                 searchPath.toUtf8(), m_Context->GetFoundation(),
                                 *m_InputStreamFactory, true,
-                                m_Context->GetRenderContextType());
+                                m_Context->GetRenderContextType(), false, this);
                     searchPath.prepend(QLatin1String("../"));
                 }
             } else {
@@ -407,7 +408,7 @@ struct SBufferManager : public IBufferManager
                         theLoadedImage = SLoadedTexture::Load(
                                     searchPath.toUtf8(), m_Context->GetFoundation(),
                                     *m_InputStreamFactory, true,
-                                    m_Context->GetRenderContextType());
+                                    m_Context->GetRenderContextType(), false, this);
                         searchPath = splitPath.at(0);
                         for (int i = 0; i < loops; i++)
                             searchPath.append(QLatin1String("../"));
@@ -1024,6 +1025,19 @@ struct SBufferManager : public IBufferManager
         return theMesh.first->second;
     }
 
+    void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider) override
+    {
+        QString providerIdLower = providerId.toLower();
+        QSharedPointer<QQmlImageProviderBase> sp(provider);
+        m_imageProviders.insert(std::move(providerIdLower), std::move(sp));
+    }
+
+    QQmlImageProviderBase *imageProvider(const QString &providerId) override
+    {
+        const QString providerIdLower = providerId.toLower();
+        return m_imageProviders.value(providerIdLower).data();
+    }
+
     void ReleaseMesh(SRenderMesh &inMesh)
     {
         for (QT3DSU32 subsetIdx = 0, subsetEnd = inMesh.m_Subsets.size(); subsetIdx < subsetEnd;
@@ -1068,6 +1082,7 @@ struct SBufferManager : public IBufferManager
             Mutex::ScopedLock __locker(m_LoadedImageSetMutex);
             m_LoadedImageSet.clear();
         }
+        m_imageProviders.clear();
     }
     void InvalidateBuffer(CRegisteredString inSourcePath) override
     {

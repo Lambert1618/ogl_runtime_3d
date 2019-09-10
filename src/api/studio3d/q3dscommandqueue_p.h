@@ -77,6 +77,7 @@ enum CommandType {
     CommandType_DeleteMeshes,
     CommandType_PreloadSlide,
     CommandType_UnloadSlide,
+    CommandType_AddImageProvider,
 
     // Requests
     CommandType_RequestSlideInfo,

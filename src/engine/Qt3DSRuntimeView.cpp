@@ -225,6 +225,7 @@ public:
     void deleteMaterials(const QStringList &materialNames) override;
     void createMesh(const QString &name, qt3dsimp::Mesh *mesh) override;
     void deleteMeshes(const QStringList &meshNames) override;
+    void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider) override;
     void SetAttribute(const char *elementPath, const char *attributeName,
                       const char *value) override;
     bool GetAttribute(const char *elementPath, const char *attributeName, void *value) override;
@@ -730,6 +731,15 @@ void CRuntimeView::deleteMeshes(const QStringList &meshNames)
                 = static_cast<Q3DStudio::CQmlEngine &>(m_RuntimeFactoryCore->GetScriptEngineQml());
         theBridgeEngine.deleteMeshes(
                     meshNames, &m_RuntimeFactory->GetQt3DSRenderContext().GetBufferManager());
+    }
+}
+
+void CRuntimeView::addImageProvider(const QString &providerId, QQmlImageProviderBase *provider)
+{
+    if (m_Application) {
+        IBufferManager &bufferManager
+                = m_RuntimeFactory->GetQt3DSRenderContext().GetBufferManager();
+        bufferManager.addImageProvider(providerId, provider);
     }
 }
 

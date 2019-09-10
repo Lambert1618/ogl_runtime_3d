@@ -47,6 +47,7 @@ class Q3DSGeometry;
 class QMouseEvent;
 class QWheelEvent;
 class QKeyEvent;
+class QQmlImageProviderBase;
 
 class Q_STUDIO3D_EXPORT Q3DSPresentation : public QObject
 {
@@ -122,6 +123,8 @@ public:
     void deleteMesh(const QString &meshName);
     void deleteMeshes(const QStringList &meshNames);
     QStringList createdMeshes() const;
+
+    void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
 
 public Q_SLOTS:
     void setSource(const QUrl &source);

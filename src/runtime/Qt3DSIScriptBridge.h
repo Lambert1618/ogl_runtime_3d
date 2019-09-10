@@ -39,6 +39,10 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
 
+QT_BEGIN_NAMESPACE
+class QQmlImageProviderBase;
+QT_END_NAMESPACE
+
 namespace qt3dsimp {
     struct Mesh;
 }

@@ -941,6 +941,24 @@ void Q3DSPresentation::setAttribute(const QString &elementPath, const QString &a
 }
 
 /*!
+    Sets the \a provider to use for images requested via the \e
+    image: url scheme, with host \a providerId. The runtime
+    takes ownership of \a provider.
+
+    Texture sourcepaths can then be set using the image url scheme. For example
+    "image://colors/blue" where "image://" tells the runtime to look for an
+    image provider, "colors" is the image provider id and rest are the image
+    id the provider uses to create the image.
+*/
+void Q3DSPresentation::addImageProvider(const QString &providerId, QQmlImageProviderBase *provider)
+{
+    if (d_ptr->m_viewerApp)
+        d_ptr->m_viewerApp->addImageProvider(providerId, provider);
+    else if (d_ptr->m_commandQueue)
+        d_ptr->m_commandQueue->queueCommand(providerId, CommandType_AddImageProvider, provider);
+}
+
+/*!
     Activate or deactivate the presentation identified by \a id depending
     on the value of \a active.
  */
