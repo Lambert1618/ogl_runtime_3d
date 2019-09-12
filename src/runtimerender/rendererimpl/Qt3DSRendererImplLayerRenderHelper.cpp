@@ -382,17 +382,10 @@ void SLayerRenderHelper::adjustCameraStereoSeparation()
     copyCameraProperties(m_Camera, m_CameraRightEye);
 
     // Adjust left & right camera positions by eye separation
-    QT3DSMat44 mat = QT3DSMat44::createIdentity();
-    mat.rotate(m_Camera->GetDirection());
-    QT3DSVec3 camPos = m_Camera->m_Position;
-    camPos.x = m_Camera->m_Position.x - m_StereoEyeSeparation;
-    mat.scale(QT3DSVec4(m_Camera->m_Scale, 1.0f));
-    mat.setPosition(camPos);
-    m_CameraLeftEye->SetLocalTransformFromMatrix(mat);
-    camPos.x = m_Camera->m_Position.x + m_StereoEyeSeparation;
-    mat.scale(QT3DSVec4(m_Camera->m_Scale, 1.0f));
-    mat.setPosition(camPos);
-    m_CameraRightEye->SetLocalTransformFromMatrix(mat);
+    m_CameraLeftEye->m_Position.x -= m_StereoEyeSeparation;
+    m_CameraLeftEye->m_Flags.SetTransformDirty(true);
+    m_CameraRightEye->m_Position.x += m_StereoEyeSeparation;
+    m_CameraRightEye->m_Flags.SetTransformDirty(true);
 
     m_CameraLeftEye->MarkDirty();
     m_CameraRightEye->MarkDirty();
