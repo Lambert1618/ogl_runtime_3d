@@ -114,7 +114,8 @@ bool qt3ds::runtime::isImagePath(const QString &path)
     const QString ext = path.right(path.length() - index - 1);
     return (ext == QLatin1String("jpg") || ext == QLatin1String("jpeg")
             || ext == QLatin1String("png") || ext == QLatin1String("hdr")
-            || ext == QLatin1String("dds") || ext == QLatin1String("ktx"));
+            || ext == QLatin1String("dds") || ext == QLatin1String("ktx")
+            || ext == QLatin1String("astc"));
 }
 
 struct SFrameTimer
