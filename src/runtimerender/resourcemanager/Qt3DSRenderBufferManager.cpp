@@ -117,7 +117,7 @@ struct SBufferManager : public IBufferManager
     TMeshMap m_MeshMap;
     SPrimitiveEntry m_PrimitiveNames[5];
     nvvector<qt3ds::render::NVRenderVertexBufferEntry> m_EntryBuffer;
-    bool m_GPUSupportsDXT;
+    bool m_GPUSupportsCompressedTextures;
     bool m_reloadableResources;
     QHash<QString, QSharedPointer<QQmlImageProviderBase> > m_imageProviders;
 
@@ -140,7 +140,7 @@ struct SBufferManager : public IBufferManager
         , m_AliasImageMap(ctx.GetAllocator(), "SBufferManager::m_AliasImageMap")
         , m_MeshMap(ctx.GetAllocator(), "SBufferManager::m_MeshMap")
         , m_EntryBuffer(ctx.GetAllocator(), "SBufferManager::m_EntryBuffer")
-        , m_GPUSupportsDXT(ctx.AreDXTImagesSupported())
+        , m_GPUSupportsCompressedTextures(ctx.AreCompressedTexturesSupported())
         , m_reloadableResources(false)
     {
     }
@@ -485,14 +485,16 @@ struct SBufferManager : public IBufferManager
             }
         } else if (inLoadedImage.dds) {
             theImage.first->second.m_Texture = theTexture;
-            bool supportsDXT = m_GPUSupportsDXT;
-            bool isDXT = NVRenderTextureFormats::isCompressedTextureFormat(inLoadedImage.format);
-            bool requiresDecompression = (supportsDXT == false && isDXT) || false;
+            bool supportsCompressedTextures = m_GPUSupportsCompressedTextures;
+            bool isACompressedTexture
+                    = NVRenderTextureFormats::isCompressedTextureFormat(inLoadedImage.format);
+            bool requiresDecompression
+                    = (supportsCompressedTextures == false && isACompressedTexture) || false;
             // test code for DXT decompression
             // if ( isDXT ) requiresDecompression = true;
             if (requiresDecompression) {
                 qCWarning(WARNING, PERF_INFO,
-                    "Image %s is DXT format which is unsupported by "
+                    "Image %s is compressed format which is unsupported by "
                     "the graphics subsystem, decompressing in CPU",
                     inImagePath.c_str());
             }

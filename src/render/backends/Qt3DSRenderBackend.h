@@ -129,7 +129,10 @@ namespace render {
                 VertexArrayObject,
                 StandardDerivatives,
                 TextureLod,
-                BinaryProgram
+                BinaryProgram,
+                CompressedTextureEtc1,
+                CompressedTextureEtc2,
+                CompressedTextureAstc
             };
         } NVRenderBackendCaps;
 
@@ -2237,6 +2240,9 @@ namespace render {
                     bool bStandardDerivativesSupported : 1;
                     bool bTextureLodSupported : 1;
                     bool bBinaryProgramsSupported : 1;
+                    bool bTextureEtc1Supported : 1;
+                    bool bTextureEtc2Supported : 1;
+                    bool bTextureAstcSupported : 1;
                 } bits;
 
                 QT3DSU32 u32Values;

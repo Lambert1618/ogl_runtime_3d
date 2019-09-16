@@ -140,6 +140,9 @@ namespace render {
             // geometry shader is always supported on none ES systems which support >=GL4 ( actually
             // 3.2 already )
             m_backendSupport.caps.bits.bGeometrySupported = true;
+            // ETC2 texture compression is supported in 4.3 and greater
+            if (format.minorVersion() >= 3)
+                m_backendSupport.caps.bits.bTextureEtc2Supported = true;
         } else {
             // always true for GLES 3.1 devices
             m_backendSupport.caps.bits.bComputeSupported = true;
@@ -147,6 +150,9 @@ namespace render {
             m_backendSupport.caps.bits.bStorageBufferSupported = true;
             m_backendSupport.caps.bits.bAtomicCounterBufferSupported = true;
             m_backendSupport.caps.bits.bShaderImageLoadStoreSupported = true;
+            // ASTC ldr profile supported in ES 3.2 and greater
+            if (format.minorVersion() >= 2)
+                m_backendSupport.caps.bits.bTextureAstcSupported = true;
         }
 
 #if !defined(QT_OPENGL_ES)

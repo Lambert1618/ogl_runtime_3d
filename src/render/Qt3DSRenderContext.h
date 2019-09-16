@@ -132,7 +132,7 @@ namespace render {
         virtual QT3DSU32 GetStencilBits() const = 0;
         virtual bool
         GetRenderBackendCap(NVRenderBackend::NVRenderBackendCaps::Enum inCap) const = 0;
-        virtual bool AreDXTImagesSupported() const = 0;
+        virtual bool AreCompressedTexturesSupported() const = 0;
         virtual bool IsDepthStencilSupported() const = 0;
         virtual bool IsFpRenderTargetSupported() const = 0;
         virtual bool IsTessellationSupported() const = 0;
@@ -693,11 +693,16 @@ namespace render {
             return GetRenderBackendCap(NVRenderBackend::NVRenderBackendCaps::ConstantBuffer);
         }
 
-        bool AreDXTImagesSupported() const override
+        bool AreCompressedTexturesSupported() const override
         {
-            return GetRenderBackendCap(NVRenderBackend::NVRenderBackendCaps::DxtImages);
+            return (GetRenderBackendCap(NVRenderBackend::NVRenderBackendCaps::DxtImages)
+                    || GetRenderBackendCap(
+                        NVRenderBackend::NVRenderBackendCaps::CompressedTextureEtc1)
+                    || GetRenderBackendCap(
+                        NVRenderBackend::NVRenderBackendCaps::CompressedTextureEtc2)
+                    || GetRenderBackendCap(
+                        NVRenderBackend::NVRenderBackendCaps::CompressedTextureAstc));
         }
-
         bool IsDepthStencilSupported() const override
         {
             return GetRenderBackendCap(NVRenderBackend::NVRenderBackendCaps::DepthStencilTexture);

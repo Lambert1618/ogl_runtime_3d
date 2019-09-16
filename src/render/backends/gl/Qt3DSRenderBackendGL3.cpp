@@ -68,10 +68,12 @@ namespace render {
         eastl::string extsAniso("GL_EXT_texture_filter_anisotropic");
         eastl::string extsTexSwizzle("GL_ARB_texture_swizzle");
         eastl::string extsAstcHDR("GL_KHR_texture_compression_astc_hdr");
-        eastl::string extsAstcLDR("GL_KHR_texture_compression_astc_ldr");
+        eastl::string extsAstcLDR("GL_KHR_texture_compression_astc_ldr"); // ES 3.2
         eastl::string extsFPRenderTarget("GL_EXT_color_buffer_float");
         eastl::string extsTimerQuery("GL_EXT_timer_query");
         eastl::string extsGpuShader5("EXT_gpu_shader5");
+        eastl::string extsEtc1("GL_OES_compressed_ETC1_RGB8_texture");
+        eastl::string extsEtc2("GL_COMPRESSED_RGB8_ETC2"); //ES 3.0+ && OpenGL 4.3+
 
         const char *languageVersion = GetShadingLanguageVersion();
         qCInfo(TRACE_INFO, "GLSL version: %s", languageVersion);
@@ -119,6 +121,16 @@ namespace render {
             } else if (!m_backendSupport.caps.bits.bGPUShader5ExtensionSupported
                        && extsGpuShader5.compare(extensionString) == 0) {
                 m_backendSupport.caps.bits.bGPUShader5ExtensionSupported = true;
+            } else if (!m_backendSupport.caps.bits.bTextureEtc1Supported
+                       && extsEtc1.compare(extensionString) == 0) {
+                m_backendSupport.caps.bits.bTextureEtc1Supported = true;
+            } else if (!m_backendSupport.caps.bits.bTextureEtc2Supported
+                       && extsEtc2.compare(extensionString) == 0) {
+                m_backendSupport.caps.bits.bTextureEtc2Supported = true;
+            } else if (!m_backendSupport.caps.bits.bTextureAstcSupported
+                       && (extsAstcHDR.compare(extensionString) == 0
+                           || extsAstcLDR.compare(extensionString) == 0)) {
+                m_backendSupport.caps.bits.bTextureAstcSupported = true;
             }
 
         }
@@ -143,6 +155,8 @@ namespace render {
             m_backendSupport.caps.bits.bMsTextureSupported = true;
             // timer queries are always supported on none ES systems which support >=GL3
             m_backendSupport.caps.bits.bTimerQuerySupported = true;
+            // ETC2 support >=GL3
+            m_backendSupport.caps.bits.bTextureEtc1Supported = true;
         }
 
         // query hardware

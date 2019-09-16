@@ -244,6 +244,15 @@ bool NVRenderBackendGLBase::GetRenderBackendCap(
     case NVRenderBackendCaps::BinaryProgram:
         bSupported = m_backendSupport.caps.bits.bBinaryProgramsSupported;
         break;
+    case NVRenderBackendCaps::CompressedTextureEtc1:
+        bSupported = m_backendSupport.caps.bits.bTextureEtc1Supported;
+        break;
+    case NVRenderBackendCaps::CompressedTextureEtc2:
+        bSupported = m_backendSupport.caps.bits.bTextureEtc2Supported;
+        break;
+    case NVRenderBackendCaps::CompressedTextureAstc:
+        bSupported = m_backendSupport.caps.bits.bTextureAstcSupported;
+        break;
     default:
         QT3DS_ASSERT(false);
         bSupported = false;
