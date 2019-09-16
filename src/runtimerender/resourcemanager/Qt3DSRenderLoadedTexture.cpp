@@ -267,6 +267,11 @@ SLoadedTexture *SLoadedTexture::LoadASTC(const QString &inPath, QT3DSI32 flipVer
     retval->height = image->height;
     retval->format = static_cast<NVRenderTextureFormats::Enum>(image->format);
 
+    image->mipheight[0] = image->height;
+    image->mipwidth[0] = image->width;
+    image->size[0] = ((image->width + 3) / 4) * ((image->height + 3) / 4) * 16;
+    image->data[0] = image->dataBlock;
+
     return retval;
 }
 
