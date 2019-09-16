@@ -178,6 +178,10 @@ namespace render {
                                           NVRenderContextType renderContextType,
                                           IBufferManager *bufferManager = nullptr);
 
+        static SLoadedTexture *LoadASTC(const QString &inPath, QT3DSI32 flipVertical,
+                                        NVFoundationBase &fnd,
+                                        NVRenderContextType renderContextType);
+
     private:
         // Implemented in the bmp loader.
         void FreeImagePostProcess(bool inFlipY);

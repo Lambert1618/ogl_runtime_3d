@@ -86,6 +86,34 @@ static inline int runtimeFormat(quint32 internalFormat)
         return NVRenderTextureFormats::RGBA_DXT3;
     case QOpenGLTexture::RGBA_DXT5:
         return NVRenderTextureFormats::RGBA_DXT5;
+    case QOpenGLTexture::RGBA_ASTC_4x4:
+        return NVRenderTextureFormats::RGBA_ASTC_4x4;
+    case QOpenGLTexture::RGBA_ASTC_5x4:
+        return NVRenderTextureFormats::RGBA_ASTC_5x4;
+    case QOpenGLTexture::RGBA_ASTC_5x5:
+        return NVRenderTextureFormats::RGBA_ASTC_5x5;
+    case QOpenGLTexture::RGBA_ASTC_6x5:
+        return NVRenderTextureFormats::RGBA_ASTC_6x5;
+    case QOpenGLTexture::RGBA_ASTC_6x6:
+        return NVRenderTextureFormats::RGBA_ASTC_6x6;
+    case QOpenGLTexture::RGBA_ASTC_8x5:
+        return NVRenderTextureFormats::RGBA_ASTC_8x5;
+    case QOpenGLTexture::RGBA_ASTC_8x6:
+        return NVRenderTextureFormats::RGBA_ASTC_8x6;
+    case QOpenGLTexture::RGBA_ASTC_8x8:
+        return NVRenderTextureFormats::RGBA_ASTC_8x8;
+    case QOpenGLTexture::RGBA_ASTC_10x5:
+        return NVRenderTextureFormats::RGBA_ASTC_10x5;
+    case QOpenGLTexture::RGBA_ASTC_10x6:
+        return NVRenderTextureFormats::RGBA_ASTC_10x6;
+    case QOpenGLTexture::RGBA_ASTC_10x8:
+        return NVRenderTextureFormats::RGBA_ASTC_10x8;
+    case QOpenGLTexture::RGBA_ASTC_10x10:
+        return NVRenderTextureFormats::RGBA_ASTC_10x10;
+    case QOpenGLTexture::RGBA_ASTC_12x10:
+        return NVRenderTextureFormats::RGBA_ASTC_12x10;
+    case QOpenGLTexture::RGBA_ASTC_12x12:
+        return NVRenderTextureFormats::RGBA_ASTC_12x12;
     default:
         break;
     }

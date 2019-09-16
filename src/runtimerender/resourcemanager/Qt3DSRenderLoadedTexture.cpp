@@ -40,6 +40,9 @@
 #include "Qt3DSRenderBufferManager.h"
 #include <QtQuick/qquickimageprovider.h>
 #include <QtGui/qimage.h>
+#include <QtGui/qopengltexture.h>
+
+#include <private/qnumeric_p.h>
 
 using namespace qt3ds::render;
 
@@ -96,6 +99,176 @@ SLoadedTexture *SLoadedTexture::LoadQImage(const QString &inPath, QT3DSI32 flipV
     return retval;
 }
 
+namespace  {
+struct AstcHeader
+{
+    quint8 magic[4];
+    quint8 blockDimX;
+    quint8 blockDimY;
+    quint8 blockDimZ;
+    quint8 xSize[3];
+    quint8 ySize[3];
+    quint8 zSize[3];
+};
+
+quint32 astcGLFormat(quint8 xBlockDim, quint8 yBlockDim)
+{
+    static const quint32 glFormatRGBABase = 0x93B0;    // GL_COMPRESSED_RGBA_ASTC_4x4_KHR
+    static const quint32 glFormatSRGBBase = 0x93D0;    // GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR
+
+    static QSize dims[14] = {
+        {  4, 4  },     // GL_COMPRESSED_xxx_ASTC_4x4_KHR
+        {  5, 4  },     // GL_COMPRESSED_xxx_ASTC_5x4_KHR
+        {  5, 5  },     // GL_COMPRESSED_xxx_ASTC_5x5_KHR
+        {  6, 5  },     // GL_COMPRESSED_xxx_ASTC_6x5_KHR
+        {  6, 6  },     // GL_COMPRESSED_xxx_ASTC_6x6_KHR
+        {  8, 5  },     // GL_COMPRESSED_xxx_ASTC_8x5_KHR
+        {  8, 6  },     // GL_COMPRESSED_xxx_ASTC_8x6_KHR
+        {  8, 8  },     // GL_COMPRESSED_xxx_ASTC_8x8_KHR
+        { 10, 5  },     // GL_COMPRESSED_xxx_ASTC_10x5_KHR
+        { 10, 6  },     // GL_COMPRESSED_xxx_ASTC_10x6_KHR
+        { 10, 8  },     // GL_COMPRESSED_xxx_ASTC_10x8_KHR
+        { 10, 10 },     // GL_COMPRESSED_xxx_ASTC_10x10_KHR
+        { 12, 10 },     // GL_COMPRESSED_xxx_ASTC_12x10_KHR
+        { 12, 12 }      // GL_COMPRESSED_xxx_ASTC_12x12_KHR
+    };
+
+    const QSize dim(xBlockDim, yBlockDim);
+    int index = -1;
+    for (int i = 0; i < 14; i++) {
+        if (dim == dims[i]) {
+            index = i;
+            break;
+        }
+    }
+    if (index < 0)
+        return 0;
+
+    static bool useSrgb = qEnvironmentVariableIsSet("QT_ASTCHANDLER_USE_SRGB");
+
+    return useSrgb ? (glFormatSRGBBase + index) : (glFormatRGBABase + index);
+}
+
+static inline int runtimeFormat(quint32 internalFormat)
+{
+    switch (internalFormat) {
+    case QOpenGLTexture::RGBA_ASTC_4x4:
+        return NVRenderTextureFormats::RGBA_ASTC_4x4;
+    case QOpenGLTexture::RGBA_ASTC_5x4:
+        return NVRenderTextureFormats::RGBA_ASTC_5x4;
+    case QOpenGLTexture::RGBA_ASTC_5x5:
+        return NVRenderTextureFormats::RGBA_ASTC_5x5;
+    case QOpenGLTexture::RGBA_ASTC_6x5:
+        return NVRenderTextureFormats::RGBA_ASTC_6x5;
+    case QOpenGLTexture::RGBA_ASTC_6x6:
+        return NVRenderTextureFormats::RGBA_ASTC_6x6;
+    case QOpenGLTexture::RGBA_ASTC_8x5:
+        return NVRenderTextureFormats::RGBA_ASTC_8x5;
+    case QOpenGLTexture::RGBA_ASTC_8x6:
+        return NVRenderTextureFormats::RGBA_ASTC_8x6;
+    case QOpenGLTexture::RGBA_ASTC_8x8:
+        return NVRenderTextureFormats::RGBA_ASTC_8x8;
+    case QOpenGLTexture::RGBA_ASTC_10x5:
+        return NVRenderTextureFormats::RGBA_ASTC_10x5;
+    case QOpenGLTexture::RGBA_ASTC_10x6:
+        return NVRenderTextureFormats::RGBA_ASTC_10x6;
+    case QOpenGLTexture::RGBA_ASTC_10x8:
+        return NVRenderTextureFormats::RGBA_ASTC_10x8;
+    case QOpenGLTexture::RGBA_ASTC_10x10:
+        return NVRenderTextureFormats::RGBA_ASTC_10x10;
+    case QOpenGLTexture::RGBA_ASTC_12x10:
+        return NVRenderTextureFormats::RGBA_ASTC_12x10;
+    case QOpenGLTexture::RGBA_ASTC_12x12:
+        return NVRenderTextureFormats::RGBA_ASTC_12x12;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_4x4:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_4x4;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x4:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_5x4;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x5:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_5x5;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x5:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_6x5;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x6:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_6x6;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x5:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_8x5;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x6:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_8x6;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x8:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_8x8;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x5:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x5;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x6:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x6;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x8:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x8;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x10:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x10;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x10:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_12x10;
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x12:
+        return NVRenderTextureFormats::SRGB8_Alpha8_ASTC_12x12;
+    default:
+        break;
+    }
+    return NVRenderTextureFormats::Unknown;
+}
+
+}
+
+SLoadedTexture *SLoadedTexture::LoadASTC(const QString &inPath, QT3DSI32 flipVertical,
+                                         NVFoundationBase &fnd,
+                                         NVRenderContextType renderContextType)
+{
+    // Read file
+    QFile astcFile(inPath);
+    if (!astcFile.open(QIODevice::ReadOnly))
+        return nullptr;
+
+    QByteArray fileData = astcFile.readAll();
+
+    astcFile.close();
+
+    const AstcHeader *header = reinterpret_cast<const AstcHeader *>(fileData.constData());
+    int xSz = int(header->xSize[0]) | int(header->xSize[1]) << 8 | int(header->xSize[2]) << 16;
+    int ySz = int(header->ySize[0]) | int(header->ySize[1]) << 8 | int(header->ySize[2]) << 16;
+    int zSz = int(header->zSize[0]) | int(header->zSize[1]) << 8 | int(header->zSize[2]) << 16;
+
+    quint32 glFmt = astcGLFormat(header->blockDimX, header->blockDimY);
+
+    if (!xSz || !ySz || !zSz || !glFmt || header->blockDimZ != 1)
+        return nullptr;
+
+    int xBlocks = (xSz + header->blockDimX - 1) / header->blockDimX;
+    int yBlocks = (ySz + header->blockDimY - 1) / header->blockDimY;
+    int zBlocks = (zSz + header->blockDimZ - 1) / header->blockDimZ;
+
+    int byteCount = 0;
+    bool oob = mul_overflow(xBlocks, yBlocks, &byteCount)
+            || mul_overflow(byteCount, zBlocks, &byteCount)
+            || mul_overflow(byteCount, 16, &byteCount);
+
+    SLoadedTexture *retval(nullptr);
+    NVAllocatorCallback &alloc(fnd.getAllocator());
+    retval = QT3DS_NEW(alloc, SLoadedTexture)(alloc);
+    Qt3DSDDSImage *image = (Qt3DSDDSImage *)QT3DS_ALLOC(alloc, sizeof(Qt3DSDDSImage), "LoadASTC");
+
+    image->numMipmaps = 1;
+    image->width = xSz;
+    image->height = ySz;
+    image->internalFormat = glFmt;
+    image->format = runtimeFormat(glFmt);
+    image->compressed = 1;
+    image->dataBlock = QT3DS_ALLOC(alloc, byteCount, "Qt3DSDDSAllocDataBlock");
+    memcpy(image->dataBlock, fileData.constData() + sizeof(AstcHeader), byteCount);
+
+    retval->dds = image;
+    retval->width = image->width;
+    retval->height = image->height;
+    retval->format = static_cast<NVRenderTextureFormats::Enum>(image->format);
+
+    return retval;
+}
 
 namespace {
 
@@ -751,6 +924,8 @@ SLoadedTexture *SLoadedTexture::Load(const QString &inPath, NVFoundationBase &in
             theLoadedImage = LoadHDR(*theStream, inFoundation, renderContextType);
         } else if (path.endsWith(QLatin1String("ktx"), Qt::CaseInsensitive)) {
             theLoadedImage = LoadKTX(*theStream, inFlipY, inFoundation, renderContextType);
+        } else if (path.endsWith(QLatin1String("astc"), Qt::CaseInsensitive)) {
+            theLoadedImage = LoadASTC(fileName, inFlipY, inFoundation, renderContextType);
         } else {
             qCWarning(INTERNAL_ERROR, "Unrecognized image extension: %s", qPrintable(inPath));
         }
