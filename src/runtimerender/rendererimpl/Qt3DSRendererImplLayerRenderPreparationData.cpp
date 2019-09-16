@@ -393,8 +393,8 @@ namespace render {
                             m_Renderer.GetQt3DSContext().getDistanceFieldRenderer());
                 distanceFieldText->buildShaders();
                 theRenderable = RENDER_FRAME_NEW(SDistanceFieldRenderable)(
-                            theFlags, inText.GetGlobalPos(), inText, inText.m_Bounds, theMVP,
-                            *distanceFieldText);
+                            theFlags, inText.GetGlobalPos(), m_Renderer, inText, inText.m_Bounds,
+                            theMVP, *distanceFieldText);
             } else
 #endif
             {

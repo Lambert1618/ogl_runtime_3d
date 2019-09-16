@@ -408,14 +408,17 @@ namespace render {
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,2)
     struct SDistanceFieldRenderable : public SRenderableObject
     {
+        Qt3DSRendererImpl &m_Generator;
         Q3DSDistanceFieldRenderer &m_distanceFieldText;
         QT3DSMat44 m_mvp;
         SText &m_text;
 
         SDistanceFieldRenderable(SRenderableObjectFlags flags, QT3DSVec3 worldCenterPt,
-                                 SText &text, const NVBounds3 &bounds, const QT3DSMat44 &mvp,
+                                 Qt3DSRendererImpl &gen, SText &text, const NVBounds3 &bounds,
+                                 const QT3DSMat44 &mvp,
                                  Q3DSDistanceFieldRenderer &distanceFieldText)
             : SRenderableObject(flags, worldCenterPt, text.m_GlobalTransform, bounds)
+            , m_Generator(gen)
             , m_distanceFieldText(distanceFieldText)
             , m_mvp(mvp)
             , m_text(text)
