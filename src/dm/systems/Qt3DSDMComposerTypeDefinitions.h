@@ -302,9 +302,11 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY(playmode, m_PlayMode, TDataStrPtr, L"Looping")                        \
     HANDLE_COMPOSER_PROPERTY(playthroughto, m_PlaythroughTo, SStringOrInt, L"Next")                \
     HANDLE_COMPOSER_PROPERTY(initialplaystate, m_InitialPlayState, TDataStrPtr, L"Play")           \
+    HANDLE_COMPOSER_PROPERTY_DUPLICATE(fileid, m_FileId, TDataStrPtr, L"")                         \
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(controlledproperty, m_ControlledProperty, TDataStrPtr, L"")
 
 #define ITERATE_COMPOSER_ACTION_PROPERTIES                                                         \
+    HANDLE_COMPOSER_PROPERTY_DUPLICATE(fileid, m_FileId, TDataStrPtr, L"")                         \
     HANDLE_COMPOSER_PROPERTY(actioneyeball, m_ActionEyeball, bool, true)
 
 #define ITERATE_COMPOSER_ALIAS_PROPERTIES                                                          \
