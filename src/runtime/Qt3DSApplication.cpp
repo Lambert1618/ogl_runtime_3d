@@ -1897,12 +1897,14 @@ struct SApp : public IApplication
     QList<Q3DStudio::CPresentation *> GetPresentationList() override
     {
         QList<Q3DStudio::CPresentation *> list;
+        auto &stringTable = m_CoreFactory->GetStringTable();
+        auto presentationId = stringTable.RegisterStr(m_PresentationId.c_str());
         for (TIdAssetMap::iterator iter = m_AssetMap.begin(); iter != m_AssetMap.end(); ++iter) {
             if (iter->second->getType() == AssetValueTypes::Presentation) {
                 Q3DStudio::CPresentation *presentation
                         = iter->second->getData<SPresentationAsset>().m_Presentation;
                 if (presentation) {
-                    if (iter->first == m_PresentationId)
+                    if (iter->first == presentationId)
                         list.prepend(presentation);
                     else
                         list.append(presentation);
@@ -2026,6 +2028,7 @@ struct SXMLLoader : public IAppLoadContext
 
         // First load the initial presentation
         CAppStr initial = m_App.m_PresentationId;
+        auto initialStr = this->m_App.m_CoreFactory->GetStringTable().RegisterStr(initial.c_str());
         if (initial.empty()) {
             for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
                 SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
@@ -2041,7 +2044,7 @@ struct SXMLLoader : public IAppLoadContext
 
         // Load it
         for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
-            if (m_App.m_OrderedAssets[idx].first == initial) {
+            if (m_App.m_OrderedAssets[idx].first == initialStr) {
                 SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
                 AssetHandlers::handlePresentation(m_App, theAsset, initInRenderThread);
                 break;
@@ -2061,7 +2064,7 @@ struct SXMLLoader : public IAppLoadContext
         if (!delayedLoading || (m_App.m_OrderedAssets.size() > 1 && initialAssets.size() > 0)) {
             for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
                 QString assetId = QString::fromLatin1(m_App.m_OrderedAssets[idx].first.c_str());
-                if (m_App.m_OrderedAssets[idx].first != initial
+                if (m_App.m_OrderedAssets[idx].first != initialStr
                         && (initialAssets.contains(assetId) || !delayedLoading)) {
                     SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
                     switch (theAsset.getType()) {
