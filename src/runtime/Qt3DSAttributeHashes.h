@@ -156,6 +156,7 @@ enum EAttribute {
     ATTRIBUTE_DIFFUSELIGHTWRAP =     0x038F6522, // diffuselightwrap
     ATTRIBUTE_REFERENCEDMATERIAL =   0x035FDA80, // referencedmaterial
     ATTRIBUTE_VERTEXCOLORS =         0x000814EC, // vertexcolors
+    ATTRIBUTE_TRANSPARENCYMODE =     0x02E77D05, // transparencymode
     ATTRIBUTE_ROTATIONUV =           0x012E3A61, // rotationuv
     ATTRIBUTE_POSITIONU =            0x01D05AB4, // positionu
     ATTRIBUTE_POSITIONV =            0x01D15AF3, // positionv

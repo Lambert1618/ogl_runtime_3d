@@ -790,6 +790,35 @@ bool SLoadedTexture::ScanForTransparency(bool &alsoOpaquePixels)
         // integer scans.
         return false;
         break;
+    case NVRenderTextureFormats::RGBA_ASTC_4x4:
+    case NVRenderTextureFormats::RGBA_ASTC_5x4:
+    case NVRenderTextureFormats::RGBA_ASTC_5x5:
+    case NVRenderTextureFormats::RGBA_ASTC_6x5:
+    case NVRenderTextureFormats::RGBA_ASTC_6x6:
+    case NVRenderTextureFormats::RGBA_ASTC_8x5:
+    case NVRenderTextureFormats::RGBA_ASTC_8x6:
+    case NVRenderTextureFormats::RGBA_ASTC_8x8:
+    case NVRenderTextureFormats::RGBA_ASTC_10x5:
+    case NVRenderTextureFormats::RGBA_ASTC_10x6:
+    case NVRenderTextureFormats::RGBA_ASTC_10x8:
+    case NVRenderTextureFormats::RGBA_ASTC_10x10:
+    case NVRenderTextureFormats::RGBA_ASTC_12x10:
+    case NVRenderTextureFormats::RGBA_ASTC_12x12:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_4x4:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_5x4:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_5x5:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_6x5:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_6x6:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_8x5:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_8x6:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_8x8:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x5:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x6:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x8:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_10x10:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_12x10:
+    case NVRenderTextureFormats::SRGB8_Alpha8_ASTC_12x12:
+        return false;
     default:
         break;
     }

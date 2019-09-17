@@ -120,6 +120,7 @@ translucentfalloff
 diffuselightwrap
 referencedmaterial
 vertexcolors
+transparencymode
 
 rotationuv
 positionu

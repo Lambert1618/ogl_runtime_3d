@@ -165,6 +165,7 @@ const char *GetAttributeString(const EAttribute inAttribute)
         case ATTRIBUTE_DIFFUSELIGHTWRAP: return "diffuselightwrap";
         case ATTRIBUTE_REFERENCEDMATERIAL: return "referencedmaterial";
         case ATTRIBUTE_VERTEXCOLORS: return "vertexcolors";
+        case ATTRIBUTE_TRANSPARENCYMODE: return "transparencymode";
         case ATTRIBUTE_ROTATIONUV: return "rotationuv";
         case ATTRIBUTE_POSITIONU: return "positionu";
         case ATTRIBUTE_POSITIONV: return "positionv";

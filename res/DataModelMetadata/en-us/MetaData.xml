@@ -172,6 +172,7 @@
         <Property name="bumpamount"         formalName="Bump Amount"          type="float"      default=".5"      category="Material" description="Strength of bump/normal map effect" />
         <Property name="displacementmap"    formalName="Displacement Map"     type="Image"                        category="Material" description="Grayscale image used to offset vertices\nof the geometry" />
         <Property name="displaceamount"     formalName="Displacement Amount"  type="float"      default="20"      category="Material" description="Distance to offset vertices" />
+        <Property name="transparencymode"   formalName="Transparency Mode"                      default="Default" category="Material" description="Material can be forced to be treated as transparent or opaque. Default behavior depends on the texture transparencies." list="Default:Force Transparent:Force Opaque" animatable="False" />
         <Property name="opacity"            formalName="Opacity"              min="0" max="100" default="100"     category="Material" description="Visibility of the geometry for this material." />
         <Property name="opacitymap"         formalName="Opacity Map"          type="Image"                        category="Material" description="Image to vary the opacity across the material" />
         <Property name="emissivecolor"      formalName="Emissive Color"       type="Color"      default="1 1 1 1" category="Material" description="Color of self-illumination for this material" />

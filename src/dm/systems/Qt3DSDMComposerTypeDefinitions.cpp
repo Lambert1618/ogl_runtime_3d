@@ -170,6 +170,7 @@ struct DataConstructor<SObjectRefType>
 #define QT3DS_WCHAR_T_specularamount L"specularamount"
 #define QT3DS_WCHAR_T_specularroughness L"specularroughness"
 #define QT3DS_WCHAR_T_roughnessmap L"roughnessmap"
+#define QT3DS_WCHAR_T_transparencymode L"transparencymode"
 #define QT3DS_WCHAR_T_opacitymap L"opacitymap"
 #define QT3DS_WCHAR_T_emissivepower L"emissivepower"
 #define QT3DS_WCHAR_T_emissivecolor L"emissivecolor"

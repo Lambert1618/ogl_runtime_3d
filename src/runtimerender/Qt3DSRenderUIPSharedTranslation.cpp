@@ -94,6 +94,8 @@ namespace render {
 #define WCHAR_T_Default L"Default"
 #define WCHAR_T_KGGX L"KGGX"
 #define WCHAR_T_KWard L"KWard"
+#define WCHAR_T_ForceTransparent L"Force Transparent"
+#define WCHAR_T_ForceOpaque L"Force Opaque"
 #define WCHAR_T_Transparent L"Transparent"
 #define WCHAR_T_Unspecified L"Unspecified"
 #define WCHAR_T_Color L"SolidColor"
@@ -177,6 +179,8 @@ namespace render {
 #define CHAR_T_Default "Default"
 #define CHAR_T_KGGX "KGGX"
 #define CHAR_T_KWard "KWard"
+#define CHAR_T_ForceTransparent "Force Transparent"
+#define CHAR_T_ForceOpaque "Force Opaque"
 #define CHAR_T_Transparent "Transparent"
 #define CHAR_T_Unspecified "Unspecified"
 #define CHAR_T_Color "SolidColor"
@@ -353,6 +357,14 @@ namespace render {
         { (QT3DSU32)-1, NULL },
     };
 
+    SEnumNameMap g_TransparencyModeMap[] = {
+        DEFINE_NAME_MAP_ENTRY(DefaultMaterialTransparencyMode::Default, Default),
+        DEFINE_NAME_MAP_ENTRY(DefaultMaterialTransparencyMode::ForceTransparent,
+            ForceTransparent),
+        DEFINE_NAME_MAP_ENTRY(DefaultMaterialTransparencyMode::ForceOpaque, ForceOpaque),
+        { (QT3DSU32)-1, NULL },
+    };
+
     SEnumNameMap g_TessellationValuesMap[] = {
         DEFINE_NAME_MAP_ENTRY(TessModeValues::NoTess, None),
         DEFINE_NAME_MAP_ENTRY(TessModeValues::TessLinear, Linear),
@@ -451,6 +463,11 @@ namespace render {
     SEnumNameMap *SEnumParseMap<DefaultMaterialSpecularModel::Enum>::GetMap()
     {
         return g_SpecularTypesMap;
+    }
+
+    SEnumNameMap *SEnumParseMap<DefaultMaterialTransparencyMode::Enum>::GetMap()
+    {
+        return g_TransparencyModeMap;
     }
 
     SEnumNameMap *SEnumParseMap<TessModeValues::Enum>::GetMap() { return g_TessellationValuesMap; }

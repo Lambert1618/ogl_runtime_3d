@@ -169,6 +169,12 @@ namespace render {
     };
 
     template <>
+    struct SEnumParseMap<DefaultMaterialTransparencyMode::Enum>
+    {
+        static SEnumNameMap *GetMap();
+    };
+
+    template <>
     struct SEnumParseMap<TessModeValues::Enum>
     {
         static SEnumNameMap *GetMap();
@@ -418,6 +424,7 @@ namespace render {
     HANDLE_QT3DS_RENDER_PROPERTY(Material, SpecularAmount, Dirty)                                    \
     HANDLE_QT3DS_RENDER_PROPERTY(Material, SpecularRoughness, Dirty)                                 \
     HANDLE_QT3DS_RENDER_PROPERTY(Material, RoughnessMap, Dirty)                                      \
+    HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Material, TransparencyMode, Dirty)                             \
     HANDLE_QT3DS_RENDER_OPACITY_PROPERTY(Material, Opacity, Dirty)                                   \
     HANDLE_QT3DS_RENDER_PROPERTY(Material, OpacityMap, Dirty)                                        \
     HANDLE_QT3DS_RENDER_PROPERTY(Material, BumpMap, Dirty)                                           \
