@@ -1226,6 +1226,42 @@ struct SApp : public IApplication
                 m_uploadRenderTask->add(m_resourceCounter.createSet, wait);
             else
                 m_createSet.unite(m_resourceCounter.createSet);
+
+            QVector<QString> newAssets;
+
+            getComponentSlideAssets(newAssets, presentation, component, index);
+            if (newAssets.size())
+                qCInfo(PERF_INFO) << "Slide assets: " << newAssets;
+            for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
+                QString assetId = QString::fromUtf8(m_OrderedAssets[idx].first.c_str());
+                if (newAssets.contains(assetId) && !GetPresentationById(qUtf8Printable(assetId))) {
+                    SAssetValue &theAsset = *m_OrderedAssets[idx].second;
+                    switch (theAsset.getType()) {
+                    case AssetValueTypes::Presentation: {
+                        AssetHandlers::handlePresentation(*this, theAsset);
+                        SPresentationAsset &thePresentationAsset
+                                = *theAsset.getDataPtr<SPresentationAsset>();
+                        CPresentation *thePresentation = thePresentationAsset.m_Presentation;
+                        if (thePresentation) {
+                            SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
+                                                        "Application: SetActivityZone");
+                            thePresentation->SetActivityZone(
+                                      &m_ActivityZoneManager->CreateActivityZone(*thePresentation));
+                            thePresentation->SetActive(thePresentationAsset.m_Active);
+                        }
+                    } break;
+                    case AssetValueTypes::Behavior: {
+                        AssetHandlers::handleBehavior(*this, theAsset);
+                    } break;
+                    case AssetValueTypes::QmlPresentation: {
+                        AssetHandlers::handleQmlPresentation(*m_RuntimeFactory, theAsset);
+                    } break;
+                        // SCXML, NoAssetValue do not need processing here
+                    default:
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -2068,7 +2104,7 @@ struct SXMLLoader : public IAppLoadContext
 
         if (!delayedLoading || (m_App.m_OrderedAssets.size() > 1 && initialAssets.size() > 0)) {
             for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
-                QString assetId = QString::fromLatin1(m_App.m_OrderedAssets[idx].first.c_str());
+                QString assetId = QString::fromUtf8(m_App.m_OrderedAssets[idx].first.c_str());
                 if (m_App.m_OrderedAssets[idx].first != initialStr
                         && (initialAssets.contains(assetId) || !delayedLoading)) {
                     SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
