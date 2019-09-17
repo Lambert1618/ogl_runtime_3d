@@ -1688,6 +1688,10 @@ struct SApp : public IApplication
         }
         ISlideSystem &s = presentation->GetSlideSystem();
         index = s.FindSlide(*component, qPrintable(slideName));
+        if (index == 0xFF) {
+            qCWarning(WARNING) << "Could not find slide: " << elementPath;
+            return false;
+        }
         return true;
     }
 
