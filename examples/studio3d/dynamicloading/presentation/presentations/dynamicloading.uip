@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="6" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="1920" presentationHeight="1080" maintainAspect="False" preferKtx="False" >
+			<CustomColors count="16" >#989898 #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff</CustomColors>
+		</ProjectSettings>
+		<Classes >
+			<Effect id="FullScreenTextureOverlay_u46878" name="FullScreenTextureOverlay" sourcepath="../effects/FullScreenTextureOverlay.effect" />
+			<CustomMaterial id="simplecustom_u34209" name="simplecustom" sourcepath="../materials/simplecustom.material" />
+		</Classes>
+		<Graph >
+			<Scene id="Scene_u58399" backgroundcolor="0.596078 0.596078 0.596078 1" bgcolorenable="True" >
+				<Layer id="Layer2_u19717" variants="" >
+					<Camera id="Camera_u13977" />
+					<Light id="Light_u36115" />
+				</Layer>
+				<Layer id="Layer_u59613" variants="" >
+					<Effect id="FullScreenTextureOverlay_u35802" class="#FullScreenTextureOverlay_u46878" />
+					<Model id="Cone_u21790" variants="" >
+						<Material id="Default_u13810" >
+							<Image id="Default_u13810_u63711" />
+						</Material>
+					</Model>
+					<Camera id="Camera_u44253" />
+					<Light id="Light_u28004" />
+					<Model id="Cylinder_u21298" variants="" >
+						<Material id="Default_u37173" >
+							<Image id="Default_u37173_u19494" />
+						</Material>
+					</Model>
+					<Model id="Sphere_u7999" variants="" >
+						<Material id="Default_u28670" >
+							<Image id="Default_u28670_u18741" />
+						</Material>
+					</Model>
+					<Model id="Rectangle_u65276" variants="" >
+						<CustomMaterial id="Default_u12553" name="Default" class="#simplecustom_u34209" />
+					</Model>
+				</Layer>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene_u58399" >
+				<Add ref="#Layer_u59613" background="Transparent" backgroundcolor="0.596078 0.596078 0.596078 0.490196" disabledepthprepass="True" />
+				<Add ref="#Camera_u44253" />
+				<Add ref="#Light_u28004" />
+				<State id="Slide1_u5883" name="Slide1" playmode="Play Through To..." >
+					<Set ref="#Layer_u59613" endtime="2000" />
+					<Set ref="#Camera_u44253" endtime="2000" />
+					<Set ref="#Light_u28004" endtime="2000" />
+					<Add ref="#FullScreenTextureOverlay_u35802" name="FullScreenTextureOverlay" Overlay="../maps/Metal_Streaks.png" alpha="0.19" endtime="2000" overlay_repeat="1" >
+						<AnimationTrack property="alpha" type="EaseInOut" >0 0.01 100 100 0.616 0.26 100 100 2 0.09 100 100</AnimationTrack>
+					</Add>
+					<Add ref="#Cylinder_u21298" name="Cylinder" endtime="2000" scale="3 4 1" sourcepath="#Cylinder" />
+					<Add ref="#Default_u37173" name="Default_animatable" blendmode="Normal" bumpamount="0.5" diffuse="1 1 1 1" diffuselightwrap="0" diffusemap="#Default_u37173_u19494" displaceamount="20" emissivecolor="1 1 1 1" emissivepower="0" fresnelPower="0" importfile="" importid="" ior="1.5" opacity="100" shaderlighting="Pixel" sourcepath="" specularamount="0" specularmodel="Default" specularroughness="0" speculartint="1 1 1 1" translucentfalloff="1" type="Material" vertexcolors="False" />
+					<Add ref="#Default_u37173_u19494" sourcepath="../maps/Abstract_001_COLOR.jpg" subpresentation="" />
+				</State>
+				<State id="Scene-Slide2_u11666" name="Slide2" playmode="Play Through To..." playthroughto="Next" >
+					<Set ref="#Layer_u59613" endtime="2000" />
+					<Set ref="#Camera_u44253" endtime="2000" />
+					<Set ref="#Light_u28004" endtime="2000" />
+					<Add ref="#Layer2_u19717" name="Layer2" disabledepthprepass="False" endtime="2000" height="766" heightunits="pixels" sourcepath="subpres" top="29" width="1920" widthunits="pixels" />
+					<Add ref="#Camera_u13977" endtime="2000" />
+					<Add ref="#Light_u36115" endtime="2000" />
+					<Add ref="#Cone_u21790" name="Cone" endtime="2000" position="-351.477 228.116 -4.69186" rotation="265 0 0" scale="2 2 2" sourcepath="#Cone" />
+					<Add ref="#Default_u13810" name="Default_animatable" blendmode="Normal" bumpamount="0.5" diffuse="1 1 1 1" diffuselightwrap="0" diffusemap="#Default_u13810_u63711" displaceamount="20" emissivecolor="1 1 1 1" emissivepower="0" fresnelPower="0" importfile="" importid="" ior="1.5" opacity="100" shaderlighting="Pixel" sourcepath="" specularamount="0" specularmodel="Default" specularroughness="0" speculartint="1 1 1 1" translucentfalloff="1" type="Material" vertexcolors="False" />
+					<Add ref="#Default_u13810_u63711" sourcepath="../maps/Blue_Marble_002_COLOR.jpg" subpresentation="" />
+					<Add ref="#Sphere_u7999" name="Sphere" endtime="2000" position="204.727 229.668 0" scale="3 3 3" sourcepath="#Sphere" />
+					<Add ref="#Default_u28670" name="Default_animatable" blendmode="Normal" bumpamount="0.5" diffuse="1 1 1 1" diffuselightwrap="0" diffusemap="#Default_u28670_u18741" displaceamount="20" emissivecolor="1 1 1 1" emissivepower="0" fresnelPower="0" importfile="" importid="" ior="1.5" opacity="100" shaderlighting="Pixel" sourcepath="" specularamount="0" specularmodel="Default" specularroughness="0" speculartint="1 1 1 1" translucentfalloff="1" type="Material" vertexcolors="False" />
+					<Add ref="#Default_u28670_u18741" sourcepath="../maps/Ice_002_COLOR.jpg" subpresentation="" />
+				</State>
+				<State id="Slide7_u8989" name="Slide3" playmode="Play Through To..." playthroughto="#Slide1_u5883" >
+					<Set ref="#Layer_u59613" endtime="2000" />
+					<Set ref="#Camera_u44253" endtime="2000" />
+					<Set ref="#Light_u28004" endtime="2000" />
+					<Add ref="#Rectangle_u65276" name="Rectangle" endtime="2000" position="0 0 600" rotation="0 122 58" scale="8 8 8" shadowcaster="True" sourcepath="#Cube" />
+					<Add ref="#Default_u12553" name="Default" basecolor="../maps/Rock_023_COLOR2.jpg" blue_weight="0.5" green_weight="0.68" red_weight="1.16" >
+						<AnimationTrack property="blue_weight" type="EaseInOut" >0 1.08 100 100 1.016 1.58 100 100 2 1.68 100 100</AnimationTrack>
+						<AnimationTrack property="green_weight" type="EaseInOut" >0 1.22 100 100 1.016 1.7 100 100 2 1.28 100 100</AnimationTrack>
+						<AnimationTrack property="red_weight" type="EaseInOut" >0 0.42 100 100 1.016 1.12 100 100 2 0.72 100 100</AnimationTrack>
+					</Add>
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>

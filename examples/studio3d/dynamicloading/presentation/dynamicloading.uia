@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<application xmlns="http://qt.io/qt3dstudio/uia">
+    <assets initial="dynamicloading">
+        <presentation id="dynamicloading" src="presentations/dynamicloading.uip"/>
+        <presentation id="subpres" src="presentations/subpres.uip"/>
+    </assets>
+</application>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Effect>
+    <MetaData>
+        <Property name="Overlay" formalName="Overlay Texture" description="Overlay texture" type="Texture" clamp="repeat" />
+        <Property name="overlay_repeat" formalName="Repeat" min="0" max="50" default="1" description="Times to repeat the image over screen."/>
+        <Property name="alpha" formalName="Alpha" min="0" max="1" default="0.5" description="Overlay blend factor"/>
+    </MetaData>
+    <Shaders>
+        <Shared></Shared>
+        <FragmentShaderShared></FragmentShaderShared>
+        <Shader name="main">
+            <VertexShader></VertexShader>
+            <FragmentShader><![CDATA[
+void frag()
+{
+    vec4 origColor = texture2D_0(TexCoord);
+    vec4 smp = texture(Overlay, TexCoord.xy * overlay_repeat);
+    gl_FragColor = alpha * smp + origColor;
+}
+    ]]></FragmentShader>
+        </Shader>
+    </Shaders>
+    <Passes>
+        <Pass shader="main" input="[source]" output="[dest]"/>
+    </Passes>
+</Effect>
+
+

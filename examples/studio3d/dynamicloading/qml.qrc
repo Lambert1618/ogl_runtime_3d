@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>StartupProgress.qml</file>
+        <file>presentation/effects/FullScreenTextureOverlay.effect</file>
+        <file>presentation/fonts/TitilliumWeb-Regular.ttf</file>
+        <file>presentation/maps/Abstract_001_COLOR.jpg</file>
+        <file>presentation/maps/Blue_Marble_002_COLOR.jpg</file>
+        <file>presentation/maps/Ice_002_COLOR.jpg</file>
+        <file>presentation/maps/license.txt</file>
+        <file>presentation/maps/Metal_Streaks.png</file>
+        <file>presentation/maps/Moon_001_COLOR.jpg</file>
+        <file>presentation/maps/Rock_023_COLOR2.jpg</file>
+        <file>presentation/materials/simplecustom.material</file>
+        <file>presentation/presentations/dynamicloading.uip</file>
+        <file>presentation/presentations/subpres.uip</file>
+        <file>presentation/dynamicloading.uia</file>
+    </qresource>
+</RCC>

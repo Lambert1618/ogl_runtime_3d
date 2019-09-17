@@ -1,0 +1,39 @@
+<Material name="simplecustom" version="1.0">
+    <MetaData >
+        <Property formalName="Red" name="red_weight" type="Float" default="1.0" min="0" max="2.0" category="Material"/>
+        <Property formalName="Green" name="green_weight" type="Float" default="1.0" min="0" max="2.0" category="Material"/>
+        <Property formalName="Blue" name="blue_weight" type="Float" default="1.0" min="0" max="2.0" category="Material"/>
+        <Property formalName="Base Color" name="basecolor" type="Texture" filter="linear" minfilter="linearMipmapLinear" clamp="repeat" category="Material"/>
+    </MetaData>
+    <Shaders type="GLSL" version="330">
+        <Shader>
+            <Shared></Shared>
+            <VertexShader>
+            </VertexShader>
+            <FragmentShader>
+#define QT3DS_ENABLE_UV0 1
+#define QT3DS_ENABLE_WORLD_POSITION 1
+#define QT3DS_ENABLE_TEXTAN 0
+#define QT3DS_ENABLE_BINORMAL 0
+
+#include "vertexFragmentBase.glsllib"
+
+// set shader output
+out vec4 fragColor;
+
+void main()
+{
+    vec4 c = texture(basecolor, varTexCoord0.xy);
+    c.rgb *= vec3(red_weight, green_weight, blue_weight);
+    fragColor = c;
+}
+            </FragmentShader>
+        </Shader>
+    </Shaders>
+    <Passes>
+        <ShaderKey value="7"/>
+        <LayerKey count="1"/>
+        <Pass>
+        </Pass>
+    </Passes>
+</Material>
