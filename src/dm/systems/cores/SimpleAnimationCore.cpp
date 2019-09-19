@@ -440,6 +440,11 @@ std::pair<float, float> CSimpleAnimationCore::getAnimationExtrema(
     const SAnimationTrack *track = GetAnimationNF(animation, m_Objects);
     TKeyframeHandleList keyframeHandles;
     GetKeyframes(animation, keyframeHandles);
+
+    // If animation doesn't contain any keyframes, return some default range
+    if (keyframeHandles.empty())
+        return std::make_pair(0, 0);
+
     size_t idxFrom = 0;
     size_t idxTo = keyframeHandles.size() - 1;
 
