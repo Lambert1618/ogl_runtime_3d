@@ -414,7 +414,6 @@ bool NVRenderBackendGLES2Impl::SetInputAssembler(NVRenderBackendInputAssemblerOb
 
     if (inputAssembler->m_cachedShaderHandle != programID) {
         GL_CALL_EXTENSION_FUNCTION(glBindVertexArrayOES(inputAssembler->m_VaoID));
-        inputAssembler->m_cachedShaderHandle = programID;
 
         QT3DS_FOREACH(idx, shaderAttribBuffer.size())
         {
@@ -437,6 +436,9 @@ bool NVRenderBackendGLES2Impl::SetInputAssembler(NVRenderBackendInputAssemblerOb
                 qCWarning(WARNING, "Failed to Bind attribute %s", attrib.m_AttribName.c_str());
             }
         }
+
+        // Cache the program id after checking for errors
+        inputAssembler->m_cachedShaderHandle = programID;
 
         // disable max possible used first
         // this is currently sufficient since we always re-arrange input attributes from 0
