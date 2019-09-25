@@ -968,6 +968,20 @@ namespace render {
         return mouseVec;
     }
 
+    uint Qt3DSRendererImpl::getLayerTextureId(SLayer &layer)
+    {
+        SLayerRenderData *data = GetOrCreateLayerRenderDataForNode(layer);
+        if (data->m_LayerCachedTexture) {
+            return static_cast<uint>(reinterpret_cast<size_t>(
+                                         data->m_LayerCachedTexture->GetTextureObjectHandle()));
+        }
+        if (data->m_LayerTexture) {
+            return static_cast<uint>(reinterpret_cast<size_t>(
+                                         data->m_LayerTexture->GetTextureObjectHandle()));
+        }
+        return 0;
+    }
+
     Option<SLayerPickSetup> Qt3DSRendererImpl::GetLayerPickSetup(SLayer &inLayer,
                                                                 const QT3DSVec2 &inMouseCoords,
                                                                 const QSize &inPickDims)

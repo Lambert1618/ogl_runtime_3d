@@ -1719,13 +1719,18 @@ struct SEffectSystem : public IEffectSystem
         QT3DSU32 theFinalWidth = ITextRenderer::NextMultipleOf4((QT3DSU32)(theDetails.m_Width));
         QT3DSU32 theFinalHeight = ITextRenderer::NextMultipleOf4((QT3DSU32)(theDetails.m_Height));
         NVRenderFrameBuffer *theBuffer = theManager.AllocateFrameBuffer();
-        // UdoL Some Effects may need to run before HDR tonemap. This means we need to keep the
-        // input format
-        NVRenderTextureFormats::Enum theOutputFormat = NVRenderTextureFormats::RGBA8;
-        if (theClass->m_DynamicClass->GetOutputTextureFormat() == NVRenderTextureFormats::Unknown)
-            theOutputFormat = theDetails.m_Format;
-        NVRenderTexture2D *theTargetTexture =
-            theManager.AllocateTexture2D(theFinalWidth, theFinalHeight, theOutputFormat);
+        NVRenderTexture2D *theTargetTexture = inRenderArgument.m_targetTexture;
+        if (theTargetTexture == nullptr) {
+            // Some Effects may need to run before HDR tonemap. This means we need to keep the
+            // input format
+            NVRenderTextureFormats::Enum theOutputFormat = NVRenderTextureFormats::RGBA8;
+            if (theClass->m_DynamicClass->GetOutputTextureFormat()
+                    == NVRenderTextureFormats::Unknown) {
+                theOutputFormat = theDetails.m_Format;
+            }
+            theTargetTexture = theManager.AllocateTexture2D(theFinalWidth, theFinalHeight,
+                                                            theOutputFormat);
+        }
         theBuffer->Attach(NVRenderFrameBufferAttachments::Color0, *theTargetTexture);
         theContext.SetRenderTarget(theBuffer);
         NVRenderContextScopedProperty<NVRenderRect> __viewport(

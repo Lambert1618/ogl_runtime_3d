@@ -1746,16 +1746,29 @@ namespace render {
         NVRenderTexture2D *theLayerColorTexture = m_LayerTexture;
         NVRenderTexture2D *theLayerDepthTexture = m_LayerDepthTexture;
 
+        if (!m_LayerCachedTexture) {
+            STextureDetails details(theLayerColorTexture->GetTextureDetails());
+            QT3DSU32 finalWidth = ITextRenderer::NextMultipleOf4((QT3DSU32)(details.m_Width));
+            QT3DSU32 finalHeight = ITextRenderer::NextMultipleOf4((QT3DSU32)(details.m_Height));
+            m_LayerCachedTexture = theResourceManager.AllocateTexture2D(finalWidth, finalHeight,
+                                                                        details.m_Format);
+        }
+
         NVRenderTexture2D *theCurrentTexture = theLayerColorTexture;
         for (SEffect *theEffect = m_Layer.m_FirstEffect; theEffect;
              theEffect = theEffect->m_NextEffect) {
             if (theEffect->m_Flags.IsActive() && m_Camera) {
+                NVRenderTexture2D *targetTexture = nullptr;
+                if (!theEffect->m_NextEffect)
+                    targetTexture = m_LayerCachedTexture;
+
                 StartProfiling(theEffect->m_ClassName, false);
 
                 NVRenderTexture2D *theRenderedEffect = theEffectSystem.RenderEffect(
                     SEffectRenderArgument(*theEffect, *theCurrentTexture,
                                           QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar),
-                                          theLayerDepthTexture, m_LayerPrepassDepthTexture));
+                                          theLayerDepthTexture, m_LayerPrepassDepthTexture,
+                                          targetTexture));
 
                 EndProfiling(theEffect->m_ClassName);
 
@@ -1775,14 +1788,6 @@ namespace render {
                 }
             }
         }
-
-        if (m_LayerCachedTexture && m_LayerCachedTexture != m_LayerTexture) {
-            theResourceManager.Release(*m_LayerCachedTexture);
-            m_LayerCachedTexture = NULL;
-        }
-
-        if (theCurrentTexture != m_LayerTexture)
-            m_LayerCachedTexture = theCurrentTexture;
     }
 
     inline bool AnyCompletelyNonTransparentObjects(TRenderableObjectList &inObjects)

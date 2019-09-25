@@ -495,6 +495,8 @@ public:
 
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
 
+    uint textureId(const QString &elementPath);
+
     QString error();
 
     void setPresentationId(const QString &id);

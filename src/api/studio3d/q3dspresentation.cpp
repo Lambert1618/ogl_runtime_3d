@@ -959,6 +959,21 @@ void Q3DSPresentation::addImageProvider(const QString &providerId, QQmlImageProv
 }
 
 /*!
+    Returns the OpenGL texture id associated with a layer or an image specified
+    by \a elementPath.
+
+    For example, \c{Scene.Layer} returns the texture id of a layer while
+    \c{Scene.Layer.Rectangle.Material.diffusemap} returns the texture id of
+    an image or a subpresentation.
+ */
+uint Q3DSPresentation::textureId(const QString &elementPath)
+{
+    if (d_ptr->m_viewerApp)
+        return d_ptr->m_viewerApp->textureId(elementPath);
+    return 0;
+}
+
+/*!
     Activate or deactivate the presentation identified by \a id depending
     on the value of \a active.
  */

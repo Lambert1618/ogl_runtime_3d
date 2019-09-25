@@ -126,6 +126,8 @@ public:
 
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
 
+    uint textureId(const QString &elementPath);
+
 public Q_SLOTS:
     void setSource(const QUrl &source);
     void setVariantList(const QStringList &variantList);

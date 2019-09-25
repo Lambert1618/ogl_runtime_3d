@@ -57,16 +57,19 @@ namespace render {
         // this is a depth preapass texture we need for some effects like bloom
         // actually we need the stencil values
         NVRenderTexture2D *m_DepthStencilBuffer;
+        NVRenderTexture2D *m_targetTexture;
 
         SEffectRenderArgument(SEffect &inEffect, NVRenderTexture2D &inColorBuffer,
                               const QT3DSVec2 &inCameraClipRange,
-                              NVRenderTexture2D *inDepthTexture = NULL,
-                              NVRenderTexture2D *inDepthBuffer = NULL)
+                              NVRenderTexture2D *inDepthTexture = nullptr,
+                              NVRenderTexture2D *inDepthBuffer = nullptr,
+                              NVRenderTexture2D *targetTexture = nullptr)
             : m_Effect(inEffect)
             , m_ColorBuffer(inColorBuffer)
             , m_CameraClipRange(inCameraClipRange)
             , m_DepthTexture(inDepthTexture)
             , m_DepthStencilBuffer(inDepthBuffer)
+            , m_targetTexture(targetTexture)
         {
         }
     };

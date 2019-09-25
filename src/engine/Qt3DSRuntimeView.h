@@ -227,6 +227,7 @@ public:
     virtual void createMesh(const QString &name, qt3dsimp::Mesh *mesh) = 0;
     virtual void deleteMeshes(const QStringList &meshNames) = 0;
     virtual void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider) = 0;
+    virtual uint textureId(const QString &elementPath) = 0;
     virtual void SetAttribute(const char *elementPath, const char *attributeName,
                               const char *value) = 0;
     virtual bool GetAttribute(const char *elementPath, const char *attributeName, void *value) = 0;
