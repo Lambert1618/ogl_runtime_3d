@@ -1614,8 +1614,10 @@ namespace render {
 
             theFB->Attach(NVRenderFrameBufferAttachments::Color0, **renderColorTexture,
                           thFboAttachTarget);
-            if (m_Layer.m_Background != LayerBackground::Unspecified)
+            if (m_Layer.m_Background != LayerBackground::Unspecified) {
+                theRenderContext.SetClearColor(clearColor);
                 theRenderContext.Clear(clearFlags);
+            }
 
             // We don't clear the depth buffer because the layer render code we are about to call
             // will do this.
