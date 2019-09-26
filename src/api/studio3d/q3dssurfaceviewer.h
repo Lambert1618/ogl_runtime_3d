@@ -100,6 +100,7 @@ Q_SIGNALS:
     void presentationLoaded();
     void presentationReady();
     void frameUpdate();
+    void afterRendering();
     void errorChanged();
 
     void presentationIdChanged(const QString &id);
