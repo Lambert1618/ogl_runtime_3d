@@ -31,7 +31,7 @@ import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Dialogs 1.2
 import Qt3DStudioViewer 1.0
-import QtStudio3D.OpenGL 2.4
+import QtStudio3D.OpenGL 2.5
 import QtQuick.Window 2.2
 
 ApplicationWindow {

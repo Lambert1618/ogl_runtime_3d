@@ -231,7 +231,7 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
 /*!
     \qmlproperty enumeration ViewerSettings::stereoMode
 
-    \since Qt 3D Studio 2.5
+    \since QtStudio3D.OpenGL 2.5
 
     Specifies the stereo mode. The default value \c is StereoModeMono where the
     view is rendered normally, as suitable for 2D displays. Other available modes
@@ -271,6 +271,19 @@ void Q3DSViewerSettings::setStereoMode(Q3DSViewerSettings::StereoMode mode)
     }
 }
 
+/*!
+    \qmlproperty real ViewerSettings::stereoEyeSeparation
+
+    \since QtStudio3D.OpenGL 2.5
+
+    Specifies the eye (camera) separation of stereo rendering.
+    Value is the amount left and right eye cameras move in x-coordinate
+    values away from center. Bigger separation increases the 3D effect.
+    Optimal value depends on viewed presentation.
+
+    This has only effect when stereo mode is set to something else than
+    default \c{StereoModeMono}.
+ */
 /*!
     \property Q3DSViewerSettings::stereoEyeSeparation
 

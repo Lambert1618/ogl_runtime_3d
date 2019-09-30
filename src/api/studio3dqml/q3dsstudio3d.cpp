@@ -214,6 +214,7 @@ void Q3DSStudio3D::setError(const QString &error)
 
 /*!
     \qmlproperty bool Studio3D::asyncInit
+    \since QtStudio3D.OpenGL 2.5
 
     If set to \c{true}, indicates that renderer initialization should be done asynchronously
     in a helper thread. This improves UI responsiveness while initialization is happening,

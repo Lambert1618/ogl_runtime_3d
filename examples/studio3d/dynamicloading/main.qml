@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 import QtQuick 2.12
-import QtStudio3D.OpenGL 2.4
+import QtStudio3D.OpenGL 2.5
 
 Item {
     id: mainview

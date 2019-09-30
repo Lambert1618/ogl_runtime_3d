@@ -613,6 +613,7 @@ void Q3DSPresentation::unloadSlide(const QString &elementPath)
 
 /*!
     \qmlmethod Presentation::exportShaderCache(url shaderCacheFile, bool binaryShaders)
+    \since QtStudio3D.OpenGL 2.5
 
     Writes the shaders currently in use to the file specified by \a shaderCacheFile URL.
     If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
@@ -631,6 +632,7 @@ void Q3DSPresentation::unloadSlide(const QString &elementPath)
     \sa shaderCacheFile, shaderCacheExported
  */
 /*!
+    \since Qt 3D Studio 2.5
     Writes the shaders currently in use to the file specified by \a shaderCacheFile URL.
     If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
     the shader source code is exported.
@@ -657,6 +659,7 @@ void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binar
 
 /*!
     \qmlmethod Presentation::exportShaderCache(bool binaryShaders)
+    \since QtStudio3D.OpenGL 2.5
 
     Exports the shaders currently in use and dumps the resulting cache encoded with base64 into
     stderr. This function is provided as a means to extract the shader cache from environments
@@ -680,6 +683,7 @@ void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binar
     \sa shaderCacheFile, shaderCacheExported
  */
 /*!
+    \since Qt 3D Studio 2.5
     Exports the shaders currently in use and dumps the resulting cache encoded with base64 into
     stderr. This function is provided as a means to extract the shader cache from environments
     without a writable disk. The base64 output needs to be converted back to binary
@@ -707,6 +711,7 @@ void Q3DSPresentation::exportShaderCache(bool binaryShaders)
 
 /*!
     \qmlproperty url Presentation::shaderCacheFile
+    \since QtStudio3D.OpenGL 2.5
 
     Specifies the shader cache file to be used for initial shader initialization.
     This property value must be set before the presentation is shown.
@@ -722,6 +727,7 @@ void Q3DSPresentation::exportShaderCache(bool binaryShaders)
     \sa exportShaderCache(), shaderCacheExport
  */
 /*!
+    \since Qt 3D Studio 2.5
     Specifies the shader cache file to be used for initial shader initialization.
     This property value must be set before the presentation is shown.
     Using cached shaders improves presentation initialization speed.
@@ -750,6 +756,7 @@ void Q3DSPresentation::setShaderCacheFile(const QUrl &fileName)
 
 /*!
     \qmlsignal Presentation::shaderCacheExported(bool success)
+    \since QtStudio3D.OpenGL 2.5
 
     Emitted when a shader cache export is completed. The parameter \a success indicates whether
     or not the export was successful.
@@ -759,6 +766,7 @@ void Q3DSPresentation::setShaderCacheFile(const QUrl &fileName)
 
 /*!
     \fn Q3DSPresentation::shaderCacheExported(bool success)
+    \since Qt 3D Studio 2.5
 
     Emitted when a shader cache export is completed. The parameter \a success indicates whether
     or not the export was successful.
@@ -941,6 +949,7 @@ void Q3DSPresentation::setAttribute(const QString &elementPath, const QString &a
 }
 
 /*!
+    \since Qt 3D Studio 2.5
     Sets the \a provider to use for images requested via the \e
     image: url scheme, with host \a providerId. The runtime
     takes ownership of \a provider.
@@ -959,6 +968,7 @@ void Q3DSPresentation::addImageProvider(const QString &providerId, QQmlImageProv
 }
 
 /*!
+    \since Qt 3D Studio 2.5
     Returns the OpenGL texture id associated with a layer or an image specified
     by \a elementPath.
 
