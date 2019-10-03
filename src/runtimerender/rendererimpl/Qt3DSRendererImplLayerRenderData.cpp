@@ -1732,7 +1732,17 @@ namespace render {
 
     void SLayerRenderData::ApplyLayerPostEffects()
     {
-        if (m_Layer.m_FirstEffect == NULL) {
+        bool effectsActive = false;
+        SEffect *lastEffect = nullptr;
+        // Check if effects are active and get last active effect
+        for (SEffect *theEffect = m_Layer.m_FirstEffect; theEffect;
+             theEffect = theEffect->m_NextEffect) {
+            if (theEffect->m_Flags.IsActive()) {
+                effectsActive = true;
+                lastEffect = theEffect;
+            }
+        }
+        if (!effectsActive || !m_Camera) {
             if (m_LayerCachedTexture) {
                 IResourceManager &theResourceManager(m_Renderer.GetQt3DSContext().GetResourceManager());
                 theResourceManager.Release(*m_LayerCachedTexture);
@@ -1758,9 +1768,9 @@ namespace render {
         NVRenderTexture2D *theCurrentTexture = theLayerColorTexture;
         for (SEffect *theEffect = m_Layer.m_FirstEffect; theEffect;
              theEffect = theEffect->m_NextEffect) {
-            if (theEffect->m_Flags.IsActive() && m_Camera) {
+            if (theEffect->m_Flags.IsActive()) {
                 NVRenderTexture2D *targetTexture = nullptr;
-                if (!theEffect->m_NextEffect)
+                if (theEffect == lastEffect)
                     targetTexture = m_LayerCachedTexture;
 
                 StartProfiling(theEffect->m_ClassName, false);
