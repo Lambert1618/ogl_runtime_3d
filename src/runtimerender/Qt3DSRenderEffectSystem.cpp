@@ -1598,6 +1598,7 @@ struct SEffectSystem : public IEffectSystem
                                                   errors);
                     if (!errors.isEmpty())
                         inEffect.SetError(m_CoreContext.GetStringTable().RegisterStr(errors));
+                    break;
                 case CommandTypes::ApplyInstanceValue:
                     if (theCurrentShader)
                         ApplyInstanceValue(inEffect, inClass, *theCurrentShader->m_Shader,
