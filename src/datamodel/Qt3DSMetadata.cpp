@@ -831,11 +831,11 @@ public:
     }
 
     bool LoadEffectXMLFile(const char *inType, const char *inId, const char *inName,
-                                   const char *inSourcePath) override
+                           const char *inSourcePath) override
     {
         const wchar_t *theType(Convert0(inType));
         const wchar_t *theId(Convert1(inId));
-        const wchar_t *theName(Convert2(inName));
+        Q_UNUSED(inName)
         if (m_IdToHandleMap.find(theId) != m_IdToHandleMap.end())
             return true;
 
@@ -847,7 +847,7 @@ public:
         if (theStream) {
             std::vector<SMetaDataLoadWarning> warnings;
             bool success = m_NewMetaData->LoadEffectXMLFromSourcePath(
-                inSourcePath, theMaster, theName, warnings, *theStream);
+                inSourcePath, theMaster, theId, warnings, *theStream);
             (void)success;
             QT3DS_ASSERT(success);
             return success;
@@ -856,12 +856,11 @@ public:
     }
 
     bool LoadMaterialXMLFile(const char *inType, const char *inId, const char *inName,
-                                     const char *inSourcePath) override
+                             const char *inSourcePath) override
     {
         const wchar_t *theType(Convert0(inType));
         const wchar_t *theId(Convert1(inId));
-        const wchar_t *theName(Convert2(inName));
-        (void)theName;
+        Q_UNUSED(inName)
         if (m_IdToHandleMap.find(theId) != m_IdToHandleMap.end())
             return true;
 
