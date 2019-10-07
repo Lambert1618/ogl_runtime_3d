@@ -51,7 +51,8 @@ SOURCES += q3dsdataoutput.cpp \
            q3dsimagesequencegenerator.cpp \
            q3dsimagesequencegeneratorthread.cpp \
            q3dsdatainput.cpp \
-           q3dsgeometry.cpp
+           q3dsgeometry.cpp \
+           ../../foundation/Qt3DSLogging.cpp
 
 # Platform specific surface format discovery functions
 #TODO: QT3DS-3608 Implement OpenGL version discovery for Windows
