@@ -183,9 +183,6 @@ namespace render {
         virtual ~IEffectSystem() {}
 
     public:
-        // Calling release effect context with no context results in no problems.
-        virtual void ReleaseEffectContext(SEffectContext *inEffect) = 0;
-
         // If the effect has a context you can call this to clear persistent buffers back to their
         // original value.
         virtual void ResetEffectFrameData(SEffectContext &inContext) = 0;

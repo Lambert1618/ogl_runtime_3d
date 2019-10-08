@@ -709,9 +709,15 @@ struct SEffectSystem : public IEffectSystem
         if (iter != m_EffectClasses.end())
             m_EffectClasses.erase(iter);
 
-        for (QT3DSU32 idx = 0, end = m_Contexts.size(); idx < end; ++idx) {
-            if (m_Contexts[idx]->m_ClassName == inName)
-                ReleaseEffectContext(m_Contexts[idx]);
+        TContextList::iterator ctxIter = m_Contexts.begin();
+
+        while (ctxIter != m_Contexts.end()) {
+            if ((*ctxIter)->m_ClassName == inName) {
+                QT3DS_FREE(m_Allocator, *ctxIter);
+                ctxIter = m_Contexts.erase(ctxIter);
+            } else {
+                ctxIter++;
+            }
         }
         return true;
     }
@@ -1771,18 +1777,6 @@ struct SEffectSystem : public IEffectSystem
                        inEnableBlendWhenRenderToTarget, inRenderArgument.m_DepthTexture,
                        inRenderArgument.m_DepthStencilBuffer, inRenderArgument.m_CameraClipRange);
         return true;
-    }
-
-    void ReleaseEffectContext(SEffectContext *inContext) override
-    {
-        if (inContext == NULL)
-            return;
-        for (QT3DSU32 idx = 0, end = m_Contexts.size(); idx < end; ++idx) {
-            if (m_Contexts[idx] == inContext) {
-                m_Contexts.replace_with_last(idx);
-                NVDelete(m_Allocator, inContext);
-            }
-        }
     }
 
     void ResetEffectFrameData(SEffectContext &inContext) override
