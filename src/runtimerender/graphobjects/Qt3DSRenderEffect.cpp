@@ -52,6 +52,8 @@ void SEffect::SetActive(bool inActive, IEffectSystem &inManager)
         if (m_Context)
             inManager.ResetEffectFrameData(*m_Context);
         m_Flags.SetDirty(true);
+        if (inActive)
+            inManager.SetEffectRequiresCompilation(m_ClassName, true);
     }
 }
 
