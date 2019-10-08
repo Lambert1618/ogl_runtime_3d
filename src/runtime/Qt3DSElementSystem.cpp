@@ -794,9 +794,12 @@ void SElement::SetDirty()
 void SElement::SetFlag(Q3DStudio::EElementFlag inFlag, bool inValue)
 {
     bool existing = m_Flags & inFlag;
-    if (existing != inValue && HasActivityZone()) {
+    // Always handle datainput-driven visibility changes.
+    if ((existing != inValue && HasActivityZone())
+            || inFlag == Q3DStudio::ELEMENTFLAG_CONTROLLED_ACTIVE) {
         m_Flags.clearOrSet(inValue, inFlag);
-        if (inFlag == Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE) {
+        if (inFlag == Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE
+                || inFlag == Q3DStudio::ELEMENTFLAG_CONTROLLED_ACTIVE) {
             GetActivityZone().UpdateItemInfo(*this);
             if (IsComponent()) {
                 SElement *parent = m_Parent;

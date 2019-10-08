@@ -591,7 +591,11 @@ struct STimeContext
             if (activateChange) {
                 HandleActivationChange(*theScanNode, activateBuffer, deactivateBuffer, scriptBuffer,
                                        inElementAccessMutex, scriptBufferRequiresSort, isActive);
-            } else if (isControlledByDi) {
+            } else if (isControlledByDi
+                       && (theScanNode->IsGlobalActive(parentActive)
+                           != theScanNode->IsControlledActive())) {
+                // Notify only if datainput control actually disagreed with activity value
+                // coming from activity manager.
                 qCInfo(TRACE_INFO) << "Element" << theScanNode->m_Name.c_str()
                                    << "visibility persistently controlled by datainput.";
             }
