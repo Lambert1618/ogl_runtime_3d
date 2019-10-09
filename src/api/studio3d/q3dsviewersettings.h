@@ -68,7 +68,9 @@ public:
     enum StereoMode {
         StereoModeMono,
         StereoModeTopBottom,
-        StereoModeLeftRight
+        StereoModeLeftRight,
+        StereoModeAnaglyphRedCyan,
+        StereoModeAnaglyphGreenMagenta
     };
 
     explicit Q3DSViewerSettings(QObject *parent = nullptr);

@@ -341,7 +341,8 @@ namespace render {
         NVRenderCachedShaderProperty<QT3DSVec2> m_Dimensions;
         // The fourth member of text color is the opacity
         NVRenderCachedShaderProperty<NVRenderTexture2D *> m_Sampler;
-
+        // Color multiplier for anaglyph stereo modes
+        NVRenderCachedShaderProperty<QT3DSVec4> m_anaglyphColor;
         volatile QT3DSI32 mRefCount;
 
         SLayerSceneShader(NVRenderShaderProgram &inShader)
@@ -349,6 +350,7 @@ namespace render {
             , m_MVP("model_view_projection", inShader)
             , m_Dimensions("layer_dimensions", inShader)
             , m_Sampler("layer_image", inShader)
+            , m_anaglyphColor("anaglyphColor", inShader)
             , mRefCount(0)
         {
             m_Shader.addRef();

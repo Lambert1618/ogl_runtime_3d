@@ -240,6 +240,8 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
     \value StereoModeMono Renders presentation normally in mono.
     \value StereoModeTopBottom Renders presentation in stereoscopic top-bottom mode.
     \value StereoModeLeftRight Renders presentation in stereoscopic left-right mode.
+    \value StereoModeAnaglyphRedCyan Renders presentation in anaglyph red-cyan mode.
+    \value StereoModeAnaglyphGreenMagenta Renders presentation in anaglyph green-magenta mode.
 
     The default value is \c{StereoModeMono}.
 */
@@ -255,6 +257,8 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
     \value StereoModeMono Renders presentation normally in mono.
     \value StereoModeTopBottom Renders presentation in stereoscopic top-bottom mode.
     \value StereoModeLeftRight Renders presentation in stereoscopic left-right mode.
+    \value StereoModeAnaglyphRedCyan Renders presentation in anaglyph red-cyan mode.
+    \value StereoModeAnaglyphGreenMagenta Renders presentation in anaglyph green-magenta mode.
 
     The default value is \c{StereoModeMono}.
  */
@@ -529,8 +533,12 @@ void Q3DSViewerSettingsPrivate::setStereoMode(Q3DSViewerSettings::StereoMode mod
             m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::Mono);
         else if (mode == Q3DSViewerSettings::StereoModeTopBottom)
             m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::TopBottom);
-        else
+        else if (mode == Q3DSViewerSettings::StereoModeLeftRight)
             m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::LeftRight);
+        else if (mode == Q3DSViewerSettings::StereoModeAnaglyphRedCyan)
+            m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::AnaglyphRedCyan);
+        else
+            m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::AnaglyphGreenMagenta);
     } else if (m_commandQueue) {
         m_commandQueue->m_stereoMode = mode;
         m_commandQueue->m_stereoModeChanged = true;

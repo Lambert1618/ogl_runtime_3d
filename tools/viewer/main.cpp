@@ -377,6 +377,10 @@ int main(int argc, char *argv[])
             appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeTopBottom);
         else if (stereoStr == QStringLiteral("leftright"))
             appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeLeftRight);
+        else if (stereoStr == QStringLiteral("anaglyphredcyan"))
+            appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeAnaglyphRedCyan);
+        else if (stereoStr == QStringLiteral("anaglyphgreenmagenta"))
+            appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeAnaglyphGreenMagenta);
         else
             appWindow->setProperty("stereoMode", Q3DSViewerSettings::StereoModeMono);
     }

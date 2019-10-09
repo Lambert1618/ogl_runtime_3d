@@ -1142,6 +1142,24 @@ namespace render {
         theShader->m_Dimensions.Set(inDimensions);
         theShader->m_Sampler.Set(&inQuadTexture);
 
+        // Set anaglyph color multiplier based on mode & current eye
+        // Default non-anaglyph modes use just vec4(1.0,1.0,1.0,1.0)
+        auto stereoMode = m_qt3dsContext.GetStereoMode();
+        auto stereoView = m_qt3dsContext.GetStereoView();
+        QT3DSVec4 anaglyphColor(1.0);
+        if (stereoMode == StereoModes::AnaglyphRedCyan) {
+            if (stereoView == StereoViews::Left)
+                anaglyphColor = QT3DSVec4(1.0, 0.0, 0.0, 0.0);
+            else
+                anaglyphColor = QT3DSVec4(0.0, 1.0, 1.0, 0.0);
+        } else if (stereoMode == StereoModes::AnaglyphGreenMagenta) {
+            if (stereoView == StereoViews::Left)
+                anaglyphColor = QT3DSVec4(0.0, 1.0, 0.0, 0.0);
+            else
+                anaglyphColor = QT3DSVec4(1.0, 0.0, 1.0, 0.0);
+        }
+        theShader->m_anaglyphColor.Set(anaglyphColor);
+
         GenerateXYQuad();
         theContext.SetInputAssembler(m_QuadInputAssembler);
         theContext.Draw(NVRenderDrawMode::Triangles, m_QuadIndexBuffer->GetNumIndices(), 0);
