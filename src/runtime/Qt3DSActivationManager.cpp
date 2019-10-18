@@ -664,7 +664,12 @@ struct STimeContext
             parentActive = theParent->IsGlobalActive();
 
         bool wasActive = theContextNode.IsGlobalActive();
-        bool isActive = theContextNode.IsGlobalActive(parentActive);
+        bool isControlledByDi
+                = m_ControlledList.contains(theContextNode) && theContextNode.m_OnMaster;
+
+        // Override visibility for master slide elements that have datainput eyeball controller.
+        bool isActive = isControlledByDi ? theContextNode.IsControlledActive()
+                                         : theContextNode.IsGlobalActive(parentActive);
         bool activationChange = isActive != wasActive;
         inPerfTimer.Update("ActivationManager - Update Initial Vars",
                            qt3ds::foundation::Time::getCurrentCounterValue() - start);
