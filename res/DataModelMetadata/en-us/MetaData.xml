@@ -206,7 +206,7 @@
         <!-- Camera Propertiess -->
         <Property name="orthographic" formalName="Orthographic"  type="Boolean"                                 category="Camera Properties" description="Remove all perspective from the camera?" />
         <Property name="enablefrustumculling" formalName="Enable Frustum Culling" type="Boolean" default="False" category="Camera Properties" description="Remove all items from scene not visible from the camera." />
-        <Property name="fov"          formalName="Field of View" min="1" max="180" default="60"       category="Camera Properties" description="Viewing angle of the camera\n(how much it can see)" >
+        <Property name="fov"          formalName="Field of View" min="1" max="179" default="60"       category="Camera Properties" description="Viewing angle of the camera\n(how much it can see)" >
             <ShowIfEqual property="orthographic" value="False" />
         </Property>
         <Property name="fovhorizontal" formalName="FOV Horizontal" type="Boolean" default="False"  category="Camera Properties" description="Field of view angle orientation">
