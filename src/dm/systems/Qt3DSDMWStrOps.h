@@ -29,6 +29,10 @@
 #pragma once
 #ifndef QT3DSDM_WSTR_OPS_H
 #define QT3DSDM_WSTR_OPS_H
+
+// Unicode substitute char to replace linefeed in user-inputted strings in UIP
+#define LINE_BREAK_SUBSTITUTE "\uE000"
+
 namespace qt3dsdm {
 // Template base class so that we can convert items to and from wide string
 template <typename TDataType>

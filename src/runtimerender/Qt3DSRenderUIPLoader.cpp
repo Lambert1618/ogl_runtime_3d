@@ -960,6 +960,10 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
     {
         ParseProperties(static_cast<SNode &>(inItem), inParser);
         ITERATE_QT3DS_RENDER_TEXT_PROPERTIES
+        // QT3DS-3993: store line feeds as replacement chars in UIP
+        auto text = QString::fromUtf8(inItem.m_Text);
+        text.replace(LINE_BREAK_SUBSTITUTE, "\n");
+        inItem.m_Text = m_StrTable.RegisterStr(text);
     }
     void ParseProperties(SLightmaps &inItem, IPropertyParser &inParser)
     {
