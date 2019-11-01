@@ -450,6 +450,8 @@ public:
                     qt3ds::render::IBufferManager *bufferManager) override;
     void deleteMeshes(const QStringList &meshNames,
                       qt3ds::render::IBufferManager *bufferManager) override;
+    uint textureId(const QString &elementPath,
+                   qt3ds::render::IQt3DSRenderer *renderer) override;
 
     void GotoSlide(const char *component, const char *slideName,
                            const SScriptEngineGotoSlideArgs &inArgs) override;
@@ -1831,6 +1833,27 @@ void CQmlEngineImpl::deleteMeshes(const QStringList &meshNames,
             bufferManager->InvalidateBuffer(regName);
         }
     }
+}
+
+uint CQmlEngineImpl::textureId(const QString &elementPath,
+                               qt3ds::render::IQt3DSRenderer *renderer)
+{
+    TElement *elem = getTarget(elementPath.toUtf8().constData());
+    if (elem) {
+        auto translator = static_cast<qt3ds::render::Qt3DSTranslator *>(elem->GetAssociation());
+        if (translator) {
+            qt3ds::render::GraphObjectTypes::Enum type = translator->GetUIPType();
+            if (type == qt3ds::render::GraphObjectTypes::Layer) {
+                auto layer = static_cast<qt3ds::render::SLayer *>(&translator->RenderObject());
+                return renderer->getLayerTextureId(*layer);
+            } else if (type == qt3ds::render::GraphObjectTypes::Image) {
+                auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
+                return static_cast<uint>(reinterpret_cast<size_t>(
+                            image->m_TextureData.m_Texture->GetTextureObjectHandle()));
+            }
+        }
+    }
+    return 0;
 }
 
 void CQmlEngineImpl::GotoSlide(const char *component, const char *slideName,

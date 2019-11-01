@@ -52,6 +52,7 @@ void Q3DSMaterialDefinitionParser::getMaterialInfo(const QString &materialDefini
             return;
         }
         QTextStream stream(&file);
+        stream.setCodec("UTF-8");
         matDef = stream.readAll();
     } else {
         matDef = materialDefinition;

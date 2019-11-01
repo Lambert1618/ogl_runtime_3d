@@ -114,8 +114,10 @@ bool qt3ds::runtime::isImagePath(const QString &path)
     const QString ext = path.right(path.length() - index - 1);
     return (ext == QLatin1String("jpg") || ext == QLatin1String("jpeg")
             || ext == QLatin1String("png") || ext == QLatin1String("hdr")
-            || ext == QLatin1String("dds") || ext == QLatin1String("ktx")
-            || ext == QLatin1String("astc"));
+#ifndef LEGACY_ASTC_LOADING
+            || ext == QLatin1String("astc")
+#endif
+            || ext == QLatin1String("dds") || ext == QLatin1String("ktx"));
 }
 
 struct SFrameTimer
@@ -221,13 +223,6 @@ struct SHandleElementPairComparator
 
 static int s_debug = -1;
 
-static bool debuggingEnabled()
-{
-    if (s_debug == -1)
-        s_debug = qEnvironmentVariableIntValue("QT3DS_DEBUG");
-    return s_debug >= 1;
-}
-
 struct SSlideResourceCounter
 {
     QHash<QString, int> counters;
@@ -295,20 +290,20 @@ struct SSlideResourceCounter
     }
     void print()
     {
-        if (debuggingEnabled()) {
-            qDebug() << "SlideResourceCounter resources:";
+        if (qt3ds::TRACE_INFO().isInfoEnabled()) {
+            qCInfo(qt3ds::TRACE_INFO) << "SlideResourceCounter resources:";
             const auto keys = counters.keys();
             for (auto &x : keys)
-                qDebug() << x << ": " << counters[x];
+                qCInfo(qt3ds::TRACE_INFO) << x << ": " << counters[x];
             if (createSet.size()) {
-                qDebug() << "New resources: ";
+                qCInfo(qt3ds::TRACE_INFO) << "New resources: ";
                 for (auto y : qAsConst(createSet))
-                    qDebug() << y;
+                    qCInfo(qt3ds::TRACE_INFO) << y;
             }
             if (deleteSet.size()) {
-                qDebug() << "Deleted resources: ";
+                qCInfo(qt3ds::TRACE_INFO) << "Deleted resources: ";
                 for (auto y : qAsConst(deleteSet))
-                    qDebug() << y;
+                    qCInfo(qt3ds::TRACE_INFO) << y;
             }
         }
     }
@@ -1220,7 +1215,7 @@ struct SApp : public IApplication
             slidesystem.setUnloadSlide(key, false);
             const QString completeName = presentation->GetName() + QLatin1Char(':')
                     + QString::fromUtf8(key.m_Component->m_Name) + QLatin1Char(':') + slideName;
-            qCInfo(PERF_INFO) << "Load component slide resources: " << completeName;
+            qCInfo(TRACE_INFO) << "Load component slide resources: " << completeName;
             m_resourceCounter.handleLoadSlide(completeName, key, slidesystem);
             if (m_uploadRenderTask)
                 m_uploadRenderTask->add(m_resourceCounter.createSet, wait);
@@ -1231,7 +1226,7 @@ struct SApp : public IApplication
 
             getComponentSlideAssets(newAssets, presentation, component, index);
             if (newAssets.size())
-                qCInfo(PERF_INFO) << "Slide assets: " << newAssets;
+                qCInfo(TRACE_INFO) << "Slide assets: " << newAssets;
             for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
                 QString assetId = QString::fromUtf8(m_OrderedAssets[idx].first.c_str());
                 if (newAssets.contains(assetId) && !GetPresentationById(qUtf8Printable(assetId))) {
@@ -1292,7 +1287,7 @@ struct SApp : public IApplication
             if (!slidesystem.isActiveSlide(key)) {
                 const QString completeName = presentation->GetName() + QLatin1Char(':')
                         + QString::fromUtf8(key.m_Component->m_Name) + QLatin1Char(':') + slideName;
-                qCInfo(PERF_INFO) << "Unload component slide resources: " << completeName;
+                qCInfo(TRACE_INFO) << "Unload component slide resources: " << completeName;
                 m_resourceCounter.handleUnloadSlide(completeName, key, slidesystem);
 
                 if (m_uploadRenderTask)

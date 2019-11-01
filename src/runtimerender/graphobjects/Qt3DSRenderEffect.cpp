@@ -42,6 +42,7 @@ void SEffect::Initialize()
     m_NextEffect = NULL;
     m_Context = NULL;
     m_imageMaps = nullptr;
+    m_error = CRegisteredString();
 }
 
 void SEffect::SetActive(bool inActive, IEffectSystem &inManager)
@@ -59,4 +60,14 @@ void SEffect::Reset(IEffectSystem &inSystem)
     if (m_Context)
         inSystem.ResetEffectFrameData(*m_Context);
     m_Flags.SetDirty(true);
+}
+
+CRegisteredString SEffect::GetError() const
+{
+    return m_error;
+}
+
+void SEffect::SetError(const CRegisteredString &error)
+{
+    m_error = error;
 }

@@ -57,6 +57,11 @@ void Q3DSPlugin::registerTypes(const char *uri)
     qmlRegisterType<Q3DSSubPresentationSettings>(uri, 2, 4, "SubPresentationSettings");
     qmlRegisterType<Q3DSDataInput>(uri, 2, 4, "DataInput");
     qmlRegisterType<Q3DSDataOutput>(uri, 2, 4, "DataOutput");
+
+    // 2.5
+    qmlRegisterType<Q3DSStudio3D, 1>(uri, 2, 5, "Studio3D");
+    qmlRegisterType<Q3DSViewerSettings, 1>(uri, 2, 5, "ViewerSettings");
+    qmlRegisterType<Q3DSPresentationItem, 1>(uri, 2, 5, "Presentation");
 }
 
 QT_END_NAMESPACE

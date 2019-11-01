@@ -57,7 +57,9 @@ namespace render {
         enum Enum {
             Mono,
             TopBottom,
-            LeftRight
+            LeftRight,
+            AnaglyphRedCyan,
+            AnaglyphGreenMagenta
         };
     };
 

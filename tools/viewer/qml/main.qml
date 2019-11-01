@@ -31,7 +31,7 @@ import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Dialogs 1.2
 import Qt3DStudioViewer 1.0
-import QtStudio3D.OpenGL 2.4
+import QtStudio3D.OpenGL 2.5
 import QtQuick.Window 2.2
 
 ApplicationWindow {
@@ -570,6 +570,10 @@ ApplicationWindow {
                                 else if (window.stereoMode === ViewerSettings.StereoModeTopBottom)
                                     window.stereoMode = ViewerSettings.StereoModeLeftRight;
                                 else if (window.stereoMode === ViewerSettings.StereoModeLeftRight)
+                                    window.stereoMode = ViewerSettings.StereoModeAnaglyphRedCyan;
+                                else if (window.stereoMode === ViewerSettings.StereoModeAnaglyphRedCyan)
+                                    window.stereoMode = ViewerSettings.StereoModeAnaglyphGreenMagenta;
+                                else if (window.stereoMode === ViewerSettings.StereoModeAnaglyphGreenMagenta)
                                     window.stereoMode = ViewerSettings.StereoModeMono;
                             }
                         }
@@ -607,6 +611,26 @@ ApplicationWindow {
                                 onTriggered: {
                                     if (enabled)
                                         window.stereoMode = ViewerSettings.StereoModeLeftRight;
+                                }
+                            }
+                            StyledMenuItem {
+                                id: stereoAnaglyphRedCyan
+                                text: qsTr("Anaglyph (Red-Cyan)")
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                showCheckMark: window.stereoMode === ViewerSettings.StereoModeAnaglyphRedCyan
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoMode = ViewerSettings.StereoModeAnaglyphRedCyan;
+                                }
+                            }
+                            StyledMenuItem {
+                                id: stereoAnaglyphGreenMagenta
+                                text: qsTr("Anaglyph (Green-Magenta)")
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                showCheckMark: window.stereoMode === ViewerSettings.StereoModeAnaglyphGreenMagenta
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoMode = ViewerSettings.StereoModeAnaglyphGreenMagenta;
                                 }
                             }
                             StyledMenuItem {

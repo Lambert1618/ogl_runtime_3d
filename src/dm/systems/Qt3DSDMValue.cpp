@@ -28,6 +28,7 @@
 ****************************************************************************/
 #include "Qt3DSDMPrefix.h"
 #include "Qt3DSDMValue.h"
+#include "foundation/Qt3DSLogging.h"
 
 #include <QtGui/qcolor.h>
 #include <QtCore/qdebug.h>
@@ -91,7 +92,7 @@ SValue::SValue(const QVariant &inData)
         break;
     }
     default:
-        qDebug() << "Add a handler for QVariant::type" << inData.type();
+        qCWarning(qt3ds::WARNING) << "Add a handler for QVariant::type" << inData.type();
         throw std::runtime_error("Cannot transform this QVariant into SValue");
     }
 }
@@ -124,7 +125,7 @@ QVariant SValue::toQVariant() const
     }
     case DataModelDataType::FloatList: {
         //KDAB_TODO
-        qDebug() << "Add a handler for type DataModelDataType::FloatList";
+        qCWarning(qt3ds::WARNING) << "Add a handler for type DataModelDataType::FloatList";
         return {};
     }
     case DataModelDataType::Long4: {
@@ -135,13 +136,10 @@ QVariant SValue::toQVariant() const
         switch (theRef.GetReferenceType()) {
         case ObjectReferenceType::Absolute:
             return SValue(get<SLong4>(theRef.m_Value)).toQVariant();
-            break;
         case ObjectReferenceType::Relative:
             return SValue(get<TDataStrPtr>(theRef.m_Value)).toQVariant();
-            break;
         case ObjectReferenceType::Unknown:
             return QVariant::fromValue(QVector<qt3ds::QT3DSU32>());
-            break;
         }
     }
     case DataModelDataType::StringOrInt: {

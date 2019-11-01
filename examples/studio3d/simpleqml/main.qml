@@ -53,7 +53,7 @@ import QtStudio3D.OpenGL 2.4
 import QtQuick.Window 2.3
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
-import Qt.labs.platform 1.0
+import QtQuick.Dialogs 1.3
 
 Rectangle {
     id: root
@@ -286,8 +286,10 @@ Rectangle {
 
     FileDialog {
         id: openDialog
-        fileMode: FileDialog.OpenFile
         nameFilters: ["UIP files (*.uip)", "UIA files (*.uia)", "All files (*)"]
-        onAccepted: s3dpres.source = file
+        selectExisting: true
+        selectFolder: false
+        selectMultiple: false
+        onAccepted: s3dpres.source = fileUrl
     }
 }

@@ -86,6 +86,8 @@ namespace render {
         SCustomMaterialShaderKeyFlags m_ShaderKeyValues; ///< input from MDL files
         QT3DSU32 m_LayerCount; ///< input from MDL files
 
+        CRegisteredString m_error; // shader compile error
+
         void Initialize(QT3DSU32 inKey, QT3DSU32 inLayerCount)
         {
             m_Lightmaps.m_LightmapIndirect = NULL;
@@ -103,6 +105,7 @@ namespace render {
             m_ShaderKeyValues = (SCustomMaterialShaderKeyFlags)inKey;
             m_LayerCount = inLayerCount;
             m_imageMaps = nullptr;
+            m_error = CRegisteredString();
         }
 
         bool IsDielectric() const
@@ -126,6 +129,16 @@ namespace render {
             return m_ShaderKeyValues & SCustomMaterialShaderKeyValues::transmissive;
         }
         bool HasLighting() const { return true; }
+
+        CRegisteredString GetError() const
+        {
+            return m_error;
+        }
+
+        void SetError(const CRegisteredString &error)
+        {
+            m_error = error;
+        }
 
         template <typename TRemapperType>
         void Remap(TRemapperType &inRemapper)

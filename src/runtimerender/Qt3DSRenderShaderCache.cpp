@@ -383,7 +383,7 @@ struct ShaderCache : public IShaderCache
                         const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
                         const SShaderCacheProgramFlags &inFlags,
                         NVConstDataRef<SShaderPreprocessorFeature> inFeatures,
-                        bool separableProgram, bool fromDisk = false) override
+                        QString &errors, bool separableProgram, bool fromDisk = false) override
     {
         if (m_ShaderCompilationEnabled == false)
             return nullptr;
@@ -421,14 +421,15 @@ struct ShaderCache : public IShaderCache
         if (!fromDisk)
             addShaderPreprocessors(inKey, inFlags, inFeatures, separableProgram, false);
 
-        theInserter.first->second =
-            m_RenderContext
+        NVRenderVertFragCompilationResult res = m_RenderContext
                 .CompileSource(inKey, m_VertexCode.c_str(), QT3DSU32(m_VertexCode.size()),
                                m_FragmentCode.c_str(), QT3DSU32(m_FragmentCode.size()),
                                m_TessCtrlCode.c_str(), QT3DSU32(m_TessCtrlCode.size()),
                                m_TessEvalCode.c_str(), QT3DSU32(m_TessEvalCode.size()),
                                m_GeometryCode.c_str(), QT3DSU32(m_GeometryCode.size()),
-                               separableProgram).mShader;
+                               separableProgram);
+        theInserter.first->second = res.mShader;
+        errors = res.errors;
 
         // This is unnecessary memory waste in final deployed product, so we don't store this
         // information when shaders were initialized from a cache.
@@ -456,7 +457,8 @@ struct ShaderCache : public IShaderCache
     CompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
                    const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
                    const SShaderCacheProgramFlags &inFlags,
-                   NVConstDataRef<SShaderPreprocessorFeature> inFeatures, bool separableProgram) override
+                   NVConstDataRef<SShaderPreprocessorFeature> inFeatures,
+                   QString &errors, bool separableProgram) override
     {
         NVRenderShaderProgram *theProgram = GetProgram(inKey, inFeatures);
         if (theProgram)
@@ -464,7 +466,7 @@ struct ShaderCache : public IShaderCache
 
         NVRenderShaderProgram *retval =
             ForceCompileProgram(inKey, inVert, inFrag, inTessCtrl, inTessEval, inGeom, inFlags,
-                                inFeatures, separableProgram);
+                                inFeatures, errors, separableProgram);
         return retval;
     }
 
@@ -622,6 +624,7 @@ struct ShaderCache : public IShaderCache
 
                 if (!loadVertexData.isEmpty() && (!loadFragmentData.isEmpty()
                                                   || !loadGeometryData.isEmpty())) {
+                    QString error;
                     theShader = ForceCompileProgram(
                                 theKey, loadVertexData.constData(),
                                 loadFragmentData.constData(),
@@ -631,7 +634,7 @@ struct ShaderCache : public IShaderCache
                                 SShaderCacheProgramFlags(),
                                 qt3ds::foundation::toDataRef(
                                     features.data(), static_cast<QT3DSU32>(features.size())),
-                                false, true);
+                                error, false, true);
                 }
             }
             // If something doesn't save or load correctly, get the runtime to re-generate.

@@ -226,6 +226,7 @@ public:
     void createMesh(const QString &name, qt3dsimp::Mesh *mesh) override;
     void deleteMeshes(const QStringList &meshNames) override;
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider) override;
+    uint textureId(const QString &elementPath) override;
     void SetAttribute(const char *elementPath, const char *attributeName,
                       const char *value) override;
     bool GetAttribute(const char *elementPath, const char *attributeName, void *value) override;
@@ -741,6 +742,17 @@ void CRuntimeView::addImageProvider(const QString &providerId, QQmlImageProvider
                 = m_RuntimeFactory->GetQt3DSRenderContext().GetBufferManager();
         bufferManager.addImageProvider(providerId, provider);
     }
+}
+
+uint CRuntimeView::textureId(const QString &elementPath)
+{
+    if (m_Application) {
+        Q3DStudio::CQmlEngine &theBridgeEngine
+                = static_cast<Q3DStudio::CQmlEngine &>(m_RuntimeFactoryCore->GetScriptEngineQml());
+        return theBridgeEngine.textureId(elementPath,
+                                         &m_RuntimeFactory->GetQt3DSRenderContext().GetRenderer());
+    }
+    return 0;
 }
 
 void CRuntimeView::SetAttribute(const char *elementPath, const char *attributeName,

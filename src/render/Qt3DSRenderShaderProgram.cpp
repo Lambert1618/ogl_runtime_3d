@@ -1115,20 +1115,23 @@ namespace render {
         if (!vertexValid || !fragValid || !tcValid || !teValid || !geValid || !bProgramIsValid) {
             NVFoundationBase &foundation(context.GetFoundation());
 
+            const char *err;
             if (!vertexValid) {
                 qCCritical(INTERNAL_ERROR, "Failed to generate vertex shader!!");
                 qCCritical(INTERNAL_ERROR, "Vertex source:\n%s",
                     nonNull((const char *)vertShaderSource.begin()));
-                WriteErrorMessage(foundation, "Vertex compilation output:",
-                                  vtxShader.getValue()->GetErrorMessage());
+                err = vtxShader.getValue()->GetErrorMessage();
+                result.errors.append(err);
+                WriteErrorMessage(foundation, "Vertex compilation output:", err);
             }
 
             if (!fragValid) {
                 qCCritical(INTERNAL_ERROR, "Failed to generate fragment shader!!");
                 qCCritical(INTERNAL_ERROR, "Fragment source:\n%s",
                     nonNull((const char *)fragShaderSource.begin()));
-                WriteErrorMessage(foundation, "Fragment compilation output:",
-                                  fragShader.getValue()->GetErrorMessage());
+                err = fragShader.getValue()->GetErrorMessage();
+                result.errors.append(err);
+                WriteErrorMessage(foundation, "Fragment compilation output:", err);
             }
 
             if (!tcValid) {
@@ -1136,8 +1139,9 @@ namespace render {
                     "Failed to generate tessellation control shader!!");
                 qCCritical(INTERNAL_ERROR, "Tessellation control source:\n%s",
                     nonNull((const char *)tessControlShaderSource.begin()));
-                WriteErrorMessage(foundation, "Tessellation control compilation output:",
-                                  tcShader.getValue()->GetErrorMessage());
+                err = tcShader.getValue()->GetErrorMessage();
+                result.errors.append(err);
+                WriteErrorMessage(foundation, "Tessellation control compilation output:", err);
             }
 
             if (!teValid) {
@@ -1145,16 +1149,18 @@ namespace render {
                     "Failed to generate tessellation evaluation shader!!");
                 qCCritical(INTERNAL_ERROR, "Tessellation evaluation source:\n%s",
                     nonNull((const char *)tessEvaluationShaderSource.begin()));
-                WriteErrorMessage(foundation, "Tessellation evaluation compilation output:",
-                                  teShader.getValue()->GetErrorMessage());
+                err = teShader.getValue()->GetErrorMessage();
+                result.errors.append(err);
+                WriteErrorMessage(foundation, "Tessellation evaluation compilation output:", err);
             }
 
             if (!geValid) {
                 qCCritical(INTERNAL_ERROR, "Failed to generate geometry shader!!");
                 qCCritical(INTERNAL_ERROR, "Geometry source:\n%s",
                     nonNull((const char *)geometryShaderSource.begin()));
-                WriteErrorMessage(foundation, "Geometry compilation output:",
-                                  geShader.getValue()->GetErrorMessage());
+                err = geShader.getValue()->GetErrorMessage();
+                result.errors.append(err);
+                WriteErrorMessage(foundation, "Geometry compilation output:", err);
             }
 
             if (!bProgramIsValid && pProgram) {

@@ -43,6 +43,7 @@
 #include "Qt3DSRenderResourceManager.h"
 #include "Qt3DSTextRenderer.h"
 #include "Qt3DSRenderEffectSystem.h"
+#include "Qt3DSRenderContextCore.h"
 #include "render/Qt3DSRenderFrameBuffer.h"
 #include "render/Qt3DSRenderRenderBuffer.h"
 #include "Qt3DSOffscreenRenderKey.h"
@@ -1614,8 +1615,10 @@ namespace render {
 
             theFB->Attach(NVRenderFrameBufferAttachments::Color0, **renderColorTexture,
                           thFboAttachTarget);
-            if (m_Layer.m_Background != LayerBackground::Unspecified)
+            if (m_Layer.m_Background != LayerBackground::Unspecified) {
+                theRenderContext.SetClearColor(clearColor);
                 theRenderContext.Clear(clearFlags);
+            }
 
             // We don't clear the depth buffer because the layer render code we are about to call
             // will do this.
@@ -1729,7 +1732,17 @@ namespace render {
 
     void SLayerRenderData::ApplyLayerPostEffects()
     {
-        if (m_Layer.m_FirstEffect == NULL) {
+        bool effectsActive = false;
+        SEffect *lastEffect = nullptr;
+        // Check if effects are active and get last active effect
+        for (SEffect *theEffect = m_Layer.m_FirstEffect; theEffect;
+             theEffect = theEffect->m_NextEffect) {
+            if (theEffect->m_Flags.IsActive()) {
+                effectsActive = true;
+                lastEffect = theEffect;
+            }
+        }
+        if (!effectsActive || !m_Camera) {
             if (m_LayerCachedTexture) {
                 IResourceManager &theResourceManager(m_Renderer.GetQt3DSContext().GetResourceManager());
                 theResourceManager.Release(*m_LayerCachedTexture);
@@ -1744,16 +1757,29 @@ namespace render {
         NVRenderTexture2D *theLayerColorTexture = m_LayerTexture;
         NVRenderTexture2D *theLayerDepthTexture = m_LayerDepthTexture;
 
+        if (!m_LayerCachedTexture) {
+            STextureDetails details(theLayerColorTexture->GetTextureDetails());
+            QT3DSU32 finalWidth = ITextRenderer::NextMultipleOf4((QT3DSU32)(details.m_Width));
+            QT3DSU32 finalHeight = ITextRenderer::NextMultipleOf4((QT3DSU32)(details.m_Height));
+            m_LayerCachedTexture = theResourceManager.AllocateTexture2D(finalWidth, finalHeight,
+                                                                        details.m_Format);
+        }
+
         NVRenderTexture2D *theCurrentTexture = theLayerColorTexture;
         for (SEffect *theEffect = m_Layer.m_FirstEffect; theEffect;
              theEffect = theEffect->m_NextEffect) {
-            if (theEffect->m_Flags.IsActive() && m_Camera) {
+            if (theEffect->m_Flags.IsActive()) {
+                NVRenderTexture2D *targetTexture = nullptr;
+                if (theEffect == lastEffect)
+                    targetTexture = m_LayerCachedTexture;
+
                 StartProfiling(theEffect->m_ClassName, false);
 
                 NVRenderTexture2D *theRenderedEffect = theEffectSystem.RenderEffect(
                     SEffectRenderArgument(*theEffect, *theCurrentTexture,
                                           QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar),
-                                          theLayerDepthTexture, m_LayerPrepassDepthTexture));
+                                          theLayerDepthTexture, m_LayerPrepassDepthTexture,
+                                          targetTexture));
 
                 EndProfiling(theEffect->m_ClassName);
 
@@ -1773,14 +1799,6 @@ namespace render {
                 }
             }
         }
-
-        if (m_LayerCachedTexture && m_LayerCachedTexture != m_LayerTexture) {
-            theResourceManager.Release(*m_LayerCachedTexture);
-            m_LayerCachedTexture = NULL;
-        }
-
-        if (theCurrentTexture != m_LayerTexture)
-            m_LayerCachedTexture = theCurrentTexture;
     }
 
     inline bool AnyCompletelyNonTransparentObjects(TRenderableObjectList &inObjects)

@@ -115,11 +115,26 @@ namespace render {
         CompileGeneratedShader(const char *inShaderName, const SShaderCacheProgramFlags &inFlags,
                                TShaderFeatureSet inFeatureSet, bool separableProgram = false) = 0;
 
+        virtual qt3ds::render::NVRenderShaderProgram *
+        CompileGeneratedShader(const char *inShaderName, const SShaderCacheProgramFlags &inFlags,
+                               TShaderFeatureSet inFeatureSet, QString &errors,
+                               bool separableProgram = false) = 0;
+
+
         qt3ds::render::NVRenderShaderProgram *CompileGeneratedShader(const char *inShaderName,
-                                                                  bool separableProgram = false)
+                                                                     bool separableProgram = false)
+        {
+            QString errors;
+            return CompileGeneratedShader(inShaderName, SShaderCacheProgramFlags(),
+                                          TShaderFeatureSet(), errors, separableProgram);
+        }
+
+        qt3ds::render::NVRenderShaderProgram *CompileGeneratedShader(const char *inShaderName,
+                                                                     QString &errors,
+                                                                     bool separableProgram = false)
         {
             return CompileGeneratedShader(inShaderName, SShaderCacheProgramFlags(),
-                                          TShaderFeatureSet(), separableProgram);
+                                          TShaderFeatureSet(), errors, separableProgram);
         }
 
         static IShaderProgramGenerator &CreateProgramGenerator(IQt3DSRenderContext &inContext);

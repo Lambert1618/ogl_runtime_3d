@@ -1325,6 +1325,7 @@ struct SDynamicObjectSystemImpl : public IDynamicObjectSystem
                                          CRegisteredString inProgramMacroName,
                                          TShaderFeatureSet inFeatureSet,
                                          const dynamic::SDynamicShaderProgramFlags &inFlags,
+                                         QString &errors,
                                          bool inForceCompilation = false)
     {
         m_VertShader.clear();
@@ -1385,11 +1386,11 @@ struct SDynamicObjectSystemImpl : public IDynamicObjectSystem
             return theShaderCache.ForceCompileProgram(theKey, m_VertShader.c_str(),
                                                       m_FragShader.c_str(), NULL, NULL,
                                                       m_GeometryShader.c_str(), theFlags,
-                                                      inFeatureSet, false);
+                                                      inFeatureSet, errors, false);
         }
         return theShaderCache.CompileProgram(theKey, m_VertShader.c_str(), m_FragShader.c_str(),
                                              NULL, NULL, m_GeometryShader.c_str(), theFlags,
-                                             inFeatureSet);
+                                             inFeatureSet, errors);
     }
 
     // This just returns the custom material shader source without compiling
@@ -1406,7 +1407,7 @@ struct SDynamicObjectSystemImpl : public IDynamicObjectSystem
                                              CRegisteredString inProgramMacro,
                                              TShaderFeatureSet inFeatureSet,
                                              const SDynamicShaderProgramFlags &inFlags,
-                                             bool inForceCompilation) override
+                                             QString &errors, bool inForceCompilation) override
     {
         eastl::pair<const SShaderMapKey, TShaderAndFlags> theInserter(
             SShaderMapKey(TStrStrPair(inPath, inProgramMacro), inFeatureSet, inFlags.m_TessMode,
@@ -1426,8 +1427,9 @@ struct SDynamicObjectSystemImpl : public IDynamicObjectSystem
                     DoLoadShader(inPath, theShaderBuffer);
                     if (theShaderInfo.m_HasGeomShader)
                         theFlags.SetGeometryShaderEnabled(true);
-                    theProgram = CompileShader(inPath, theShaderBuffer.c_str(), NULL, inProgramMacro,
-                                               inFeatureSet, theFlags, inForceCompilation);
+                    theProgram = CompileShader(
+                                inPath, theShaderBuffer.c_str(), NULL, inProgramMacro,
+                                inFeatureSet, theFlags, errors, inForceCompilation);
                 } else {
                     Qt3DSString theShaderBuffer;
                     const char8_t *shaderVersionStr = "#version 430\n";
@@ -1505,8 +1507,9 @@ struct SDynamicObjectSystemImpl : public IDynamicObjectSystem
                 programBuffer.append(fragmentSource);
                 programBuffer.append("\n#endif");
                 flags.SetGeometryShaderEnabled(true);
+                QString error;
                 theProgram = CompileShader(inPath, programBuffer.c_str(), theShaderBuffer.c_str(),
-                                           theProgramMacro, inFeatureSet, flags);
+                                           theProgramMacro, inFeatureSet, flags, error);
             }
             theInsertResult.first->second = TShaderAndFlags(theProgram, flags);
         }

@@ -1208,7 +1208,8 @@ struct SMaterialSystem : public ICustomMaterialSystem
     NVRenderShaderProgram *GetShader(SCustomMaterialRenderContext &inRenderContext,
                                      const SCustomMaterial &inMaterial,
                                      const SBindShader &inCommand, TShaderFeatureSet inFeatureSet,
-                                     const dynamic::SDynamicShaderProgramFlags &inFlags)
+                                     const dynamic::SDynamicShaderProgramFlags &inFlags,
+                                     QString &errors)
     {
         ICustomMaterialShaderGenerator &theMaterialGenerator(
             m_Context->GetCustomMaterialShaderGenerator());
@@ -1225,7 +1226,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
             inMaterial, inRenderContext.m_MaterialKey, thePipeline, inFeatureSet,
             inRenderContext.m_Lights, inRenderContext.m_FirstImage,
             (inMaterial.m_hasTransparency || inMaterial.m_hasRefraction),
-            "custom material pipeline-- ", inCommand.m_ShaderPath.c_str());
+            "custom material pipeline-- ", errors, inCommand.m_ShaderPath.c_str());
 
         return theProgram;
     }
@@ -1233,7 +1234,8 @@ struct SMaterialSystem : public ICustomMaterialSystem
     SMaterialOrComputeShader BindShader(SCustomMaterialRenderContext &inRenderContext,
                                         const SCustomMaterial &inMaterial,
                                         const SBindShader &inCommand,
-                                        TShaderFeatureSet inFeatureSet)
+                                        TShaderFeatureSet inFeatureSet,
+                                        QString &errors)
     {
         NVRenderShaderProgram *theProgram = NULL;
         eastl::vector<SShaderPreprocessorFeature> features;
@@ -1256,7 +1258,8 @@ struct SMaterialSystem : public ICustomMaterialSystem
             eastl::make_pair(skey, NVScopedRefCounted<SCustomMaterialShader>(NULL))));
 
         if (theInsertResult.second || requiresCompilation(inMaterial.m_ClassName)) {
-            theProgram = GetShader(inRenderContext, inMaterial, inCommand, featureSet, theFlags);
+            theProgram = GetShader(inRenderContext, inMaterial, inCommand, featureSet, theFlags,
+                                   errors);
 
             if (theProgram) {
                 theInsertResult.first->second =
@@ -1264,7 +1267,6 @@ struct SMaterialSystem : public ICustomMaterialSystem
             }
         } else if (theInsertResult.first->second)
             theProgram = theInsertResult.first->second->m_Shader;
-
         setRequiresCompilation(inMaterial.m_ClassName, false);
 
         if (theProgram) {
@@ -1741,7 +1743,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
     }
 
     void DoRenderCustomMaterial(SCustomMaterialRenderContext &inRenderContext,
-                                const SCustomMaterial &inMaterial, SMaterialClass &inClass,
+                                SCustomMaterial &inMaterial, SMaterialClass &inClass,
                                 NVRenderFrameBuffer *inTarget, TShaderFeatureSet inFeatureSet)
     {
         NVRenderContext &theContext = m_Context->GetRenderContext();
@@ -1766,6 +1768,7 @@ struct SMaterialSystem : public ICustomMaterialSystem
         bool theRenderTargetNeedsClear = false;
 
         NVConstDataRef<dynamic::SCommand *> theCommands(inClass.m_Class->GetRenderCommands());
+        QString errors;
         for (QT3DSU32 commandIdx = 0, commandEnd = theCommands.size(); commandIdx < commandEnd;
              ++commandIdx) {
             const SCommand &theCommand(*theCommands[commandIdx]);
@@ -1788,9 +1791,11 @@ struct SMaterialSystem : public ICustomMaterialSystem
                 theCurrentShader = NULL;
                 SMaterialOrComputeShader theBindResult =
                     BindShader(inRenderContext, inMaterial,
-                               static_cast<const SBindShader &>(theCommand), inFeatureSet);
+                               static_cast<const SBindShader &>(theCommand), inFeatureSet, errors);
                 if (theBindResult.IsMaterialShader())
                     theCurrentShader = &theBindResult.MaterialShader();
+                if (!errors.isEmpty())
+                    inMaterial.SetError(m_CoreContext.GetStringTable().RegisterStr(errors));
             } break;
             case CommandTypes::ApplyInstanceValue:
                 // we apply the property update explicitly at the render pass
@@ -2133,6 +2138,11 @@ struct SMaterialSystem : public ICustomMaterialSystem
             m_MillisecondsSinceLastFrame = static_cast<QT3DSF32>(timePassed / 100000.0);
         }
         m_LastFrameTime = currentFrameTime;
+    }
+
+    IQt3DSRenderContext *getContext() override
+    {
+        return m_Context;
     }
 
     void Save(qt3ds::render::SWriteBuffer &ioBuffer,

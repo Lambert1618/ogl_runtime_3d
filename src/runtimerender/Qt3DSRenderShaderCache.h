@@ -123,7 +123,7 @@ namespace render {
         ForceCompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
                             const char8_t *inTessCtrl, const char8_t *inTessEval,
                             const char8_t *inGeom, const SShaderCacheProgramFlags &inFlags,
-                            TShaderFeatureSet inFeatures, bool separableProgram,
+                            TShaderFeatureSet inFeatures, QString &errors, bool separableProgram,
                             bool fromDisk = false) = 0;
 
         // It is up to the caller to ensure that inFeatures contains unique keys.
@@ -132,7 +132,18 @@ namespace render {
         CompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
                        const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
                        const SShaderCacheProgramFlags &inFlags, TShaderFeatureSet inFeatures,
-                       bool separableProgram = false) = 0;
+                       QString &errors, bool separableProgram = false) = 0;
+
+        virtual NVRenderShaderProgram *
+        CompileProgram(CRegisteredString inKey, const char8_t *inVert, const char8_t *inFrag,
+                       const char8_t *inTessCtrl, const char8_t *inTessEval, const char8_t *inGeom,
+                       const SShaderCacheProgramFlags &inFlags, TShaderFeatureSet inFeatures,
+                       bool separableProgram = false)
+        {
+            QString errors;
+            return CompileProgram(inKey, inVert, inFrag, inTessCtrl, inTessEval, inGeom, inFlags,
+                           inFeatures, errors, separableProgram);
+        }
 
         // Used to disable any shader compilation during loading.  This is used when we are just
         // interested in going from uia->binary

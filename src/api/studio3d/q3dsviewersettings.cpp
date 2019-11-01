@@ -231,7 +231,7 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
 /*!
     \qmlproperty enumeration ViewerSettings::stereoMode
 
-    \since Qt 3D Studio 2.5
+    \since QtStudio3D.OpenGL 2.5
 
     Specifies the stereo mode. The default value \c is StereoModeMono where the
     view is rendered normally, as suitable for 2D displays. Other available modes
@@ -240,6 +240,8 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
     \value StereoModeMono Renders presentation normally in mono.
     \value StereoModeTopBottom Renders presentation in stereoscopic top-bottom mode.
     \value StereoModeLeftRight Renders presentation in stereoscopic left-right mode.
+    \value StereoModeAnaglyphRedCyan Renders presentation in anaglyph red-cyan mode.
+    \value StereoModeAnaglyphGreenMagenta Renders presentation in anaglyph green-magenta mode.
 
     The default value is \c{StereoModeMono}.
 */
@@ -255,6 +257,8 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
     \value StereoModeMono Renders presentation normally in mono.
     \value StereoModeTopBottom Renders presentation in stereoscopic top-bottom mode.
     \value StereoModeLeftRight Renders presentation in stereoscopic left-right mode.
+    \value StereoModeAnaglyphRedCyan Renders presentation in anaglyph red-cyan mode.
+    \value StereoModeAnaglyphGreenMagenta Renders presentation in anaglyph green-magenta mode.
 
     The default value is \c{StereoModeMono}.
  */
@@ -271,6 +275,19 @@ void Q3DSViewerSettings::setStereoMode(Q3DSViewerSettings::StereoMode mode)
     }
 }
 
+/*!
+    \qmlproperty real ViewerSettings::stereoEyeSeparation
+
+    \since QtStudio3D.OpenGL 2.5
+
+    Specifies the eye (camera) separation of stereo rendering.
+    Value is the amount left and right eye cameras move in x-coordinate
+    values away from center. Bigger separation increases the 3D effect.
+    Optimal value depends on viewed presentation.
+
+    This has only effect when stereo mode is set to something else than
+    default \c{StereoModeMono}.
+ */
 /*!
     \property Q3DSViewerSettings::stereoEyeSeparation
 
@@ -516,8 +533,12 @@ void Q3DSViewerSettingsPrivate::setStereoMode(Q3DSViewerSettings::StereoMode mod
             m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::Mono);
         else if (mode == Q3DSViewerSettings::StereoModeTopBottom)
             m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::TopBottom);
-        else
+        else if (mode == Q3DSViewerSettings::StereoModeLeftRight)
             m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::LeftRight);
+        else if (mode == Q3DSViewerSettings::StereoModeAnaglyphRedCyan)
+            m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::AnaglyphRedCyan);
+        else
+            m_viewerApp->SetStereoMode(Q3DSViewer::ViewerStereoModes::AnaglyphGreenMagenta);
     } else if (m_commandQueue) {
         m_commandQueue->m_stereoMode = mode;
         m_commandQueue->m_stereoModeChanged = true;

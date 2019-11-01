@@ -2430,10 +2430,11 @@ namespace render {
         vertexGenerator.Append("}");
 
         fragmentGenerator.AddUniform("layer_image", "sampler2D");
+        fragmentGenerator.AddUniform("anaglyphColor", "vec4");
         fragmentGenerator.Append("void main() {");
         fragmentGenerator.Append("\tvec2 theCoords = uv_coords;\n");
         fragmentGenerator.Append("\tvec4 theLayerTexture = texture2D( layer_image, theCoords );\n");
-        fragmentGenerator.Append("\tfragOutput = theLayerTexture;\n");
+        fragmentGenerator.Append("\tfragOutput = theLayerTexture * anaglyphColor;\n");
         fragmentGenerator.Append("}");
         NVRenderShaderProgram *theShader = GetProgramGenerator().CompileGeneratedShader(
             "layer shader", SShaderCacheProgramFlags(), TShaderFeatureSet());

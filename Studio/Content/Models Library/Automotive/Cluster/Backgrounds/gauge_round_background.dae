@@ -91,7 +91,7 @@
   </library_effects>
   <library_images>
     <image id="file1" name="file1">
-      <init_from>../../../../../Documents/maya/projects/StudioModelLibrary/gradient.png</init_from>
+      <init_from>gradient.png</init_from>
       <extra>
         <technique profile="OpenCOLLADAMaya">
           <originalMayaNodeId sid="originalMayaNodeId" type="string">file1</originalMayaNodeId>

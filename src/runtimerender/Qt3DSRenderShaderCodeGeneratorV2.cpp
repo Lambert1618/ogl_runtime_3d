@@ -511,6 +511,16 @@ struct SProgramGenerator : public IShaderProgramGenerator
     CompileGeneratedShader(const char *inShaderName, const SShaderCacheProgramFlags &inFlags,
                            TShaderFeatureSet inFeatureSet, bool separableProgram) override
     {
+        QString errors;
+        return CompileGeneratedShader(inShaderName, inFlags, inFeatureSet, errors,
+                                      separableProgram);
+    }
+
+    qt3ds::render::NVRenderShaderProgram *
+    CompileGeneratedShader(const char *inShaderName, const SShaderCacheProgramFlags &inFlags,
+                           TShaderFeatureSet inFeatureSet, QString &errors,
+                           bool separableProgram) override
+    {
         // No stages enabled
         if (((QT3DSU32)m_EnabledStages) == 0) {
             QT3DS_ASSERT(false);
@@ -542,7 +552,7 @@ struct SProgramGenerator : public IShaderProgramGenerator
         CRegisteredString theCacheKey = m_Context.GetStringTable().RegisterStr(inShaderName);
         return theCache.CompileProgram(theCacheKey, vertexShaderSource, fragmentShaderSource,
                                        tcShaderSource, teShaderSource, geShaderSource,
-                                       theCacheFlags, inFeatureSet, separableProgram);
+                                       theCacheFlags, inFeatureSet, errors, separableProgram);
     }
 };
 };

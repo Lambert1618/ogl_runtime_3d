@@ -49,7 +49,7 @@ static QSurfaceFormat findIdealGLVersion()
     QOpenGLContext ctx;
     ctx.setFormat(fmt);
     if (ctx.create() && ctx.format().version() >= qMakePair(4, 3)) {
-        qDebug("Requesting OpenGL 4.3 core context succeeded");
+        qCInfo(qt3ds::TRACE_INFO) << "Requesting OpenGL 4.3 core context succeeded";
         return ctx.format();
     }
 
@@ -57,7 +57,7 @@ static QSurfaceFormat findIdealGLVersion()
     fmt.setVersion(3, 3);
     ctx.setFormat(fmt);
     if (ctx.create() && ctx.format().version() >= qMakePair(3, 3)) {
-        qDebug("Requesting OpenGL 3.3 core context succeeded");
+        qCInfo(qt3ds::TRACE_INFO) << "Requesting OpenGL 3.3 core context succeeded";
         return ctx.format();
     }
 
@@ -80,7 +80,7 @@ static QSurfaceFormat findIdealGLESVersion()
     // support and return a 3.0 context. This is against the spec since 3.0 is
     // obviously not backwards compatible with 3.1, but hey...
     if (ctx.create() && ctx.format().version() >= qMakePair(3, 1)) {
-        qDebug("Requesting OpenGL ES 3.1 context succeeded");
+        qCInfo(qt3ds::TRACE_INFO) << "Requesting OpenGL ES 3.1 context succeeded";
         return ctx.format();
     }
 
@@ -89,14 +89,14 @@ static QSurfaceFormat findIdealGLESVersion()
     fmt.setVersion(3, 0);
     ctx.setFormat(fmt);
     if (ctx.create() && ctx.format().version() >= qMakePair(3, 0)) {
-        qDebug("Requesting OpenGL ES 3.0 context succeeded");
+        qCInfo(qt3ds::TRACE_INFO) << "Requesting OpenGL ES 3.0 context succeeded";
         return ctx.format();
     }
 
     fmt.setVersion(2, 0);
     ctx.setFormat(fmt);
     if (ctx.create()) {
-        qDebug("Requesting OpenGL ES 2.0 context succeeded");
+        qCInfo(qt3ds::TRACE_INFO) << "Requesting OpenGL ES 2.0 context succeeded";
         return fmt;
     }
 

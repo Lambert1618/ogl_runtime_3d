@@ -1200,7 +1200,8 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
     }
 
     NVRenderShaderProgram *GenerateCustomMaterialShader(const char8_t *inShaderPrefix,
-                                                        const char8_t *inCustomMaterialName)
+                                                        const char8_t *inCustomMaterialName,
+                                                        QString &errors)
     {
         // build a string that allows us to print out the shader we are generating to the log.
         // This is time consuming but I feel like it doesn't happen all that often and is very
@@ -1231,7 +1232,8 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
         VertexGenerator().EndFragmentGeneration(hasCustomFragmentShader);
 
         NVRenderShaderProgram *program = ProgramGenerator().CompileGeneratedShader(
-                    m_GeneratedShaderString.c_str(), SShaderCacheProgramFlags(), FeatureSet());
+                    m_GeneratedShaderString.c_str(), SShaderCacheProgramFlags(), FeatureSet(),
+                    errors);
         if (program && hasCustomVertexShader) {
             // Change uniforms names to match runtime 2.x uniforms
             SShaderGeneratorGeneratedShader &shader(GetShaderForProgram(*program));
@@ -1255,7 +1257,7 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
     GenerateShader(const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
                    IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
                    NVDataRef<SLight *> inLights, SRenderableImage *inFirstImage,
-                   bool inHasTransparency, const char8_t *inShaderPrefix,
+                   bool inHasTransparency, const char8_t *inShaderPrefix, QString &error,
                    const char8_t *inCustomMaterialName) override
     {
         QT3DS_ASSERT(inMaterial.m_Type == GraphObjectTypes::CustomMaterial);
@@ -1267,7 +1269,21 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
         m_FirstImage = inFirstImage;
         m_HasTransparency = inHasTransparency;
 
-        return GenerateCustomMaterialShader(inShaderPrefix, inCustomMaterialName);
+        return GenerateCustomMaterialShader(inShaderPrefix, inCustomMaterialName, error);
+    }
+
+    virtual NVRenderShaderProgram *
+    GenerateShader(const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+                   IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+                   NVDataRef<SLight *> inLights, SRenderableImage *inFirstImage,
+                   bool inHasTransparency, const char8_t *inShaderPrefix,
+                   const char8_t *inCustomMaterialName) override
+    {
+        QString error;
+
+        return GenerateShader(inMaterial, inShaderDescription, inVertexPipeline, inFeatureSet,
+                              inLights, inFirstImage, inHasTransparency, inShaderPrefix,
+                              error, inCustomMaterialName);
     }
 };
 }

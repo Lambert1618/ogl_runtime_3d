@@ -95,7 +95,9 @@ struct ViewerStereoModes
     enum Enum {
         Mono,
         TopBottom,
-        LeftRight
+        LeftRight,
+        AnaglyphRedCyan,
+        AnaglyphGreenMagenta
     };
 };
 
@@ -494,6 +496,8 @@ public:
     void deleteMeshes(const QStringList &meshNames);
 
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
+
+    uint textureId(const QString &elementPath);
 
     QString error();
 

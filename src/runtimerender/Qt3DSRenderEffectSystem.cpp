@@ -1020,7 +1020,8 @@ struct SEffectSystem : public IEffectSystem
         return theBuffer;
     }
 
-    SEffectShader *BindShader(CRegisteredString &inEffectId, const SBindShader &inCommand)
+    SEffectShader *BindShader(CRegisteredString &inEffectId, const SBindShader &inCommand,
+                              QString &errors)
     {
         SEffectClass *theClass = GetEffectClass(inEffectId);
         if (!theClass) {
@@ -1039,7 +1040,7 @@ struct SEffectSystem : public IEffectSystem
             NVRenderShaderProgram *theProgram =
                 m_Context->GetDynamicObjectSystem()
                     .GetShaderProgram(inCommand.m_ShaderPath, inCommand.m_ShaderDefine,
-                                      TShaderFeatureSet(), SDynamicShaderProgramFlags(),
+                                      TShaderFeatureSet(), SDynamicShaderProgramFlags(), errors,
                                       forceCompilation).first;
             if (theProgram)
                 theInsertResult.first->second = QT3DS_NEW(m_Allocator, SEffectShader)(*theProgram);
@@ -1546,6 +1547,7 @@ struct SEffectSystem : public IEffectSystem
             theContext.SetDepthWriteEnabled(false);
 
             QT3DSMat44 theMVP(QT3DSMat44::createIdentity());
+            QString errors;
             NVConstDataRef<dynamic::SCommand *> theCommands =
                 inClass.m_DynamicClass->GetRenderCommands();
             for (QT3DSU32 commandIdx = 0, commandEnd = theCommands.size(); commandIdx < commandEnd;
@@ -1592,7 +1594,10 @@ struct SEffectSystem : public IEffectSystem
                 } break;
                 case CommandTypes::BindShader:
                     theCurrentShader = BindShader(inEffect.m_ClassName,
-                                                  static_cast<const SBindShader &>(theCommand));
+                                                  static_cast<const SBindShader &>(theCommand),
+                                                  errors);
+                    if (!errors.isEmpty())
+                        inEffect.SetError(m_CoreContext.GetStringTable().RegisterStr(errors));
                     break;
                 case CommandTypes::ApplyInstanceValue:
                     if (theCurrentShader)
@@ -1719,13 +1724,18 @@ struct SEffectSystem : public IEffectSystem
         QT3DSU32 theFinalWidth = ITextRenderer::NextMultipleOf4((QT3DSU32)(theDetails.m_Width));
         QT3DSU32 theFinalHeight = ITextRenderer::NextMultipleOf4((QT3DSU32)(theDetails.m_Height));
         NVRenderFrameBuffer *theBuffer = theManager.AllocateFrameBuffer();
-        // UdoL Some Effects may need to run before HDR tonemap. This means we need to keep the
-        // input format
-        NVRenderTextureFormats::Enum theOutputFormat = NVRenderTextureFormats::RGBA8;
-        if (theClass->m_DynamicClass->GetOutputTextureFormat() == NVRenderTextureFormats::Unknown)
-            theOutputFormat = theDetails.m_Format;
-        NVRenderTexture2D *theTargetTexture =
-            theManager.AllocateTexture2D(theFinalWidth, theFinalHeight, theOutputFormat);
+        NVRenderTexture2D *theTargetTexture = inRenderArgument.m_targetTexture;
+        if (theTargetTexture == nullptr) {
+            // Some Effects may need to run before HDR tonemap. This means we need to keep the
+            // input format
+            NVRenderTextureFormats::Enum theOutputFormat = NVRenderTextureFormats::RGBA8;
+            if (theClass->m_DynamicClass->GetOutputTextureFormat()
+                    == NVRenderTextureFormats::Unknown) {
+                theOutputFormat = theDetails.m_Format;
+            }
+            theTargetTexture = theManager.AllocateTexture2D(theFinalWidth, theFinalHeight,
+                                                            theOutputFormat);
+        }
         theBuffer->Attach(NVRenderFrameBufferAttachments::Color0, *theTargetTexture);
         theContext.SetRenderTarget(theBuffer);
         NVRenderContextScopedProperty<NVRenderRect> __viewport(

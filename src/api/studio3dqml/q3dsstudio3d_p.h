@@ -62,7 +62,7 @@ class Q3DSStudio3D : public QQuickFramebufferObject
     Q_PROPERTY(Q3DSViewerSettings *viewerSettings READ viewerSettings CONSTANT)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
     Q_PROPERTY(EventIgnoreFlags ignoredEvents READ ignoredEvents WRITE setIgnoredEvents NOTIFY ignoredEventsChanged)
-    Q_PROPERTY(bool asyncInit READ asyncInit WRITE setAsyncInit NOTIFY asyncInitChanged)
+    Q_PROPERTY(bool asyncInit READ asyncInit WRITE setAsyncInit NOTIFY asyncInitChanged REVISION 1)
 
 public:
     enum EventIgnoreFlag {

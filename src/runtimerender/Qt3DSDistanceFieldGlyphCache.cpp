@@ -494,7 +494,8 @@ bool Q3DSDistanceFieldGlyphCache::loadPregeneratedCache(const QRawFont &font)
 
             resizeTexture(texInfo, width, height);
 
-            memcpy(texInfo->copy.bits(), textureData, size);
+            for (int y = 0; y < height; ++y)
+                memcpy(texInfo->copy.scanLine(y), textureData + y * width, width);
             textureData += size;
 
             QImage &image = texInfo->copy;

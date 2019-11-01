@@ -225,9 +225,7 @@ SLoadedTexture *SLoadedTexture::LoadASTC(const QString &inPath, QT3DSI32 flipVer
     if (!astcFile.open(QIODevice::ReadOnly))
         return nullptr;
 
-    QByteArray fileData = astcFile.readAll();
-
-    astcFile.close();
+    QByteArray fileData = astcFile.read(sizeof(AstcHeader));
 
     const AstcHeader *header = reinterpret_cast<const AstcHeader *>(fileData.constData());
     int xSz = int(header->xSize[0]) | int(header->xSize[1]) << 8 | int(header->xSize[2]) << 16;
@@ -259,8 +257,10 @@ SLoadedTexture *SLoadedTexture::LoadASTC(const QString &inPath, QT3DSI32 flipVer
     image->internalFormat = glFmt;
     image->format = runtimeFormat(glFmt);
     image->compressed = 1;
+
     image->dataBlock = QT3DS_ALLOC(alloc, byteCount, "Qt3DSDDSAllocDataBlock");
-    memcpy(image->dataBlock, fileData.constData() + sizeof(AstcHeader), byteCount);
+    astcFile.read(static_cast<char*>(image->dataBlock), byteCount);
+    astcFile.close();
 
     retval->dds = image;
     retval->width = image->width;

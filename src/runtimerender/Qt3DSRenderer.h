@@ -167,6 +167,8 @@ namespace render {
                                           const QT3DSVec3 &inMouseVec) const = 0;
         virtual QT3DSVec3 ProjectPosition(SNode &inNode, const QT3DSVec3 &inPosition) const = 0;
 
+        virtual uint getLayerTextureId(SLayer &layer) = 0;
+
         // Roughly equivalent of gluPickMatrix, allows users to setup a perspective transform that
         // will draw some sub component
         // of the layer.  Used in combination with an expected viewport of 0,0,width,height the

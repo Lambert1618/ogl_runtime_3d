@@ -50,8 +50,8 @@ class Q_STUDIO3D_EXPORT Q3DSViewerSettings : public QObject
     Q_PROPERTY(QColor matteColor READ matteColor WRITE setMatteColor NOTIFY matteColorChanged)
     Q_PROPERTY(bool showRenderStats READ isShowRenderStats WRITE setShowRenderStats NOTIFY showRenderStatsChanged)
     Q_PROPERTY(ScaleMode scaleMode READ scaleMode WRITE setScaleMode NOTIFY scaleModeChanged)
-    Q_PROPERTY(StereoMode stereoMode READ stereoMode WRITE setStereoMode NOTIFY stereoModeChanged)
-    Q_PROPERTY(double stereoEyeSeparation READ stereoEyeSeparation WRITE setStereoEyeSeparation NOTIFY stereoEyeSeparationChanged)
+    Q_PROPERTY(StereoMode stereoMode READ stereoMode WRITE setStereoMode NOTIFY stereoModeChanged REVISION 1)
+    Q_PROPERTY(double stereoEyeSeparation READ stereoEyeSeparation WRITE setStereoEyeSeparation NOTIFY stereoEyeSeparationChanged REVISION 1)
 
 public:
     enum ShadeMode {
@@ -68,7 +68,9 @@ public:
     enum StereoMode {
         StereoModeMono,
         StereoModeTopBottom,
-        StereoModeLeftRight
+        StereoModeLeftRight,
+        StereoModeAnaglyphRedCyan,
+        StereoModeAnaglyphGreenMagenta
     };
 
     explicit Q3DSViewerSettings(QObject *parent = nullptr);

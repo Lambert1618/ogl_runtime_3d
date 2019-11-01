@@ -1051,6 +1051,14 @@ void Q3DSViewerApp::addImageProvider(const QString &providerId, QQmlImageProvide
     m_Impl.m_view->addImageProvider(providerId, provider);
 }
 
+uint Q3DSViewerApp::textureId(const QString &elementPath)
+{
+    if (!m_Impl.m_view)
+        return 0;
+
+    return m_Impl.m_view->textureId(elementPath);
+}
+
 Q3DSViewerApp &Q3DSViewerApp::Create(void *glContext, Q3DStudio::IAudioPlayer *inAudioPlayer,
                                      QElapsedTimer *startupTimer)
 {

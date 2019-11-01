@@ -59,7 +59,7 @@ class Q_STUDIO3D_EXPORT Q3DSPresentation : public QObject
     Q_PROPERTY(QStringList createdElements READ createdElements NOTIFY elementsCreated)
     Q_PROPERTY(QStringList createdMaterials READ createdMaterials NOTIFY materialsCreated)
     Q_PROPERTY(QStringList createdMeshes READ createdMeshes NOTIFY meshesCreated)
-    Q_PROPERTY(QUrl shaderCacheFile READ shaderCacheFile WRITE setShaderCacheFile NOTIFY shaderCacheFileChanged )
+    Q_PROPERTY(QUrl shaderCacheFile READ shaderCacheFile WRITE setShaderCacheFile NOTIFY shaderCacheFileChanged REVISION 1)
 
 public:
     explicit Q3DSPresentation(QObject *parent = nullptr);
@@ -92,8 +92,9 @@ public:
     Q_INVOKABLE void preloadSlide(const QString &elementPath);
     Q_INVOKABLE void unloadSlide(const QString &elementPath);
 
-    Q_INVOKABLE void exportShaderCache(const QUrl &shaderCacheFile, bool binaryShaders);
-    Q_INVOKABLE void exportShaderCache(bool binaryShaders);
+    Q_REVISION(1) Q_INVOKABLE void exportShaderCache(const QUrl &shaderCacheFile,
+                                                     bool binaryShaders);
+    Q_REVISION(1) Q_INVOKABLE void exportShaderCache(bool binaryShaders);
     QUrl shaderCacheFile() const;
 
     // Input event handlers
@@ -125,6 +126,8 @@ public:
     QStringList createdMeshes() const;
 
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
+
+    uint textureId(const QString &elementPath);
 
 public Q_SLOTS:
     void setSource(const QUrl &source);

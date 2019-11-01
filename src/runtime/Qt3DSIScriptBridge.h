@@ -187,6 +187,8 @@ public: // Elements
                             qt3ds::render::IBufferManager *bufferManager) = 0;
     virtual void deleteMeshes(const QStringList &elementPath,
                               qt3ds::render::IBufferManager *bufferManager) = 0;
+    virtual uint textureId(const QString &elementPath,
+                           qt3ds::render::IQt3DSRenderer *renderer) = 0;
 
 public: // Components
     virtual void GotoSlide(const char *component, const char *slideName,

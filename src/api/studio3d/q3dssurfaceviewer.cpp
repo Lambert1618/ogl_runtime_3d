@@ -534,6 +534,8 @@ void Q3DSSurfaceViewerPrivate::update()
 
             m_viewerApp->Render();
 
+            Q_EMIT q_ptr->afterRendering();
+
             const uint defaultFbo = m_context->defaultFramebufferObject();
 
             if (m_surface->surfaceClass() == QSurface::Window && m_fboId == defaultFbo)

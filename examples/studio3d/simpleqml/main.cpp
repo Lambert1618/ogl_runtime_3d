@@ -55,6 +55,9 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setOrganizationName("The Qt Company");
+    QCoreApplication::setOrganizationDomain("qt.io");
+    QCoreApplication::setApplicationName("SimpleQml");
     qputenv("QSG_INFO", "1");
     QApplication app(argc, argv);
 

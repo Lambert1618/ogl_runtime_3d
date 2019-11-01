@@ -1877,8 +1877,23 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     GenerateShader(const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
                    IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
                    NVDataRef<SLight *> inLights, SRenderableImage *inFirstImage,
-                   bool inHasTransparency, const char8_t *inVertexPipelineName, const char8_t *) override
+                   bool inHasTransparency, const char8_t *inVertexPipelineName,
+                   const char8_t *) override
     {
+        QString error;
+        return GenerateShader(inMaterial, inShaderDescription, inVertexPipeline, inFeatureSet,
+                              inLights, inFirstImage, inHasTransparency, inVertexPipelineName,
+                              error, "");
+    }
+
+    virtual NVRenderShaderProgram *
+    GenerateShader(const SGraphObject &inMaterial, SShaderDefaultMaterialKey inShaderDescription,
+                   IShaderStageGenerator &inVertexPipeline, TShaderFeatureSet inFeatureSet,
+                   NVDataRef<SLight *> inLights, SRenderableImage *inFirstImage,
+                   bool inHasTransparency, const char8_t *inVertexPipelineName, QString &error,
+                   const char8_t *) override
+    {
+        Q_UNUSED(error)
         QT3DS_ASSERT(inMaterial.m_Type == GraphObjectTypes::DefaultMaterial);
         m_CurrentMaterial = static_cast<const SDefaultMaterial *>(&inMaterial);
         m_CurrentKey = &inShaderDescription;

@@ -385,6 +385,8 @@ namespace render {
                                           const QT3DSVec3 &inMouseVec) const override;
         QT3DSVec3 ProjectPosition(SNode &inNode, const QT3DSVec3 &inPosition) const override;
 
+        uint getLayerTextureId(SLayer &layer) override;
+
         Option<SLayerPickSetup> GetLayerPickSetup(SLayer &inLayer,
                                                           const QT3DSVec2 &inMouseCoords,
                                                           const QSize &inPickDims) override;
