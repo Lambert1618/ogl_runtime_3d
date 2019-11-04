@@ -254,7 +254,8 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
     bool force = false;
 
     // Fail if trying to change the activation state of an object in another slide
-    if (theAttributeKey.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL) {
+    if (theAttributeKey.m_Hash == Q3DStudio::ATTRIBUTE_EYEBALL
+            && theElement->GetBelongedPresentation()->GetActivityZone()) {
         CPresentation *presentation = static_cast<CPresentation *>(
                     theElement->GetBelongedPresentation());
         ISlideSystem &slideSystem = presentation->GetSlideSystem();

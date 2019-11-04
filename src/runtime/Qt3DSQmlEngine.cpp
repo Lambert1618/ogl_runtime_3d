@@ -608,14 +608,16 @@ void CQmlEngineImpl::Initialize()
 
 bool queueAttributeChange(TElement *target, const char *attName, const char *value)
 {
-    TElement *componentElement = target->GetActivityZone().GetItemTimeParent(*target);
-    TComponent *component = static_cast<TComponent *>(componentElement);
-    // Queue changes to elements inside components that have not been activated even once
-    if (component->GetCurrentSlide() == 0) {
-        IPresentation *presentation = target->GetBelongedPresentation();
-        presentation->GetComponentManager().queueChange(componentElement, target,
-                                                        attName, value);
-        return true;
+    if (target->m_BelongedPresentation->GetActivityZone()) {
+        TElement *componentElement = target->GetActivityZone().GetItemTimeParent(*target);
+        TComponent *component = static_cast<TComponent *>(componentElement);
+        // Queue changes to elements inside components that have not been activated even once
+        if (component->GetCurrentSlide() == 0) {
+            IPresentation *presentation = target->GetBelongedPresentation();
+            presentation->GetComponentManager().queueChange(componentElement, target,
+                                                            attName, value);
+            return true;
+        }
     }
     return false;
 }
