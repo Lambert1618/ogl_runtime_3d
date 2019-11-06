@@ -340,6 +340,11 @@ void CComponentManager::queueChange(TElement *component, TElement *target, const
     }
 }
 
+bool CComponentManager::hasSlideChangeQueued(TElement *component)
+{
+    return m_ComponentInitialSlideMap.find(component) != m_ComponentInitialSlideMap.end();
+}
+
 //==============================================================================
 /**
  *	Performs a switch to the previous slide.

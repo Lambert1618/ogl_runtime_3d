@@ -123,6 +123,7 @@ public: // Slides
     virtual void applyQueuedChanges(TElement *component) = 0;
     virtual void queueChange(TElement *component, TElement *target, const char *attName,
                              const char *value) = 0;
+    virtual bool hasSlideChangeQueued(TElement *component) = 0;
 
     virtual void OnElementDeactivated(TElement *inElement) = 0;
 

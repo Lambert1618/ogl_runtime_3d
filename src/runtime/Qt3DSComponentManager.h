@@ -94,6 +94,7 @@ public: // Slide
     void applyQueuedChanges(TElement *component) override;
     void queueChange(TElement *component, TElement *target, const char *attName,
                      const char *value) override;
+    bool hasSlideChangeQueued(TElement *component) override;
 
     UINT8 GetSlideCount(TElement *inComponent) override;
     UINT8 GetCurrentSlide(TElement *inComponent) override;
