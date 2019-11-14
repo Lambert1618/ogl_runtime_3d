@@ -72,7 +72,7 @@ public:
     void setCommandQueue(CommandQueue *queue);
     void setDelayedLoading(bool enable);
     void setDataInputsChanged(bool changed);
-    void setDataInputDirty(const QString &name, bool dirty);
+    void setDataInputDirty(const QString &name, bool dirty, int callIdx);
     void setShaderCacheFile(const QUrl &fileName);
 
     void registerElement(Q3DSElement *element);
@@ -134,6 +134,7 @@ private:
     QByteArray m_shaderCacheExport;
     QUrl m_shaderCacheWritePending;
     bool m_shaderCacheDumpPending = false;
+    int m_dataInputCallIndex = 0;
 
     friend class Q3DSStudio3D;
 };

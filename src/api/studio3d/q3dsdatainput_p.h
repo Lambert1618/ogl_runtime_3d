@@ -75,6 +75,8 @@ protected:
     QVariant m_value;
     float m_max = 0;
     float m_min = 0;
+    // Used to order API calls
+    int m_callIdx = 0;
 
     bool m_dirty = false;
     bool m_forced = false;

@@ -1968,7 +1968,7 @@ bool CQmlEngineImpl::GetSlideInfo(const char *element, int &currentIndex, int &p
 void CQmlEngineImpl::GotoTime(const char *component, const Q3DStudio::FLOAT time)
 {
     TElement *theTarget = getTarget(component);
-    if (theTarget && theTarget->GetActive()) {
+    if (theTarget && (theTarget->GetActive() || theTarget->AboutToActivate())) {
         UVariant theArg1;
         UVariant theArg2;
 

@@ -366,7 +366,7 @@ void CComponentManager::GoToTime(TElement *inComponent, const TTimeUnit inTime)
 {
     if (inComponent == NULL)
         return;
-    if (inComponent->GetActive() == false) {
+    if (!inComponent->GetActive() && !inComponent->AboutToActivate()) {
         qCCritical(qt3ds::INVALID_OPERATION)
                 << "Runtime: Attempt to goto time on inactive component!";
         return;

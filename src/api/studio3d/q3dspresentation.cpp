@@ -1066,7 +1066,7 @@ void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &va
     if (!di->d_ptr->m_forced)
         di->d_ptr->m_forced = force;
 
-    d_ptr->setDataInputDirty(name, true);
+    d_ptr->setDataInputDirty(name, true, d_ptr->m_dataInputCallIndex++);
     // We batch datainput changes within a frame, so just tell the presentation that one
     // or more datainputs have changed value.
     d_ptr->m_dataInputsChanged = true;
@@ -1853,10 +1853,12 @@ void Q3DSPresentationPrivate::setDataInputsChanged(bool changed)
     m_dataInputsChanged = changed;
 }
 
-void Q3DSPresentationPrivate::setDataInputDirty(const QString &name, bool dirty)
+void Q3DSPresentationPrivate::setDataInputDirty(const QString &name, bool dirty, int callIdx)
 {
-    if (m_dataInputs.contains(name))
+    if (m_dataInputs.contains(name)) {
         m_dataInputs[name]->d_ptr->setDirty(dirty);
+        m_dataInputs[name]->d_ptr->m_callIdx = callIdx;
+    }
 }
 
 void Q3DSPresentationPrivate::setShaderCacheFile(const QUrl &fileName)
@@ -2235,10 +2237,12 @@ bool Q3DSPresentationPrivate::dataInputsChanged() const
 void Q3DSPresentationPrivate::setDataInputValueBatch()
 {
     QVector<QPair<QString, QVariant>> *theProperties = new QVector<QPair<QString, QVariant>>();
+    QVector<int> order;
     for (const auto &di : qAsConst(m_dataInputs)) {
         if (di->d_ptr->m_dirty) {
             if (di->value() != di->d_ptr->m_committedValue || di->d_ptr->m_forced) {
                 theProperties->append({di->name(), di->value()});
+                order.append(di->d_ptr->m_callIdx);
                 di->d_ptr->m_dirty = false;
                 di->d_ptr->m_forced = false; // Reset also forced flag as it is per-frame.
                 di->d_ptr->setCommittedValue(di->value()); // Make note of value that was actually
@@ -2246,6 +2250,18 @@ void Q3DSPresentationPrivate::setDataInputValueBatch()
             }
         }
     }
+
+    // Sort
+    for (int i = 0; i < order.size() - 1; ++i) {
+        for (int j = i + 1; j < order.size(); ++j) {
+            if (order[i] > order[j]) {
+                std::swap((*theProperties)[i], (*theProperties)[j]);
+                std::swap(order[i], order[j]);
+            }
+        }
+    }
+
+    m_dataInputCallIndex = 0;
 
     if (!theProperties->empty()) {
         if (m_commandQueue) { // QML context

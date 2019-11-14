@@ -444,6 +444,14 @@ namespace runtime {
             void SetActive(bool inValue) { SetFlag(Q3DStudio::ELEMENTFLAG_GLOBALACTIVE, inValue); }
             bool GetActive() const { return m_Flags.IsActive(); }
 
+            // Return true if we are about to activate, but have not yet been activated
+            bool AboutToActivate() const
+            {
+                if (!IsDirty())
+                    return false;
+                return IsExplicitActive();
+            }
+
             void SetPickEnabled(bool inValue)
             {
                 SetFlag(Q3DStudio::ELEMENTFLAG_PICKENABLED, inValue);
