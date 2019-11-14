@@ -1850,8 +1850,10 @@ uint CQmlEngineImpl::textureId(const QString &elementPath,
                 return renderer->getLayerTextureId(*layer);
             } else if (type == qt3ds::render::GraphObjectTypes::Image) {
                 auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
-                return static_cast<uint>(reinterpret_cast<size_t>(
-                            image->m_TextureData.m_Texture->GetTextureObjectHandle()));
+                if (image->m_TextureData.m_Texture) {
+                    return static_cast<uint>(reinterpret_cast<size_t>(
+                                image->m_TextureData.m_Texture->GetTextureObjectHandle()));
+                }
             }
         }
     }
