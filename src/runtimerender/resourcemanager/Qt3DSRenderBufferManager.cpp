@@ -354,7 +354,9 @@ struct SBufferManager : public IBufferManager
             m_reloadableTextures[path]->m_bsdfMipmap = inBsdfMipmaps;
             m_reloadableTextures[path]->m_initialized = true;
 
+#ifndef LEGACY_ASTC_LOADING
             if (!m_reloadableResources)
+#endif
                 loadTextureImage(*m_reloadableTextures[path]);
 
             CRegisteredString imagePath = getImagePath(path);
