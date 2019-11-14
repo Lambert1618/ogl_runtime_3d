@@ -1640,9 +1640,10 @@ struct STranslatorCreator
     {
         TTranslatorType &theTranslator(static_cast<TTranslatorType &>(inTranslator));
         SRuntimePropertyParser theParser(inPresentation, inRenderContext, *theTranslator.m_Element);
-        bool isMaterial = QString(theTranslator.Element().GetTypeDescription().m_TypeName.c_str())
-                .contains(QLatin1String("Material"));
-        if (theTranslator.Element().GetActive() || isMaterial) {
+        const QString type(theTranslator.Element().GetTypeDescription().m_TypeName.c_str());
+        bool force = type.contains(QLatin1String("Material"))
+                        || type.contains(QLatin1String("Image"));
+        if (theTranslator.Element().GetActive() || force) {
             // Don't push properties from inactive elements.
             // Exceptions to this rule are Materials since materials that reference them need
             // the values even when the original material is inactive
