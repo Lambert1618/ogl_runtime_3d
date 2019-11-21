@@ -93,6 +93,11 @@ void SScene::Render(const QT3DSVec2 &inViewportDimensions, IQt3DSRenderContext &
             clearColor.y = m_ClearColor.y;
             clearColor.z = m_ClearColor.z;
             clearColor.w = m_ClearColor.w;
+            if (m_ClearColor.w < 1.0) {
+                clearColor.x *= m_ClearColor.w;
+                clearColor.y *= m_ClearColor.w;
+                clearColor.z *= m_ClearColor.w;
+            }
         }
         // Maybe clear and reset to previous clear color after we leave.
         qt3ds::render::NVRenderContextScopedProperty<QT3DSVec4> __clearColor(
