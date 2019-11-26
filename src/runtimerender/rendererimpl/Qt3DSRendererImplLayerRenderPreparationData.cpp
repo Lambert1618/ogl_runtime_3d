@@ -784,13 +784,8 @@ namespace render {
             renderableFlags |= RenderPreparationResultFlagValues::CompletelyTransparent;
         }
 
-        if (IsNotOne(subsetOpacity) || theMaterial->m_TransparencyMode
-                == DefaultMaterialTransparencyMode::ForceTransparent) {
-            renderableFlags |= RenderPreparationResultFlagValues::HasTransparency;
-        } else if (theMaterial->m_TransparencyMode
-                   == DefaultMaterialTransparencyMode::ForceOpaque) {
+        if (theMaterial->m_TransparencyMode == DefaultMaterialTransparencyMode::ForceOpaque)
             renderableFlags.clearOrSet(false, RenderPreparationResultFlagValues::HasTransparency);
-        }
 
         // Enable alpha test, but only if the whole object opacity is full
         // so parts of the object might be fully opaque
@@ -801,6 +796,11 @@ namespace render {
             renderableFlags.setAlphaTest(true);
         } else {
             renderableFlags.setAlphaTest(false);
+        }
+
+        if (IsNotOne(subsetOpacity) || theMaterial->m_TransparencyMode
+                == DefaultMaterialTransparencyMode::ForceTransparent) {
+            renderableFlags |= RenderPreparationResultFlagValues::HasTransparency;
         }
 
         retval.m_FirstImage = firstImage;
