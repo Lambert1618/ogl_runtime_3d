@@ -782,6 +782,8 @@ namespace render {
 
         (*theFB)->Attach(NVRenderFrameBufferAttachments::Depth, NVRenderTextureOrRenderBuffer());
         (*theFB)->Attach(NVRenderFrameBufferAttachments::Color0, NVRenderTextureOrRenderBuffer());
+        (*theFB)->Attach(NVRenderFrameBufferAttachments::DepthStencil,
+                         NVRenderTextureOrRenderBuffer());
 
         // enable color writes
         theRenderContext.SetColorWritesEnabled(true);
