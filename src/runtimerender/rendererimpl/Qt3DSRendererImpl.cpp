@@ -1131,6 +1131,26 @@ namespace render {
         }
     }
 
+    void Qt3DSRendererImpl::FillQuad(const QT3DSVec4 &color)
+    {
+        m_Context->SetCullingEnabled(false);
+        SFillRectShader *theShader = GetFillRectShader();
+        NVRenderContext &theContext(*m_Context);
+        theContext.SetActiveShader(&theShader->m_Shader);
+        NVRenderBlendEquationArgument equ(NVRenderBlendEquation::Add, NVRenderBlendEquation::Add);
+        NVRenderBlendFunctionArgument func(NVRenderSrcBlendFunc::One,
+                                           NVRenderDstBlendFunc::OneMinusSrcAlpha,
+                                           NVRenderSrcBlendFunc::One,
+                                           NVRenderDstBlendFunc::OneMinusSrcAlpha);
+        theContext.SetBlendEquation(equ);
+        theContext.SetBlendFunction(func);
+        theContext.SetBlendingEnabled(true);
+        theShader->m_color.Set(color);
+        GenerateXYQuad();
+        m_Context->SetInputAssembler(m_QuadInputAssembler);
+        m_Context->Draw(NVRenderDrawMode::Triangles, m_QuadIndexBuffer->GetNumIndices(), 0);
+    }
+
     void Qt3DSRendererImpl::RenderQuad(const QT3DSVec2 inDimensions, const QT3DSMat44 &inMVP,
                                       NVRenderTexture2D &inQuadTexture)
     {

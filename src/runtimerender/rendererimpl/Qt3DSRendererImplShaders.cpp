@@ -2445,6 +2445,36 @@ namespace render {
         return m_SceneLayerShader.getValue();
     }
 
+    SFillRectShader *Qt3DSRendererImpl::GetFillRectShader()
+    {
+        if (m_fillRectShader.hasValue())
+            return m_fillRectShader.getValue();
+
+        GetProgramGenerator().BeginProgram();
+
+        IShaderStageGenerator &vertexGenerator(
+            *GetProgramGenerator().GetStage(ShaderGeneratorStages::Vertex));
+        IShaderStageGenerator &fragmentGenerator(
+            *GetProgramGenerator().GetStage(ShaderGeneratorStages::Fragment));
+
+        vertexGenerator.AddIncoming("attr_pos", "vec3");
+        vertexGenerator.Append("void main() {");
+        vertexGenerator.Append("\tgl_Position = vec4(attr_pos, 1.0);");
+        vertexGenerator.Append("}");
+
+        fragmentGenerator.AddUniform("color", "vec4");
+        fragmentGenerator.Append("void main() {");
+        fragmentGenerator.Append("\tfragOutput = color;\n");
+        fragmentGenerator.Append("}");
+        NVRenderShaderProgram *theShader = GetProgramGenerator().CompileGeneratedShader(
+            "fill rect shader", SShaderCacheProgramFlags(), TShaderFeatureSet());
+        NVScopedRefCounted<SFillRectShader> retval;
+        if (theShader)
+            retval = QT3DS_NEW(m_Context->GetAllocator(), SFillRectShader)(*theShader);
+        m_fillRectShader = retval;
+        return m_fillRectShader.getValue();
+    }
+
     SLayerProgAABlendShader *Qt3DSRendererImpl::GetLayerProgAABlendShader()
     {
         if (m_LayerProgAAShader.hasValue())

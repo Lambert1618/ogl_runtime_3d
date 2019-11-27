@@ -123,6 +123,8 @@ namespace render {
         virtual void RenderQuad(const QT3DSVec2 inDimensions, const QT3DSMat44 &inMVP,
                                 NVRenderTexture2D &inQuadTexture) = 0;
 
+        virtual void FillQuad(const QT3DSVec4 &color) = 0;
+
         // This point rendering works uisng indirect array drawing
         // This means you need to setup a GPU buffer
         // which contains the drawing information

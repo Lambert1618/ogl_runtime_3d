@@ -56,10 +56,7 @@ namespace render {
     SOffscreenRendererEnvironment
         CSubPresentationRenderer::GetDesiredEnvironment(QT3DSVec2 /*inPresScale*/)
     {
-        // If we aren't using a clear color, then we are expected to blend with the background
-        bool hasTransparency = m_Presentation.m_Scene->m_UseClearColor ? false : true;
-        NVRenderTextureFormats::Enum format =
-            hasTransparency ? NVRenderTextureFormats::RGBA8 : NVRenderTextureFormats::RGB8;
+        NVRenderTextureFormats::Enum format = NVRenderTextureFormats::RGBA8;
         return SOffscreenRendererEnvironment((QT3DSU32)(m_Presentation.m_PresentationDimensions.x),
                                              (QT3DSU32)(m_Presentation.m_PresentationDimensions.y),
                                              format, OffscreenRendererDepthValues::Depth16, false,
@@ -71,12 +68,12 @@ namespace render {
                                           QT3DSVec2 /*inPresScale*/,
                                           const SRenderInstanceId instanceId)
     {
-        bool hasTransparency = m_Presentation.m_Scene->m_UseClearColor ? false : true;
         NVRenderRect theViewportSize(m_RenderContext.GetRenderList().GetViewport());
         bool wasDirty = m_Presentation.m_Scene->PrepareForRender(
             QT3DSVec2((QT3DSF32)theViewportSize.m_Width, (QT3DSF32)theViewportSize.m_Height),
             m_RenderContext, instanceId);
-        return SOffscreenRenderFlags(hasTransparency, wasDirty);
+        // Always transparent
+        return SOffscreenRenderFlags(true, wasDirty);
     }
 
     // Returns true if the rendered result image has transparency, or false
@@ -86,9 +83,6 @@ namespace render {
                                           SScene::RenderClearCommand inClearColorBuffer,
                                           const SRenderInstanceId instanceId)
     {
-        SSubPresentationHelper theHelper(
-            m_RenderContext,
-            QSize((QT3DSU32)inEnvironment.m_Width, (QT3DSU32)inEnvironment.m_Height));
         NVRenderRect theViewportSize(inRenderContext.GetViewport());
         m_Presentation.m_Scene->Render(
             QT3DSVec2((QT3DSF32)theViewportSize.m_Width, (QT3DSF32)theViewportSize.m_Height),

@@ -360,6 +360,25 @@ namespace render {
         QT3DS_IMPLEMENT_REF_COUNT_ADDREF_RELEASE(m_Shader.GetRenderContext().GetAllocator())
     };
 
+    struct SFillRectShader
+    {
+        NVRenderShaderProgram &m_Shader;
+
+        NVRenderCachedShaderProperty<QT3DSVec4> m_color;
+        volatile QT3DSI32 mRefCount;
+
+        SFillRectShader(NVRenderShaderProgram &inShader)
+            : m_Shader(inShader)
+            , m_color("color", inShader)
+            , mRefCount(0)
+        {
+            m_Shader.addRef();
+        }
+        ~SFillRectShader() { m_Shader.release(); }
+
+        QT3DS_IMPLEMENT_REF_COUNT_ADDREF_RELEASE(m_Shader.GetRenderContext().GetAllocator())
+    };
+
     struct SShadowmapPreblurShader
     {
         NVRenderShaderProgram &m_Shader;

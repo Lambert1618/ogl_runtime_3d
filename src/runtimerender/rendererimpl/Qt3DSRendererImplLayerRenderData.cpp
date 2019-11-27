@@ -59,6 +59,7 @@
 #include "Qt3DSRenderTextTextureAtlas.h"
 #include "Qt3DSRenderRenderList.h"
 #include "Qt3DSRendererUtil.h"
+#include "Qt3DSRenderSubPresentationHelper.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4355)
@@ -1232,6 +1233,9 @@ namespace render {
     {
         if (m_LayerPrepResult->IsLayerVisible()) {
             if (GetOffscreenRenderer()) {
+                auto rect = m_Renderer.GetQt3DSContext().GetRenderList().GetViewport();
+                SSubPresentationHelper helper(m_Renderer.GetQt3DSContext(),
+                                              QSize(rect.m_Width, rect.m_Height));
                 if (m_Layer.m_Background == LayerBackground::Color) {
                     m_LastFrameOffscreenRenderer->RenderWithClear(
                         CreateOffscreenRenderEnvironment(), m_Renderer.GetContext(),

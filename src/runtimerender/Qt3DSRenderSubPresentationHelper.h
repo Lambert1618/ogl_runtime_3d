@@ -37,11 +37,6 @@
 namespace qt3ds {
 namespace render {
 
-    // Small helper object to setup the state needed to render a sub presentation
-    // correctly.  Sub presentations may have transparency, and if they do then
-    // then need to be rendered with pre multiple alpha disabled.  If they don't,
-    // then they need to be rendered with pre-multiply alpha enabled (and have the alpha channel
-    // set to 1
     struct SSubPresentationHelper
     {
         IQt3DSRenderContext &m_RenderContext;
@@ -53,14 +48,14 @@ namespace render {
                                const QSize &inPresDimensions)
             : m_RenderContext(inContext)
             , m_PreviousPresentationDimensions(inContext.GetCurrentPresentationDimensions())
-            , m_WasInSubPresentation(inContext.IsInSubPresentation())
+            , m_WasInSubPresentation(inContext.isSubPresentationRenderInLayer())
         {
-            m_RenderContext.SetInSubPresentation(true);
+            m_RenderContext.setSubPresentationRenderInLayer(true);
             m_RenderContext.SetPresentationDimensions(inPresDimensions);
         }
         ~SSubPresentationHelper()
         {
-            m_RenderContext.SetInSubPresentation(m_WasInSubPresentation);
+            m_RenderContext.setSubPresentationRenderInLayer(m_WasInSubPresentation);
             m_RenderContext.SetPresentationDimensions(m_PreviousPresentationDimensions);
         }
     };

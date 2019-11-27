@@ -249,7 +249,7 @@ struct SRenderContext : public IQt3DSRenderContext
     StereoViews::Enum m_StereoView;
     double m_StereoEyeSeparation;
     bool m_WireframeMode;
-    bool m_IsInSubPresentation;
+    bool m_subPresentationRenderInLayer;
     Option<QT3DSVec4> m_SceneColor;
     Option<QT3DSVec4> m_MatteColor;
     bool m_matteEnabled;
@@ -290,7 +290,7 @@ struct SRenderContext : public IQt3DSRenderContext
         , m_StereoView(StereoViews::Mono)
         , m_StereoEyeSeparation(0.4)
         , m_WireframeMode(false)
-        , m_IsInSubPresentation(false)
+        , m_subPresentationRenderInLayer(false)
         , m_matteEnabled(false)
         , m_Rotation(RenderRotationValues::NoRotation)
         , m_ContextRenderTarget(NULL)
@@ -417,8 +417,14 @@ struct SRenderContext : public IQt3DSRenderContext
     bool IsAuthoringMode() override { return m_AuthoringMode; }
     void SetAuthoringMode(bool inMode) override { m_AuthoringMode = inMode; }
 
-    bool IsInSubPresentation() override { return m_IsInSubPresentation; }
-    void SetInSubPresentation(bool inValue) override { m_IsInSubPresentation = inValue; }
+    bool isSubPresentationRenderInLayer() override
+    {
+        return m_subPresentationRenderInLayer;
+    }
+    void setSubPresentationRenderInLayer(bool inValue) override
+    {
+        m_subPresentationRenderInLayer = inValue;
+    }
 
     ITextRenderer *GetTextRenderer() override { return m_TextRenderer; }
 
@@ -762,12 +768,18 @@ struct SRenderContext : public IQt3DSRenderContext
                     m_RotationTexture = NULL;
                     m_RotationDepthBuffer = NULL;
                 }
-                if (m_SceneColor.hasValue() && m_SceneColor.getValue().w != 0.0f) {
+                if (m_SceneColor.hasValue() && m_SceneColor.getValue().w > 0.0f) {
                     QT3DSVec4 theClearColor = m_SceneColor;
                     if (theClearColor.w < 1.0f) {
                         theClearColor.x *= theClearColor.w;
                         theClearColor.y *= theClearColor.w;
                         theClearColor.z *= theClearColor.w;
+                    }
+                    if (m_MatteColor.hasValue() && m_matteEnabled && theClearColor.w < 1.0f) {
+                        theClearColor.x += m_MatteColor->x * (1.0f - theClearColor.w);
+                        theClearColor.y += m_MatteColor->y * (1.0f - theClearColor.w);
+                        theClearColor.z += m_MatteColor->z * (1.0f - theClearColor.w);
+                        theClearColor.w += m_MatteColor->w * (1.0f - theClearColor.w);
                     }
                     m_RenderContext->SetClearColor(theClearColor);
                     m_RenderContext->Clear(qt3ds::render::NVRenderClearValues::Color);

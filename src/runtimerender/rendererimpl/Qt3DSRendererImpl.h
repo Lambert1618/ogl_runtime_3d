@@ -211,6 +211,7 @@ namespace render {
         NVScopedRefCounted<NVRenderAttribLayout> m_PointAttribLayout;
 
         Option<NVScopedRefCounted<SLayerSceneShader>> m_SceneLayerShader;
+        Option<NVScopedRefCounted<SFillRectShader>> m_fillRectShader;
         Option<NVScopedRefCounted<SLayerProgAABlendShader>> m_LayerProgAAShader;
 
         TShaderMap m_Shaders;
@@ -414,6 +415,7 @@ namespace render {
         void RenderQuad(const QT3DSVec2 inDimensions, const QT3DSMat44 &inMVP,
                                 NVRenderTexture2D &inQuadTexture) override;
         void RenderQuad() override;
+        void FillQuad(const QT3DSVec4 &color) override;
 
         void RenderPointsIndirect() override;
 
@@ -481,6 +483,7 @@ namespace render {
         STextRenderHelper GetTextWidgetShader();
         STextRenderHelper GetOnscreenTextShader();
         SLayerSceneShader *GetSceneLayerShader();
+        SFillRectShader *GetFillRectShader();
         NVRenderShaderProgram *GetTextAtlasEntryShader();
         void GenerateXYQuad();
         void GenerateXYQuadStrip();

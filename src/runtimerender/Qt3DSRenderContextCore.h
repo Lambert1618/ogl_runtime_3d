@@ -164,8 +164,8 @@ namespace render {
         virtual ITextTextureAtlas *GetTextureAtlas() = 0;
 
         // Sub presentations change the rendering somewhat.
-        virtual bool IsInSubPresentation() = 0;
-        virtual void SetInSubPresentation(bool inValue) = 0;
+        virtual bool isSubPresentationRenderInLayer() = 0;
+        virtual void setSubPresentationRenderInLayer(bool inValue) = 0;
         virtual void SetSceneColor(Option<QT3DSVec4> inSceneColor) = 0;
         virtual void SetMatteColor(Option<QT3DSVec4> inMatteColor) = 0;
         virtual void setMatteEnabled(bool enable) = 0;

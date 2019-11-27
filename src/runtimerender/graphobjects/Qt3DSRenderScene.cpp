@@ -85,25 +85,27 @@ void SScene::Render(const QT3DSVec2 &inViewportDimensions, IQt3DSRenderContext &
 {
     if ((inClearColorBuffer == SScene::ClearIsOptional && m_UseClearColor)
         || inClearColorBuffer == SScene::AlwaysClear) {
-        QT3DSF32 clearColorAlpha
-                = inContext.IsInSubPresentation() && !m_UseClearColor ? 0.0f : 1.0f;
-        QT3DSVec4 clearColor(0.0f, 0.0f, 0.0f, clearColorAlpha);
+        QT3DSVec4 clearColor(0.0f, 0.0f, 0.0f, 0.0f);
         if (m_UseClearColor) {
             clearColor.x = m_ClearColor.x;
             clearColor.y = m_ClearColor.y;
             clearColor.z = m_ClearColor.z;
             clearColor.w = m_ClearColor.w;
-            if (m_ClearColor.w < 1.0) {
+            if (m_ClearColor.w < 1.0f) {
                 clearColor.x *= m_ClearColor.w;
                 clearColor.y *= m_ClearColor.w;
                 clearColor.z *= m_ClearColor.w;
             }
         }
-        // Maybe clear and reset to previous clear color after we leave.
-        qt3ds::render::NVRenderContextScopedProperty<QT3DSVec4> __clearColor(
-            inContext.GetRenderContext(), &NVRenderContext::GetClearColor,
-            &NVRenderContext::SetClearColor, clearColor);
-        inContext.GetRenderContext().Clear(qt3ds::render::NVRenderClearValues::Color);
+        if (inContext.isSubPresentationRenderInLayer() && clearColor.w < 1.0f) {
+            inContext.GetRenderer().FillQuad(clearColor);
+        } else {
+            // Maybe clear and reset to previous clear color after we leave.
+            qt3ds::render::NVRenderContextScopedProperty<QT3DSVec4> __clearColor(
+                inContext.GetRenderContext(), &NVRenderContext::GetClearColor,
+                &NVRenderContext::SetClearColor, clearColor);
+            inContext.GetRenderContext().Clear(qt3ds::render::NVRenderClearValues::Color);
+        }
     }
     if (m_FirstChild) {
         inContext.GetRenderer().RenderLayer(*m_FirstChild, inViewportDimensions, m_UseClearColor,
