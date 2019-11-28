@@ -188,7 +188,15 @@ no definition - this will allow DLLs and libraries to use the exported API from 
 #define QT3DS_FOUNDATION_API
 #endif
 
+#if defined(QT3DS_AUTOTESTS_ENABLED)
+#if defined(QT3DS_BUILDING_LIBRARY)
+#define QT3DS_AUTOTEST_EXPORT Q_DECL_EXPORT
+#else
+#define QT3DS_AUTOTEST_EXPORT Q_DECL_IMPORT
+#endif
+#else
 #define QT3DS_AUTOTEST_EXPORT QT3DS_FOUNDATION_API
+#endif
 
 /**
 Calling convention

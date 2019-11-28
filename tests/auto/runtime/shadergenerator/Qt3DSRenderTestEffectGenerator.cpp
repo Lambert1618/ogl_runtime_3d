@@ -98,10 +98,12 @@ bool GenShader(IQt3DSRenderContext &qt3dsContext, SEffect &effect, qt3dsdm::SMet
         dynamic::SCommand &command = *metaEffect->m_EffectCommands[i];
         if (command.m_Type == dynamic::CommandTypes::Enum::BindShader) {
             dynamic::SBindShader *bindShader = static_cast<dynamic::SBindShader *>(&command);
+            QString error;
             NVRenderShaderProgram *theProgram =
                 qt3dsContext.GetDynamicObjectSystem()
                     .GetShaderProgram(bindShader->m_ShaderPath, bindShader->m_ShaderDefine,
-                                      TShaderFeatureSet(), dynamic::SDynamicShaderProgramFlags())
+                                      TShaderFeatureSet(), dynamic::SDynamicShaderProgramFlags(),
+                                      error)
                     .first;
             if (!theProgram)
                 success = false;

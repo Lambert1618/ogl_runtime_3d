@@ -546,7 +546,8 @@ bool Qt3DSRenderTestDefaultMaterialGenerator::run(NVRenderContext *context,
             NVRenderShaderProgram *program
                     = qt3dsRenderer()->GenerateShader(params->renderable,
                                                    toConstDataRef(params->features.data(),
-                                                                  (QT3DSU32)params->features.size()));
+                                                                  (QT3DSU32)params->features.size()),
+                                                      false);
             if (!program) {
                 success = false;
             } else {

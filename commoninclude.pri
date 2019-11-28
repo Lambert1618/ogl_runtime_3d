@@ -22,6 +22,11 @@ QT += core gui openglextensions
 
 DEFINES += COMPILED_FROM_DSP QT3DSDM_USE_NVLOG QT3DSDM_META_DATA_NO_SIGNALS
 
+!mingw {
+    # Enable autotest exports for non-mingw platforms
+    DEFINES += QT3DS_AUTOTESTS_ENABLED
+}
+
 INCLUDEPATH += \
     $$PWD/src \
     $$PWD/src/datamodel \
