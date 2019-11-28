@@ -477,7 +477,7 @@ void Q3DSViewerSettingsPrivate::setMatteEnabled(bool enabled)
 {
     m_matteEnabled = enabled;
     if (m_viewerApp) {
-        m_viewerApp->setMatteColor(enabled);
+        m_viewerApp->setMatteEnabled(enabled);
     } else if (m_commandQueue) {
         m_commandQueue->m_matteEnabled = enabled;
         m_commandQueue->m_matteEnabledChanged = true;
