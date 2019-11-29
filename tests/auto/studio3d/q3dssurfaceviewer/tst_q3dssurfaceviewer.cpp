@@ -661,6 +661,9 @@ void tst_Q3DSSurfaceViewer::testSettings()
     QCOMPARE(s->isShowRenderStats(), false);
     QCOMPARE(s->scaleMode(), Q3DSViewerSettings::ScaleModeCenter);
 
+    // Enable matte
+    s->setMatteEnabled(true);
+
     // Matte
     checkPixel(m_viewer, Qt::black);
 
@@ -924,7 +927,7 @@ void tst_Q3DSSurfaceViewer::testPresentation()
     checkPixel(m_viewer, Qt::red, mainPoint);
     checkPixel(m_viewer, Qt::green, c1Point);
     checkPixel(m_viewer, Qt::yellow, c2Point);
-    QCOMPARE(spy1.count(), 13);
+    QCOMPARE(spy1.count(), 11);
     QCOMPARE(spy2.count(), 6);
 
     // No wrap, should not change
@@ -932,7 +935,7 @@ void tst_Q3DSSurfaceViewer::testPresentation()
     checkPixel(m_viewer, Qt::red, mainPoint);
     checkPixel(m_viewer, Qt::green, c1Point);
     checkPixel(m_viewer, Qt::yellow, c2Point);
-    QCOMPARE(spy1.count(), 13);
+    QCOMPARE(spy1.count(), 11);
     QCOMPARE(spy2.count(), 6);
 
     // Should wrap
@@ -940,7 +943,7 @@ void tst_Q3DSSurfaceViewer::testPresentation()
     checkPixel(m_viewer, Qt::green, mainPoint);
     checkPixel(m_viewer, Qt::green, c1Point);
     checkPixel(m_viewer, Qt::green, c2Point);
-    QCOMPARE(spy1.count(), 14);
+    QCOMPARE(spy1.count(), 12);
     QCOMPARE(spy2.count(), 7);
 
     // No wrap, should not change
@@ -948,7 +951,7 @@ void tst_Q3DSSurfaceViewer::testPresentation()
     checkPixel(m_viewer, Qt::green, mainPoint);
     checkPixel(m_viewer, Qt::green, c1Point);
     checkPixel(m_viewer, Qt::green, c2Point);
-    QCOMPARE(spy1.count(), 14);
+    QCOMPARE(spy1.count(), 12);
     QCOMPARE(spy2.count(), 7);
 
     // Should wrap
@@ -956,7 +959,7 @@ void tst_Q3DSSurfaceViewer::testPresentation()
     checkPixel(m_viewer, Qt::red, mainPoint);
     checkPixel(m_viewer, Qt::green, c1Point);
     checkPixel(m_viewer, Qt::yellow, c2Point);
-    QCOMPARE(spy1.count(), 17);
+    QCOMPARE(spy1.count(), 13);
     QCOMPARE(spy2.count(), 8);
 }
 
@@ -1112,18 +1115,14 @@ void tst_Q3DSSurfaceViewer::testSceneElement()
     QCOMPARE(spy4.count(), 2);
     QCOMPARE(spy5.count(), 0);
     QCOMPARE(spy6.count(), 0);
-    // Getting previous slide change without getting current slide change seems illogical here,
-    // but that's how the internal viewer logic for previous slide works. It makes sense when
-    // you consider the fact that we always get enter events for child slides when parent slide
-    // is entered.
-    QCOMPARE(spy7.count(), 1);
+    QCOMPARE(spy7.count(), 0);
     QCOMPARE(spy8.count(), 0);
-    QCOMPARE(spy9.count(), 1);
+    QCOMPARE(spy9.count(), 0);
     QCOMPARE(spy10.count(), 0);
     QCOMPARE(spy11.count(), 0);
-    QCOMPARE(spy12.count(), 1);
+    QCOMPARE(spy12.count(), 0);
     QCOMPARE(spy13.count(), 0);
-    QCOMPARE(spy14.count(), 1);
+    QCOMPARE(spy14.count(), 0);
     QCOMPARE(spy15.count(), 0);
 
     p->goToSlide(pathC1, QStringLiteral("C1S2"));
@@ -1140,9 +1139,9 @@ void tst_Q3DSSurfaceViewer::testSceneElement()
     QCOMPARE(spy9.count(), 1);
     QCOMPARE(spy10.count(), 0);
     QCOMPARE(spy11.count(), 0);
-    QCOMPARE(spy12.count(), 1);
+    QCOMPARE(spy12.count(), 0);
     QCOMPARE(spy13.count(), 0);
-    QCOMPARE(spy14.count(), 1);
+    QCOMPARE(spy14.count(), 0);
     QCOMPARE(spy15.count(), 0);
 
     p->goToSlide(pathC2, QStringLiteral("C2S2"));
@@ -1192,15 +1191,15 @@ void tst_Q3DSSurfaceViewer::testSceneElement()
     QCOMPARE(spy3.count(), 4);
     QCOMPARE(spy4.count(), 4);
     QCOMPARE(spy5.count(), 0);
-    QCOMPARE(spy6.count(), 2);
-    QCOMPARE(spy7.count(), 2);
-    QCOMPARE(spy8.count(), 2);
-    QCOMPARE(spy9.count(), 2);
+    QCOMPARE(spy6.count(), 1);
+    QCOMPARE(spy7.count(), 1);
+    QCOMPARE(spy8.count(), 1);
+    QCOMPARE(spy9.count(), 1);
     QCOMPARE(spy10.count(), 0);
-    QCOMPARE(spy11.count(), 2);
-    QCOMPARE(spy12.count(), 2);
-    QCOMPARE(spy13.count(), 2);
-    QCOMPARE(spy14.count(), 2);
+    QCOMPARE(spy11.count(), 1);
+    QCOMPARE(spy12.count(), 1);
+    QCOMPARE(spy13.count(), 1);
+    QCOMPARE(spy14.count(), 1);
     QCOMPARE(spy15.count(), 0);
 
     p->unregisterElement(scene);
@@ -1216,15 +1215,15 @@ void tst_Q3DSSurfaceViewer::testSceneElement()
     QCOMPARE(spy3.count(), 4);
     QCOMPARE(spy4.count(), 4);
     QCOMPARE(spy5.count(), 0);
-    QCOMPARE(spy6.count(), 2);
-    QCOMPARE(spy7.count(), 2);
-    QCOMPARE(spy8.count(), 2);
-    QCOMPARE(spy9.count(), 2);
+    QCOMPARE(spy6.count(), 1);
+    QCOMPARE(spy7.count(), 1);
+    QCOMPARE(spy8.count(), 1);
+    QCOMPARE(spy9.count(), 1);
     QCOMPARE(spy10.count(), 0);
-    QCOMPARE(spy11.count(), 2);
-    QCOMPARE(spy12.count(), 2);
-    QCOMPARE(spy13.count(), 2);
-    QCOMPARE(spy14.count(), 2);
+    QCOMPARE(spy11.count(), 1);
+    QCOMPARE(spy12.count(), 1);
+    QCOMPARE(spy13.count(), 1);
+    QCOMPARE(spy14.count(), 1);
     QCOMPARE(spy15.count(), 0);
 
     // Reregister
@@ -1322,21 +1321,19 @@ void tst_Q3DSSurfaceViewer::testSceneElement()
     QCOMPARE(spy4.count(), 12);
     QCOMPARE(spy5.count(), 1);
 
-    QCOMPARE(scene->currentSlideIndex(), 1);
+    QCOMPARE(scene->currentSlideIndex(), 2);
     QCOMPARE(scene->previousSlideIndex(), 1);
-    // Having current and previous slides the same seems weird, but that's how the slide
-    // logic works internally.
-    QCOMPARE(scene->currentSlideName(), QStringLiteral("C1S1"));
+    QCOMPARE(scene->currentSlideName(), QStringLiteral("C1S2"));
     QCOMPARE(scene->previousSlideName(), QStringLiteral("C1S1"));
     QCOMPARE(scene->elementPath(), pathC1);
 
     p->goToSlide(pathC1, QStringLiteral("C1S2"));
     checkPixel(m_viewer, Qt::red);
 
-    QCOMPARE(spy1.count(), 13);
-    QCOMPARE(spy2.count(), 12);
-    QCOMPARE(spy3.count(), 13);
-    QCOMPARE(spy4.count(), 12);
+    QCOMPARE(spy1.count(), 12);
+    QCOMPARE(spy2.count(), 13);
+    QCOMPARE(spy3.count(), 12);
+    QCOMPARE(spy4.count(), 13);
     QCOMPARE(spy5.count(), 1);
 }
 
