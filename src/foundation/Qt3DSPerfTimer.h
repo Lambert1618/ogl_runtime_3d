@@ -101,7 +101,12 @@ namespace foundation {
 }
 }
 
-#define QT3DS_FOUNDATION_PERF_SCOPED_TIMER(context, name)                                             \
-    SStackPerfTimer __perfTimer(getPerfTimer(context), #name);
+#ifdef QT3DS_ENABLE_PERF_LOGGING
+#define QT3DS_PERF_SCOPED_TIMER(timer, name)                                             \
+    SStackPerfTimer __perfTimer(timer, name);
+#else
+/// Empty macro
+#define QT3DS_PERF_SCOPED_TIMER(timer, name)
+#endif
 
 #endif

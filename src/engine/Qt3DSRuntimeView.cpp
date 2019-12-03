@@ -399,6 +399,7 @@ void CRuntimeView::Render()
     if (m_startupTime < 0 && m_startupTimer && m_startupTimer->isValid()) {
         m_startupTime = m_startupTimer->elapsed();
         m_startupTimer->invalidate();
+        qCDebug(PERF_INFO, "RuntimeView: First frame at - %dms", m_startupTime);
     }
 
     if (m_showOnScreenStats) {

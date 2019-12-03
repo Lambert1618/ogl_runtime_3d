@@ -1005,8 +1005,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
     qt3ds::QT3DSU32 LoadSceneStage1(CRegisteredString inPresentationDirectory,
                                       qt3ds::render::ILoadedBuffer &inData) override
     {
-        SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                    "Load Scene Graph Stage 1");
+        QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                "Load Scene Graph Stage 1")
         NVDataRef<QT3DSU8> theLoadedData(inData.Data());
         SDataReader theReader(theLoadedData.begin(), theLoadedData.end());
 
@@ -1063,8 +1063,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
     void LoadSceneStage2(qt3ds::QT3DSU32 inSceneHandle, Q3DStudio::IPresentation &inPresentation,
                                  size_t inElementMemoryOffset, Q3DStudio::IScriptBridge &inBridge) override
     {
-        SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                    "Load Scene Graph Stage 2");
+        QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                "Load Scene Graph Stage 2")
         QT3DSU32 theSceneIndex = QT3DS_MAX_U32;
         SSceneLoadData *theScene;
         {
@@ -1133,8 +1133,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         }
 
         {
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Initial Batch Image Load");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Initial Batch Image Load")
 
             m_Context->m_Context->GetImageBatchLoader().LoadImageBatch(
                 toConstDataRef(imagePathList.data(), imagePathList.size()),
@@ -1148,8 +1148,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
 
         {
 
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Initialize Scenes");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Initialize Scenes")
             for (QT3DSU32 idx = 0, end = m_LoadingScenes.size(); idx < end; ++idx) {
                 SSceneLoadData &theScene = *m_LoadingScenes[idx];
                 // m_Context->m_Foundation->error( QT3DS_WARN, "Finalizing scene %d", (int)idx+1 );
@@ -1364,8 +1364,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
     NVDataRef<qt3ds::QT3DSU8> BinaryLoadManagerData(qt3ds::foundation::IInStream &inStream,
                                                       const char *inBinaryDir) override
     {
-        SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                    "Load UIAB - String Table + Render Objects");
+        QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                "Load UIAB - String Table + Render Objects")
         QT3DS_ASSERT(m_Context->m_FlowData == nullptr);
         QT3DSU32 dataSize = 0;
         inStream.Read(dataSize);
@@ -1373,8 +1373,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
             dataSize, "SceneManager::BinaryFlowData", __FILE__, __LINE__);
 
         {
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Load UIAB - Initial Data Load");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Load UIAB - Initial Data Load")
             inStream.Read(m_Context->m_FlowData, dataSize);
         }
         SDataReader theReader(m_Context->m_FlowData, m_Context->m_FlowData + dataSize);
@@ -1388,8 +1388,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
 
         // Load string table.
         {
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Load UIAB - Load String Table");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Load UIAB - Load String Table")
             m_StrTableData = toDataRef(theReader.m_CurrentPtr + theStringTableOffset,
                                        dataSize - theStringTableOffset);
             theStrTable.Load(m_StrTableData);
@@ -1420,8 +1420,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         }
 
         {
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Load UIAB - Base Dynamic System");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Load UIAB - Base Dynamic System")
             // Load effect system.
             NVDataRef<QT3DSU8> theDynamicSystemData(theStartOffset, theEffectSystemOffset);
             m_Context->m_CoreContext->GetDynamicObjectSystemCore().Load(
@@ -1429,8 +1429,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         }
 
         {
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Load UIAB - Effect System");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Load UIAB - Effect System")
             NVDataRef<QT3DSU8> theEffectSystemData(theStartOffset + theEffectSystemOffset,
                                                 theMaterialSystemOffset - theEffectSystemOffset);
             m_Context->m_CoreContext->GetEffectSystemCore().Load(theEffectSystemData,
@@ -1438,8 +1438,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         }
 
         {
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Load UIAB - Material System");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Load UIAB - Material System")
             NVDataRef<QT3DSU8> theMaterialSystemData(theStartOffset + theMaterialSystemOffset,
                                                   thePluginManagerOffset - theMaterialSystemOffset);
             m_Context->m_CoreContext->GetMaterialSystemCore().Load(theMaterialSystemData,
@@ -1447,8 +1447,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         }
 
         {
-            SStackPerfTimer __perfTimer(m_Context->m_CoreContext->GetPerfTimer(),
-                                        "Load UIAB - Plugin Manager Data");
+            QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                    "Load UIAB - Plugin Manager Data")
             NVDataRef<QT3DSU8> thePluginManagerData(theStartOffset + thePluginManagerOffset,
                                                  theStringTableOffset - thePluginManagerOffset);
             m_Context->m_CoreContext->GetRenderPluginCore().Load(thePluginManagerData,
@@ -1787,7 +1787,7 @@ struct SRenderFactory : public IQt3DSRenderFactoryCore, public IQt3DSRenderFacto
 
         GetSceneLoader();
         {
-            SStackPerfTimer __loadTimer(GetPerfTimer(), "SceneManager OnGraphicsInitialized");
+            QT3DS_PERF_SCOPED_TIMER(GetPerfTimer(), "SceneManager: OnGraphicsInitialized")
             m_SceneManager->OnGraphicsInitialized();
         }
         return *this;

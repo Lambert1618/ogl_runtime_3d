@@ -678,7 +678,7 @@ struct STimeContext
         inPerfTimer.Update("ActivationManager - Update Initial Vars",
                            qt3ds::foundation::Time::getCurrentCounterValue() - start);
         if (activationChange) {
-            SStackPerfTimer __timer(inPerfTimer, "ActivationManager - Activation Change");
+            QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager - Activation Change")
             HandleActivationChange(theContextNode, activateBuffer, deactivateBuffer, scriptBuffer,
                                    m_ElementAccessMutex, scriptBufferRequiresSort, isActive);
             m_DirtyList.clear();
@@ -696,7 +696,7 @@ struct STimeContext
                 RemoveOverride();
         }
         if (isActive) {
-            SStackPerfTimer __timer(inPerfTimer, "ActivationManager - Update Local Time");
+            QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager - Update Local Time")
             bool atEndOfTime = CalculateNewTime(inGlobalTime);
             if (atEndOfTime) {
                 Mutex::ScopedLock __locker(m_ElementAccessMutex);
@@ -709,7 +709,7 @@ struct STimeContext
         }
         if (isActive || activationChange) {
             if (m_AllNodesDirty || m_DirtyList.size()) {
-                SStackPerfTimer __timer(inPerfTimer, "ActivationManager - Dirty Scan");
+                QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager - Dirty Scan")
                 RunDirtyScan(inScanBuffer, inTempDirtyList, activateBuffer, deactivateBuffer,
                              scriptBuffer, scriptBufferRequiresSort);
             }
@@ -974,7 +974,7 @@ struct SActivityZone : public IActivityZone
 
     void DoUpdate()
     {
-        SStackPerfTimer __timer(m_PerfTimer, "ActivationManager - DoUpdate");
+        QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "ActivationManager - DoUpdate")
         if (m_Active) {
             // We know that parent elements are added before children.
             // So we know the time contexts are in an appropriate order, assuming they completely

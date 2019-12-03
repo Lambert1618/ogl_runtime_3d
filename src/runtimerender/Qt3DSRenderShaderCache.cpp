@@ -411,7 +411,7 @@ struct ShaderCache : public IShaderCache
         if (!inFrag)
             inFrag = "";
 
-        SStackPerfTimer __perfTimer(m_PerfTimer, "Shader Compilation");
+        QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "Shader Compilation")
         m_VertexCode.assign(inVert);
         m_TessCtrlCode.assign(inTessCtrl);
         m_TessEvalCode.assign(inTessEval);
@@ -553,7 +553,7 @@ struct ShaderCache : public IShaderCache
         if (shaderCache.isEmpty())
             BAILOUT("Shader cache Empty")
 
-        SStackPerfTimer __perfTimer(m_PerfTimer, "ShaderCache - Import");
+        QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "ShaderCache - Import")
 
         QDataStream data(shaderCache);
         quint32 type;

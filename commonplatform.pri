@@ -18,6 +18,11 @@ DEFINES += \
     _UNICODE \
     NO_BOOST
 
+# Enable this to build runtime with perf logging on.
+# At runtime to see logs, you should also enable "qt3ds.perf_info"
+# category e.g. with "QT_LOGGING_RULES=qt3ds.perf_info=true"
+#DEFINES += QT3DS_ENABLE_PERF_LOGGING
+
 win32: PlatformSpecificDir = windows
 macos: PlatformSpecificDir = macos
 linux|integrity|qnx: PlatformSpecificDir = linux

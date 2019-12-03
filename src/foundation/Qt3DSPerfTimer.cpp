@@ -63,9 +63,8 @@ struct STimerEntry
         ++m_UpdateCount;
     }
 
-    void Output(NVFoundationBase &fnd, QT3DSU32 inFramesPassed)
+    void Output(QT3DSU32 inFramesPassed)
     {
-        Q_UNUSED(fnd)
         if (m_Total) {
             QT3DSU64 tensNanos = Time::sCounterFreq.toTensOfNanos(m_Total);
             QT3DSU64 maxNanos = Time::sCounterFreq.toTensOfNanos(m_Max);
@@ -136,7 +135,7 @@ struct SPerfTimer : public IPerfTimer
         eastl::sort(m_PrintEntries.begin(), m_PrintEntries.end());
 
         for (QT3DSU32 idx = 0, end = (QT3DSU32)m_PrintEntries.size(); idx < end; ++idx) {
-            m_PrintEntries[idx].Output(m_Foundation, inFramesPassed);
+            m_PrintEntries[idx].Output(inFramesPassed);
         }
     }
 

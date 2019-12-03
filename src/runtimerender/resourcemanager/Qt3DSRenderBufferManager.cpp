@@ -377,7 +377,7 @@ struct SBufferManager : public IBufferManager
     void doImageLoad(CRegisteredString inImagePath,
                      NVScopedReleasable<SLoadedTexture> &theLoadedImage)
     {
-        SStackPerfTimer __perfTimer(m_PerfTimer, "Image Decompression");
+        QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "Image Decompression")
         theLoadedImage = SLoadedTexture::Load(
                     inImagePath.c_str(), m_Context->GetFoundation(), *m_InputStreamFactory,
                     true, m_Context->GetRenderContextType(), false, this);
@@ -435,7 +435,7 @@ struct SBufferManager : public IBufferManager
                                       SLoadedTexture &inLoadedImage,
                                       bool inForceScanForTransparency, bool inBsdfMipmaps) override
     {
-        SStackPerfTimer __perfTimer(m_PerfTimer, "Image Upload");
+        QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "Image Upload")
         {
             Mutex::ScopedLock __mapLocker(m_LoadedImageSetMutex);
             m_LoadedImageSet.insert(inImagePath);

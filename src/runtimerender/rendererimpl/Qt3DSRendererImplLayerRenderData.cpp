@@ -667,8 +667,8 @@ namespace render {
 
     void SLayerRenderData::RenderShadowMapPass(CResourceFrameBuffer *theFB)
     {
-        SStackPerfTimer ___timer(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                 "SLayerRenderData::RenderShadowMapPass");
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "SLayerRenderData::RenderShadowMapPass")
 
         if (m_Camera == NULL || !GetShadowMapManager())
             return;
@@ -825,8 +825,8 @@ namespace render {
 
     void SLayerRenderData::RenderDepthPass(bool inEnableTransparentDepthWrite)
     {
-        SStackPerfTimer ___timer(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                 "SLayerRenderData::RenderDepthPass");
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "SLayerRenderData::RenderDepthPass")
         if (m_Camera == NULL)
             return;
 
@@ -1053,8 +1053,8 @@ namespace render {
 
     void SLayerRenderData::Render(CResourceFrameBuffer *theFB)
     {
-        SStackPerfTimer ___timer(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                 "SLayerRenderData::Render");
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "SLayerRenderData::Render")
         if (m_Camera == NULL)
             return;
 
@@ -2213,8 +2213,8 @@ namespace render {
 
     void SLayerRenderData::AddLayerRenderStep()
     {
-        SStackPerfTimer __perfTimer(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                    "SLayerRenderData::AddLayerRenderStep");
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "SLayerRenderData::AddLayerRenderStep")
         QT3DS_ASSERT(m_Camera);
         if (!m_Camera)
             return;

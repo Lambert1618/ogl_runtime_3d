@@ -931,7 +931,7 @@ struct SApp : public IApplication
 
     void UpdatePresentations()
     {
-        SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(), "UpdatePresentations");
+        QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(), "UpdatePresentations")
         // Transfer the input frame to the kernel for pick processing
         // the scene manager now handles the picking on each of its scenes
         SetPickFrame(m_RuntimeFactory->GetSceneManager().AdvancePickFrame(
@@ -947,30 +947,30 @@ struct SApp : public IApplication
         QVector<CPresentation *> presentations(getPresentations());
 
         {
-            SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
-                                          "UpdatePresentations - pre update");
+            QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
+                                    "UpdatePresentations - pre update")
             forAllPresentations(presentations, true, [globalTime](CPresentation *p) {
                 p->PreUpdate(globalTime);
             });
         }
         {
-            SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
-                                          "UpdatePresentations - begin update");
+            QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
+                                    "UpdatePresentations - begin update")
             forAllPresentations(presentations, true, [](CPresentation *p) {
                 p->BeginUpdate();
             });
         }
         // Allow EndUpdate and PostUpdate for inactive presentations so we can activate it
         {
-            SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
-                                          "UpdatePresentations - end update");
+            QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
+                                    "UpdatePresentations - end update")
             forAllPresentations(presentations, false, [](CPresentation *p) {
                 p->EndUpdate();
             });
         }
         {
-            SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
-                                          "UpdatePresentations - postupdate");
+            QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
+                                    "UpdatePresentations - postupdate")
             forAllPresentations(presentations, false, [globalTime](CPresentation *p) {
                 p->PostUpdate(globalTime);
             });
@@ -983,8 +983,8 @@ struct SApp : public IApplication
     void NotifyDataOutputs()
     {
         {
-            SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(),
-                                          "NotifyDataOutputs");
+            QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
+                                    "NotifyDataOutputs")
 
             // Allow presentations to notify of registered data output changes
             for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
@@ -1026,7 +1026,7 @@ struct SApp : public IApplication
                     }
                 }
             }
-        } // End SStackPerfTimer scope
+        } // End QT3DS_PERF_SCOPED_TIMER scope
     }
 
     void UpdateScenes() { m_RuntimeFactory->GetSceneManager().Update(); }
@@ -1056,8 +1056,8 @@ struct SApp : public IApplication
                                 = *theAsset.getDataPtr<SPresentationAsset>();
                         CPresentation *thePresentation = thePresentationAsset.m_Presentation;
                         if (thePresentation) {
-                            SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
-                                                        "Application: SetActivityZone");
+                            QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                                    "Application: SetActivityZone")
                             thePresentation->SetActivityZone(
                                       &m_ActivityZoneManager->CreateActivityZone(*thePresentation));
                             thePresentation->SetActive(thePresentationAsset.m_Active);
@@ -1086,7 +1086,7 @@ struct SApp : public IApplication
 
     void Render()
     {
-        SStackPerfTimer __updateTimer(m_RuntimeFactory->GetPerfTimer(), "Render");
+        QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(), "Render")
         CPresentation *pres = GetPrimaryPresentation();
         if (pres) {
             auto &rc = m_RuntimeFactory->GetQt3DSRenderContext();
@@ -1238,8 +1238,8 @@ struct SApp : public IApplication
                                 = *theAsset.getDataPtr<SPresentationAsset>();
                         CPresentation *thePresentation = thePresentationAsset.m_Presentation;
                         if (thePresentation) {
-                            SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
-                                                        "Application: SetActivityZone");
+                            QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                                    "Application: SetActivityZone")
                             thePresentation->SetActivityZone(
                                       &m_ActivityZoneManager->CreateActivityZone(*thePresentation));
                             thePresentation->SetActive(thePresentationAsset.m_Active);
@@ -1575,7 +1575,7 @@ struct SApp : public IApplication
 
     bool BeginLoad(const QString &sourcePath, const QStringList &variantList) override
     {
-        SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(), "Application: Begin Load");
+        QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(), "Application: Begin Load")
         eastl::string directory;
         eastl::string filename;
         eastl::string extension;
@@ -1778,19 +1778,22 @@ struct SApp : public IApplication
                                     bool initInRenderThread) override
     {
         {
-            SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
-                                        "Application: Initialize Graphics");
+            QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                    "Application: Initialize Graphics")
 
             {
-                SStackPerfTimer __timer(m_CoreFactory->GetPerfTimer(), "Application: EndLoad");
+                QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(), "Application: EndLoad")
                 EndLoad();
             }
             m_InputEnginePtr = &inInputEngine;
             m_RuntimeFactory = inFactory;
 
+#ifdef QT3DS_ENABLE_PERF_LOGGING
+            EnableProfileLogging();
+#endif
             {
-                SStackPerfTimer __timer(m_CoreFactory->GetPerfTimer(),
-                                        "Application: Load Context Graphics Initialized");
+                QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                        "Application: Load Context Graphics Initialized")
                 if (m_AppLoadContext)
                     m_createSuccessful = m_AppLoadContext->OnGraphicsInitialized(
                                 inFactory, initInRenderThread);
@@ -1801,8 +1804,8 @@ struct SApp : public IApplication
             }
 
             {
-                SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
-                                            "Application: End Font Preload");
+                QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                        "Application: End Font Preload")
                 if (m_CoreFactory->GetRenderContextCore().GetTextRendererCore())
                     m_CoreFactory->GetRenderContextCore()
                             .GetTextRendererCore()
@@ -1824,8 +1827,8 @@ struct SApp : public IApplication
                                 *m_OrderedAssets[idx].second->getDataPtr<SPresentationAsset>());
                     CPresentation *thePresentation = theAsset.m_Presentation;
                     if (thePresentation) {
-                        SStackPerfTimer __loadTimer(m_CoreFactory->GetPerfTimer(),
-                                                    "Application: SetActivityZone");
+                        QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                                "Application: SetActivityZone")
                         thePresentation->SetActivityZone(
                                     &m_ActivityZoneManager->CreateActivityZone(*thePresentation));
                         thePresentation->SetActive(theAsset.m_Active);

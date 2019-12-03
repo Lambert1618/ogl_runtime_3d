@@ -1054,8 +1054,8 @@ namespace render {
             const QT3DSMat44 &inViewProjection, const Option<SClippingFrustum> &inClipFrustum,
             QT3DSF32 inTextScaleFactor, SLayerRenderPreparationResultFlags &ioFlags)
     {
-        SStackPerfTimer __timer(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                "SLayerRenderData::PrepareRenderablesForRender");
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "SLayerRenderData::PrepareRenderablesForRender")
         m_ViewProjection = inViewProjection;
         QT3DSF32 theTextScaleFactor = inTextScaleFactor;
         bool wasDataDirty = false;
@@ -1163,8 +1163,8 @@ namespace render {
 
     void SLayerRenderPreparationData::PrepareForRender(const QSize &inViewportDimensions)
     {
-        SStackPerfTimer __timer(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                "SLayerRenderData::PrepareForRender");
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "SLayerRenderData::PrepareForRender")
         if (m_LayerPrepResult.hasValue())
             return;
 

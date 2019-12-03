@@ -328,7 +328,7 @@ struct Qt3DSQtTextRenderer : public ITextRenderer
     {
         if (m_PreloadingFonts) {
             {
-                SStackPerfTimer __perfTimer(*m_perfTimer, "QtText: Wait till font preloading completed");
+                QT3DS_PERF_SCOPED_TIMER(*m_perfTimer, "QtText: Wait till font preloading completed")
                 m_PreloadSync.wait();
             }
         }
