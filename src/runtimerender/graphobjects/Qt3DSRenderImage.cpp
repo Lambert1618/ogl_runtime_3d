@@ -60,7 +60,7 @@ static void HandleOffscreenResult(SImage &theImage, SImageTextureData &newImage,
 {
     newImage.m_Texture = theResult.m_Texture;
     newImage.m_TextureFlags.SetHasTransparency(theResult.m_HasTransparency);
-    newImage.m_TextureFlags.SetPreMultiplied(true);
+    newImage.m_TextureFlags.SetPreMultiplied(theResult.m_HasTransparency);
     wasDirty = wasDirty || theResult.m_HasChangedSinceLastFrame;
     theImage.m_LastFrameOffscreenRenderer = theResult.m_Renderer;
     replaceTexture = true;

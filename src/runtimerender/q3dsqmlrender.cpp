@@ -104,7 +104,7 @@ SOffscreenRenderFlags Q3DSQmlRender::NeedsRender(const SOffscreenRendererEnviron
         initializeRenderer();
     if (m_qmlStreamRenderer)
         render = m_qmlStreamRenderer->isUpdateRequested();
-    return SOffscreenRenderFlags(false, render);
+    return SOffscreenRenderFlags(true, render);
 }
 
 void Q3DSQmlRender::Render(const SOffscreenRendererEnvironment &inEnvironment,
