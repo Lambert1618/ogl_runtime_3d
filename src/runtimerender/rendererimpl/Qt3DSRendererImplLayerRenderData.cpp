@@ -668,7 +668,7 @@ namespace render {
     void SLayerRenderData::RenderShadowMapPass(CResourceFrameBuffer *theFB)
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                "SLayerRenderData::RenderShadowMapPass")
+                                "LayerRenderData: RenderShadowMapPass")
 
         if (m_Camera == NULL || !GetShadowMapManager())
             return;
@@ -826,7 +826,7 @@ namespace render {
     void SLayerRenderData::RenderDepthPass(bool inEnableTransparentDepthWrite)
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                "SLayerRenderData::RenderDepthPass")
+                                "LayerRenderData: RenderDepthPass")
         if (m_Camera == NULL)
             return;
 
@@ -1007,54 +1007,69 @@ namespace render {
         theRenderContext.SetDepthFunction(qt3ds::render::NVRenderBoolOp::LessThanOrEqual);
         theRenderContext.SetBlendingEnabled(false);
         QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
-        NVDataRef<SRenderableObject *> theOpaqueObjects = GetOpaqueRenderableObjects();
+        {
+            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                    "LayerRenderData: Render opaque")
+            NVDataRef<SRenderableObject *> theOpaqueObjects = GetOpaqueRenderableObjects();
 
-        if (m_Layer.m_Flags.IsLayerEnableDepthTest()) {
-            theRenderContext.SetDepthTestEnabled(true);
-            theRenderContext.SetDepthWriteEnabled(inEnableDepthWrite);
-        } else {
-            theRenderContext.SetDepthWriteEnabled(false);
-            theRenderContext.SetDepthTestEnabled(false);
+            if (m_Layer.m_Flags.IsLayerEnableDepthTest()) {
+                theRenderContext.SetDepthTestEnabled(true);
+                theRenderContext.SetDepthWriteEnabled(inEnableDepthWrite);
+            } else {
+                theRenderContext.SetDepthWriteEnabled(false);
+                theRenderContext.SetDepthTestEnabled(false);
+            }
+
+            for (QT3DSU32 idx = 0, end = theOpaqueObjects.size(); idx < end; ++idx) {
+                SRenderableObject &theObject(*theOpaqueObjects[idx]);
+                SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
+                                                   theObject.m_ScopedLights);
+                SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+                inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
+                           inCamera);
+            }
+        }
+        {
+            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                    "LayerRenderData: Render transparent pass1")
+
+            NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
+            // Also draw opaque parts of transparent objects
+            m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
+            for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
+                SRenderableObject &theObject(*theTransparentObjects[idx]);
+                SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
+                                                   theObject.m_ScopedLights);
+                SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+                inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
+                           inCamera);
+            }
         }
 
-        for (QT3DSU32 idx = 0, end = theOpaqueObjects.size(); idx < end; ++idx) {
-            SRenderableObject &theObject(*theOpaqueObjects[idx]);
-            SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
-                                               theObject.m_ScopedLights);
-            SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
-            inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
-                       inCamera);
+        {
+            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                    "LayerRenderData: Render transparent pass2")
+            m_Renderer.setAlphaTest(true, -1.0f, 1.0f);
+            // transparent parts of transparent objects
+            // does not render objects without alpha test enabled so
+            // we need another pass without alpha test
+            renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
+                                         indexLight, inCamera, theFB);
         }
-
-        NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
-        // Also draw opaque parts of transparent objects
-        m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
-        for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
-            SRenderableObject &theObject(*theTransparentObjects[idx]);
-            SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
-                                               theObject.m_ScopedLights);
-            SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
-            inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
-                       inCamera);
+        {
+            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                    "LayerRenderData: Render transparent pass3")
+            m_Renderer.setAlphaTest(false, 1.0, 1.0);
+            // transparent objects without alpha test
+            renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
+                                         indexLight, inCamera, theFB);
         }
-
-        m_Renderer.setAlphaTest(true, -1.0f, 1.0f);
-        // transparent parts of transparent objects
-        // does not render objects without alpha test enabled so
-        // we need another pass without alpha test
-        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
-                                     indexLight, inCamera, theFB);
-
-        m_Renderer.setAlphaTest(false, 1.0, 1.0);
-        // transparent objects without alpha test
-        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
-                                     indexLight, inCamera, theFB);
     }
 
     void SLayerRenderData::Render(CResourceFrameBuffer *theFB)
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                "SLayerRenderData::Render")
+                                "LayerRenderData: Render")
         if (m_Camera == NULL)
             return;
 
@@ -2214,7 +2229,7 @@ namespace render {
     void SLayerRenderData::AddLayerRenderStep()
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                "SLayerRenderData::AddLayerRenderStep")
+                                "LayerRenderData: AddLayerRenderStep")
         QT3DS_ASSERT(m_Camera);
         if (!m_Camera)
             return;

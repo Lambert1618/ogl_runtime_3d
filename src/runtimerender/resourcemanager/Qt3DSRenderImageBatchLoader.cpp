@@ -382,7 +382,7 @@ void SLoadingImage::Setup(SImageLoaderBatch &inBatch)
 void SLoadingImage::LoadImage(void *inImg)
 {
     SLoadingImage *theThis = reinterpret_cast<SLoadingImage *>(inImg);
-    QT3DS_PERF_SCOPED_TIMER(theThis->m_Batch->m_Loader.m_PerfTimer, "Image Decompression")
+    QT3DS_PERF_SCOPED_TIMER(theThis->m_Batch->m_Loader.m_PerfTimer, "BatchLoader: Image Decompression")
     if (theThis->m_Batch->m_Loader.m_BufferManager.IsImageLoaded(theThis->m_SourcePath) == false) {
         SLoadedTexture *theTexture = SLoadedTexture::Load(
             theThis->m_SourcePath.c_str(), theThis->m_Batch->m_Loader.m_Foundation,

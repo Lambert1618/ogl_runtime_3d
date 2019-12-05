@@ -660,7 +660,6 @@ struct STimeContext
                 bool &scriptBufferRequiresSort, Q3DStudio::CComponentManager &inComponentManager,
                 IPerfTimer &inPerfTimer, IActivityZone &inZone)
     {
-        QT3DSU64 start = qt3ds::foundation::Time::getCurrentCounterValue();
         SComponent &theContextNode = m_Component;
         bool parentActive = true;
         SElement *theParent = theContextNode.m_Parent;
@@ -675,10 +674,9 @@ struct STimeContext
         bool isActive = isControlledByDi ? theContextNode.IsControlledActive()
                                          : theContextNode.IsGlobalActive(parentActive);
         bool activationChange = isActive != wasActive;
-        inPerfTimer.Update("ActivationManager - Update Initial Vars",
-                           qt3ds::foundation::Time::getCurrentCounterValue() - start);
+
         if (activationChange) {
-            QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager - Activation Change")
+            QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager: Activation Change")
             HandleActivationChange(theContextNode, activateBuffer, deactivateBuffer, scriptBuffer,
                                    m_ElementAccessMutex, scriptBufferRequiresSort, isActive);
             m_DirtyList.clear();
@@ -696,7 +694,7 @@ struct STimeContext
                 RemoveOverride();
         }
         if (isActive) {
-            QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager - Update Local Time")
+            QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager: Update Local Time")
             bool atEndOfTime = CalculateNewTime(inGlobalTime);
             if (atEndOfTime) {
                 Mutex::ScopedLock __locker(m_ElementAccessMutex);
@@ -709,7 +707,7 @@ struct STimeContext
         }
         if (isActive || activationChange) {
             if (m_AllNodesDirty || m_DirtyList.size()) {
-                QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager - Dirty Scan")
+                QT3DS_PERF_SCOPED_TIMER(inPerfTimer, "ActivationManager: Dirty Scan")
                 RunDirtyScan(inScanBuffer, inTempDirtyList, activateBuffer, deactivateBuffer,
                              scriptBuffer, scriptBufferRequiresSort);
             }
@@ -974,7 +972,7 @@ struct SActivityZone : public IActivityZone
 
     void DoUpdate()
     {
-        QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "ActivationManager - DoUpdate")
+        QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "ActivationManager: DoUpdate")
         if (m_Active) {
             // We know that parent elements are added before children.
             // So we know the time contexts are in an appropriate order, assuming they completely

@@ -931,7 +931,7 @@ struct SApp : public IApplication
 
     void UpdatePresentations()
     {
-        QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(), "UpdatePresentations")
+        QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(), "UpdatePresentations: Total")
         // Transfer the input frame to the kernel for pick processing
         // the scene manager now handles the picking on each of its scenes
         SetPickFrame(m_RuntimeFactory->GetSceneManager().AdvancePickFrame(
@@ -948,14 +948,14 @@ struct SApp : public IApplication
 
         {
             QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
-                                    "UpdatePresentations - pre update")
+                                    "UpdatePresentations: PreUpdate")
             forAllPresentations(presentations, true, [globalTime](CPresentation *p) {
                 p->PreUpdate(globalTime);
             });
         }
         {
             QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
-                                    "UpdatePresentations - begin update")
+                                    "UpdatePresentations: BeginUpdate")
             forAllPresentations(presentations, true, [](CPresentation *p) {
                 p->BeginUpdate();
             });
@@ -963,14 +963,14 @@ struct SApp : public IApplication
         // Allow EndUpdate and PostUpdate for inactive presentations so we can activate it
         {
             QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
-                                    "UpdatePresentations - end update")
+                                    "UpdatePresentations: EndUpdate")
             forAllPresentations(presentations, false, [](CPresentation *p) {
                 p->EndUpdate();
             });
         }
         {
             QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
-                                    "UpdatePresentations - postupdate")
+                                    "UpdatePresentations: PostUpdate")
             forAllPresentations(presentations, false, [globalTime](CPresentation *p) {
                 p->PostUpdate(globalTime);
             });
@@ -984,7 +984,7 @@ struct SApp : public IApplication
     {
         {
             QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(),
-                                    "NotifyDataOutputs")
+                                    "Application: NotifyDataOutputs")
 
             // Allow presentations to notify of registered data output changes
             for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
@@ -1086,7 +1086,7 @@ struct SApp : public IApplication
 
     void Render()
     {
-        QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(), "Render")
+        QT3DS_PERF_SCOPED_TIMER(m_RuntimeFactory->GetPerfTimer(), "Application: Render")
         CPresentation *pres = GetPrimaryPresentation();
         if (pres) {
             auto &rc = m_RuntimeFactory->GetQt3DSRenderContext();
@@ -1177,8 +1177,6 @@ struct SApp : public IApplication
             }
         }
 
-        m_CoreFactory->GetPerfTimer().ResetTimerData();
-
         fflush(stdout);
         m_LastFrameStartTime = m_ThisFrameStartTime;
         if (m_LastRenderWasDirty)
@@ -1208,6 +1206,8 @@ struct SApp : public IApplication
     {
         if (m_RuntimeFactory->GetQt3DSRenderContext().GetBufferManager()
                 .isReloadableResourcesEnabled()) {
+            QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                    "Application: Load Slide Resources")
             auto &slidesystem = presentation->GetSlideSystem();
             SSlideKey key;
             key.m_Component = component;
@@ -1300,6 +1300,7 @@ struct SApp : public IApplication
                  NVConstDataRef<SElementAttributeReference> inExternalReferences,
                  bool initInRenderThread)
     {
+        QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(), "Application: LoadUIP")
         GetMetaData();
         eastl::string theFile;
         CFileTools::CombineBaseAndRelative(GetProjectDirectory().c_str(), inAsset.m_Src.c_str(),
@@ -1575,6 +1576,7 @@ struct SApp : public IApplication
 
     bool BeginLoad(const QString &sourcePath, const QStringList &variantList) override
     {
+        m_CoreFactory->GetPerfTimer().StartMeasuring();
         QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(), "Application: Begin Load")
         eastl::string directory;
         eastl::string filename;
@@ -1848,8 +1850,6 @@ struct SApp : public IApplication
         if (!shaderCache.isEmpty())
             inFactory.GetQt3DSRenderContext().GetShaderCache().importShaderCache(shaderCache);
 
-        m_CoreFactory->GetPerfTimer().OutputTimerData();
-
         m_AudioPlayer.SetPlayer(inAudioPlayer);
 
         auto &rc = m_RuntimeFactory->GetQt3DSRenderContext();
@@ -2015,6 +2015,7 @@ struct SApp : public IApplication
 
     Q3DStudio::IRuntimeMetaData &GetMetaData() override
     {
+        QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(), "Application: GetMetaData")
         if (!m_MetaData) {
             m_MetaData = &IRuntimeMetaData::Create(m_CoreFactory->GetInputStreamFactory());
             if (!m_MetaData) {
@@ -2037,6 +2038,11 @@ struct SApp : public IApplication
     Q3DStudio::TElement *GetElementByHandle(Q3DStudio::UINT32 inHandle) override
     {
         return GetElementAllocator().FindElementByHandle(inHandle);
+    }
+
+    void OutputPerfLoggingData() override {
+        m_CoreFactory->GetPerfTimer().OutputTimerData();
+        m_CoreFactory->GetPerfTimer().ResetTimerData();
     }
 };
 
@@ -2180,6 +2186,7 @@ IApplication &IApplication::CreateApplicationCore(Q3DStudio::IRuntimeFactoryCore
 
 bool AssetHandlers::handlePresentation(SApp &app, SAssetValue &asset, bool initInRenderThread)
 {
+    QT3DS_PERF_SCOPED_TIMER(app.m_CoreFactory->GetPerfTimer(), "AssetHandlers: handlePresentation")
     eastl::string thePathStr;
 
     CFileTools::CombineBaseAndRelative(app.GetProjectDirectory().c_str(),

@@ -44,6 +44,7 @@ struct STimerEntry
 {
     QT3DSU64 m_Total;
     QT3DSU64 m_Max;
+    QT3DSU64 m_CumulativeTime;
     QT3DSU32 m_UpdateCount;
     CRegisteredString m_Tag;
     size_t m_Order;
@@ -51,29 +52,35 @@ struct STimerEntry
     STimerEntry(CRegisteredString tag, size_t order)
         : m_Total(0)
         , m_Max(0)
+        , m_CumulativeTime(0)
         , m_UpdateCount(0)
         , m_Tag(tag)
         , m_Order(order)
     {
     }
-    void Update(QT3DSU64 increment)
+    void Update(QT3DSU64 increment, QT3DSU64 cumulativeTime = 0)
     {
         m_Total += increment;
         m_Max = increment > m_Max ? increment : m_Max;
+        m_CumulativeTime = cumulativeTime;
         ++m_UpdateCount;
     }
 
-    void Output(QT3DSU32 inFramesPassed)
+    void Output(QT3DSU32 idx, QT3DSU32 inFramesPassed)
     {
         if (m_Total) {
             QT3DSU64 tensNanos = Time::sCounterFreq.toTensOfNanos(m_Total);
             QT3DSU64 maxNanos = Time::sCounterFreq.toTensOfNanos(m_Max);
+            QT3DSU64 cumNanos = Time::sCounterFreq.toTensOfNanos(m_CumulativeTime);
 
             double milliseconds = tensNanos / 100000.0;
             double maxMilliseconds = maxNanos / 100000.0;
-            if (inFramesPassed == 0)
-                qCWarning(WARNING, PERF_INFO, "%s - %fms", m_Tag.c_str(), milliseconds);
-            else {
+            double cumulativeMs = cumNanos / 100000.0;
+
+            if (inFramesPassed == 0) {
+                qCWarning(WARNING, PERF_INFO, "%d. (%d) %s - %fms = %fms", (idx+1),
+                          m_UpdateCount, m_Tag.c_str(), milliseconds, cumulativeMs);
+            } else {
                 milliseconds /= inFramesPassed;
                 qCWarning(WARNING, PERF_INFO, "%s - %fms/frame-total %fms-max %u hits",
                     m_Tag.c_str(), milliseconds, maxMilliseconds, m_UpdateCount);
@@ -88,7 +95,7 @@ struct STimerEntry
         m_UpdateCount = 0;
     }
 
-    bool operator<(const STimerEntry &other) const { return m_Order < other.m_Order; }
+    bool operator<(const STimerEntry &other) const { return m_CumulativeTime < other.m_CumulativeTime; }
 };
 struct SPerfTimer : public IPerfTimer
 {
@@ -101,6 +108,7 @@ struct SPerfTimer : public IPerfTimer
     eastl::vector<STimerEntry> m_PrintEntries;
     Mutex m_Mutex;
     QT3DSI32 mRefCount;
+    QT3DSU64 m_startTime;
 
     SPerfTimer(NVFoundationBase &fnd)
         : m_Foundation(fnd)
@@ -112,13 +120,20 @@ struct SPerfTimer : public IPerfTimer
 
     QT3DS_IMPLEMENT_REF_COUNT_ADDREF_RELEASE_OVERRIDE(m_Foundation.getAllocator())
 
-    void Update(const char *inId, QT3DSU64 inAmount) override
+    void StartMeasuring() override
     {
         Mutex::ScopedLock __locker(m_Mutex);
+        m_startTime = Time::getCurrentCounterValue();
+    }
+
+    void Update(const char *inId, QT3DSU64 inAmount, QT3DSU64 inStop) override
+    {
+        Mutex::ScopedLock __locker(m_Mutex);
+        QT3DSU64 cumulativeTime = inStop - m_startTime;
         CRegisteredString theStr(m_StringTable->RegisterStr(inId));
         THashMapType::iterator theFind =
             m_Entries.insert(eastl::make_pair(theStr, STimerEntry(theStr, m_Entries.size()))).first;
-        theFind->second.Update(inAmount);
+        theFind->second.Update(inAmount, cumulativeTime);
     }
 
     // Dump current summation of timer data.
@@ -135,7 +150,7 @@ struct SPerfTimer : public IPerfTimer
         eastl::sort(m_PrintEntries.begin(), m_PrintEntries.end());
 
         for (QT3DSU32 idx = 0, end = (QT3DSU32)m_PrintEntries.size(); idx < end; ++idx) {
-            m_PrintEntries[idx].Output(inFramesPassed);
+            m_PrintEntries[idx].Output(idx, inFramesPassed);
         }
     }
 

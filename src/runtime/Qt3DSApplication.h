@@ -259,6 +259,9 @@ public:
     static IApplication &CreateApplicationCore(Q3DStudio::IRuntimeFactoryCore &inFactory,
                                                const char8_t *inApplicationDirectory);
     static bool isPickingEvent(Q3DStudio::TEventCommandHash event);
+
+    // This will print out and reset the startup perf logs
+    virtual void OutputPerfLoggingData() = 0;
 };
 
 bool isImagePath(const QString &path);

@@ -872,6 +872,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
                                  Q3DStudio::IScriptBridge &inBridge,
                                  const qt3ds::Q3DSVariantConfig &variantConfig) override
     {
+        QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                "Binding: LoadScene")
         // We have to initialize the tags late so that we can load flow data before adding anything
         // to the string table.
         Qt3DSTranslator::InitializePointerTags(m_Context->m_RenderContext->GetStringTable());
@@ -1006,7 +1008,7 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
                                       qt3ds::render::ILoadedBuffer &inData) override
     {
         QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
-                                "Load Scene Graph Stage 1")
+                                "Binding: Load Scene Graph Stage 1")
         NVDataRef<QT3DSU8> theLoadedData(inData.Data());
         SDataReader theReader(theLoadedData.begin(), theLoadedData.end());
 
@@ -1064,7 +1066,7 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
                                  size_t inElementMemoryOffset, Q3DStudio::IScriptBridge &inBridge) override
     {
         QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
-                                "Load Scene Graph Stage 2")
+                                "Binding: Load Scene Graph Stage 2")
         QT3DSU32 theSceneIndex = QT3DS_MAX_U32;
         SSceneLoadData *theScene;
         {
@@ -1134,7 +1136,7 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
 
         {
             QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
-                                    "Initial Batch Image Load")
+                                    "Binding: Initial Batch Image Load")
 
             m_Context->m_Context->GetImageBatchLoader().LoadImageBatch(
                 toConstDataRef(imagePathList.data(), imagePathList.size()),
@@ -1149,7 +1151,7 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         {
 
             QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
-                                    "Initialize Scenes")
+                                    "Binding: Initialize Scenes")
             for (QT3DSU32 idx = 0, end = m_LoadingScenes.size(); idx < end; ++idx) {
                 SSceneLoadData &theScene = *m_LoadingScenes[idx];
                 // m_Context->m_Foundation->error( QT3DS_WARN, "Finalizing scene %d", (int)idx+1 );
@@ -1523,7 +1525,11 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         }
 
         m_Context->m_Context->BeginFrame(firstFrame);
-        m_Context->m_RenderContext->ResetBlendState();
+        {
+                QT3DS_PERF_SCOPED_TIMER(m_Context->m_CoreContext->GetPerfTimer(),
+                                        "RenderContext: ResetBlendState")
+                m_Context->m_RenderContext->ResetBlendState();
+        }
 
         // How exactly does this work, I have no idea.
         // Should we only render the first scene and not every scene, perhaps?
@@ -1781,9 +1787,11 @@ struct SRenderFactory : public IQt3DSRenderFactoryCore, public IQt3DSRenderFacto
     IQt3DSRenderFactory &CreateRenderFactory(const QSurfaceFormat& format,
                                              bool delayedLoading) override
     {
-
-        SContextTypeRenderFactory theContextFactory(format);
-        m_Context->CreateRenderContext(theContextFactory, delayedLoading);
+        {
+            QT3DS_PERF_SCOPED_TIMER(GetPerfTimer(), "Context: CreateRenderContext")
+            SContextTypeRenderFactory theContextFactory(format);
+            m_Context->CreateRenderContext(theContextFactory, delayedLoading);
+        }
 
         GetSceneLoader();
         {

@@ -44,8 +44,9 @@ namespace foundation {
     protected:
         virtual ~IPerfTimer() {}
     public:
+        virtual void StartMeasuring() = 0;
         // amount is in counter frequency units
-        virtual void Update(const char *inTag, QT3DSU64 inAmount) = 0;
+        virtual void Update(const char *inTag, QT3DSU64 inAmount, QT3DSU64 inStop) = 0;
         // Dump current summation of timer data.
         virtual void OutputTimerData(QT3DSU32 inFrameCount = 0) = 0;
         virtual void ResetTimerData() = 0;
@@ -94,7 +95,7 @@ namespace foundation {
             if (m_Timer) {
                 QT3DSU64 theStop = Time::getCurrentCounterValue();
                 QT3DSU64 theAmount = theStop - m_Start;
-                m_Timer->Update(m_Id, theAmount);
+                m_Timer->Update(m_Id, theAmount, theStop);
             }
         }
     };

@@ -52,6 +52,7 @@
 #include "Qt3DSDLLManager.h"
 #include "foundation/Qt3DSSimpleTypes.h"
 #include "foundation/TrackingAllocator.h"
+#include "foundation/Qt3DSPerfTimer.h"
 // For perf log timestamp
 #include <time.h>
 #include "Qt3DSArray.h"
@@ -397,8 +398,16 @@ void CRuntimeView::Render()
     m_Application->UpdateAndRender();
 
     if (m_startupTime < 0 && m_startupTimer && m_startupTimer->isValid()) {
-        m_startupTime = m_startupTimer->elapsed();
-        m_startupTimer->invalidate();
+        {
+            QT3DS_PERF_SCOPED_TIMER(m_Application.mPtr->GetRuntimeFactoryCore()
+                                    .GetPerfTimer(), "RuntimeView: Stopping startup timer")
+            m_startupTime = m_startupTimer->elapsed();
+            m_startupTimer->invalidate();
+        }
+
+        // Output startup perf logging data
+        m_Application->OutputPerfLoggingData();
+
         qCDebug(PERF_INFO, "RuntimeView: First frame at - %dms", m_startupTime);
     }
 
