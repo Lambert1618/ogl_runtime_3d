@@ -42,50 +42,59 @@ using namespace eastl;
 namespace qt3ds {
 namespace render {
 
-    NVRenderContext &NVRenderContext::CreateGL(NVFoundationBase &foundation,
-                                               IStringTable &inStringTable,
-                                               const QSurfaceFormat &format)
-    {
-        NVRenderContext *retval = NULL;
+NVRenderContext &NVRenderContext::CreateGL(NVFoundationBase &foundation,
+                                           IStringTable &inStringTable,
+                                           const QSurfaceFormat &format)
+{
+    NVRenderContext *retval = NULL;
 
-        QT3DS_ASSERT(format.majorVersion() >= 2);
+    QT3DS_ASSERT(format.majorVersion() >= 2);
 
-        // create backend
-        NVScopedRefCounted<IStringTable> theStringTable(inStringTable);
-        NVScopedRefCounted<NVRenderBackend> theBackend;
-        bool isES = format.renderableType() == QSurfaceFormat::OpenGLES;
+    // create backend
+    NVScopedRefCounted<IStringTable> theStringTable(inStringTable);
+    NVScopedRefCounted<NVRenderBackend> theBackend;
+    bool isES = format.renderableType() == QSurfaceFormat::OpenGLES;
+
+    static int envBE = qEnvironmentVariableIntValue("QT3DS_FORCE_OPENGL_BACKEND");
+    if (envBE == 1) {
+        theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGLES2Impl)(
+                    foundation, *theStringTable, format);
+    } else if (envBE == 2) {
+        theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL3Impl)(
+                    foundation, *theStringTable, format);
+    } else if (envBE == 3) {
+        theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL4Impl)(
+                    foundation, *theStringTable, format);
+    } else {
         if (isES && (format.majorVersion() == 2
                      || (format.majorVersion() == 3 && format.minorVersion() == 0))) {
-            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGLES2Impl)(foundation,
-                                                                                   *theStringTable,
-                                                                                   format);
+            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGLES2Impl)(
+                        foundation, *theStringTable, format);
         } else if (format.majorVersion() == 3 && format.minorVersion() >= 1 && !isES) {
-            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL3Impl)(foundation,
-                                                                                   *theStringTable,
-                                                                                   format);
+            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL3Impl)(
+                        foundation, *theStringTable, format);
         } else if (format.majorVersion() == 4
             || (isES && format.majorVersion() == 3 && format.minorVersion() >= 1)) {
 #ifdef Q_OS_MACOS
             // TODO: macOS crashes with glTextStorage2DMultisample, so fall back to OpenGL3
             // for now (QT3DS-590)
-            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL3Impl)(foundation,
-                                                                                   *theStringTable,
-                                                                                   format);
+            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL3Impl)(
+                        foundation, *theStringTable, format);
 #else
-            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL4Impl)(foundation,
-                                                                                   *theStringTable,
-                                                                                   format);
+            theBackend = QT3DS_NEW(foundation.getAllocator(), NVRenderBackendGL4Impl)(
+                        foundation, *theStringTable, format);
 #endif
         } else {
             QT3DS_ASSERT(false);
             qCCritical(INTERNAL_ERROR) << "Can't find a suitable OpenGL version for" << format;
         }
-
-
-        retval = QT3DS_NEW(foundation.getAllocator(), NVRenderContextImpl)(foundation, *theBackend,
-                                                                        *theStringTable);
-
-        return *retval;
     }
+
+    retval = QT3DS_NEW(foundation.getAllocator(), NVRenderContextImpl)(foundation, *theBackend,
+                                                                    *theStringTable);
+
+    return *retval;
+}
+
 }
 }
