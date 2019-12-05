@@ -206,6 +206,11 @@ struct Qt3DSRenderScene : public Q3DStudio::IScene
         return m_Presentation->m_preferKTX;
     }
 
+    bool flipCompressedTextures() const override
+    {
+        return m_Presentation->m_flipCompressedTextures;
+    }
+
     // Update really just adds objects to the dirty set
     bool Update()
     {
@@ -948,12 +953,14 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
                 toConstDataRef(theSourcePathList.data(), theSourcePathList.size()),
                 CRegisteredString(), nullptr, m_Context->m_Context->GetRenderContext()
                                                 .GetRenderContextType(),
-                        theScene->m_Presentation->m_preferKTX, false);
+                        theScene->m_Presentation->m_preferKTX, false,
+                        theScene->m_Presentation->m_flipCompressedTextures);
             QT3DSU64 iblImageBatchId = m_Context->m_Context->GetImageBatchLoader().LoadImageBatch(
                 toConstDataRef(iblList.data(), iblList.size()),
                 CRegisteredString(), nullptr, m_Context->m_Context->GetRenderContext()
                                                 .GetRenderContextType(),
-                        theScene->m_Presentation->m_preferKTX, true);
+                        theScene->m_Presentation->m_preferKTX, true,
+                        theScene->m_Presentation->m_flipCompressedTextures);
             m_Context->m_Context->GetImageBatchLoader().BlockUntilLoaded(
                 static_cast<TImageBatchId>(imageBatchId));
             m_Context->m_Context->GetImageBatchLoader().BlockUntilLoaded(

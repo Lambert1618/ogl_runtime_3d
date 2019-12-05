@@ -265,7 +265,7 @@ struct SBufferManager : public IBufferManager
             c(x);
     }
 
-    void loadTextureImage(SReloadableImageTextureData &data)
+    void loadTextureImage(SReloadableImageTextureData &data, bool flipCompressed = false)
     {
         CRegisteredString imagePath = getImagePath(data.m_path);
         TImageMap::iterator theIter = m_ImageMap.find(imagePath);
@@ -274,7 +274,7 @@ struct SBufferManager : public IBufferManager
             NVScopedReleasable<SLoadedTexture> theLoadedImage;
             SImageTextureData textureData;
 
-            doImageLoad(imagePath, theLoadedImage);
+            doImageLoad(imagePath, theLoadedImage, flipCompressed);
 
             if (theLoadedImage) {
                 textureData = LoadRenderImage(imagePath, *theLoadedImage, data.m_scanTransparency,
@@ -316,12 +316,12 @@ struct SBufferManager : public IBufferManager
         InvalidateBuffer(r);
     }
 
-    void loadSet(const QSet<QString> &imageSet) override
+    void loadSet(const QSet<QString> &imageSet, bool flipCompressed) override
     {
         for (const auto &x : imageSet) {
             if (!m_reloadableTextures.contains(x)) {
                 auto img = CreateReloadableImage(m_StrTable->RegisterStr(qPrintable(x)), false,
-                                                 false);
+                                                 false, flipCompressed);
                 img->m_initialized = false;
                 loadTextureImage(*m_reloadableTextures[x]);
             } else if (!m_reloadableTextures[x]->m_loaded) {
@@ -340,9 +340,20 @@ struct SBufferManager : public IBufferManager
         }
     }
 
+    void reloadAll(bool flipCompressed) override
+    {
+        for (const auto &tx : qAsConst(m_reloadableTextures)) {
+            if (tx->m_loaded) {
+                unloadTextureImage(*tx.data());
+                loadTextureImage(*tx.data(), flipCompressed);
+            }
+        }
+    }
+
     virtual ReloadableTexturePtr CreateReloadableImage(CRegisteredString inSourcePath,
                                                        bool inForceScanForTransparency,
-                                                       bool inBsdfMipmaps) override
+                                                       bool inBsdfMipmaps,
+                                                       bool flipCompressed) override
     {
         QString path = QString::fromLatin1(inSourcePath.c_str());
         const bool inserted = m_reloadableTextures.contains(path);
@@ -354,10 +365,11 @@ struct SBufferManager : public IBufferManager
             m_reloadableTextures[path]->m_bsdfMipmap = inBsdfMipmaps;
             m_reloadableTextures[path]->m_initialized = true;
 
+
 #ifndef LEGACY_ASTC_LOADING
             if (!m_reloadableResources)
 #endif
-                loadTextureImage(*m_reloadableTextures[path]);
+                loadTextureImage(*m_reloadableTextures[path], flipCompressed);
 
             CRegisteredString imagePath = getImagePath(path);
             TImageMap::iterator theIter = m_ImageMap.find(imagePath);
@@ -375,12 +387,13 @@ struct SBufferManager : public IBufferManager
     }
 
     void doImageLoad(CRegisteredString inImagePath,
-                     NVScopedReleasable<SLoadedTexture> &theLoadedImage)
+                     NVScopedReleasable<SLoadedTexture> &theLoadedImage,
+                     bool inFlipCompressed = false)
     {
         QT3DS_PERF_SCOPED_TIMER(m_PerfTimer, "BufferManager: Image Decompression")
         theLoadedImage = SLoadedTexture::Load(
                     inImagePath.c_str(), m_Context->GetFoundation(), *m_InputStreamFactory,
-                    true, m_Context->GetRenderContextType(), false, this);
+                    true, inFlipCompressed, m_Context->GetRenderContextType(), false, this);
         // Hackish solution to custom materials not finding their textures if they are used
         // in sub-presentations.
         if (!theLoadedImage) {
@@ -392,7 +405,7 @@ struct SBufferManager : public IBufferManager
                 while (!theLoadedImage && ++loops <= 3) {
                     theLoadedImage = SLoadedTexture::Load(
                                 searchPath.toUtf8(), m_Context->GetFoundation(),
-                                *m_InputStreamFactory, true,
+                                *m_InputStreamFactory, true, false,
                                 m_Context->GetRenderContextType(), false, this);
                     searchPath.prepend(QLatin1String("../"));
                 }
@@ -409,7 +422,7 @@ struct SBufferManager : public IBufferManager
                     while (!theLoadedImage && ++loops <= 3) {
                         theLoadedImage = SLoadedTexture::Load(
                                     searchPath.toUtf8(), m_Context->GetFoundation(),
-                                    *m_InputStreamFactory, true,
+                                    *m_InputStreamFactory, true, false,
                                     m_Context->GetRenderContextType(), false, this);
                         searchPath = splitPath.at(0);
                         for (int i = 0; i < loops; i++)

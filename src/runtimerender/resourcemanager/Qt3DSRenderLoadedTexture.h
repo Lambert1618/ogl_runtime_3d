@@ -154,6 +154,7 @@ namespace render {
 
         static SLoadedTexture *Load(const QString &inPath, NVFoundationBase &inAllocator,
                                     IInputStreamFactory &inFactory, bool inFlipY = true,
+                                    bool inFlipCompressed = false,
                                     NVRenderContextType renderContextType
                                         = NVRenderContextValues::NullContext,
                                     bool preferKTX = false,

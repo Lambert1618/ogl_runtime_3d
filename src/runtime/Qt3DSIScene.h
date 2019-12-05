@@ -144,6 +144,8 @@ public: // Base Interface
 
     virtual bool preferKtx() const = 0;
 
+    virtual bool flipCompressedTextures() const = 0;
+
     virtual void GetActiveSubPresentations(QVector<qt3ds::foundation::CRegisteredString> &subs) = 0;
 
     virtual qt3ds::NVAllocatorCallback &allocator() = 0;

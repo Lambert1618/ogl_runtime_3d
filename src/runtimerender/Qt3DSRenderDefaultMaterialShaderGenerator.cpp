@@ -431,7 +431,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             vertexShader << "\tvec2 " << m_ImageTemp << " = getTransformedUVCoords( vec3( "
                          << m_TexCoordTemp << ", 1.0), uTransform, vTransform );" << Endl;
             if (image.m_Image.m_TextureData.m_TextureFlags.IsInvertUVCoords())
-                vertexShader << "\t" << m_ImageTemp << ".y = 1.0 - " << m_ImageFragCoords << ".y;"
+                vertexShader << "\t" << m_ImageTemp << ".y = 1.0 - " << m_ImageTemp << ".y;"
                              << Endl;
 
             vertexShader.AssignOutput(m_ImageFragCoords.c_str(), m_ImageTemp.c_str());

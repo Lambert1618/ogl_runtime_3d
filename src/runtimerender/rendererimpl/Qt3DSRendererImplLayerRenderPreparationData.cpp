@@ -603,7 +603,8 @@ namespace render {
         IOffscreenRenderManager &theOffscreenRenderManager(
             qt3dsContext.GetOffscreenRenderManager());
         IRenderPluginManager &theRenderPluginManager(qt3dsContext.GetRenderPluginManager());
-        if (inImage.ClearDirty(bufferManager, theOffscreenRenderManager, theRenderPluginManager))
+        if (inImage.ClearDirty(bufferManager, theOffscreenRenderManager, theRenderPluginManager,
+                               false, m_Layer.m_Scene->m_Presentation->m_flipCompressedTextures))
             ioFlags |= RenderPreparationResultFlagValues::Dirty;
 
         // All objects with offscreen renderers are pickable so we can pass the pick through to the

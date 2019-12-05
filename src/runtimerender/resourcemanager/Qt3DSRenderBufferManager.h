@@ -95,12 +95,14 @@ namespace render {
 
         virtual ReloadableTexturePtr CreateReloadableImage(CRegisteredString inSourcePath,
                                                            bool inForceScanForTransparency = false,
-                                                           bool inBsdfMipmaps = false) = 0;
+                                                           bool inBsdfMipmaps = false,
+                                                           bool flipCompressed = false) = 0;
         virtual void enableReloadableResources(bool enable) = 0;
         virtual bool isReloadableResourcesEnabled() const = 0;
 
-        virtual void loadSet(const QSet<QString> &imageSet) = 0;
+        virtual void loadSet(const QSet<QString> &imageSet, bool flipCompressed = false) = 0;
         virtual void unloadSet(const QSet<QString> &imageSet) = 0;
+        virtual void reloadAll(bool flipCompressed) = 0;
 
         virtual void loadCustomMesh(const QString &name, qt3dsimp::Mesh *mesh) = 0;
         virtual SRenderMesh *LoadMesh(CRegisteredString inSourcePath) = 0;

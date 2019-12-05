@@ -54,6 +54,7 @@ namespace render {
         QT3DSVec2 m_PresentationDimensions;
         RenderRotationValues::Enum m_PresentationRotation;
         bool m_preferKTX;
+        bool m_flipCompressedTextures;
         SScene *m_Scene;
 
         CRegisteredString m_PresentationDirectory;
@@ -63,6 +64,7 @@ namespace render {
             , m_PresentationDimensions(800, 400)
             , m_PresentationRotation(RenderRotationValues::NoRotation)
             , m_preferKTX(false)
+            , m_flipCompressedTextures(false)
             , m_Scene(NULL)
         {
         }
@@ -72,6 +74,7 @@ namespace render {
             , m_PresentationDimensions(w, h)
             , m_PresentationRotation(RenderRotationValues::NoRotation)
             , m_preferKTX(preferKTX)
+            , m_flipCompressedTextures(false)
             , m_Scene(NULL)
             , m_PresentationDirectory(presDir)
         {

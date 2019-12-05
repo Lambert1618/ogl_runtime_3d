@@ -73,7 +73,8 @@ namespace render {
                                              CRegisteredString inImageTillLoaded,
                                              IImageLoadListener *inListener,
                                              NVRenderContextType type,
-                                             bool preferKTX, bool iblImages) = 0;
+                                             bool preferKTX, bool iblImages,
+                                             bool flipCompressedTextures = false) = 0;
         // Blocks if any of the images in the batch are in flight
         virtual void CancelImageBatchLoading(TImageBatchId inBatchId) = 0;
         // Blocks if the image is currently in-flight

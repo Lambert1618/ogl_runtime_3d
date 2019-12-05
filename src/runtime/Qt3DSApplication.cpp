@@ -324,6 +324,7 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
     IBufferManager &m_bufferManager;
     NVRenderContextType m_type;
     bool m_preferKtx;
+    bool m_flipCompressedTextures;
     QSet<QString> m_uploadSet;
     QSet<QString> m_uploadWaitSet;
     QSet<QString> m_deleteSet;
@@ -335,8 +336,9 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
                                                       .GetAllocator())
 
     STextureUploadRenderTask(IImageBatchLoader &loader, IBufferManager &mgr,
-                             NVRenderContextType type, bool preferKtx)
+                             NVRenderContextType type, bool preferKtx, bool flipCompressedTextures)
         : m_batchLoader(loader), m_bufferManager(mgr), m_type(type), m_preferKtx(preferKtx),
+          m_flipCompressedTextures(flipCompressedTextures),
           mRefCount(0)
     {
 
@@ -368,7 +370,7 @@ struct STextureUploadRenderTask : public IRenderTask, public IImageLoadListener
                                                        this, m_type, m_preferKtx, false);
             if (id) {
                 m_batchLoader.BlockUntilLoaded(id);
-                m_bufferManager.loadSet(m_uploadWaitSet);
+                m_bufferManager.loadSet(m_uploadWaitSet, m_flipCompressedTextures);
                 m_uploadWaitSet.clear();
             }
         }
@@ -1857,7 +1859,9 @@ struct SApp : public IApplication
                                        STextureUploadRenderTask(rc.GetImageBatchLoader(),
                                             rc.GetBufferManager(),
                                             rc.GetRenderContext().GetRenderContextType(),
-                                            GetPrimaryPresentation()->GetScene()->preferKtx()));
+                                            GetPrimaryPresentation()->GetScene()->preferKtx(),
+                                            GetPrimaryPresentation()->GetScene()
+                                                                ->flipCompressedTextures()));
         m_uploadRenderTask->add(m_createSet, true);
         m_RuntimeFactory->GetQt3DSRenderContext().GetRenderList()
                                                                 .AddRenderTask(*m_uploadRenderTask);

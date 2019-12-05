@@ -89,7 +89,8 @@ namespace render {
         // Or finds the image.
         // and sets up the texture transform
         bool ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager &inRenderManager,
-                        IRenderPluginManager &pluginManager, bool forIbl = false);
+                        IRenderPluginManager &pluginManager, bool forIbl = false,
+                        bool flipCompressed = false);
 
         void CalculateTextureTransform();
 

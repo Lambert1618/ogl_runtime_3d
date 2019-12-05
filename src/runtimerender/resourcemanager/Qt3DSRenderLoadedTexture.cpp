@@ -912,6 +912,7 @@ void SLoadedTexture::ReleaseDecompressedTexture(STextureData inImage)
 
 SLoadedTexture *SLoadedTexture::Load(const QString &inPath, NVFoundationBase &inFoundation,
                                      IInputStreamFactory &inFactory, bool inFlipY,
+                                     bool inFlipCompressed,
                                      NVRenderContextType renderContextType, bool preferKTX,
                                      IBufferManager *bufferManager)
 {
@@ -958,8 +959,16 @@ SLoadedTexture *SLoadedTexture::Load(const QString &inPath, NVFoundationBase &in
         } else if (path.endsWith(QLatin1String("hdr"), Qt::CaseInsensitive)) {
             theLoadedImage = LoadHDR(*theStream, inFoundation, renderContextType);
         } else if (path.endsWith(QLatin1String("ktx"), Qt::CaseInsensitive)) {
+            // We need to flip y coordinate in shader as it cannot be done at load time for
+            // compressed textures.
+            bufferManager->SetInvertImageUVCoords(bufferManager->GetStringTable().RegisterStr(path),
+                                                  inFlipCompressed);
             theLoadedImage = LoadKTX(*theStream, inFlipY, inFoundation, renderContextType);
         } else if (path.endsWith(QLatin1String("astc"), Qt::CaseInsensitive)) {
+            // We need to flip y coordinate in shader as it cannot be done at load time for
+            // compressed textures.
+            bufferManager->SetInvertImageUVCoords(bufferManager->GetStringTable().RegisterStr(path),
+                                                  inFlipCompressed);
             theLoadedImage = LoadASTC(fileName, inFlipY, inFoundation, renderContextType);
         } else {
             qCWarning(INTERNAL_ERROR, "Unrecognized image extension: %s", qPrintable(inPath));

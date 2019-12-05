@@ -109,6 +109,7 @@ struct SImageLoaderBatch
     QT3DSU32 m_NumImages;
     NVRenderContextType m_contextType;
     bool m_preferKTX;
+    bool m_flipCompressedTextures;
     bool m_ibl;
 
     // Called from main thread
@@ -117,13 +118,14 @@ struct SImageLoaderBatch
                                                 CRegisteredString inImageTillLoaded,
                                                 IImageLoadListener *inListener,
                                                 NVRenderContextType contextType,
-                                                bool preferKTX, bool ibl);
+                                                bool preferKTX, bool iblImage,
+                                                bool flipCompressedTextures);
 
     // Called from main thread
     SImageLoaderBatch(SBatchLoader &inLoader, IImageLoadListener *inLoadListener,
                       const TLoadingImageList &inImageList, TImageBatchId inBatchId,
                       QT3DSU32 inImageCount, NVRenderContextType contextType,
-                      bool preferKTX, bool ibl);
+                      bool preferKTX, bool ibl, bool flipCompressedTextures);
 
     // Called from main thread
     ~SImageLoaderBatch();
@@ -263,7 +265,8 @@ struct SBatchLoader : public IImageBatchLoader
                                  CRegisteredString inImageTillLoaded,
                                  IImageLoadListener *inListener,
                                  NVRenderContextType contextType,
-                                 bool preferKTX, bool iblImages) override
+                                 bool preferKTX, bool iblImages,
+                                 bool flipCompressedTextures) override
     {
         if (inSourcePaths.size() == 0)
             return 0;
@@ -279,7 +282,7 @@ struct SBatchLoader : public IImageBatchLoader
 
         SImageLoaderBatch *theBatch(SImageLoaderBatch::CreateLoaderBatch(
             *this, theBatchId, inSourcePaths, inImageTillLoaded, inListener, contextType,
-            preferKTX, iblImages));
+            preferKTX, iblImages, flipCompressedTextures));
         if (theBatch) {
             m_Batches.insert(eastl::make_pair(theBatchId, theBatch));
             return theBatchId;
@@ -387,6 +390,7 @@ void SLoadingImage::LoadImage(void *inImg)
         SLoadedTexture *theTexture = SLoadedTexture::Load(
             theThis->m_SourcePath.c_str(), theThis->m_Batch->m_Loader.m_Foundation,
             theThis->m_Batch->m_Loader.m_InputStreamFactory, true,
+            theThis->m_Batch->m_flipCompressedTextures,
             theThis->m_Batch->m_contextType,
             theThis->m_Batch->m_preferKTX,
             &theThis->m_Batch->m_Loader.m_BufferManager);
@@ -432,7 +436,8 @@ SImageLoaderBatch::CreateLoaderBatch(SBatchLoader &inLoader, TImageBatchId inBat
                                      CRegisteredString inImageTillLoaded,
                                      IImageLoadListener *inListener,
                                      NVRenderContextType contextType,
-                                     bool preferKTX, bool iblImages)
+                                     bool preferKTX, bool iblImages,
+                                     bool flipCompressedTextures)
 {
     TLoadingImageList theImages;
     QT3DSU32 theLoadingImageCount = 0;
@@ -470,7 +475,7 @@ SImageLoaderBatch::CreateLoaderBatch(SBatchLoader &inLoader, TImageBatchId inBat
             (SImageLoaderBatch *)inLoader.m_BatchPool.allocate(__FILE__, __LINE__);
         new (theBatch)
             SImageLoaderBatch(inLoader, inListener, theImages, inBatchId, theLoadingImageCount,
-                              contextType, preferKTX, iblImages);
+                              contextType, preferKTX, iblImages, flipCompressedTextures);
         return theBatch;
     }
     return NULL;
@@ -479,7 +484,7 @@ SImageLoaderBatch::CreateLoaderBatch(SBatchLoader &inLoader, TImageBatchId inBat
 SImageLoaderBatch::SImageLoaderBatch(SBatchLoader &inLoader, IImageLoadListener *inLoadListener,
                                      const TLoadingImageList &inImageList, TImageBatchId inBatchId,
                                      QT3DSU32 inImageCount, NVRenderContextType contextType,
-                                     bool preferKTX, bool ibl)
+                                     bool preferKTX, bool ibl, bool flipCompressedTextures)
     : m_Loader(inLoader)
     , m_LoadListener(inLoadListener)
     , m_LoadEvent(inLoader.m_Foundation.getAllocator())
@@ -492,6 +497,7 @@ SImageLoaderBatch::SImageLoaderBatch(SBatchLoader &inLoader, IImageLoadListener 
     , m_contextType(contextType)
     , m_preferKTX(preferKTX)
     , m_ibl(ibl)
+    , m_flipCompressedTextures(flipCompressedTextures)
 {
     for (TLoadingImageList::iterator iter = m_Images.begin(), end = m_Images.end(); iter != end;
          ++iter) {

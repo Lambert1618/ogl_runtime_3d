@@ -1699,6 +1699,7 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
                     QT3DS_ASSERT(success);
                 }
                 m_Reader.Att("preferKTX", m_Presentation->m_preferKTX);
+                m_Reader.Att("flipCompressedTextures", m_Presentation->m_flipCompressedTextures);
             }
         }
         {

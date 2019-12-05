@@ -67,7 +67,7 @@ static void HandleOffscreenResult(SImage &theImage, SImageTextureData &newImage,
 }
 
 bool SImage::ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager &inRenderManager,
-                        IRenderPluginManager &inPluginManager, bool forIbl)
+                        IRenderPluginManager &inPluginManager, bool forIbl, bool flipCompressed)
 {
 
     bool wasDirty = m_Flags.IsDirty();
@@ -103,7 +103,7 @@ bool SImage::ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager
                     m_LoadedTextureData->m_callbacks.removeOne(this);
                 forIbl = forIbl || m_MappingMode == ImageMappingModes::LightProbe;
                 m_LoadedTextureData = inBufferManager.CreateReloadableImage(m_ImagePath, false,
-                                                                            forIbl);
+                                                                            forIbl, flipCompressed);
                 m_LoadedTextureData->m_callbacks.push_back(this);
             }
             if (m_LoadedTextureData) {
