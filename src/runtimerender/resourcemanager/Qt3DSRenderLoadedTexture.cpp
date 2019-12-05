@@ -680,8 +680,9 @@ bool ScanImageForAlpha(const void *inData, QT3DSU32 inWidth, QT3DSU32 inHeight, 
     QT3DSU32 alphaRightShift = inPixelSizeInBytes * 8 - inAlphaSizeInBits;
     QT3DSU32 maxAlphaValue = (1 << inAlphaSizeInBits) - 1;
 
-    for (QT3DSU32 rowIdx = 0; rowIdx < inHeight && hasAlpha == false; ++rowIdx) {
-        for (QT3DSU32 idx = 0; idx < inWidth && hasAlpha == false;
+    for (QT3DSU32 rowIdx = 0; rowIdx < inHeight && (hasAlpha == false || hasOpaque == false);
+         ++rowIdx) {
+        for (QT3DSU32 idx = 0; idx < inWidth && (hasAlpha == false || hasOpaque == false);
              ++idx, rowPtr += inPixelSizeInBytes) {
             QT3DSU32 pixelValue = 0;
             if (inPixelSizeInBytes == 2)
