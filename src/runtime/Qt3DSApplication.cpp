@@ -2109,8 +2109,9 @@ struct SXMLLoader : public IAppLoadContext
         if (!delayedLoading || (m_App.m_OrderedAssets.size() > 1 && initialAssets.size() > 0)) {
             for (QT3DSU32 idx = 0, end = m_App.m_OrderedAssets.size(); idx < end; ++idx) {
                 QString assetId = QString::fromUtf8(m_App.m_OrderedAssets[idx].first.c_str());
-                if (m_App.m_OrderedAssets[idx].first != initialStr
-                        && (initialAssets.contains(assetId) || !delayedLoading)) {
+                if (!m_App.GetPresentationById(qPrintable(assetId))
+                        && (m_App.m_OrderedAssets[idx].first != initialStr
+                        && (initialAssets.contains(assetId) || !delayedLoading))) {
                     SAssetValue &theAsset = *m_App.m_OrderedAssets[idx].second;
                     switch (theAsset.getType()) {
                     case AssetValueTypes::Presentation:
