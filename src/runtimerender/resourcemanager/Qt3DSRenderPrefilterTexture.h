@@ -113,15 +113,16 @@ namespace render {
                              NVRenderTextureFormats::Enum inFormat);
 
         NVScopedRefCounted<NVRenderShaderProgram> m_BSDFProgram;
+        NVScopedRefCounted<NVRenderShaderProgram> m_BSDF_RGBE_Program;
         NVScopedRefCounted<NVRenderShaderProgram> m_UploadProgram_RGBA8;
         NVScopedRefCounted<NVRenderShaderProgram> m_UploadProgram_RGB8;
         NVScopedRefCounted<NVRenderTexture2D> m_Level0Tex;
         bool m_TextureCreated;
 
-        void createComputeProgram(NVRenderContext *context);
-        NVRenderShaderProgram *
-        getOrCreateUploadComputeProgram(NVRenderContext *context,
-                                        NVRenderTextureFormats::Enum inFormat);
+        NVRenderShaderProgram *createComputeProgram(
+                NVRenderContext *context, NVRenderTextureFormats::Enum format);
+        NVRenderShaderProgram *getOrCreateUploadComputeProgram(
+                NVRenderContext *context, NVRenderTextureFormats::Enum inFormat);
     };
 }
 }

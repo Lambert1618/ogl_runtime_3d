@@ -125,7 +125,7 @@ namespace render {
     }
 
     void NVRenderTexture2D::SetTextureStorage(QT3DSU32 inLevels, QT3DSU32 width, QT3DSU32 height,
-                                              NVRenderTextureFormats::Enum formaInternal,
+                                              NVRenderTextureFormats::Enum formatInternal,
                                               NVRenderTextureFormats::Enum format,
                                               NVDataRef<QT3DSU8> dataBuffer)
     {
@@ -138,9 +138,9 @@ namespace render {
 
         m_Width = width;
         m_Height = height;
-        m_Format = formaInternal;
+        m_Format = formatInternal;
         if (format == NVRenderTextureFormats::Unknown)
-            format = formaInternal;
+            format = formatInternal;
 
         // get max size and check value
         QT3DSU32 maxWidth, maxHeight;
@@ -157,8 +157,8 @@ namespace render {
         m_MaxMipLevel = inLevels - 1; // we count from 0
 
         // only uncompressed formats are supported and no depth
-        if (NVRenderTextureFormats::isUncompressedTextureFormat(formaInternal)) {
-            m_Backend->CreateTextureStorage2D(m_TextureHandle, m_TexTarget, inLevels, formaInternal,
+        if (NVRenderTextureFormats::isUncompressedTextureFormat(formatInternal)) {
+            m_Backend->CreateTextureStorage2D(m_TextureHandle, m_TexTarget, inLevels, formatInternal,
                                               width, height);
 
             m_Immutable = true;

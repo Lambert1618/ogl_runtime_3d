@@ -463,10 +463,12 @@ struct SBufferManager : public IBufferManager
         if (inLoadedImage.data) {
             qt3ds::render::NVRenderTextureFormats::Enum destFormat = inLoadedImage.format;
             if (inBsdfMipmaps) {
-                if (m_Context->GetRenderContextType() == render::NVRenderContextValues::GLES2)
-                    destFormat = qt3ds::render::NVRenderTextureFormats::RGBA8;
-                else
-                    destFormat = qt3ds::render::NVRenderTextureFormats::RGBA16F;
+                if (inLoadedImage.format != NVRenderTextureFormats::RGBE8) {
+                    if (m_Context->GetRenderContextType() == render::NVRenderContextValues::GLES2)
+                        destFormat = qt3ds::render::NVRenderTextureFormats::RGBA8;
+                    else
+                        destFormat = qt3ds::render::NVRenderTextureFormats::RGBA16F;
+                }
             }
             else {
                 theTexture->SetTextureData(

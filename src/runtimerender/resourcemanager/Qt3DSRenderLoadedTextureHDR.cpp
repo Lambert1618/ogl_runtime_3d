@@ -145,18 +145,23 @@ static void decrunchScanline(FreeImageIO *io, fi_handle handle, RGBE *scanline, 
 static void decodeScanlineToTexture(RGBE *scanline, int width, void *outBuf, QT3DSU32 offset,
                                     NVRenderTextureFormats::Enum inFormat)
 {
-    float rgbaF32[4];
 
-    for (int i = 0; i < width; ++i) {
-        rgbaF32[R] = convertComponent(scanline[i][E], scanline[i][R]);
-        rgbaF32[G] = convertComponent(scanline[i][E], scanline[i][G]);
-        rgbaF32[B] = convertComponent(scanline[i][E], scanline[i][B]);
-        rgbaF32[3] = 1.0f;
+    QT3DSU8 *target = reinterpret_cast<QT3DSU8 *>(outBuf);
+    target += offset;
 
-        QT3DSU8 *target = reinterpret_cast<QT3DSU8 *>(outBuf);
-        target += offset;
-        NVRenderTextureFormats::encodeToPixel(
-            rgbaF32, target, i * NVRenderTextureFormats::getSizeofFormat(inFormat), inFormat);
+    if (inFormat == NVRenderTextureFormats::RGBE8) {
+        memcpy(target, scanline, size_t(4 * width));
+    } else {
+        float rgbaF32[4];
+        for (int i = 0; i < width; ++i) {
+            rgbaF32[R] = convertComponent(scanline[i][E], scanline[i][R]);
+            rgbaF32[G] = convertComponent(scanline[i][E], scanline[i][G]);
+            rgbaF32[B] = convertComponent(scanline[i][E], scanline[i][B]);
+            rgbaF32[3] = 1.0f;
+
+            NVRenderTextureFormats::encodeToPixel(
+                rgbaF32, target, i * NVRenderTextureFormats::getSizeofFormat(inFormat), inFormat);
+        }
     }
 }
 
@@ -242,14 +247,6 @@ SLoadedTexture *SLoadedTexture::LoadHDR(ISeekableIOStream &inStream, NVFoundatio
 {
     FreeImageIO theIO(inFnd.getAllocator(), inFnd);
     SLoadedTexture *retval = nullptr;
-    if (renderContextType == qt3ds::render::NVRenderContextValues::GLES2)
-        retval = DoLoadHDR(&theIO, &inStream, NVRenderTextureFormats::RGBA8);
-    else
-        retval = DoLoadHDR(&theIO, &inStream, NVRenderTextureFormats::RGBA16F);
-
-
-    // Let's just assume we don't support this just yet.
-    //	if ( retval )
-    //		retval->FreeImagePostProcess( inFlipY );
+    retval = DoLoadHDR(&theIO, &inStream, NVRenderTextureFormats::RGBE8);
     return retval;
 }

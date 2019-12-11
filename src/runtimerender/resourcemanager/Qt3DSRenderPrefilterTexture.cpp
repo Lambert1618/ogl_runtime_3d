@@ -38,6 +38,213 @@ using namespace qt3ds;
 using namespace qt3ds::render;
 using namespace qt3ds::foundation;
 
+
+struct M8E8
+{
+    quint8 m;
+    quint8 e;
+    M8E8() : m(0), e(0){
+    }
+    M8E8(const float val) {
+        float l2 = 1.f + floor(log2f(val));
+        float mm = val / powf(2.f, l2);
+        m = quint8(mm * 255.f);
+        e = quint8(l2 + 128);
+    }
+    M8E8(const float val, quint8 exp) {
+        if (val <= 0) {
+            m = e = 0;
+            return;
+        }
+        float mm = val / powf(2.f, exp - 128);
+        m = quint8(mm * 255.f);
+        e = exp;
+    }
+};
+
+void NVRenderTextureFormats::decodeToFloat(void *inPtr, QT3DSU32 byteOfs, float *outPtr,
+                          NVRenderTextureFormats::Enum inFmt)
+{
+    outPtr[0] = 0.0f;
+    outPtr[1] = 0.0f;
+    outPtr[2] = 0.0f;
+    outPtr[3] = 0.0f;
+    QT3DSU8 *src = reinterpret_cast<QT3DSU8 *>(inPtr);
+    switch (inFmt) {
+    case Alpha8:
+        outPtr[0] = ((float)src[byteOfs]) / 255.0f;
+        break;
+
+    case Luminance8:
+    case LuminanceAlpha8:
+    case R8:
+    case RG8:
+    case RGB8:
+    case RGBA8:
+    case SRGB8:
+    case SRGB8A8:
+        for (QT3DSU32 i = 0; i < NVRenderTextureFormats::getSizeofFormat(inFmt); ++i) {
+            float val = ((float)src[byteOfs + i]) / 255.0f;
+            outPtr[i] = (i < 3) ? powf(val, 0.4545454545f) : val;
+        }
+        break;
+    case RGBE8:
+        {
+            float pwd = powf(2.0f, int(src[byteOfs + 3]) - 128);
+            outPtr[0] = float(src[byteOfs + 0]) * pwd / 255.0;
+            outPtr[1] = float(src[byteOfs + 1]) * pwd / 255.0;
+            outPtr[2] = float(src[byteOfs + 2]) * pwd / 255.0;
+            outPtr[3] = 1.0f;
+        } break;
+
+    case R32F:
+        outPtr[0] = reinterpret_cast<float *>(src + byteOfs)[0];
+        break;
+    case RG32F:
+        outPtr[0] = reinterpret_cast<float *>(src + byteOfs)[0];
+        outPtr[1] = reinterpret_cast<float *>(src + byteOfs)[1];
+        break;
+    case RGBA32F:
+        outPtr[0] = reinterpret_cast<float *>(src + byteOfs)[0];
+        outPtr[1] = reinterpret_cast<float *>(src + byteOfs)[1];
+        outPtr[2] = reinterpret_cast<float *>(src + byteOfs)[2];
+        outPtr[3] = reinterpret_cast<float *>(src + byteOfs)[3];
+        break;
+    case RGB32F:
+        outPtr[0] = reinterpret_cast<float *>(src + byteOfs)[0];
+        outPtr[1] = reinterpret_cast<float *>(src + byteOfs)[1];
+        outPtr[2] = reinterpret_cast<float *>(src + byteOfs)[2];
+        break;
+
+    case R16F:
+    case RG16F:
+    case RGBA16F:
+        for (QT3DSU32 i = 0; i < (NVRenderTextureFormats::getSizeofFormat(inFmt) >> 1); ++i) {
+            // NOTE : This only works on the assumption that we don't have any denormals,
+            // Infs or NaNs.
+            // Every pixel in our source image should be "regular"
+            QT3DSU16 h = reinterpret_cast<QT3DSU16 *>(src + byteOfs)[i];
+            QT3DSU32 sign = (h & 0x8000) << 16;
+            QT3DSU32 exponent = (((((h & 0x7c00) >> 10) - 15) + 127) << 23);
+            QT3DSU32 mantissa = ((h & 0x3ff) << 13);
+            QT3DSU32 result = sign | exponent | mantissa;
+
+            if (h == 0 || h == 0x8000)
+                result = 0;
+            qt3ds::intrinsics::memCopy(reinterpret_cast<QT3DSU32 *>(outPtr) + i, &result, 4);
+        }
+        break;
+
+    case R11G11B10:
+        // place holder
+        QT3DS_ASSERT(false);
+        break;
+
+    default:
+        outPtr[0] = 0.0f;
+        outPtr[1] = 0.0f;
+        outPtr[2] = 0.0f;
+        outPtr[3] = 0.0f;
+        break;
+    }
+}
+
+void NVRenderTextureFormats::encodeToPixel(float *inPtr, void *outPtr, QT3DSU32 byteOfs,
+                          NVRenderTextureFormats::Enum inFmt)
+{
+    QT3DSU8 *dest = reinterpret_cast<QT3DSU8 *>(outPtr);
+    switch (inFmt) {
+    case NVRenderTextureFormats::Alpha8:
+        dest[byteOfs] = QT3DSU8(inPtr[0] * 255.0f);
+        break;
+
+    case Luminance8:
+    case LuminanceAlpha8:
+    case R8:
+    case RG8:
+    case RGB8:
+    case RGBA8:
+    case SRGB8:
+    case SRGB8A8:
+        for (QT3DSU32 i = 0; i < NVRenderTextureFormats::getSizeofFormat(inFmt); ++i) {
+            inPtr[i] = (inPtr[i] > 1.0f) ? 1.0f : inPtr[i];
+            if (i < 3)
+                dest[byteOfs + i] = QT3DSU8(powf(inPtr[i], 2.2f) * 255.0f);
+            else
+                dest[byteOfs + i] = QT3DSU8(inPtr[i] * 255.0f);
+        }
+        break;
+    case RGBE8:
+    {
+        float max = qMax(inPtr[0], qMax(inPtr[1], inPtr[2]));
+        M8E8 ex(max);
+        M8E8 a(inPtr[0], ex.e);
+        M8E8 b(inPtr[1], ex.e);
+        M8E8 c(inPtr[2], ex.e);
+        quint8 *dst = reinterpret_cast<quint8 *>(outPtr) + byteOfs;
+        dst[0] = a.m;
+        dst[1] = b.m;
+        dst[2] = c.m;
+        dst[3] = ex.e;
+    } break;
+
+    case R32F:
+        reinterpret_cast<float *>(dest + byteOfs)[0] = inPtr[0];
+        break;
+    case RG32F:
+        reinterpret_cast<float *>(dest + byteOfs)[0] = inPtr[0];
+        reinterpret_cast<float *>(dest + byteOfs)[1] = inPtr[1];
+        break;
+    case RGBA32F:
+        reinterpret_cast<float *>(dest + byteOfs)[0] = inPtr[0];
+        reinterpret_cast<float *>(dest + byteOfs)[1] = inPtr[1];
+        reinterpret_cast<float *>(dest + byteOfs)[2] = inPtr[2];
+        reinterpret_cast<float *>(dest + byteOfs)[3] = inPtr[3];
+        break;
+    case RGB32F:
+        reinterpret_cast<float *>(dest + byteOfs)[0] = inPtr[0];
+        reinterpret_cast<float *>(dest + byteOfs)[1] = inPtr[1];
+        reinterpret_cast<float *>(dest + byteOfs)[2] = inPtr[2];
+        break;
+
+    case R16F:
+    case RG16F:
+    case RGBA16F:
+        for (QT3DSU32 i = 0; i < (NVRenderTextureFormats::getSizeofFormat(inFmt) >> 1); ++i) {
+            // NOTE : This also has the limitation of not handling  infs, NaNs and
+            // denormals, but it should be sufficient for our purposes.
+            if (inPtr[i] > 65519.0f)
+                inPtr[i] = 65519.0f;
+            if (fabs(inPtr[i]) < 6.10352E-5f)
+                inPtr[i] = 0.0f;
+            QT3DSU32 f = reinterpret_cast<QT3DSU32 *>(inPtr)[i];
+            QT3DSU32 sign = (f & 0x80000000) >> 16;
+            QT3DSI32 exponent = (f & 0x7f800000) >> 23;
+            QT3DSU32 mantissa = (f >> 13) & 0x3ff;
+            exponent = exponent - 112;
+            if (exponent > 31)
+                exponent = 31;
+            if (exponent < 0)
+                exponent = 0;
+            exponent = exponent << 10;
+            reinterpret_cast<QT3DSU16 *>(dest + byteOfs)[i] = QT3DSU16(sign | exponent | mantissa);
+        }
+        break;
+
+    case R11G11B10:
+        // place holder
+        QT3DS_ASSERT(false);
+        break;
+
+    default:
+        dest[byteOfs] = 0;
+        dest[byteOfs + 1] = 0;
+        dest[byteOfs + 2] = 0;
+        dest[byteOfs + 3] = 0;
+        break;
+    }
+}
+
 Qt3DSRenderPrefilterTexture::Qt3DSRenderPrefilterTexture(NVRenderContext *inNVRenderContext,
                                                      QT3DSI32 inWidth, QT3DSI32 inHeight,
                                                      NVRenderTexture2D &inTexture2D,
@@ -66,7 +273,7 @@ Qt3DSRenderPrefilterTexture::Create(NVRenderContext *inNVRenderContext, QT3DSI32
                                   NVRenderTextureFormats::Enum inDestFormat,
                                   qt3ds::NVFoundationBase &inFnd)
 {
-    Qt3DSRenderPrefilterTexture *theBSDFMipMap = NULL;
+    Qt3DSRenderPrefilterTexture *theBSDFMipMap = nullptr;
 
     if (inNVRenderContext->IsComputeSupported()) {
         theBSDFMipMap = QT3DS_NEW(inFnd.getAllocator(), Qt3DSRenderPrefilterTextureCompute)(
@@ -128,14 +335,13 @@ Qt3DSRenderPrefilterTextureCPU::CreateBsdfMipLevel(STextureData &inCurMipLevel,
     int newHeight = height >> 1;
     newWidth = newWidth >= 1 ? newWidth : 1;
     newHeight = newHeight >= 1 ? newHeight : 1;
+    const QT3DSU32 size = NVRenderTextureFormats::getSizeofFormat(inPrevMipLevel.format);
 
     if (inCurMipLevel.data) {
         retval = inCurMipLevel;
-        retval.dataSizeInBytes =
-            newWidth * newHeight * NVRenderTextureFormats::getSizeofFormat(inPrevMipLevel.format);
+        retval.dataSizeInBytes = newWidth * newHeight * size;
     } else {
-        retval.dataSizeInBytes =
-            newWidth * newHeight * NVRenderTextureFormats::getSizeofFormat(inPrevMipLevel.format);
+        retval.dataSizeInBytes = newWidth * newHeight * size;
         retval.format = inPrevMipLevel.format; // inLoadedImage.format;
         retval.data = m_Foundation.getAllocator().allocate(
             retval.dataSizeInBytes, "Bsdf Scaled Image Data", __FILE__, __LINE__);
@@ -155,26 +361,20 @@ Qt3DSRenderPrefilterTextureCPU::CreateBsdfMipLevel(STextureData &inCurMipLevel,
                     getWrappedCoords(sampleX, sampleY, width, height);
 
                     // Cauchy filter (this is simply because it's the easiest to evaluate, and
-                    // requires no complex
-                    // functions).
+                    // requires no complex functions).
                     float filterPdf = 1.f / (1.f + float(sx * sx + sy * sy) * 2.f);
                     // With FP HDR formats, we're not worried about intensity loss so much as
                     // unnecessary energy gain,
                     // whereas with LDR formats, the fear with a continuous normalization factor is
-                    // that we'd lose
-                    // intensity and saturation as well.
-                    filterPdf /= (NVRenderTextureFormats::getSizeofFormat(retval.format) >= 8)
-                        ? 4.71238898f
-                        : 4.5403446f;
-                    // filterPdf /= 4.5403446f;		// Discrete normalization factor
-                    // filterPdf /= 4.71238898f;		// Continuous normalization factor
+                    // that we'd lose intensity and saturation as well.
+                    filterPdf /= (size >= 8) ? 4.71238898f : 4.5403446f;
+                    // filterPdf /= 4.5403446f;        // Discrete normalization factor
+                    // filterPdf /= 4.71238898f;        // Continuous normalization factor
                     float curPix[4];
-                    QT3DSI32 byteOffset = (sampleY * width + sampleX)
-                        * NVRenderTextureFormats::getSizeofFormat(retval.format);
+                    QT3DSI32 byteOffset = (sampleY * width + sampleX) * size;
                     if (byteOffset < 0) {
                         sampleY = height + sampleY;
-                        byteOffset = (sampleY * width + sampleX)
-                            * NVRenderTextureFormats::getSizeofFormat(retval.format);
+                        byteOffset = (sampleY * width + sampleX) * size;
                     }
 
                     NVRenderTextureFormats::decodeToFloat(inPrevMipLevel.data, byteOffset, curPix,
@@ -187,8 +387,7 @@ Qt3DSRenderPrefilterTextureCPU::CreateBsdfMipLevel(STextureData &inCurMipLevel,
                 }
             }
 
-            QT3DSU32 newIdx =
-                (y * newWidth + x) * NVRenderTextureFormats::getSizeofFormat(retval.format);
+            QT3DSU32 newIdx = (y * newWidth + x) * size;
 
             NVRenderTextureFormats::encodeToPixel(accumVal, retval.data, newIdx, retval.format);
         }
@@ -205,6 +404,7 @@ void Qt3DSRenderPrefilterTextureCPU::Build(void *inTextureData, QT3DSI32 inTextu
     m_SizeOfInternalFormat = NVRenderTextureFormats::getSizeofFormat(m_InternalFormat);
     m_InternalNoOfComponent = NVRenderTextureFormats::getNumberOfComponent(m_InternalFormat);
 
+    m_Texture2D.SetMaxLevel(m_MaxMipMapLevel);
     m_Texture2D.SetTextureData(NVDataRef<QT3DSU8>((QT3DSU8 *)inTextureData, inTextureDataSize), 0,
                                m_Width, m_Height, inFormat, m_DestinationFormat);
 
@@ -333,7 +533,7 @@ static const char *computeUploadShader(std::string &prog, NVRenderTextureFormats
     return prog.c_str();
 }
 
-static const char *computeWorkShader(std::string &prog, bool binESContext)
+static const char *computeWorkShader(std::string &prog, bool binESContext, bool rgbe)
 {
     if (binESContext) {
         prog += "#version 310 es\n"
@@ -358,10 +558,32 @@ static const char *computeWorkShader(std::string &prog, bool binESContext)
             "  sX = wrapMod( sX, width );\n"
             "}\n";
 
+    if (rgbe) {
+        prog += "vec4 decodeRGBE(in vec4 rgbe)\n"
+                "{\n"
+                " float f = pow(2.0, 255.0 * rgbe.a - 128.0);\n"
+                " return vec4(rgbe.rgb * f, 1.0);\n"
+                "}\n";
+        prog += "vec4 encodeRGBE(in vec4 rgba)\n"
+                "{\n"
+                " float maxMan = max(rgba.r, max(rgba.g, rgba.b));\n"
+                " float maxExp = 1.0 + floor(log2(maxMan));\n"
+                " return vec4(rgba.rgb / pow(2.0, maxExp), (maxExp + 128.0) / 255.0);\n"
+                "}\n";
+    }
+
     prog += "// Set workgroup layout;\n"
-            "layout (local_size_x = 16, local_size_y = 16) in;\n\n"
+            "layout (local_size_x = 16, local_size_y = 16) in;\n\n";
+    if (rgbe) {
+        prog +=
+            "layout (rgba8, binding = 1) readonly uniform image2D inputImage;\n\n"
+            "layout (rgba8, binding = 2) writeonly uniform image2D outputImage;\n\n";
+    } else {
+        prog +=
             "layout (rgba16f, binding = 1) readonly uniform image2D inputImage;\n\n"
-            "layout (rgba16f, binding = 2) writeonly uniform image2D outputImage;\n\n"
+            "layout (rgba16f, binding = 2) writeonly uniform image2D outputImage;\n\n";
+    }
+    prog +=
             "void main()\n"
             "{\n"
             "  int prevWidth = int(gl_NumWorkGroups.x) << 1;\n"
@@ -377,19 +599,31 @@ static const char *computeWorkShader(std::string &prog, bool binESContext)
             "      int sampleX = sx + (int(gl_GlobalInvocationID.x) << 1);\n"
             "      int sampleY = sy + (int(gl_GlobalInvocationID.y) << 1);\n"
             "      getWrappedCoords(sampleX, sampleY, prevWidth, prevHeight);\n"
-            "	   if ((sampleY * prevWidth + sampleX) < 0 )\n"
+            "       if ((sampleY * prevWidth + sampleX) < 0 )\n"
             "        sampleY = prevHeight + sampleY;\n"
             "      ivec2 pos = ivec2(sampleX, sampleY);\n"
-            "      vec4 value = imageLoad(inputImage, pos);\n"
-            "      float filterPdf = 1.0 / ( 1.0 + float(sx*sx + sy*sy)*2.0 );\n"
+            "      vec4 value = imageLoad(inputImage, pos);\n";
+
+    if (rgbe) {
+        prog +=
+            "      value = decodeRGBE(value);\n";
+    }
+
+    prog += "      float filterPdf = 1.0 / ( 1.0 + float(sx*sx + sy*sy)*2.0 );\n"
             "      filterPdf /= 4.71238898;\n"
             "      accumVal[0] += filterPdf * value.r;\n"
-            "	   accumVal[1] += filterPdf * value.g;\n"
-            "	   accumVal[2] += filterPdf * value.b;\n"
-            "	   accumVal[3] += filterPdf * value.a;\n"
+            "       accumVal[1] += filterPdf * value.g;\n"
+            "       accumVal[2] += filterPdf * value.b;\n"
+            "       accumVal[3] += filterPdf * value.a;\n"
             "    }\n"
-            "  }\n"
-            "  imageStore( outputImage, ivec2(gl_GlobalInvocationID.xy), accumVal );\n"
+            "  }\n";
+
+    if (rgbe) {
+        prog +=
+            "  accumVal = encodeRGBE(accumVal);\n";
+    }
+
+    prog += "  imageStore( outputImage, ivec2(gl_GlobalInvocationID.xy), accumVal );\n"
             "}\n";
 
     return prog.c_str();
@@ -422,33 +656,46 @@ Qt3DSRenderPrefilterTextureCompute::Qt3DSRenderPrefilterTextureCompute(
     NVFoundationBase &inFnd)
     : Qt3DSRenderPrefilterTexture(inNVRenderContext, inWidth, inHeight, inTexture2D, inDestFormat,
                                 inFnd)
-    , m_BSDFProgram(NULL)
-    , m_UploadProgram_RGBA8(NULL)
-    , m_UploadProgram_RGB8(NULL)
-    , m_Level0Tex(NULL)
+    , m_BSDFProgram(nullptr)
+    , m_BSDF_RGBE_Program(nullptr)
+    , m_UploadProgram_RGBA8(nullptr)
+    , m_UploadProgram_RGB8(nullptr)
+    , m_Level0Tex(nullptr)
     , m_TextureCreated(false)
 {
 }
 
 Qt3DSRenderPrefilterTextureCompute::~Qt3DSRenderPrefilterTextureCompute()
 {
-    m_UploadProgram_RGB8 = NULL;
-    m_UploadProgram_RGBA8 = NULL;
-    m_BSDFProgram = NULL;
-    m_Level0Tex = NULL;
+    m_BSDF_RGBE_Program = nullptr;
+    m_UploadProgram_RGB8 = nullptr;
+    m_UploadProgram_RGBA8 = nullptr;
+    m_BSDFProgram = nullptr;
+    m_Level0Tex = nullptr;
 }
 
-void Qt3DSRenderPrefilterTextureCompute::createComputeProgram(NVRenderContext *context)
+NVRenderShaderProgram *Qt3DSRenderPrefilterTextureCompute::createComputeProgram(
+        NVRenderContext *context, NVRenderTextureFormats::Enum format)
 {
     std::string computeProg;
 
-    if (!m_BSDFProgram) {
+    if (!m_BSDFProgram && format != NVRenderTextureFormats::RGBE8) {
         m_BSDFProgram = context
                             ->CompileComputeSource(
                                 "Compute BSDF mipmap shader",
-                                toRef(computeWorkShader(computeProg, isGLESContext(context))))
+                                toRef(computeWorkShader(computeProg, isGLESContext(context), false)))
                             .mShader;
+        return m_BSDFProgram;
     }
+    if (!m_BSDF_RGBE_Program && format == NVRenderTextureFormats::RGBE8) {
+        m_BSDF_RGBE_Program = context
+                            ->CompileComputeSource(
+                                "Compute BSDF RGBE mipmap shader",
+                                toRef(computeWorkShader(computeProg, isGLESContext(context), true)))
+                            .mShader;
+        return m_BSDF_RGBE_Program;
+    }
+    return nullptr;
 }
 
 NVRenderShaderProgram *Qt3DSRenderPrefilterTextureCompute::getOrCreateUploadComputeProgram(
@@ -496,7 +743,7 @@ void Qt3DSRenderPrefilterTextureCompute::CreateLevel0Tex(void *inTextureData, QT
         theWidth = (m_Width * 3) / 4;
     }
 
-    if (m_Level0Tex == NULL) {
+    if (m_Level0Tex == nullptr) {
         m_Level0Tex = m_NVRenderContext->CreateTexture2D();
         m_Level0Tex->SetTextureStorage(1, theWidth, m_Height, theFormat, theFormat,
                                        NVDataRef<QT3DSU8>((QT3DSU8 *)inTextureData, inTextureDataSize));
@@ -510,6 +757,7 @@ void Qt3DSRenderPrefilterTextureCompute::Build(void *inTextureData, QT3DSI32 inT
                                              NVRenderTextureFormats::Enum inFormat)
 {
     bool needMipUpload = (inFormat != m_DestinationFormat);
+    NVRenderShaderProgram *program = nullptr;
     // re-upload data
     if (!m_TextureCreated) {
         m_Texture2D.SetTextureStorage(
@@ -519,9 +767,9 @@ void Qt3DSRenderPrefilterTextureCompute::Build(void *inTextureData, QT3DSI32 inT
         m_Texture2D.addRef();
         // create a compute shader (if not aloread done) which computes the BSDF mipmaps for this
         // texture
-        createComputeProgram(m_NVRenderContext);
+        program = createComputeProgram(m_NVRenderContext, inFormat);
 
-        if (!m_BSDFProgram) {
+        if (!program) {
             QT3DS_ASSERT(false);
             return;
         }
@@ -575,19 +823,19 @@ void Qt3DSRenderPrefilterTextureCompute::Build(void *inTextureData, QT3DSI32 inT
     int width = m_Width >> 1;
     int height = m_Height >> 1;
 
-    m_NVRenderContext->SetActiveShader(m_BSDFProgram);
+    m_NVRenderContext->SetActiveShader(program);
 
     for (int i = 1; i <= m_MaxMipMapLevel; ++i) {
         theOutputImage->SetTextureLevel(i);
         NVRenderCachedShaderProperty<NVRenderImage2D *> theCachedOutputImage("outputImage",
-                                                                             *m_BSDFProgram);
+                                                                             *program);
         theCachedOutputImage.Set(theOutputImage);
         theInputImage->SetTextureLevel(i - 1);
         NVRenderCachedShaderProperty<NVRenderImage2D *> theCachedinputImage("inputImage",
-                                                                            *m_BSDFProgram);
+                                                                            *program);
         theCachedinputImage.Set(theInputImage);
 
-        m_NVRenderContext->DispatchCompute(m_BSDFProgram, width, height, 1);
+        m_NVRenderContext->DispatchCompute(program, width, height, 1);
 
         width = width > 2 ? width >> 1 : 1;
         height = height > 2 ? height >> 1 : 1;

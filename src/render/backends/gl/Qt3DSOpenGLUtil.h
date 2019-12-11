@@ -969,6 +969,7 @@ namespace render {
                 outInternalFormat = GL_RG8;
                 outDataType = GL_UNSIGNED_BYTE;
                 return true;
+            case NVRenderTextureFormats::RGBE8:
             case NVRenderTextureFormats::RGBA8:
                 outFormat = GL_RGBA;
                 outInternalFormat = GL_RGBA8;
@@ -1482,6 +1483,7 @@ namespace render {
                 return GL_R32UI;
             case NVRenderTextureFormats::R32F:
                 return GL_R32F;
+            case NVRenderTextureFormats::RGBE8:
             case NVRenderTextureFormats::RGBA8:
                 return GL_RGBA8;
             case NVRenderTextureFormats::SRGB8A8:
