@@ -30,6 +30,49 @@
 \title Building the \RUNTIME
 \page building-opengl-runtime.html
 
+\section1 Build Settings
+
+To configure runtime features you can modify \c ogl-runtime\commonplatform.pri file.
+This file contains defines which turn on / off specific features.
+
+\section2 Performance Logging
+Enable \c QT3DS_ENABLE_PERF_LOGGING to build runtime with performance logging on. At runtime, to see the logs
+you should also enable \c qt3ds.perf_info category e.g. with \c "QT_LOGGING_RULES=qt3ds.perf_info=true".
+More information about Qt logging categories from \l {https://doc.qt.io/qt-5/qloggingcategory.html}
+
+During the application startup console output should then contain following:
+
+\badcode
+qt3ds.perf_info: 1. (1) Application: Begin Load - 1.145900ms = 1.146200ms
+qt3ds.perf_info: 2. (1) Context: CreateRenderContext - 192.358500ms = 193.522300ms
+qt3ds.perf_info: 3. (1) Binding: Initial Batch Image Load - 0.003200ms = 193.551800ms
+qt3ds.perf_info: 4. (1) Binding: Initialize Scenes - 0.000100ms = 193.563500ms
+qt3ds.perf_info: 5. (1) SceneManager: OnGraphicsInitialized - 0.023800ms = 193.567600ms
+qt3ds.perf_info: 6. (1) Application: EndLoad - 0.000500ms = 193.574900ms
+qt3ds.perf_info: 7. (1) Application: GetMetaData - 59.171400ms = 252.875800ms
+qt3ds.perf_info: 8. (3) BatchLoader: Image Decompression - 15.395400ms = 294.876900ms
+...
+qt3ds.perf_info: 37. (1) RuntimeView: Stopping startup timer - 0.000500ms = 477.483800ms
+qt3ds.perf_info: RuntimeView: First frame at - 1601ms
+qt3ds.perf_info: Render Statistics: 33.62fps, frame count 34
+qt3ds.perf_info: Render Statistics: 59.92fps, frame count 60
+qt3ds.perf_info: Render Statistics: 59.92fps, frame count 60
+...
+\endcode
+
+Log format is: \c {(n) [task name] - [time] = [cumulative time]} where:
+\list
+  \li \c (n) = The amount of time \c [task name] was run during startup.
+  \li \c [task name] = Method/task being logged.
+  \li \c [time] = How many ms running \c [task name] for \c (n) times totally takes.
+  \li \c [cumulative time] = How many total ms has passed when the last run of \c [task name] ends.
+\endlist
+
+\note When analyzing the results, please note that tasks overlap with each other, some tasks include other tasks etc.
+Also, cumulative time only contains time spent inside runtime methods where \c {"First frame at"} contains the whole startup time.
+
+\note \c QT3DS_ENABLE_PERF_LOGGING should not be enabled in release builds as logging increases performance overhead.
+
 \section1 Build Instructions
 
 \list
