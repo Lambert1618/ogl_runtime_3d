@@ -141,7 +141,7 @@ void computeFrontLayerColor( in vec3 normal, in vec3 lightDir, in vec3 viewDir, 
   layers[1].layer += tmpShadowTerm * microfacetBSDF( layers[1].tanFrame, lightDir, viewDir, lightSpecular, materialIOR, ftmp0, ftmp1, scatter_reflect );
 
   layers[2].base += tmpShadowTerm * vec4( 0.0, 0.0, 0.0, 1.0 );
-  layers[2].layer += tmpShadowTerm * diffuseReflectionBSDF( tmp7, lightDir, viewDir, lightDiffuse, 0.000000 );
+  layers[2].layer += tmpShadowTerm * diffuseReflectionBSDF( tmp7, lightDir, lightDiffuse );
 
 #endif
 }
@@ -170,9 +170,9 @@ void computeFrontLayerEnvironment( in vec3 normal, in vec3 viewDir, float aoFact
   layers[2].layer += tmpShadowTerm * diffuseReflectionBSDFEnvironment( tmp7, 0.000000 ) * aoFactor;
 
 #else
-  layers[0].layer += tmpShadowTerm * sampleGlossyAniso( layers[0].tanFrame, viewDir, coat_roughness, coat_roughness );
+  layers[0].layer += tmpShadowTerm * sampleGlossy( layers[0].tanFrame, viewDir, coat_roughness );
 
-  layers[1].layer += tmpShadowTerm * sampleGlossyAniso( layers[1].tanFrame, viewDir, ftmp0, ftmp1 );
+  layers[1].layer += tmpShadowTerm * sampleGlossy( layers[1].tanFrame, viewDir, ftmp0 );
 
   layers[2].base += tmpShadowTerm * vec4( 0.0, 0.0, 0.0, 1.0 );
   layers[2].layer += tmpShadowTerm * sampleDiffuse( layers[2].tanFrame ) * aoFactor;

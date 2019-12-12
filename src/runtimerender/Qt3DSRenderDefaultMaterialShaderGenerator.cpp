@@ -395,7 +395,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     void AddLocalVariable(IShaderStageGenerator &inGenerator, const char8_t *inName,
                           const char8_t *inType)
     {
-        inGenerator << "\t" << inType << " " << inName << ";" << Endl;
+        inGenerator << "    " << inType << " " << inName << ";" << Endl;
     }
 
     void AddLocalVariable(IShaderStageGenerator &inGenerator, const TStrType &inName,
@@ -414,40 +414,41 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         SetupTexCoordVariableName(uvSet);
         fragmentShader.AddUniform(m_ImageSampler, "sampler2D");
         vertexShader.AddUniform(m_ImageOffsets, "vec3");
-        fragmentShader.AddUniform(m_ImageOffsets, "vec3");
         vertexShader.AddUniform(m_ImageRotations, "vec4");
-        fragmentShader.AddUniform(m_ImageRotations, "vec4");
 
         if (image.m_Image.m_MappingMode == ImageMappingModes::Normal) {
-            vertexShader << "\tuTransform = vec3( " << m_ImageRotations << ".x, "
+            vertexShader << "    uTransform = vec3( " << m_ImageRotations << ".x, "
                          << m_ImageRotations << ".y, " << m_ImageOffsets << ".x );" << Endl;
-            vertexShader << "\tvTransform = vec3( " << m_ImageRotations << ".z, "
+            vertexShader << "    vTransform = vec3( " << m_ImageRotations << ".z, "
                          << m_ImageRotations << ".w, " << m_ImageOffsets << ".y );" << Endl;
             vertexShader.AddOutgoing(m_ImageFragCoords, "vec2");
             addFunction(vertexShader, "getTransformedUVCoords");
             vertexShader.GenerateUVCoords(uvSet);
             m_ImageTemp = m_ImageFragCoords;
             m_ImageTemp.append("temp");
-            vertexShader << "\tvec2 " << m_ImageTemp << " = getTransformedUVCoords( vec3( "
+            vertexShader << "    vec2 " << m_ImageTemp << " = getTransformedUVCoords( vec3( "
                          << m_TexCoordTemp << ", 1.0), uTransform, vTransform );" << Endl;
-            if (image.m_Image.m_TextureData.m_TextureFlags.IsInvertUVCoords())
-                vertexShader << "\t" << m_ImageTemp << ".y = 1.0 - " << m_ImageTemp << ".y;"
+            if (image.m_Image.m_TextureData.m_TextureFlags.IsInvertUVCoords()) {
+                vertexShader << "    " << m_ImageTemp << ".y = 1.0 - " << m_ImageTemp << ".y;"
                              << Endl;
+            }
 
             vertexShader.AssignOutput(m_ImageFragCoords.c_str(), m_ImageTemp.c_str());
         } else {
-            fragmentShader << "\tuTransform = vec3( " << m_ImageRotations << ".x, "
+            fragmentShader.AddUniform(m_ImageOffsets, "vec3");
+            fragmentShader.AddUniform(m_ImageRotations, "vec4");
+            fragmentShader << "    uTransform = vec3( " << m_ImageRotations << ".x, "
                            << m_ImageRotations << ".y, " << m_ImageOffsets << ".x );" << Endl;
-            fragmentShader << "\tvTransform = vec3( " << m_ImageRotations << ".z, "
+            fragmentShader << "    vTransform = vec3( " << m_ImageRotations << ".z, "
                            << m_ImageRotations << ".w, " << m_ImageOffsets << ".y );" << Endl;
             vertexShader.GenerateEnvMapReflection();
             addFunction(fragmentShader, "getTransformedUVCoords");
-            fragmentShader << "\tvec2 " << m_ImageFragCoords
+            fragmentShader << "    vec2 " << m_ImageFragCoords
                            << " = getTransformedUVCoords( environment_map_reflection, uTransform, "
                               "vTransform );"
                            << Endl;
             if (image.m_Image.m_TextureData.m_TextureFlags.IsInvertUVCoords())
-                fragmentShader << "\t" << m_ImageFragCoords << ".y = 1.0 - " << m_ImageFragCoords
+                fragmentShader << "    " << m_ImageFragCoords << ".y = 1.0 - " << m_ImageFragCoords
                                << ".y;" << Endl;
         }
     }
@@ -466,19 +467,19 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             inShader.AddUniform(m_ImageOffsets, "vec3");
             inShader.AddUniform(m_ImageRotations, "vec4");
 
-            inShader << "\tuTransform = vec3( " << m_ImageRotations << ".x, " << m_ImageRotations
+            inShader << "    uTransform = vec3( " << m_ImageRotations << ".x, " << m_ImageRotations
                      << ".y, " << m_ImageOffsets << ".x );" << Endl;
-            inShader << "\tvTransform = vec3( " << m_ImageRotations << ".z, " << m_ImageRotations
+            inShader << "    vTransform = vec3( " << m_ImageRotations << ".z, " << m_ImageRotations
                      << ".w, " << m_ImageOffsets << ".y );" << Endl;
-            inShader << "\tvec2 " << m_ImageFragCoords << ";" << Endl;
+            inShader << "    vec2 " << m_ImageFragCoords << ";" << Endl;
             addFunction(inShader, "getTransformedUVCoords");
             inShader.GenerateUVCoords();
             inShader
-                << "\t" << m_ImageFragCoords
+                << "    " << m_ImageFragCoords
                 << " = getTransformedUVCoords( vec3( varTexCoord0, 1.0), uTransform, vTransform );"
                 << Endl;
             if (image.m_Image.m_TextureData.m_TextureFlags.IsInvertUVCoords())
-                inShader << "\t" << m_ImageFragCoords << ".y = 1.0 - " << m_ImageFragCoords << ".y;"
+                inShader << "    " << m_ImageFragCoords << ".y = 1.0 - " << m_ImageFragCoords << ".y;"
                          << Endl;
         }
     }
@@ -491,7 +492,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         case DefaultMaterialSpecularModel::KGGX: {
             fragmentShader.AddInclude("defaultMaterialPhysGlossyBSDF.glsllib");
             fragmentShader.AddUniform("material_specular", "vec4");
-            fragmentShader << "\tglobal_specular_light.rgb += lightAttenuation * specularAmount * "
+            fragmentShader << "    global_specular_light.rgb += lightAttenuation * specularAmount * "
                               "specularColor * kggxGlossyDefaultMtl( "
                            << "world_normal, tangent, -" << inLightDir << ".xyz, view_vector, "
                            << inLightSpecColor
@@ -502,7 +503,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         case DefaultMaterialSpecularModel::KWard: {
             fragmentShader.AddInclude("defaultMaterialPhysGlossyBSDF.glsllib");
             fragmentShader.AddUniform("material_specular", "vec4");
-            fragmentShader << "\tglobal_specular_light.rgb += lightAttenuation * specularAmount * "
+            fragmentShader << "    global_specular_light.rgb += lightAttenuation * specularAmount * "
                               "specularColor * wardGlossyDefaultMtl( "
                            << "world_normal, tangent, -" << inLightDir << ".xyz, view_vector, "
                            << inLightSpecColor
@@ -512,11 +513,11 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         } break;
         default:
             addFunction(fragmentShader, "specularBSDF");
-            fragmentShader << "\tglobal_specular_light.rgb += lightAttenuation * specularAmount * "
+            fragmentShader << "    global_specular_light.rgb += lightAttenuation * specularAmount * "
                               "specularColor * specularBSDF( "
                            << "world_normal, -" << inLightDir << ".xyz, view_vector, "
-                           << inLightSpecColor << ".rgb, 1.0, 2.56 / (roughnessAmount + "
-                                                  "0.01), vec3(1.0), scatter_reflect ).rgb;"
+                           << inLightSpecColor << ".rgb, 2.56 / (roughnessAmount + "
+                                                  "0.01)).rgb;"
                            << Endl;
             break;
         }
@@ -527,7 +528,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     {
         m_NormalizedDirection = inLightPrefix + "_areaDir";
         AddLocalVariable(infragmentShader, m_NormalizedDirection, "vec3");
-        infragmentShader << "\tlightAttenuation = calculateDiffuseAreaOld( " << m_LightDirection
+        infragmentShader << "    lightAttenuation = calculateDiffuseAreaOld( " << m_LightDirection
                          << ".xyz, " << m_LightPos << ".xyz, " << m_LightUp << ", " << m_LightRt
                          << ", " << inPos << ", " << m_NormalizedDirection << " );" << Endl;
     }
@@ -542,7 +543,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                             "specularAmount * sampleAreaGlossyDefault( tanFrame, "
                          << inPos << ", " << m_NormalizedDirection << ", " << m_LightPos << ".xyz, "
                          << m_LightRt << ".w, " << m_LightUp << ".w, " << inView
-                         << ", roughnessAmount, roughnessAmount ).rgb;" << Endl;
+                         << ", roughnessAmount).rgb;" << Endl;
     }
 
     void AddTranslucencyIrradiance(IShaderStageGenerator &infragmentShader, SRenderableImage *image,
@@ -553,13 +554,13 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
         addFunction(infragmentShader, "diffuseReflectionWrapBSDF");
         if (areaLight) {
-            infragmentShader << "\tglobal_diffuse_light.rgb += lightAttenuation * "
+            infragmentShader << "    global_diffuse_light.rgb += lightAttenuation * "
                                 "translucent_thickness_exp * diffuseReflectionWrapBSDF( "
                                 "-world_normal, "
                              << m_NormalizedDirection << ", " << m_LightColor
                              << ".rgb, diffuseLightWrap ).rgb;" << Endl;
         } else {
-            infragmentShader << "\tglobal_diffuse_light.rgb += lightAttenuation * "
+            infragmentShader << "    global_diffuse_light.rgb += lightAttenuation * "
                                 "translucent_thickness_exp * diffuseReflectionWrapBSDF( "
                                 "-world_normal, "
                              << "-" << m_NormalizedDirection << ", " << m_LightColor
@@ -601,7 +602,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         if ( inType == RenderLightTypes::Area )
         {
                 inLightShader << "vec2 " << m_ShadowCoordStem << ";" << Endl;
-                inLightShader << "\tshadow_map_occl = sampleParaboloid( " << m_ShadowMapStem << ", "
+                inLightShader << "    shadow_map_occl = sampleParaboloid( " << m_ShadowMapStem << ", "
         << m_ShadowControlStem << ", "
                                                                                 <<
         m_ShadowMatrixStem << ", varWorldPos, vec2(1.0, " << m_ShadowControlStem << ".z), "
@@ -610,12 +611,12 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         }
         else */
         if (inType != RenderLightTypes::Directional) {
-            inLightShader << "\tshadow_map_occl = sampleCubemap( " << m_ShadowCubeStem << ", "
+            inLightShader << "    shadow_map_occl = sampleCubemap( " << m_ShadowCubeStem << ", "
                           << m_ShadowControlStem << ", " << m_ShadowMatrixStem << ", " << m_LightPos
                           << ".xyz, varWorldPos, vec2(1.0, " << m_ShadowControlStem << ".z) );"
                           << Endl;
         } else
-            inLightShader << "\tshadow_map_occl = sampleOrthographic( " << m_ShadowMapStem << ", "
+            inLightShader << "    shadow_map_occl = sampleOrthographic( " << m_ShadowMapStem << ", "
                           << m_ShadowControlStem << ", " << m_ShadowMatrixStem
                           << ", varWorldPos, vec2(1.0, " << m_ShadowControlStem << ".z) );" << Endl;
     }
@@ -630,18 +631,18 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         inShader.AddUniform("displacementMap_offset", "vec3");
         inShader.AddInclude("defaultMaterialFileDisplacementTexture.glsllib");
 
-        inShader.Append("\tvec3 uTransform = vec3( displacementMap_rot.x, displacementMap_rot.y, "
+        inShader.Append("    vec3 uTransform = vec3( displacementMap_rot.x, displacementMap_rot.y, "
                         "displacementMap_offset.x );");
-        inShader.Append("\tvec3 vTransform = vec3( displacementMap_rot.z, displacementMap_rot.w, "
+        inShader.Append("    vec3 vTransform = vec3( displacementMap_rot.z, displacementMap_rot.w, "
                         "displacementMap_offset.y );");
         addFunction(inShader, "getTransformedUVCoords");
-        inShader.Append("\tvec2 uv_coords = attr_uv0;");
-        inShader << "\tuv_coords = getTransformedUVCoords( vec3( uv_coords, 1.0), uTransform, "
+        inShader.Append("    vec2 uv_coords = attr_uv0;");
+        inShader << "    uv_coords = getTransformedUVCoords( vec3( uv_coords, 1.0), uTransform, "
                     "vTransform );\n";
-        inShader << "\tvec3 displacedPos = defaultMaterialFileDisplacementTexture( "
+        inShader << "    vec3 displacedPos = defaultMaterialFileDisplacementTexture( "
                     "displacementSampler , displaceAmount, uv_coords , attr_norm, attr_pos );"
                  << Endl;
-        inShader.Append("\tgl_Position = model_view_projection * vec4(displacedPos, 1.0);");
+        inShader.Append("    gl_Position = model_view_projection * vec4(displacedPos, 1.0);");
     }
 
     void AddDisplacementImageUniforms(IShaderStageGenerator &inGenerator,
@@ -663,15 +664,15 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
     {
         if (m_DefaultMaterialShaderKeyProperties.m_FresnelEnabled.GetValue(inKey)) {
             if (inFragmentHasSpecularAmount == false)
-                fragmentShader << "\tfloat specularAmount = 1.0;" << Endl;
+                fragmentShader << "    float specularAmount = 1.0;" << Endl;
             inFragmentHasSpecularAmount = true;
             fragmentShader.AddInclude("defaultMaterialFresnel.glsllib");
             fragmentShader.AddUniform("fresnelPower", "float");
             fragmentShader.AddUniform("material_specular", "vec4");
-            fragmentShader << "\tfloat fresnelRatio = defaultMaterialSimpleFresnel( world_normal, "
+            fragmentShader << "    float fresnelRatio = defaultMaterialSimpleFresnel( world_normal, "
                               "view_vector, material_specular.w, fresnelPower );"
                            << Endl;
-            fragmentShader << "\tspecularAmount *= fresnelRatio;" << Endl;
+            fragmentShader << "    specularAmount *= fresnelRatio;" << Endl;
         }
         return inFragmentHasSpecularAmount;
     }
@@ -742,18 +743,18 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         inShader.AddUniform("displacementMap_offset", "vec3");
         inShader.AddInclude("defaultMaterialFileDisplacementTexture.glsllib");
 
-        inShader.Append("\tvec3 uTransform = vec3( displacementMap_rot.x, displacementMap_rot.y, "
+        inShader.Append("    vec3 uTransform = vec3( displacementMap_rot.x, displacementMap_rot.y, "
                         "displacementMap_offset.x );");
-        inShader.Append("\tvec3 vTransform = vec3( displacementMap_rot.z, displacementMap_rot.w, "
+        inShader.Append("    vec3 vTransform = vec3( displacementMap_rot.z, displacementMap_rot.w, "
                         "displacementMap_offset.y );");
         addFunction(inShader, "getTransformedUVCoords");
         inShader.GenerateUVCoords();
-        inShader << "\tvarTexCoord0 = getTransformedUVCoords( vec3( varTexCoord0, 1.0), "
+        inShader << "    varTexCoord0 = getTransformedUVCoords( vec3( varTexCoord0, 1.0), "
                     "uTransform, vTransform );\n";
-        inShader << "\tvec3 displacedPos = defaultMaterialFileDisplacementTexture( "
+        inShader << "    vec3 displacedPos = defaultMaterialFileDisplacementTexture( "
                     "displacementSampler , displaceAmount, varTexCoord0 , attr_norm, attr_pos );"
                  << Endl;
-        inShader.Append("\tgl_Position = model_view_projection * vec4(displacedPos, 1.0);");
+        inShader.Append("    gl_Position = model_view_projection * vec4(displacedPos, 1.0);");
     }
 
     void GenerateTextureSwizzle(NVRenderTextureSwizzleMode::Enum swizzleMode,
@@ -875,14 +876,14 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             /*
             VertexGenerator().AddUniform( m_ShadowMatrixStem, "mat4" );
             VertexGenerator().AddOutgoing( m_ShadowCoordStem, "vec4" );
-            VertexGenerator() << "\tvec4 local_" << m_ShadowCoordStem << " = " << m_ShadowMatrixStem
+            VertexGenerator() << "    vec4 local_" << m_ShadowCoordStem << " = " << m_ShadowMatrixStem
             << " * vec4(local_model_world_position, 1.0);" << Endl;
             m_TempStr.assign( "local_" );
             m_TempStr.append( m_ShadowCoordStem );
             VertexGenerator().AssignOutput( m_ShadowCoordStem.c_str(), m_TempStr.c_str() );
             */
         } else {
-            FragmentGenerator() << "\tshadow_map_occl = 1.0;" << Endl;
+            FragmentGenerator() << "    shadow_map_occl = 1.0;" << Endl;
         }
     }
 
@@ -1035,9 +1036,9 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         // generated.
         // we rely on the linker to strip out what isn't necessary instead of explicitly stripping
         // it for code simplicity.
-        if (hasImage) {
-            fragmentShader.Append("\tvec3 uTransform;");
-            fragmentShader.Append("\tvec3 vTransform;");
+        if (hasImage && hasLighting && hasLightmaps) {
+            fragmentShader.Append("    vec3 uTransform;");
+            fragmentShader.Append("    vec3 vTransform;");
         }
 
         if (includeSSAOSSDOVars || hasSpecMap || hasLighting || hasEnvMap || enableFresnel
@@ -1052,7 +1053,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         if (vertexColorsEnabled)
             vertexShader.GenerateVertexColor();
         else
-            fragmentShader.Append("\tvec3 vertColor = vec3(1.0);");
+            fragmentShader.Append("    vec3 vertColor = vec3(1.0);");
 
         // You do bump or normal mapping but not both
         if (bumpImage != nullptr) {
@@ -1061,41 +1062,41 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
             fragmentShader.AddUniform(m_ImageSamplerSize, "vec2");
             fragmentShader.AddInclude("defaultMaterialBumpNoLod.glsllib");
-            fragmentShader << "\tworld_normal = defaultMaterialBumpNoLod( " << m_ImageSampler
+            fragmentShader << "    world_normal = defaultMaterialBumpNoLod( " << m_ImageSampler
                            << ", bumpAmount, " << m_ImageFragCoords
                            << ", tangent, binormal, world_normal, "
                            << m_ImageSamplerSize << ");" << Endl;
             // Do gram schmidt
-            fragmentShader << "\tbinormal = normalize(cross(world_normal, tangent) );\n";
-            fragmentShader << "\ttangent = normalize(cross(binormal, world_normal) );\n";
+            fragmentShader << "    binormal = normalize(cross(world_normal, tangent) );\n";
+            fragmentShader << "    tangent = normalize(cross(binormal, world_normal) );\n";
 
         } else if (normalImage != nullptr) {
             GenerateImageUVCoordinates(normalImageIdx, *normalImage);
 
-            fragmentShader.AddInclude("defaultMaterialFileNormalTexture.glsllib");
+            fragmentShader.AddFunction("sampleNormalTexture.glsllib");
             fragmentShader.AddUniform("bumpAmount", "float");
 
-            fragmentShader << "\tworld_normal = defaultMaterialFileNormalTexture( "
+            fragmentShader << "    world_normal = sampleNormalTexture( "
                            << m_ImageSampler << ", bumpAmount, " << m_ImageFragCoords
-                           << ", tangent, binormal );" << Endl;
+                           << ", tangent, binormal, world_normal);" << Endl;
         }
 
         if (includeSSAOSSDOVars || specularEnabled || hasIblProbe || enableBumpNormal)
-            fragmentShader << "\tmat3 tanFrame = mat3(tangent, binormal, world_normal);" << Endl;
+            fragmentShader << "    mat3 tanFrame = mat3(tangent, binormal, world_normal);" << Endl;
 
         bool fragmentHasSpecularAmount = false;
 
         if (hasEmissiveMap) {
-            fragmentShader.Append("\tvec3 global_emission = material_diffuse.rgb;");
+            fragmentShader.Append("    vec3 global_emission = material_diffuse.rgb;");
         }
 
         if (hasLighting) {
             fragmentShader.AddUniform("light_ambient_total", "vec3");
 
             fragmentShader.Append(
-                "\tvec4 global_diffuse_light = vec4(light_ambient_total.xyz, 1.0);");
-            fragmentShader.Append("\tvec3 global_specular_light = vec3(0.0, 0.0, 0.0);");
-            fragmentShader.Append("\tfloat shadow_map_occl = 1.0;");
+                "    vec4 global_diffuse_light = vec4(light_ambient_total.xyz, 1.0);");
+            fragmentShader.Append("    vec3 global_specular_light = vec3(0.0, 0.0, 0.0);");
+            fragmentShader.Append("    float shadow_map_occl = 1.0;");
 
             if (specularEnabled) {
                 vertexShader.GenerateViewVector();
@@ -1104,24 +1105,24 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
             if (lightmapIndirectImage != nullptr) {
                 GenerateImageUVCoordinates(lightmapIndirectImageIdx, *lightmapIndirectImage, 1);
-                fragmentShader << "\tvec4 indirect_light = texture2D( " << m_ImageSampler << ", "
+                fragmentShader << "    vec4 indirect_light = texture2D( " << m_ImageSampler << ", "
                                << m_ImageFragCoords << ");" << Endl;
-                fragmentShader << "\tglobal_diffuse_light += indirect_light;" << Endl;
+                fragmentShader << "    global_diffuse_light += indirect_light;" << Endl;
                 if (specularEnabled) {
                     fragmentShader
-                        << "\tglobal_specular_light += indirect_light.rgb * material_properties.x;"
+                        << "    global_specular_light += indirect_light.rgb * material_properties.x;"
                         << Endl;
                 }
             }
 
             if (lightmapRadiosityImage != nullptr) {
                 GenerateImageUVCoordinates(lightmapRadiosityImageIdx, *lightmapRadiosityImage, 1);
-                fragmentShader << "\tvec4 direct_light = texture2D( " << m_ImageSampler << ", "
+                fragmentShader << "    vec4 direct_light = texture2D( " << m_ImageSampler << ", "
                                << m_ImageFragCoords << ");" << Endl;
-                fragmentShader << "\tglobal_diffuse_light += direct_light;" << Endl;
+                fragmentShader << "    global_diffuse_light += direct_light;" << Endl;
                 if (specularEnabled) {
                     fragmentShader
-                        << "\tglobal_specular_light += direct_light.rgb * material_properties.x;"
+                        << "    global_specular_light += direct_light.rgb * material_properties.x;"
                         << Endl;
                 }
             }
@@ -1132,52 +1133,52 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
                 GenerateImageUVCoordinates(translucencyImageIdx, *translucencyImage);
 
-                fragmentShader << "\tvec4 translucent_depth_range = texture2D( " << m_ImageSampler
+                fragmentShader << "    vec4 translucent_depth_range = texture2D( " << m_ImageSampler
                                << ", " << m_ImageFragCoords << ");" << Endl;
-                fragmentShader << "\tfloat translucent_thickness = translucent_depth_range.r * "
+                fragmentShader << "    float translucent_thickness = translucent_depth_range.r * "
                                   "translucent_depth_range.r;"
                                << Endl;
-                fragmentShader << "\tfloat translucent_thickness_exp = exp( translucent_thickness "
+                fragmentShader << "    float translucent_thickness_exp = exp( translucent_thickness "
                                   "* translucentFalloff);"
                                << Endl;
             }
 
-            fragmentShader.Append("\tfloat lightAttenuation = 1.0;");
+            fragmentShader.Append("    float lightAttenuation = 1.0;");
 
             AddLocalVariable(fragmentShader, "aoFactor", "float");
 
             if (hasLighting && enableSSAO)
-                fragmentShader.Append("\taoFactor = customMaterialAO();");
+                fragmentShader.Append("    aoFactor = customMaterialAO();");
             else
-                fragmentShader.Append("\taoFactor = 1.0;");
+                fragmentShader.Append("    aoFactor = 1.0;");
 
             AddLocalVariable(fragmentShader, "shadowFac", "float");
 
             if (specularEnabled) {
-                fragmentShader << "\tfloat specularAmount = material_properties.x;" << Endl;
+                fragmentShader << "    float specularAmount = material_properties.x;" << Endl;
                 fragmentHasSpecularAmount = true;
             }
             // Fragment lighting means we can perhaps attenuate the specular amount by a texture
             // lookup.
 
-            fragmentShader << "\tvec3 specularColor = vec3(1.0);" << Endl;
+            fragmentShader << "    vec3 specularColor = vec3(1.0);" << Endl;
             if (specularAmountImage) {
                 if (!specularEnabled)
-                    fragmentShader << "\tfloat specularAmount = 1.0;" << Endl;
+                    fragmentShader << "    float specularAmount = 1.0;" << Endl;
                 GenerateImageUVCoordinates(specularAmountImageIdx, *specularAmountImage);
-                fragmentShader << "\tspecularColor = texture2D( "
+                fragmentShader << "    specularColor = texture2D( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << " ).xyz;" << Endl;
                 fragmentHasSpecularAmount = true;
             }
 
-            fragmentShader << "\tfloat roughnessAmount = material_properties.y;" << Endl;
+            fragmentShader << "    float roughnessAmount = material_properties.y;" << Endl;
             if (roughnessImage) {
                 GenerateImageUVCoordinates(roughnessImageIdx, *roughnessImage);
-                fragmentShader << "\tfloat sampledRoughness = texture2D( "
+                fragmentShader << "    float sampledRoughness = texture2D( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << " ).x;" << Endl;
                 //The roughness sampled from roughness textures is Disney roughness
                 //which has to be squared to get the proper value
-                fragmentShader << "\troughnessAmount = roughnessAmount * "
+                fragmentShader << "    roughnessAmount = roughnessAmount * "
                                << "sampledRoughness * sampledRoughness;" << Endl;
             }
 
@@ -1199,8 +1200,8 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 m_TempStr.assign("light");
                 m_TempStr.append(buf);
 
-                fragmentShader << "\t//Light " << buf << Endl;
-                fragmentShader << "\tlightAttenuation = 1.0;" << Endl;
+                fragmentShader << "    //Light " << buf << Endl;
+                fragmentShader << "    lightAttenuation = 1.0;" << Endl;
                 if (isDirectional) {
 
                     if (m_LightsAsSeparateUniforms) {
@@ -1209,22 +1210,22 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                     }
 
                     if (enableSSDO) {
-                        fragmentShader << "\tshadowFac = customMaterialShadow( " << m_LightDirection
+                        fragmentShader << "    shadowFac = customMaterialShadow( " << m_LightDirection
                                        << ".xyz, varWorldPos );" << Endl;
                     } else {
-                        fragmentShader << "\tshadowFac = 1.0;" << Endl;
+                        fragmentShader << "    shadowFac = 1.0;" << Endl;
                     }
 
                     GenerateShadowMapOcclusion(lightIdx, enableShadowMaps && isShadow,
                                                lightNode->m_LightType);
 
                     if (specularEnabled && enableShadowMaps && isShadow)
-                        fragmentShader << "\tlightAttenuation *= shadow_map_occl;" << Endl;
+                        fragmentShader << "    lightAttenuation *= shadow_map_occl;" << Endl;
 
-                    fragmentShader << "\tglobal_diffuse_light.rgb += shadowFac * shadow_map_occl * "
+                    fragmentShader << "    global_diffuse_light.rgb += shadowFac * shadow_map_occl * "
                                       "diffuseReflectionBSDF( world_normal, "
-                                   << "-" << m_LightDirection << ".xyz, view_vector, "
-                                   << m_LightColor << ".rgb, 0.0 ).rgb;" << Endl;
+                                   << "-" << m_LightDirection << ".xyz, "
+                                   << m_LightColor << ".rgb).rgb;" << Endl;
 
                     if (specularEnabled) {
                         if (m_LightsAsSeparateUniforms)
@@ -1250,7 +1251,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
                     // Debug measure to make sure paraboloid sampling was projecting to the right
                     // location
-                    // fragmentShader << "\tglobal_diffuse_light.rg += " << m_ShadowCoordStem << ";"
+                    // fragmentShader << "    global_diffuse_light.rg += " << m_ShadowCoordStem << ";"
                     // << Endl;
                     m_NormalizedDirection = m_TempStr;
                     m_NormalizedDirection.append("_Frame");
@@ -1261,10 +1262,10 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                                    << Endl;
 
                     if (enableSSDO) {
-                        fragmentShader << "\tshadowFac = shadow_map_occl * customMaterialShadow( "
+                        fragmentShader << "    shadowFac = shadow_map_occl * customMaterialShadow( "
                                        << m_LightDirection << ".xyz, varWorldPos );" << Endl;
                     } else {
-                        fragmentShader << "\tshadowFac = shadow_map_occl;" << Endl;
+                        fragmentShader << "    shadowFac = shadow_map_occl;" << Endl;
                     }
 
                     if (specularEnabled) {
@@ -1276,14 +1277,14 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                     }
 
                     OutputDiffuseAreaLighting(fragmentShader, "varWorldPos", m_TempStr);
-                    fragmentShader << "\tlightAttenuation *= shadowFac;" << Endl;
+                    fragmentShader << "    lightAttenuation *= shadowFac;" << Endl;
 
                     AddTranslucencyIrradiance(fragmentShader, translucencyImage, m_TempStr, true);
 
-                    fragmentShader << "\tglobal_diffuse_light.rgb += lightAttenuation * "
+                    fragmentShader << "    global_diffuse_light.rgb += lightAttenuation * "
                                       "diffuseReflectionBSDF( world_normal, "
-                                   << m_NormalizedDirection << ", view_vector, " << m_LightColor
-                                   << ".rgb, 0.0 ).rgb;" << Endl;
+                                   << m_NormalizedDirection << ", " << m_LightColor
+                                   << ".rgb).rgb;" << Endl;
                 } else {
 
                     vertexShader.GenerateWorldPosition();
@@ -1304,19 +1305,19 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                     m_RelativeDistance = m_TempStr;
                     m_RelativeDistance.append("_distance");
 
-                    fragmentShader << "\tvec3 " << m_RelativeDirection << " = varWorldPos - "
+                    fragmentShader << "    vec3 " << m_RelativeDirection << " = varWorldPos - "
                                    << m_LightPos << ".xyz;" << Endl;
-                    fragmentShader << "\tfloat " << m_RelativeDistance << " = length( "
+                    fragmentShader << "    float " << m_RelativeDistance << " = length( "
                                    << m_RelativeDirection << " );" << Endl;
-                    fragmentShader << "\tvec3 " << m_NormalizedDirection << " = "
+                    fragmentShader << "    vec3 " << m_NormalizedDirection << " = "
                                    << m_RelativeDirection << " / " << m_RelativeDistance << ";"
                                    << Endl;
 
                     if (enableSSDO) {
-                        fragmentShader << "\tshadowFac = shadow_map_occl * customMaterialShadow( "
+                        fragmentShader << "    shadowFac = shadow_map_occl * customMaterialShadow( "
                                        << m_NormalizedDirection << ", varWorldPos );" << Endl;
                     } else {
-                        fragmentShader << "\tshadowFac = shadow_map_occl;" << Endl;
+                        fragmentShader << "    shadowFac = shadow_map_occl;" << Endl;
                     }
 
                     addFunction(fragmentShader, "calculatePointLightAttenuation");
@@ -1324,13 +1325,13 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                     if (m_LightsAsSeparateUniforms) {
                         fragmentShader.AddUniform(m_LightAttenuation, "vec3");
                         fragmentShader
-                            << "\tlightAttenuation = shadowFac * calculatePointLightAttenuation("
+                            << "    lightAttenuation = shadowFac * calculatePointLightAttenuation("
                             << "vec3( " << m_LightAttenuation << ".x, " << m_LightAttenuation
                             << ".y, " << m_LightAttenuation << ".z), " << m_RelativeDistance
                             << ");" << Endl;
                     } else {
                         fragmentShader
-                            << "\tlightAttenuation = shadowFac * calculatePointLightAttenuation("
+                            << "    lightAttenuation = shadowFac * calculatePointLightAttenuation("
                             << "vec3( " << m_LightConstantAttenuation << ", "
                             << m_LightLinearAttenuation << ", " << m_LightQuadraticAttenuation
                             << "), " << m_RelativeDistance << ");"
@@ -1341,10 +1342,10 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
                     AddTranslucencyIrradiance(fragmentShader, translucencyImage, m_TempStr, false);
 
-                    fragmentShader << "\tglobal_diffuse_light.rgb += lightAttenuation * "
+                    fragmentShader << "    global_diffuse_light.rgb += lightAttenuation * "
                                       "diffuseReflectionBSDF( world_normal, "
-                                   << "-" << m_NormalizedDirection << ", view_vector, "
-                                   << m_LightColor << ".rgb, 0.0 ).rgb;" << Endl;
+                                   << "-" << m_NormalizedDirection << ", "
+                                   << m_LightColor << ".rgb).rgb;" << Endl;
 
                     if (specularEnabled) {
                         if (m_LightsAsSeparateUniforms)
@@ -1363,14 +1364,14 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             // Furthermore object_opacity is something that may come from the vertex pipeline or
             // somewhere else.
             // We leave it up to the vertex pipeline to figure it out.
-            fragmentShader << "\tglobal_diffuse_light = vec4(global_diffuse_light.xyz * aoFactor, "
+            fragmentShader << "    global_diffuse_light = vec4(global_diffuse_light.xyz * aoFactor, "
                               "object_opacity);"
-                           << Endl << "\tglobal_specular_light = vec3(global_specular_light.xyz);"
+                           << Endl << "    global_specular_light = vec3(global_specular_light.xyz);"
                            << Endl;
         } else // no lighting.
         {
-            fragmentShader << "\tvec4 global_diffuse_light = vec4(0.0, 0.0, 0.0, object_opacity);"
-                           << Endl << "\tvec3 global_specular_light = vec3(0.0, 0.0, 0.0);" << Endl;
+            fragmentShader << "    vec4 global_diffuse_light = vec4(0.0, 0.0, 0.0, object_opacity);"
+                           << Endl << "    vec3 global_specular_light = vec3(0.0, 0.0, 0.0);" << Endl;
 
             // We still have specular maps and such that could potentially use the fresnel variable.
             fragmentHasSpecularAmount =
@@ -1379,19 +1380,19 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
         if (!hasEmissiveMap)
             fragmentShader
-                << "\tglobal_diffuse_light.rgb += diffuse_color.rgb * material_diffuse.rgb;"
+                << "    global_diffuse_light.rgb += diffuse_color.rgb * material_diffuse.rgb;"
                 << Endl;
 
         // since we already modulate our material diffuse color
         // into the light color we will miss it entirely if no IBL
         // or light is used
         if (hasLightmaps && !(m_Lights.size() || hasIblProbe))
-            fragmentShader << "\tglobal_diffuse_light.rgb *= diffuse_color.rgb;" << Endl;
+            fragmentShader << "    global_diffuse_light.rgb *= diffuse_color.rgb;" << Endl;
 
         if (hasLighting && hasIblProbe) {
             vertexShader.GenerateWorldNormal();
 
-            fragmentShader << "\tglobal_diffuse_light.rgb += diffuse_color.rgb * aoFactor * "
+            fragmentShader << "    global_diffuse_light.rgb += diffuse_color.rgb * aoFactor * "
                               "sampleDiffuse( tanFrame ).xyz;"
                            << Endl;
 
@@ -1399,7 +1400,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
                 fragmentShader.AddUniform("material_specular", "vec4");
 
-                fragmentShader << "\tglobal_specular_light.xyz += specularAmount * specularColor * "
+                fragmentShader << "    global_specular_light.xyz += specularAmount * specularColor * "
                                   "vec3(material_specular.xyz) * sampleGlossy( tanFrame, "
                                   "view_vector, roughnessAmount ).xyz;"
                                << Endl;
@@ -1407,7 +1408,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         }
 
         if (hasImage) {
-            fragmentShader.Append("\tvec4 texture_color;");
+            fragmentShader.Append("    vec4 texture_color;");
             QT3DSU32 idx = 0;
             for (SRenderableImage *image = m_FirstImage; image; image = image->m_NextImage, ++idx) {
                 // Various maps are handled on a different locations
@@ -1431,18 +1432,18 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                     lookupSwizzle);
 
                 if (texLodStr.empty()) {
-                    fragmentShader << "\ttexture_color" << texSwizzle.c_str() << " = texture2D( "
+                    fragmentShader << "    texture_color" << texSwizzle.c_str() << " = texture2D( "
                                    << m_ImageSampler << ", " << m_ImageFragCoords << ")"
                                    << lookupSwizzle.c_str() << ";" << Endl;
                 } else {
-                    fragmentShader << "\ttexture_color" << texSwizzle.c_str() << "= textureLod( "
+                    fragmentShader << "    texture_color" << texSwizzle.c_str() << "= textureLod( "
                                    << m_ImageSampler << ", " << m_ImageFragCoords << ", "
                                    << texLodStr.c_str() << " )" << lookupSwizzle.c_str() << ";"
                                    << Endl;
                 }
 
                 if (image->m_Image.m_TextureData.m_TextureFlags.IsPreMultiplied() == true)
-                    fragmentShader << "\ttexture_color.rgb = texture_color.a > 0.0 ? "
+                    fragmentShader << "    texture_color.rgb = texture_color.a > 0.0 ? "
                                       "texture_color.rgb / texture_color.a : vec3( 0, 0, 0 );"
                                    << Endl;
 
@@ -1454,27 +1455,27 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                     // not premultiplied textures.
                     // If Z is 1, then we assume the incoming texture is already premultiplied, else
                     // we just read the rgb value.
-                    fragmentShader.Append("\tglobal_diffuse_light *= texture_color;");
+                    fragmentShader.Append("    global_diffuse_light *= texture_color;");
                     break;
                 case ImageMapTypes::Specular:
 
                     fragmentShader.AddUniform("material_specular", "vec4");
                     if (fragmentHasSpecularAmount) {
-                        fragmentShader.Append("\tglobal_specular_light.xyz += specularAmount * "
+                        fragmentShader.Append("    global_specular_light.xyz += specularAmount * "
                                               "specularColor * texture_color.xyz * "
                                               "material_specular.xyz;");
                     } else {
-                        fragmentShader.Append("\tglobal_specular_light.xyz += texture_color.xyz * "
+                        fragmentShader.Append("    global_specular_light.xyz += texture_color.xyz * "
                                               "material_specular.xyz;");
                     }
-                    fragmentShader.Append("\tglobal_diffuse_light.a *= texture_color.a;");
+                    fragmentShader.Append("    global_diffuse_light.a *= texture_color.a;");
                     break;
                 case ImageMapTypes::Opacity:
-                    fragmentShader.Append("\tglobal_diffuse_light.a *= texture_color.a;");
+                    fragmentShader.Append("    global_diffuse_light.a *= texture_color.a;");
                     break;
                 case ImageMapTypes::Emissive:
                     fragmentShader.Append(
-                        "\tglobal_emission *= texture_color.xyz * texture_color.a;");
+                        "    global_emission *= texture_color.xyz * texture_color.a;");
                     break;
                 default:
                     QT3DS_ASSERT(false); // fallthrough intentional
@@ -1486,27 +1487,27 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         if (enableAlphaTest) {
             fragmentShader.AddUniform("alphaOpRef", "vec2");
             fragmentShader.Append(
-                        "\tif (dot(vec2(global_diffuse_light.a, 1.0), alphaOpRef) <= 0.0)\n"
-                        "\t\tdiscard;");
+                        "    if (dot(vec2(global_diffuse_light.a, 1.0), alphaOpRef) <= 0.0)\n"
+                        "        discard;");
         }
 
         if (hasEmissiveMap) {
-            fragmentShader.Append("\tglobal_diffuse_light.rgb += global_emission.rgb;");
+            fragmentShader.Append("    global_diffuse_light.rgb += global_emission.rgb;");
         }
 
         // Ensure the rgb colors are in range.
-        fragmentShader.Append("\tfragOutput = vec4( clamp( vertColor * global_diffuse_light.xyz + "
+        fragmentShader.Append("    fragOutput = vec4( clamp( vertColor * global_diffuse_light.xyz + "
                               "global_specular_light.xyz, 0.0, 65519.0 ), global_diffuse_light.a "
                               ");");
 
         if (VertexGenerator().HasActiveWireframe()) {
             fragmentShader.Append("vec3 edgeDistance = varEdgeDistance * gl_FragCoord.w;");
             fragmentShader.Append(
-                "\tfloat d = min(min(edgeDistance.x, edgeDistance.y), edgeDistance.z);");
-            fragmentShader.Append("\tfloat mixVal = smoothstep(0.0, 1.0, d);"); // line width 1.0
+                "    float d = min(min(edgeDistance.x, edgeDistance.y), edgeDistance.z);");
+            fragmentShader.Append("    float mixVal = smoothstep(0.0, 1.0, d);"); // line width 1.0
 
             fragmentShader.Append(
-                "\tfragOutput = mix( vec4(0.0, 1.0, 0.0, 1.0), fragOutput, mixVal);");
+                "    fragOutput = mix( vec4(0.0, 1.0, 0.0, 1.0), fragOutput, mixVal);");
         }
     }
 
@@ -1552,13 +1553,13 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         vertexShader.AddIncoming("attr_pos", "vec3");
         vertexShader.AddUniform("model_view_projection", "mat4");
         vertexShader.Append("void main() {");
-        vertexShader.Append("\tgl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
-        vertexShader.Append("\tvec3 uTransform;");
-        vertexShader.Append("\tvec3 vTransform;");
+        vertexShader.Append("    gl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("    vec3 uTransform;");
+        vertexShader.Append("    vec3 vTransform;");
 
-        fragmentShader << "\tfloat global_opacity = object_opacity;" << Endl;
+        fragmentShader << "    float global_opacity = object_opacity;" << Endl;
 
-        fragmentShader.Append("\tvec4 texture_color;");
+        fragmentShader.Append("    vec4 texture_color;");
         QT3DSU32 idx = 0;
         for (SRenderableImage *image = m_FirstImage; image; image = image->m_NextImage, ++idx) {
             // Various maps are handled on a different locations
@@ -1583,11 +1584,11 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 lookupSwizzle);
 
             if (texLodStr.empty()) {
-                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << " = texture2D( "
+                fragmentShader << "    texture_color" << texSwizzle.c_str() << " = texture2D( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << ")"
                                << lookupSwizzle.c_str() << ";" << Endl;
             } else {
-                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << "= textureLod( "
+                fragmentShader << "    texture_color" << texSwizzle.c_str() << "= textureLod( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << ", "
                                << texLodStr.c_str() << " )" << lookupSwizzle.c_str() << ";"
                                << Endl;
@@ -1598,7 +1599,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             case ImageMapTypes::LightmapShadow:
             case ImageMapTypes::Specular:
             case ImageMapTypes::Opacity:
-                fragmentShader.Append("\tglobal_opacity *= texture_color.a;");
+                fragmentShader.Append("    global_opacity *= texture_color.a;");
                 break;
             default:
                 break;
@@ -1606,9 +1607,9 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         }
 
         fragmentShader.AddUniform("alphaOpRef", "vec2");
-        fragmentShader.Append("\tif (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
-                              "\t\tdiscard;");
-        fragmentShader.Append("\tfragOutput = vec4(0.0);");
+        fragmentShader.Append("    if (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
+                              "        discard;");
+        fragmentShader.Append("    fragOutput = vec4(0.0);");
         fragmentShader.Append("}");
         vertexShader.Append("}");
 
@@ -1663,16 +1664,16 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         vertexShader.AddOutgoing("world_pos", "vec4");
 
         vertexShader.Append("void main() {");
-        vertexShader.Append("\tvec3 uTransform;");
-        vertexShader.Append("\tvec3 vTransform;");
-        vertexShader.Append("\tworld_pos = model_matrix * vec4( attr_pos, 1.0 );");
-        vertexShader.Append("\tworld_pos /= world_pos.w;");
-        vertexShader.Append("\tgl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
-        vertexShader.Append("\traw_pos = vec4( attr_pos, 1.0 );");
+        vertexShader.Append("    vec3 uTransform;");
+        vertexShader.Append("    vec3 vTransform;");
+        vertexShader.Append("    world_pos = model_matrix * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("    world_pos /= world_pos.w;");
+        vertexShader.Append("    gl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("    raw_pos = vec4( attr_pos, 1.0 );");
 
-        fragmentShader << "\tfloat global_opacity = object_opacity;" << Endl;
+        fragmentShader << "    float global_opacity = object_opacity;" << Endl;
 
-        fragmentShader.Append("\tvec4 texture_color;");
+        fragmentShader.Append("    vec4 texture_color;");
         QT3DSU32 idx = 0;
         for (SRenderableImage *image = m_FirstImage; image; image = image->m_NextImage, ++idx) {
             // Various maps are handled on different locations
@@ -1697,11 +1698,11 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 lookupSwizzle);
 
             if (texLodStr.empty()) {
-                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << " = texture2D( "
+                fragmentShader << "    texture_color" << texSwizzle.c_str() << " = texture2D( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << ")"
                                << lookupSwizzle.c_str() << ";" << Endl;
             } else {
-                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << "= textureLod( "
+                fragmentShader << "    texture_color" << texSwizzle.c_str() << "= textureLod( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << ", "
                                << texLodStr.c_str() << " )" << lookupSwizzle.c_str() << ";"
                                << Endl;
@@ -1712,7 +1713,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             case ImageMapTypes::LightmapShadow:
             case ImageMapTypes::Specular:
             case ImageMapTypes::Opacity:
-                fragmentShader.Append("\tglobal_opacity *= texture_color.a;");
+                fragmentShader.Append("    global_opacity *= texture_color.a;");
                 break;
             default:
                 break;
@@ -1721,14 +1722,14 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
 
         fragmentShader.AddUniform("camera_position", "vec3");
         fragmentShader.AddUniform("camera_properties", "vec2");
-        fragmentShader.Append("\tvec3 camPos = vec3(camera_position.x, camera_position.y, "
+        fragmentShader.Append("    vec3 camPos = vec3(camera_position.x, camera_position.y, "
                               "-camera_position.z);");
-        fragmentShader.Append("\tfloat dist = length(world_pos.xyz - camPos);");
-        fragmentShader.Append("\tdist = max((dist - 1.0) / (camera_properties.y - 1.0), 0.0);");
+        fragmentShader.Append("    float dist = length(world_pos.xyz - camPos);");
+        fragmentShader.Append("    dist = max((dist - 1.0) / (camera_properties.y - 1.0), 0.0);");
         fragmentShader.AddUniform("alphaOpRef", "vec2");
-        fragmentShader.Append("\tif (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
-                              "\t\tdist = 1.0;");
-        fragmentShader.Append("\tfragOutput = vec4(dist);");
+        fragmentShader.Append("    if (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
+                              "        dist = 1.0;");
+        fragmentShader.Append("    fragOutput = vec4(dist);");
         fragmentShader.Append("}");
 
         vertexShader.Append("}");
@@ -1781,14 +1782,14 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         vertexShader.AddOutgoing("outDepth", "vec3");
 
         vertexShader.Append("void main() {");
-        vertexShader.Append("\tvec3 uTransform;");
-        vertexShader.Append("\tvec3 vTransform;");
-        vertexShader.Append("\tgl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
-        vertexShader.Append("\toutDepth.x = gl_Position.z / gl_Position.w;");
+        vertexShader.Append("    vec3 uTransform;");
+        vertexShader.Append("    vec3 vTransform;");
+        vertexShader.Append("    gl_Position = model_view_projection * vec4( attr_pos, 1.0 );");
+        vertexShader.Append("    outDepth.x = gl_Position.z / gl_Position.w;");
 
-        fragmentShader << "\tfloat global_opacity = object_opacity;" << Endl;
+        fragmentShader << "    float global_opacity = object_opacity;" << Endl;
 
-        fragmentShader.Append("\tvec4 texture_color;");
+        fragmentShader.Append("    vec4 texture_color;");
         QT3DSU32 idx = 0;
         for (SRenderableImage *image = m_FirstImage; image; image = image->m_NextImage, ++idx) {
             // Various maps are handled on different locations
@@ -1813,11 +1814,11 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                 lookupSwizzle);
 
             if (texLodStr.empty()) {
-                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << " = texture2D( "
+                fragmentShader << "    texture_color" << texSwizzle.c_str() << " = texture2D( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << ")"
                                << lookupSwizzle.c_str() << ";" << Endl;
             } else {
-                fragmentShader << "\ttexture_color" << texSwizzle.c_str() << "= textureLod( "
+                fragmentShader << "    texture_color" << texSwizzle.c_str() << "= textureLod( "
                                << m_ImageSampler << ", " << m_ImageFragCoords << ", "
                                << texLodStr.c_str() << " )" << lookupSwizzle.c_str() << ";"
                                << Endl;
@@ -1828,7 +1829,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
             case ImageMapTypes::LightmapShadow:
             case ImageMapTypes::Specular:
             case ImageMapTypes::Opacity:
-                fragmentShader.Append("\tglobal_opacity *= texture_color.a;");
+                fragmentShader.Append("    global_opacity *= texture_color.a;");
                 break;
             default:
                 break;
@@ -1836,10 +1837,10 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         }
 
         fragmentShader.AddUniform("alphaOpRef", "vec2");
-        fragmentShader.Append("\tfloat depth = (outDepth.x + 1.0) * 0.5;");
-        fragmentShader.Append("\tif (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
-                              "\t\tdepth = 1.0;");
-        fragmentShader.Append("\tfragOutput = vec4(depth);");
+        fragmentShader.Append("    float depth = (outDepth.x + 1.0) * 0.5;");
+        fragmentShader.Append("    if (dot(vec2(global_opacity, 1.0), alphaOpRef) <= 0.0)\n"
+                              "        depth = 1.0;");
+        fragmentShader.Append("    fragOutput = vec4(depth);");
         fragmentShader.Append("}");
         vertexShader.Append("}");
 

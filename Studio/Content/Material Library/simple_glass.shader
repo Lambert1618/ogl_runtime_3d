@@ -95,7 +95,7 @@ void computeFrontLayerEnvironment( in vec3 normal, in vec3 viewDir, float aoFact
   layers[0].base += tmpShadowTerm * microfacetSampledBSDF( layers[0].tanFrame, viewDir, 0.000000, 0.000000, scatter_reflect_transmit );
 
 #else
-  layers[0].base += tmpShadowTerm * sampleGlossyAniso( layers[0].tanFrame, viewDir, 0.000000, 0.000000 );
+  layers[0].base += tmpShadowTerm * sampleGlossy( layers[0].tanFrame, viewDir, 0.000000 );
 
 #endif
 }

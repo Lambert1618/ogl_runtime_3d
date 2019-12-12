@@ -1,0 +1,5 @@
+
+ivec2 lightProbeSize(sampler2D lightProbe, int lodLevel)
+{
+    return ivec2(textureSize(lightProbe, lodLevel));
+}

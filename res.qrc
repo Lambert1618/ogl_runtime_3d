@@ -60,7 +60,7 @@
         <file>res/effectlib/sampleArea.glsllib</file>
         <file>res/effectlib/funcsampleLightVars.glsllib</file>
         <file>res/effectlib/sampleLight.glsllib</file>
-        <file>res/effectlib/sampleProbe.glsllib</file>
+        <file>res/effectlib/sampleProbePre.glsllib</file>
         <file>res/effectlib/screenSpaceAO.glsllib</file>
         <file>res/effectlib/screenSpaceDO.glsllib</file>
         <file>res/effectlib/shadowMapping.glsllib</file>
@@ -90,7 +90,7 @@
         <file>res/effectlib/weightedLayer.glsllib</file>
         <file>res/effectlib/wireframeCM.glsllib</file>
         <file>res/effectlib/gles2/funcsampleLightVars.glsllib</file>
-        <file>res/effectlib/gles2/sampleProbe.glsllib</file>
+        <file>res/effectlib/gles2/sampleProbePre.glsllib</file>
         <file>res/effectlib/gles2/SSAOCustomMaterial.glsllib</file>
         <file>res/effectlib/gles2/funcareaLightVars.glsllib</file>
         <file>res/effectlib/gles2/monoChannel.glsllib</file>
@@ -113,5 +113,7 @@
         <file>res/effectlib/distancefieldtext_dropshadow.vert</file>
         <file>res/effectlib/distancefieldtext_dropshadow_core.frag</file>
         <file>res/effectlib/distancefieldtext_dropshadow_core.vert</file>
+        <file>res/effectlib/funcsampleNormalTexture.glsllib</file>
+        <file>res/effectlib/sampleProbe.glsllib</file>
     </qresource>
 </RCC>

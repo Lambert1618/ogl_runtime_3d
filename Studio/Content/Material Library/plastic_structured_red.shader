@@ -96,7 +96,7 @@ vec3 computeFrontMaterialEmissive()
 void computeFrontLayerColor( in vec3 normal, in vec3 lightDir, in vec3 viewDir, in vec3 lightDiffuse, in vec3 lightSpecular, in float materialIOR, float aoFactor )
 {
 #if QT3DS_ENABLE_CG_LIGHTING
-  layers[0].base += tmpShadowTerm * diffuseReflectionBSDF( normal, lightDir, viewDir, lightDiffuse, 0.000000 );
+  layers[0].base += tmpShadowTerm * diffuseReflectionBSDF( normal, lightDir, lightDiffuse);
   layers[0].layer += tmpShadowTerm * microfacetBSDF( layers[0].tanFrame, lightDir, viewDir, lightSpecular, materialIOR, roughness, roughness, scatter_reflect );
 
 #endif
@@ -119,7 +119,7 @@ void computeFrontLayerEnvironment( in vec3 normal, in vec3 viewDir, float aoFact
 
 #else
   layers[0].base += tmpShadowTerm * sampleDiffuse( layers[0].tanFrame ) * aoFactor;
-  layers[0].layer += tmpShadowTerm * sampleGlossyAniso( layers[0].tanFrame, viewDir, roughness, roughness );
+  layers[0].layer += tmpShadowTerm * sampleGlossy( layers[0].tanFrame, viewDir, roughness );
 
 #endif
 }

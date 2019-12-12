@@ -1,0 +1,7 @@
+
+uniform vec4 light_probe_size;
+
+ivec2 lightProbeSize(sampler2D lightProbe, int lodLevel)
+{
+    return ivec2(light_probe_size / pow(2.0, float(lodLevel)));
+}
