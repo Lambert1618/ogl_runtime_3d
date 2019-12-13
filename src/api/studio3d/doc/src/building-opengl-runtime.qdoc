@@ -52,8 +52,10 @@ qt3ds.perf_info: 6. (1) Application: EndLoad - 0.000500ms = 193.574900ms
 qt3ds.perf_info: 7. (1) Application: GetMetaData - 59.171400ms = 252.875800ms
 qt3ds.perf_info: 8. (3) BatchLoader: Image Decompression - 15.395400ms = 294.876900ms
 ...
-qt3ds.perf_info: 37. (1) RuntimeView: Stopping startup timer - 0.000500ms = 477.483800ms
-qt3ds.perf_info: RuntimeView: First frame at - 1601ms
+qt3ds.perf_info: 36. (1) Application: NotifyDataOutputs - 0.080800ms = 477.483800ms
+qt3ds.perf_info: *** First frame rendered ***
+qt3ds.perf_info: Runtime startup time: 477ms
+qt3ds.perf_info: Application startup time: 1601ms
 qt3ds.perf_info: Render Statistics: 33.62fps, frame count 34
 qt3ds.perf_info: Render Statistics: 59.92fps, frame count 60
 qt3ds.perf_info: Render Statistics: 59.92fps, frame count 60
@@ -69,7 +71,7 @@ Log format is: \c {(n) [task name] - [time] = [cumulative time]} where:
 \endlist
 
 \note When analyzing the results, please note that tasks overlap with each other, some tasks include other tasks etc.
-Also, cumulative time only contains time spent inside runtime methods where \c {"First frame at"} contains the whole startup time.
+\c {Runtime startup time} contains the time spent inside runtime methods where \c {Application startup time} contains the whole startup time.
 
 \note \c QT3DS_ENABLE_PERF_LOGGING should not be enabled in release builds as logging increases performance overhead.
 

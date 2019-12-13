@@ -50,6 +50,8 @@ namespace foundation {
         // Dump current summation of timer data.
         virtual void OutputTimerData(QT3DSU32 inFrameCount = 0) = 0;
         virtual void ResetTimerData() = 0;
+        // Returns current duration in ms
+        virtual double CurrentDuration() = 0;
 
         static IPerfTimer &CreatePerfTimer(NVFoundationBase &inFoundation);
     };

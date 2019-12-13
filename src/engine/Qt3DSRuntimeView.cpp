@@ -398,17 +398,18 @@ void CRuntimeView::Render()
     m_Application->UpdateAndRender();
 
     if (m_startupTime < 0 && m_startupTimer && m_startupTimer->isValid()) {
-        {
-            QT3DS_PERF_SCOPED_TIMER(m_Application.mPtr->GetRuntimeFactoryCore()
-                                    .GetPerfTimer(), "RuntimeView: Stopping startup timer")
-            m_startupTime = m_startupTimer->elapsed();
-            m_startupTimer->invalidate();
-        }
 
+        m_startupTime = m_startupTimer->elapsed();
+        m_startupTimer->invalidate();
+        double currentTime = m_Application.mPtr->GetRuntimeFactoryCore().GetPerfTimer().CurrentDuration();
+
+#ifdef QT3DS_ENABLE_PERF_LOGGING
         // Output startup perf logging data
         m_Application->OutputPerfLoggingData();
-
-        qCDebug(PERF_INFO, "RuntimeView: First frame at - %dms", m_startupTime);
+#endif
+        qCDebug(PERF_INFO, "*** First frame rendered ***");
+        qCDebug(PERF_INFO, "Runtime startup time: %.0fms", currentTime);
+        qCDebug(PERF_INFO, "Application startup time: %dms", m_startupTime);
     }
 
     if (m_showOnScreenStats) {

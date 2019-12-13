@@ -163,6 +163,14 @@ struct SPerfTimer : public IPerfTimer
         }
     }
 
+    double CurrentDuration() override
+    {
+        QT3DSU64 duration = Time::getCurrentCounterValue() - m_startTime;
+        QT3DSU64 tensNanos = Time::sCounterFreq.toTensOfNanos(duration);
+        double durationMs = tensNanos / 100000.0;
+        return durationMs;
+    }
+
     virtual void ClearPerfKeys()
     {
         Mutex::ScopedLock __locker(m_Mutex);
