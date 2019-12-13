@@ -134,22 +134,27 @@ Q3DSDistanceFieldRenderer::buildGlyphsPerTexture(const SText &textInfo)
     QVector2D boundingBox = QVector2D(textInfo.m_BoundingBox.x, textInfo.m_BoundingBox.y);
     const float halfWidth = boundingBox.x() / 2.0f;
     const float halfHeight = boundingBox.y() / 2.0f;
+
+    QVector2D center;
+    if (textInfo.m_VerticalAlignment == TextVerticalAlignment::Top)
+        center.setY(halfHeight);
+    else if (textInfo.m_VerticalAlignment == TextVerticalAlignment::Bottom)
+        center.setY(-halfHeight);
+
+    if (textInfo.m_HorizontalAlignment == TextHorizontalAlignment::Left)
+        center.setX(halfWidth);
+    else if (textInfo.m_HorizontalAlignment == TextHorizontalAlignment::Right)
+        center.setX(-halfWidth);
+
     bool hasValidBoundingBox = boundingBox.x() > 0 || boundingBox.y() > 0;
 
     QRawFont font = m_fontDatabase.findFont(textInfo.m_Font.c_str());
     qreal scaleFactor = font.pixelSize() / qreal(textInfo.m_FontSize);
 
-    const float boundingWidth = (textInfo.m_HorizontalAlignment == TextHorizontalAlignment::Left
-                                 || textInfo.m_HorizontalAlignment == TextHorizontalAlignment::Right)
-            ? halfWidth : boundingBox.x();
-    const float boundingHeight = (textInfo.m_VerticalAlignment == TextVerticalAlignment::Top
-                                  || textInfo.m_VerticalAlignment == TextVerticalAlignment::Bottom)
-            ? halfHeight : boundingBox.y();
-
     const qreal maximumWidth = boundingBox.isNull() ? qreal(0x01000000)
-                                                    : qreal(boundingWidth) * scaleFactor;
+                                                    : qreal(boundingBox.x()) * scaleFactor;
     const qreal maximumHeight = boundingBox.isNull() ? qreal(0x01000000)
-                                                     : qreal(boundingHeight) * scaleFactor;
+                                                     : qreal(boundingBox.y()) * scaleFactor;
 
     QTextLayout layout;
     QTextOption option = layout.textOption();
@@ -430,40 +435,47 @@ Q3DSDistanceFieldRenderer::buildGlyphsPerTexture(const SText &textInfo)
                 float y1Clip = 1.0f;
                 float y2Clip = 1.0f;
 
+                float leftPos = -halfWidth + center.x();
+                float rightPos = halfWidth + center.x();
+                float topPos = -halfHeight + center.y();
+                float bottomPos = halfHeight + center.y();
+
                 if (hasValidBoundingBox) {
-                    if ((cx1 < -halfWidth && cx2 < -halfWidth)
-                            || (cx1 > halfWidth && cx2 > halfWidth)
-                            || (cy1 < -halfHeight && cy2 < -halfHeight)
-                            || (cy1 > halfHeight && cy2 > halfHeight)) {
+                    if ((cx1 < leftPos && cx2 < leftPos)
+                            || (cx1 > rightPos && cx2 > rightPos)
+                            || (cy1 < topPos && cy2 < topPos)
+                            || (cy1 > bottomPos && cy2 > bottomPos)) {
                         continue;
                     }
 
                     float xDiff = qAbs(cx1 - cx2);
                     float yDiff = qAbs(cy1 - cy2);
 
-                    if (cx1 < -halfWidth) {
-                        x1Clip = 1.0f - qAbs(cx1 - (-halfWidth)) / xDiff;
-                        cx1 = -halfWidth;
+                    if (cx1 < leftPos) {
+                        x1Clip = 1.0f - qAbs(cx1 - leftPos) / xDiff;
+                        cx1 = leftPos;
                     }
 
-                    if (cx2 > halfWidth) {
-                        x2Clip = 1.0f - qAbs(cx2 - halfWidth) / xDiff;
-                        cx2 = halfWidth;
+                    if (cx2 > rightPos) {
+                        x2Clip = 1.0f - qAbs(cx2 - rightPos) / xDiff;
+                        cx2 = rightPos;
                     }
 
-                    if (cy1 < -halfHeight) {
-                        y1Clip = 1.0f - qAbs(cy1 - (-halfHeight)) / yDiff;
-                        cy1 = -halfHeight;
+                    if (cy1 < topPos) {
+                        y1Clip = 1.0f - qAbs(cy1 - topPos) / yDiff;
+                        cy1 = topPos;
                     }
 
-                    if (cy2 > halfHeight) {
-                        y2Clip = 1.0f - qAbs(cy2 - halfHeight) / yDiff;
-                        cy2 = halfHeight;
+                    if (cy2 > bottomPos) {
+                        y2Clip = 1.0f - qAbs(cy2 - bottomPos) / yDiff;
+                        cy2 = bottomPos;
                     }
                 }
 
                 cy1 = -cy1;
                 cy2 = -cy2;
+                topPos = -topPos;
+                bottomPos = -bottomPos;
 
                 if (cx1 < minimum.x)
                     minimum.x = cx1;
@@ -488,14 +500,14 @@ Q3DSDistanceFieldRenderer::buildGlyphsPerTexture(const SText &textInfo)
                     maximum.y = cy1;
 
                 if (hasValidBoundingBox) {
-                    if (maximum.x < halfWidth)
-                        maximum.x = halfWidth;
-                    if (minimum.x > -halfWidth)
-                        minimum.x = -halfWidth;
-                    if (maximum.y < halfHeight)
-                        maximum.y = halfHeight;
-                    if (minimum.y > -halfHeight)
-                        minimum.y = -halfHeight;
+                    if (maximum.x < rightPos)
+                        maximum.x = rightPos;
+                    if (minimum.x > leftPos)
+                        minimum.x = leftPos;
+                    if (maximum.y < topPos)
+                        maximum.y = topPos;
+                    if (minimum.y > bottomPos)
+                        minimum.y = bottomPos;
                 }
 
                 float tx1 = float(c.x + c.xMargin);
