@@ -125,6 +125,10 @@ struct AdvancedBlendModes
 
         void Render(CResourceFrameBuffer *theFB = NULL);
         void ResetForFrame() override;
+        void renderOrderedGroup(SRenderableObject &theObject, TRenderRenderableFunction inRenderFn,
+                                bool inEnableBlending, bool inEnableDepthWrite,
+                                bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
+                                const SCamera &inCamera, CResourceFrameBuffer *theFB);
 
         void CreateGpuProfiler();
         void StartProfiling(CRegisteredString &nameID, bool sync);
@@ -179,7 +183,8 @@ struct AdvancedBlendModes
                                CResourceFrameBuffer *theFB);
 #endif
         void renderTransparentObjectsPass(TRenderRenderableFunction inRenderFn,
-                                          bool inEnableBlending, bool inEnableTransparentDepthWrite,
+                                          bool inEnableBlending, bool inEnableDepthWrite,
+                                          bool inEnableTransparentDepthWrite,
                                           QT3DSU32 indexLight, const SCamera &inCamera,
                                           CResourceFrameBuffer *theFB);
     };

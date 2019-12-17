@@ -72,18 +72,29 @@ namespace render {
 
     namespace {
         void MaybeQueueNodeForRender(SNode &inNode, nvvector<SRenderableNodeEntry> &outRenderables,
-                                     nvvector<SNode *> &outCamerasAndLights, QT3DSU32 &ioDFSIndex)
+                                     nvvector<SRenderableNodeEntry> &outGroups,
+                                     nvvector<SNode *> &outCamerasAndLights, QT3DSU32 &ioDFSIndex,
+                                     QT3DSU32 groupNode = 0)
         {
             ++ioDFSIndex;
             inNode.m_DFSIndex = ioDFSIndex;
-            if (GraphObjectTypes::IsRenderableType(inNode.m_Type))
+            inNode.m_GroupIndex = groupNode;
+            if (GraphObjectTypes::IsRenderableType(inNode.m_Type)) {
                 outRenderables.push_back(inNode);
-            else if (GraphObjectTypes::IsLightCameraType(inNode.m_Type))
+            } else if (GraphObjectTypes::IsLightCameraType(inNode.m_Type)) {
                 outCamerasAndLights.push_back(&inNode);
+            } else if (GraphObjectTypes::IsNodeType(inNode.m_Type) && inNode.m_ordered
+                       && !groupNode) {
+                outGroups.push_back(inNode);
+                groupNode = outGroups.size();
+                inNode.m_GroupIndex = groupNode;
+            }
 
             for (SNode *theChild = inNode.m_FirstChild; theChild != NULL;
-                 theChild = theChild->m_NextSibling)
-                MaybeQueueNodeForRender(*theChild, outRenderables, outCamerasAndLights, ioDFSIndex);
+                 theChild = theChild->m_NextSibling) {
+                MaybeQueueNodeForRender(*theChild, outRenderables, outGroups, outCamerasAndLights,
+                                        ioDFSIndex, groupNode);
+            }
         }
 
         bool HasValidLightProbe(SImage *inLightProbeImage)
@@ -113,6 +124,8 @@ namespace render {
                                   "SLayerRenderPreparationData::m_RenderableNodes"))
         , m_RenderableNodes(inRenderer.GetContext().GetAllocator(),
                             "SLayerRenderPreparationData::m_RenderableNodes")
+        , m_GroupNodes(inRenderer.GetContext().GetAllocator(),
+                       "SLayerRenderPreparationData::m_GroupNodes")
         , m_LightToNodeMap(inRenderer.GetContext().GetAllocator(),
                            "SLayerRenderPreparationData::m_LightToNodeMap")
         , m_CamerasAndLights(inRenderer.GetContext().GetAllocator(),
@@ -123,6 +136,8 @@ namespace render {
                           "SLayerRenderPreparationData::m_OpaqueObjects")
         , m_TransparentObjects(inRenderer.GetContext().GetAllocator(),
                                "SLayerRenderPreparationData::m_TransparentObjects")
+        , m_GroupObjects(inRenderer.GetContext().GetAllocator(),
+                         "SLayerRenderPreparationData::m_GroupObjects")
         , m_RenderedOpaqueObjects(inRenderer.GetContext().GetAllocator(),
                                   "SLayerRenderPreparationData::m_RenderedOpaqueObjects")
         , m_RenderedTransparentObjects(inRenderer.GetContext().GetAllocator(),
@@ -246,10 +261,18 @@ namespace render {
     {
         if (m_RenderedOpaqueObjects.empty() == false || m_Camera == NULL)
             return m_RenderedOpaqueObjects;
-        if (m_Layer.m_Flags.IsLayerEnableDepthTest() && m_OpaqueObjects.empty() == false) {
+        if (m_Layer.m_Flags.IsLayerEnableDepthTest()
+                && (!m_OpaqueObjects.empty() || !m_GroupObjects.empty())) {
             QT3DSVec3 theCameraDirection(GetCameraDirection());
             QT3DSVec3 theCameraPosition = m_Camera->GetGlobalPos();
             m_RenderedOpaqueObjects.assign(m_OpaqueObjects.begin(), m_OpaqueObjects.end());
+            m_RenderedOpaqueObjects.insert(m_RenderedOpaqueObjects.end(), m_GroupObjects.begin(),
+                                           m_GroupObjects.end());
+
+            // Set position for group objects
+            for (int i = 0; i < m_GroupObjects.size(); i++)
+                static_cast<SOrderedGroupRenderable *>(m_GroupObjects[i])->update();
+
             // Setup the object's sorting information
             for (QT3DSU32 idx = 0, end = m_RenderedOpaqueObjects.size(); idx < end; ++idx) {
                 SRenderableObject &theInfo = *m_RenderedOpaqueObjects[idx];
@@ -274,9 +297,12 @@ namespace render {
         m_RenderedTransparentObjects.assign(m_TransparentObjects.begin(),
                                             m_TransparentObjects.end());
 
-        if (m_Layer.m_Flags.IsLayerEnableDepthTest() == false)
+        if (!m_Layer.m_Flags.IsLayerEnableDepthTest()) {
             m_RenderedTransparentObjects.insert(m_RenderedTransparentObjects.end(),
                                                 m_OpaqueObjects.begin(), m_OpaqueObjects.end());
+            m_RenderedTransparentObjects.insert(m_RenderedTransparentObjects.end(),
+                                                m_GroupObjects.begin(), m_GroupObjects.end());
+        }
 
         if (m_RenderedTransparentObjects.empty() == false) {
             QT3DSVec3 theCameraDirection(GetCameraDirection());
@@ -365,7 +391,8 @@ namespace render {
 
     bool SLayerRenderPreparationData::PrepareTextForRender(
             SText &inText, const QT3DSMat44 &inViewProjection,
-            QT3DSF32 inTextScaleFactor, SLayerRenderPreparationResultFlags &ioFlags)
+            QT3DSF32 inTextScaleFactor, SLayerRenderPreparationResultFlags &ioFlags,
+            qt3ds::render::SOrderedGroupRenderable *group)
     {
         ITextTextureCache *theTextRenderer = m_Renderer.GetQt3DSContext().GetTextureCache();
         if (theTextRenderer == nullptr && !IQt3DSRenderContextCore::distanceFieldEnabled())
@@ -424,8 +451,12 @@ namespace render {
             // After preparation, do not push object back to queue if it is not
             // active, because we prepare text elements regardless of their
             // visibility (=active status).
-            if (inText.m_Flags.IsGloballyActive())
-                m_TransparentObjects.push_back(theRenderable);
+            if (inText.m_Flags.IsGloballyActive()) {
+                if (group)
+                    group->m_renderables.push_back(theRenderable);
+                else
+                    m_TransparentObjects.push_back(theRenderable);
+            }
         }
         return retval;
     }
@@ -459,7 +490,8 @@ namespace render {
 
     bool SLayerRenderPreparationData::PreparePathForRender(
         SPath &inPath, const QT3DSMat44 &inViewProjection,
-        const Option<SClippingFrustum> &inClipFrustum, SLayerRenderPreparationResultFlags &ioFlags)
+        const Option<SClippingFrustum> &inClipFrustum, SLayerRenderPreparationResultFlags &ioFlags,
+        SOrderedGroupRenderable *group)
     {
         SRenderableObjectFlags theSharedFlags;
         theSharedFlags.SetPickable(true);
@@ -882,7 +914,8 @@ namespace render {
 
     bool SLayerRenderPreparationData::PrepareModelForRender(
         SModel &inModel, const QT3DSMat44 &inViewProjection,
-        const Option<SClippingFrustum> &inClipFrustum, TNodeLightEntryList &inScopedLights)
+        const Option<SClippingFrustum> &inClipFrustum, TNodeLightEntryList &inScopedLights,
+        SOrderedGroupRenderable *group)
     {
         IQt3DSRenderContext &qt3dsContext(m_Renderer.GetQt3DSContext());
         IBufferManager &bufferManager = qt3dsContext.GetBufferManager();
@@ -1039,11 +1072,15 @@ namespace render {
                     // set tessellation
                     theRenderableObject->m_TessellationMode = inModel.m_TessellationMode;
 
-                    if (theRenderableObject->m_RenderableFlags.HasTransparency()
-                        || theRenderableObject->m_RenderableFlags.HasRefraction()) {
-                        m_TransparentObjects.push_back(theRenderableObject);
+                    if (group) {
+                        group->m_renderables.push_back(theRenderableObject);
                     } else {
-                        m_OpaqueObjects.push_back(theRenderableObject);
+                        if (theRenderableObject->m_RenderableFlags.HasTransparency()
+                            || theRenderableObject->m_RenderableFlags.HasRefraction()) {
+                            m_TransparentObjects.push_back(theRenderableObject);
+                        } else {
+                            m_OpaqueObjects.push_back(theRenderableObject);
+                        }
                     }
                 }
             }
@@ -1063,17 +1100,36 @@ namespace render {
         bool hasTextRenderer
                 = m_Renderer.GetQt3DSContext().getDistanceFieldRenderer() != nullptr
                 || m_Renderer.GetQt3DSContext().GetTextRenderer() != nullptr;
+        for (QT3DSU32 idx = 0, end = m_GroupNodes.size(); idx < end; ++idx) {
+            SRenderableNodeEntry &theNodeEntry(m_GroupNodes[idx]);
+            SRenderableObjectFlags flags;
+            QT3DSVec3 inWorldCenterPt;
+            QT3DSMat44 inGlobalTransform;
+            NVBounds3 inBounds;
+            SOrderedGroupRenderable *renderable
+                    = RENDER_FRAME_NEW(SOrderedGroupRenderable)(
+                        flags, inWorldCenterPt, inGlobalTransform, inBounds,
+                        m_Renderer.GetPerFrameAllocator());
+            m_GroupObjects.push_back(renderable);
+        }
+
         for (QT3DSU32 idx = 0, end = m_RenderableNodes.size(); idx < end; ++idx) {
             SRenderableNodeEntry &theNodeEntry(m_RenderableNodes[idx]);
             SNode *theNode = theNodeEntry.m_Node;
             wasDataDirty = wasDataDirty || theNode->m_Flags.IsDirty();
+            SOrderedGroupRenderable *group = nullptr;
+            if (theNode->m_GroupIndex) {
+                group = static_cast<SOrderedGroupRenderable *>(
+                            m_GroupObjects[theNode->m_GroupIndex - 1]);
+            }
+
             switch (theNode->m_Type) {
             case GraphObjectTypes::Model: {
                 SModel *theModel = static_cast<SModel *>(theNode);
                 theModel->CalculateGlobalVariables();
                 if (theModel->m_Flags.IsGloballyActive()) {
                     bool wasModelDirty = PrepareModelForRender(
-                        *theModel, inViewProjection, inClipFrustum, theNodeEntry.m_Lights);
+                        *theModel, inViewProjection, inClipFrustum, theNodeEntry.m_Lights, group);
                     wasDataDirty = wasDataDirty || wasModelDirty;
                 }
             } break;
@@ -1086,7 +1142,7 @@ namespace render {
                     // large delay for distance field text items becoming active
                     // mid-animation.
                     bool wasTextDirty = PrepareTextForRender(*theText, inViewProjection,
-                                                             theTextScaleFactor, ioFlags);
+                                                             theTextScaleFactor, ioFlags, group);
                     wasDataDirty = wasDataDirty || wasTextDirty;
 
                 }
@@ -1096,7 +1152,8 @@ namespace render {
                 thePath->CalculateGlobalVariables();
                 if (thePath->m_Flags.IsGloballyActive()) {
                     bool wasPathDirty =
-                        PreparePathForRender(*thePath, inViewProjection, inClipFrustum, ioFlags);
+                        PreparePathForRender(*thePath, inViewProjection, inClipFrustum, ioFlags,
+                                             group);
                     wasDataDirty = wasDataDirty || wasPathDirty;
                 }
             } break;
@@ -1293,11 +1350,12 @@ namespace render {
                 // Push nodes in reverse depth first order
                 if (m_RenderableNodes.empty()) {
                     m_CamerasAndLights.clear();
+                    m_GroupNodes.clear();
                     QT3DSU32 dfsIndex = 0;
                     for (SNode *theChild = m_Layer.m_FirstChild; theChild;
                          theChild = theChild->m_NextSibling)
-                        MaybeQueueNodeForRender(*theChild, m_RenderableNodes, m_CamerasAndLights,
-                                                dfsIndex);
+                        MaybeQueueNodeForRender(*theChild, m_RenderableNodes, m_GroupNodes,
+                                                m_CamerasAndLights, dfsIndex);
                     reverse(m_CamerasAndLights.begin(), m_CamerasAndLights.end());
                     reverse(m_RenderableNodes.begin(), m_RenderableNodes.end());
                     m_LightToNodeMap.clear();
@@ -1523,6 +1581,7 @@ namespace render {
     {
         m_TransparentObjects.clear_unsafe();
         m_OpaqueObjects.clear_unsafe();
+        m_GroupObjects.clear_unsafe();
         m_LayerPrepResult.setEmpty();
         // The check for if the camera is or is not null is used
         // to figure out if this layer was rendered at all.

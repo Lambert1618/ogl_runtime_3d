@@ -276,6 +276,7 @@ enum EAttribute {
     ATTRIBUTE_LIFETIME =             0x0033D297, // lifetime
     ATTRIBUTE_CONTROLLEDPROPERTY =   0x022C0A1D, // controlledproperty
     ATTRIBUTE_OBSERVEDPROPERTY =     0x02D1CE03, // observedproperty
+    ATTRIBUTE_ORDERED =              0x038AEAD3, // ordered
     ATTRIBUTE_QT_IO =                0x010EF2CF, // qt.io
 }; // enum EAttribute
 

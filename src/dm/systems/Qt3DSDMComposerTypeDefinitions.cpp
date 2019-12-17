@@ -317,6 +317,7 @@ struct DataConstructor<SObjectRefType>
 #define QT3DS_WCHAR_T_lightmapshadow L"lightmapshadow"
 #define QT3DS_WCHAR_T_controlledproperty L"controlledproperty"
 #define QT3DS_WCHAR_T_variants L"variants"
+#define QT3DS_WCHAR_T_ordered L"ordered"
 
 const wchar_t *ComposerObjectTypes::Convert(ComposerObjectTypes::Enum inType)
 {

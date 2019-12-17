@@ -253,6 +253,7 @@ namespace render {
 
         TNodeLightEntryPoolType m_RenderableNodeLightEntryPool;
         nvvector<SRenderableNodeEntry> m_RenderableNodes;
+        nvvector<SRenderableNodeEntry> m_GroupNodes;
         TLightToNodeMap m_LightToNodeMap; // map of lights to nodes to cache if we have looked up a
                                           // given scoped light yet.
         // Built at the same time as the renderable nodes map.
@@ -265,6 +266,7 @@ namespace render {
         nvvector<SLight *> m_Lights; // Only contains lights that are global.
         TRenderableObjectList m_OpaqueObjects;
         TRenderableObjectList m_TransparentObjects;
+        TRenderableObjectList m_GroupObjects;
         // Sorted lists of the rendered objects.  There may be other transforms applied so
         // it is simplest to duplicate the lists.
         TRenderableObjectList m_RenderedOpaqueObjects;
@@ -323,14 +325,17 @@ namespace render {
 
         bool PrepareModelForRender(SModel &inModel, const QT3DSMat44 &inViewProjection,
                                    const Option<SClippingFrustum> &inClipFrustum,
-                                   TNodeLightEntryList &inScopedLights);
+                                   TNodeLightEntryList &inScopedLights,
+                                   SOrderedGroupRenderable *group);
 
         bool PrepareTextForRender(SText &inText, const QT3DSMat44 &inViewProjection,
                                   QT3DSF32 inTextScaleFactor,
-                                  SLayerRenderPreparationResultFlags &ioFlags);
+                                  SLayerRenderPreparationResultFlags &ioFlags,
+                                  SOrderedGroupRenderable *group);
         bool PreparePathForRender(SPath &inPath, const QT3DSMat44 &inViewProjection,
                                   const Option<SClippingFrustum> &inClipFrustum,
-                                  SLayerRenderPreparationResultFlags &ioFlags);
+                                  SLayerRenderPreparationResultFlags &ioFlags,
+                                  SOrderedGroupRenderable *group);
         // Helper function used during PRepareForRender and PrepareAndRender
         bool PrepareRenderablesForRender(const QT3DSMat44 &inViewProjection,
                                          const Option<SClippingFrustum> &inClipFrustum,

@@ -201,6 +201,7 @@ namespace render {
         QT3DSMat44 m_GlobalTransform;
         QT3DSF32 m_GlobalOpacity;
         QT3DSI32 m_SkeletonId;
+        bool m_ordered;
 
         // node graph members.
         SNode *m_Parent;
@@ -210,6 +211,8 @@ namespace render {
         // Property maintained solely by the render system.
         // Depth-first-search index assigned and maintained by render system.
         QT3DSU32 m_DFSIndex;
+        // Index to the group of the node
+        QT3DSU32 m_GroupIndex;
 
         SNode(GraphObjectTypes::Enum inType = GraphObjectTypes::Node);
         SNode(const SNode &inCloningObject, NVAllocatorCallback &inAllocator);

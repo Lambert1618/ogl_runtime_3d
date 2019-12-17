@@ -1405,61 +1405,72 @@ namespace render {
     }
 
     void Qt3DSRendererImpl::GetLayerHitObjectList(SLayerRenderData &inLayerRenderData,
-                                                 const QT3DSVec2 &inViewportDimensions,
-                                                 const QT3DSVec2 &inPresCoords, bool inPickEverything,
-                                                 TPickResultArray &outIntersectionResult,
-                                                 NVAllocatorCallback &inTempAllocator)
+                                                  const QT3DSVec2 &inViewportDimensions,
+                                                  const QT3DSVec2 &inPresCoords,
+                                                  bool inPickEverything,
+                                                  TPickResultArray &outIntersectionResult,
+                                                  NVAllocatorCallback &inTempAllocator)
     {
         // This function assumes the layer was rendered to the scene itself.  There is another
-        // function
-        // for completely offscreen layers that don't get rendered to the scene.
+        // function for completely offscreen layers that don't get rendered to the scene.
         bool wasRenderToTarget(inLayerRenderData.m_Layer.m_Flags.IsLayerRenderToTarget());
-        if (wasRenderToTarget && inLayerRenderData.m_Camera != nullptr) {
-            Option<SRay> theHitRay;
-            if (inLayerRenderData.m_LayerPrepResult.hasValue()) {
-                theHitRay = inLayerRenderData.m_LayerPrepResult->GetPickRay(
-                    inPresCoords, inViewportDimensions, false, m_Context->isSceneCameraView());
-            }
-            if (inLayerRenderData.m_LastFrameOffscreenRenderer.mPtr == nullptr) {
-                if (theHitRay.hasValue()) {
-                    // Scale the mouse coords to change them into the camera's numerical space.
-                    SRay thePickRay = *theHitRay;
-                    for (QT3DSU32 idx = inLayerRenderData.m_OpaqueObjects.size(), end = 0; idx > end;
-                         --idx) {
-                        SRenderableObject *theRenderableObject =
-                            inLayerRenderData.m_OpaqueObjects[idx - 1];
-                        if (inPickEverything
-                            || theRenderableObject->m_RenderableFlags.GetPickable())
-                            IntersectRayWithSubsetRenderable(thePickRay, *theRenderableObject,
-                                                             outIntersectionResult,
-                                                             inTempAllocator);
-                    }
-                    for (QT3DSU32 idx = inLayerRenderData.m_TransparentObjects.size(), end = 0;
-                         idx > end; --idx) {
-                        SRenderableObject *theRenderableObject =
-                            inLayerRenderData.m_TransparentObjects[idx - 1];
-                        if (inPickEverything
-                            || theRenderableObject->m_RenderableFlags.GetPickable())
-                            IntersectRayWithSubsetRenderable(thePickRay, *theRenderableObject,
-                                                             outIntersectionResult,
-                                                             inTempAllocator);
-                    }
+        if (!wasRenderToTarget || !inLayerRenderData.m_Camera)
+            return;
+
+        Option<SRay> theHitRay;
+        if (inLayerRenderData.m_LayerPrepResult.hasValue()) {
+            theHitRay = inLayerRenderData.m_LayerPrepResult->GetPickRay(
+                inPresCoords, inViewportDimensions, false, m_Context->isSceneCameraView());
+        }
+        if (inLayerRenderData.m_LastFrameOffscreenRenderer.mPtr) {
+            IGraphObjectPickQuery *theQuery =
+                inLayerRenderData.m_LastFrameOffscreenRenderer->GetGraphObjectPickQuery(this);
+            if (theQuery) {
+                Qt3DSRenderPickResult theResult =
+                    theQuery->Pick(inPresCoords, inViewportDimensions, inPickEverything);
+                if (theResult.m_HitObject) {
+                    theResult.m_OffscreenRenderer =
+                        inLayerRenderData.m_LastFrameOffscreenRenderer;
+                    outIntersectionResult.push_back(theResult);
                 }
             } else {
-                IGraphObjectPickQuery *theQuery =
-                    inLayerRenderData.m_LastFrameOffscreenRenderer->GetGraphObjectPickQuery(this);
-                if (theQuery) {
-                    Qt3DSRenderPickResult theResult =
-                        theQuery->Pick(inPresCoords, inViewportDimensions, inPickEverything);
-                    if (theResult.m_HitObject) {
-                        theResult.m_OffscreenRenderer =
-                            inLayerRenderData.m_LastFrameOffscreenRenderer;
-                        outIntersectionResult.push_back(theResult);
-                    }
-                } else
-                    inLayerRenderData.m_LastFrameOffscreenRenderer->Pick(inPresCoords,
-                                                                         inViewportDimensions,
-                                                                         this);
+                inLayerRenderData.m_LastFrameOffscreenRenderer->Pick(inPresCoords,
+                                                                     inViewportDimensions,
+                                                                     this);
+            }
+            return;
+        }
+        if (!theHitRay.hasValue())
+            return;
+        // Scale the mouse coords to change them into the camera's coordinate space.
+        SRay thePickRay = *theHitRay;
+        for (QT3DSU32 idx = inLayerRenderData.m_OpaqueObjects.size(), end = 0; idx > end; --idx) {
+            SRenderableObject *theRenderableObject = inLayerRenderData.m_OpaqueObjects[idx - 1];
+            if (inPickEverything || theRenderableObject->m_RenderableFlags.GetPickable()) {
+                IntersectRayWithSubsetRenderable(thePickRay, *theRenderableObject,
+                                                 outIntersectionResult,
+                                                 inTempAllocator);
+            }
+        }
+        for (QT3DSU32 idx = inLayerRenderData.m_GroupObjects.size(), end = 0; idx > end; --idx) {
+            SRenderableObject *object = inLayerRenderData.m_GroupObjects[idx - 1];
+            SOrderedGroupRenderable &group(static_cast<SOrderedGroupRenderable &>(*object));
+            Q_ASSERT(object->m_RenderableFlags.isOrderedGroup());
+            for (int i = 0; i < group.m_renderables.size(); ++i) {
+                if (inPickEverything || group.m_renderables[i]->m_RenderableFlags.GetPickable()) {
+                    IntersectRayWithSubsetRenderable(thePickRay, *group.m_renderables[i],
+                                                     outIntersectionResult,
+                                                     inTempAllocator);
+                }
+            }
+        }
+        for (QT3DSU32 idx = inLayerRenderData.m_TransparentObjects.size(), end = 0;
+             idx > end; --idx) {
+            SRenderableObject *renderableObject = inLayerRenderData.m_TransparentObjects[idx - 1];
+            if (inPickEverything || renderableObject->m_RenderableFlags.GetPickable()) {
+                IntersectRayWithSubsetRenderable(thePickRay, *renderableObject,
+                                                 outIntersectionResult,
+                                                 inTempAllocator);
             }
         }
     }

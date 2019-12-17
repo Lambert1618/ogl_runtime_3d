@@ -227,6 +227,8 @@
     </Component>
 
     <Group>
+        <!-- Basic Properties -->
+        <Property name="ordered" formalName="Ordered" type="Boolean" default="False" category="Basic Properties" description="The group is ordered. Draw objects in the group order (disables dynamic depth sorting). " />
         <!-- Variant Tags -->
         <Property name="variants" type="String" animatable="False" category="Variant Tags" />
 

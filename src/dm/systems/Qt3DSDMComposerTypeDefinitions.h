@@ -243,6 +243,7 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(controlledproperty, m_ControlledProperty, TDataStrPtr, L"")
 
 #define ITERATE_COMPOSER_GROUP_PROPERTIES                                                          \
+    HANDLE_COMPOSER_PROPERTY(ordered, m_ordered, bool, false)                                      \
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(variants, m_variants, TDataStrPtr, L"")                     \
 
 #define ITERATE_COMPOSER_LIGHT_PROPERTIES                                                          \

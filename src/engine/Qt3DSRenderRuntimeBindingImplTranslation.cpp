@@ -493,6 +493,7 @@ struct SRuntimePropertyParser
 #define Node_LocalOpacity ATTRIBUTE_OPACITY
 #define Node_RotationOrder ATTRIBUTE_ROTATIONORDER
 #define Node_LeftHanded ATTRIBUTE_ORIENTATION
+#define Group_ordered ATTRIBUTE_ORDERED
 #define Layer_TemporalAAEnabled ATTRIBUTE_TEMPORALAA
 #define Layer_LayerEnableDepthTest ATTRIBUTE_DISABLEDEPTHTEST
 #define Layer_LayerEnableDepthPrePass ATTRIBUTE_DISABLEDEPTHPREPASS

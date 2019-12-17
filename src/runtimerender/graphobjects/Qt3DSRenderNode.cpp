@@ -47,11 +47,13 @@ SNode::SNode(GraphObjectTypes::Enum inGraphObjectType)
     , m_LocalOpacity(1.0f)
     , m_GlobalOpacity(1.0f)
     , m_SkeletonId(-1)
+    , m_ordered(false)
     , m_Parent(NULL)
     , m_NextSibling(NULL)
     , m_PreviousSibling(NULL)
     , m_FirstChild(NULL)
     , m_DFSIndex(0)
+    , m_GroupIndex(0)
 {
     m_Flags.SetDirty(true);
     m_Flags.SetTransformDirty(true);
@@ -72,11 +74,13 @@ SNode::SNode(const SNode &inCloningObject, NVAllocatorCallback &inAllocator)
     , m_GlobalTransform(inCloningObject.m_GlobalTransform)
     , m_GlobalOpacity(inCloningObject.m_GlobalOpacity)
     , m_SkeletonId(inCloningObject.m_SkeletonId)
+    , m_ordered(inCloningObject.m_ordered)
     , m_Parent(NULL)
     , m_NextSibling(NULL)
     , m_PreviousSibling(NULL)
     , m_FirstChild(NULL)
     , m_DFSIndex(0)
+    , m_GroupIndex(0)
 {
     m_Flags.SetDirty(true);
     m_Flags.SetTransformDirty(true);

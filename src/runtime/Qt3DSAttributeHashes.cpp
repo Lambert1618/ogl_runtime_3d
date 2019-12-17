@@ -285,6 +285,7 @@ const char *GetAttributeString(const EAttribute inAttribute)
         case ATTRIBUTE_LIFETIME: return "lifetime";
         case ATTRIBUTE_CONTROLLEDPROPERTY: return "controlledproperty";
         case ATTRIBUTE_OBSERVEDPROPERTY: return "observedproperty";
+        case ATTRIBUTE_ORDERED: return "ordered";
         case ATTRIBUTE_QT_IO: return "qt.io";
         default: {
             static char s_UnknownHash[16];

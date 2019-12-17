@@ -716,6 +716,7 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
 #define Node_LocalOpacity "opacity"
 #define Node_RotationOrder "rotationorder"
 #define Node_LeftHanded "orientation"
+#define Group_ordered "ordered"
 #define Layer_Variants "variants"
 #define Layer_TemporalAAEnabled "temporalaa"
 #define Layer_LayerEnableDepthTest "disabledepthtest"
@@ -928,6 +929,7 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
             inItem.m_Flags.SetActive(eyeball);
         ITERATE_QT3DS_RENDER_NODE_PROPERTIES
         ParseProperty(inParser, "boneid", inItem.m_SkeletonId);
+        ParseProperty(inParser, "ordered", inItem.m_ordered);
         bool ignoreParent = false;
         if (ParseProperty(inParser, "ignoresparent", ignoreParent))
             inItem.m_Flags.SetIgnoreParentTransform(ignoreParent);

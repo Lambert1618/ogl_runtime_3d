@@ -600,5 +600,14 @@ namespace render {
                 theRenderContext, m_Generator.GetLayerGlobalRenderProperties(),
                 TShaderFeatureSet());
     }
+
+    void SOrderedGroupRenderable::update()
+    {
+        QT3DSVec3 sum(0.0f, 0.0f, 0.0f);
+        for (int i = 0; i < m_renderables.size(); i++)
+            sum += m_renderables[i]->m_WorldCenterPoint;
+        sum *= 1.0f / m_renderables.size();
+        m_WorldCenterPoint = sum;
+    }
 }
 }

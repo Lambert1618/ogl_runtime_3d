@@ -447,9 +447,11 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                            << " = getTransformedUVCoords( environment_map_reflection, uTransform, "
                               "vTransform );"
                            << Endl;
-            if (image.m_Image.m_TextureData.m_TextureFlags.IsInvertUVCoords())
+
+            if (image.m_Image.m_TextureData.m_TextureFlags.IsInvertUVCoords()) {
                 fragmentShader << "    " << m_ImageFragCoords << ".y = 1.0 - " << m_ImageFragCoords
                                << ".y;" << Endl;
+            }
         }
     }
 

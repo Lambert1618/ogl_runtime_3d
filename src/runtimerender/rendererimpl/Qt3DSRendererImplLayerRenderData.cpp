@@ -674,8 +674,9 @@ namespace render {
             return;
 
         // Check if we have anything to render
-        if ((m_OpaqueObjects.size() == 0 && GetTransparentRenderableObjects().size() == 0)
-                || m_Lights.size() == 0) {
+        if ((m_OpaqueObjects.empty() && GetTransparentRenderableObjects().size() == 0
+             && m_GroupObjects.empty())
+                || m_Lights.empty()) {
             return;
         }
 
@@ -832,7 +833,7 @@ namespace render {
 
         // Avoid running this method if possible.
         if ((inEnableTransparentDepthWrite == false
-             && ((m_OpaqueObjects.size() == 0 && m_TransparentObjects.size() == 0)
+             && ((m_GroupObjects.empty() && m_OpaqueObjects.empty() && m_TransparentObjects.empty())
                  || m_Layer.m_Flags.IsLayerEnableDepthPrepass() == false))
             || m_Layer.m_Flags.IsLayerEnableDepthTest() == false)
             return;
@@ -895,79 +896,156 @@ namespace render {
         }
     }
 
-    void SLayerRenderData::renderTransparentObjectsPass(
-            TRenderRenderableFunction inRenderFn, bool inEnableBlending,
-            bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
-            const SCamera &inCamera, CResourceFrameBuffer *theFB)
-    {
-        NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
-        NVRenderContext &theRenderContext(m_Renderer.GetContext());
-        QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
-        if (inEnableBlending || m_Layer.m_Flags.IsLayerEnableDepthTest() == false) {
-            theRenderContext.SetBlendingEnabled(true && inEnableBlending);
+void SLayerRenderData::renderOrderedGroup(
+        SRenderableObject &theObject, TRenderRenderableFunction inRenderFn, bool inEnableBlending,
+        bool inEnableDepthWrite, bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
+        const SCamera &inCamera, CResourceFrameBuffer *theFB)
+{
+    NVRenderContext &theRenderContext(m_Renderer.GetContext());
+    SOrderedGroupRenderable &group(static_cast<SOrderedGroupRenderable &>(theObject));
+    const bool opaqueDepthTest = m_Layer.m_Flags.IsLayerEnableDepthTest();
+    const bool opaqueDepthWrite = opaqueDepthTest && inEnableDepthWrite;
+    QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
+    for (int i = 0; i < group.m_renderables.size(); ++i) {
+        SRenderableObject &object(*group.m_renderables[i]);
+        SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+        SScopedLightsListScope lightsScope(m_Lights, m_LightDirections,
+                                           m_SourceLightDirections,
+                                           object.m_ScopedLights);
+#ifdef ADVANCED_BLEND_SW_FALLBACK
+        // SW fallback for advanced blend modes.
+        // Renders transparent objects to a separate FBO and blends them in shader
+        // with the opaque items and background.
+        DefaultMaterialBlendMode::Enum blendMode
+                = DefaultMaterialBlendMode::Enum::Normal;
+        if (theObject.m_RenderableFlags.IsDefaultMaterialMeshSubset())
+            blendMode = static_cast<SSubsetRenderable &>(theObject).getBlendingMode();
+        bool useBlendFallback
+                = (blendMode == DefaultMaterialBlendMode::Overlay
+                    || blendMode == DefaultMaterialBlendMode::ColorBurn
+                    || blendMode == DefaultMaterialBlendMode::ColorDodge)
+                && !theRenderContext.IsAdvancedBlendHwSupported()
+                && !theRenderContext.IsAdvancedBlendHwSupportedKHR() && m_LayerPrepassDepthTexture;
+        if (useBlendFallback)
+            SetupDrawFB(true);
+#endif
+        if (object.m_RenderableFlags.hasAlphaTest()) {
+            theRenderContext.SetBlendingEnabled(false);
+            theRenderContext.SetDepthWriteEnabled(opaqueDepthWrite);
+            m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
+            inRenderFn(*this, object, theCameraProps, GetShaderFeatureSet(), indexLight,
+                       inCamera);
+            theRenderContext.SetBlendingEnabled(inEnableBlending);
             theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
-
-            // Assume all objects have transparency if the layer's depth test enabled flag is true.
-            if (m_Layer.m_Flags.IsLayerEnableDepthTest() == true) {
-                for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
-                    SRenderableObject &theObject(*theTransparentObjects[idx]);
-                    if (!(theObject.m_RenderableFlags.IsCompletelyTransparent())) {
+            m_Renderer.setAlphaTest(true, -1.0f, 1.0f);
+            inRenderFn(*this, object, theCameraProps, GetShaderFeatureSet(), indexLight,
+                       inCamera);
+            m_Renderer.setAlphaTest(false, 1.0, 1.0);
+        } else {
+            const bool transparency
+                    = object.m_RenderableFlags.HasTransparency() && inEnableBlending;
+            theRenderContext.SetBlendingEnabled(transparency);
+            theRenderContext.SetDepthWriteEnabled((!transparency && opaqueDepthWrite)
+                                                  || inEnableTransparentDepthWrite);
+            inRenderFn(*this, object, theCameraProps, GetShaderFeatureSet(), indexLight,
+                       inCamera);
+        }
 #ifdef ADVANCED_BLEND_SW_FALLBACK
-                        // SW fallback for advanced blend modes.
-                        // Renders transparent objects to a separate FBO and blends them in shader
-                        // with the opaque items and background.
-                        DefaultMaterialBlendMode::Enum blendMode
-                                = DefaultMaterialBlendMode::Enum::Normal;
-                        if (theObject.m_RenderableFlags.IsDefaultMaterialMeshSubset())
-                            blendMode = static_cast<SSubsetRenderable &>(theObject).getBlendingMode();
-                        bool useBlendFallback = (blendMode == DefaultMaterialBlendMode::Overlay ||
-                                                 blendMode == DefaultMaterialBlendMode::ColorBurn ||
-                                                 blendMode == DefaultMaterialBlendMode::ColorDodge) &&
-                                                !theRenderContext.IsAdvancedBlendHwSupported() &&
-                                                !theRenderContext.IsAdvancedBlendHwSupportedKHR() &&
-                                                m_LayerPrepassDepthTexture;
-                        if (useBlendFallback)
-                            SetupDrawFB(true);
+        // SW fallback for advanced blend modes.
+        // Continue blending after transparent objects have been rendered to a FBO
+        if (useBlendFallback) {
+            BlendAdvancedToFB(blendMode, true, theFB);
+            // restore blending status
+            theRenderContext.SetBlendingEnabled(inEnableBlending);
+            // restore depth test status
+            theRenderContext.SetDepthTestEnabled(
+                        m_Layer.m_Flags.IsLayerEnableDepthTest());
+            theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
+        }
 #endif
-                        SScopedLightsListScope lightsScope(m_Lights, m_LightDirections,
-                                                           m_SourceLightDirections,
-                                                           theObject.m_ScopedLights);
-                        SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+    }
+}
 
-                        inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(),
-                                   indexLight, inCamera);
+void SLayerRenderData::renderTransparentObjectsPass(
+        TRenderRenderableFunction inRenderFn, bool inEnableBlending, bool inEnableDepthWrite,
+        bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
+        const SCamera &inCamera, CResourceFrameBuffer *theFB)
+{
+    NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
+    NVRenderContext &theRenderContext(m_Renderer.GetContext());
+    QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
+    if (inEnableBlending || m_Layer.m_Flags.IsLayerEnableDepthTest() == false) {
+        theRenderContext.SetBlendingEnabled(true && inEnableBlending);
+        theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
+
+        // Assume all objects have transparency if the layer's depth test enabled flag is true.
+        if (m_Layer.m_Flags.IsLayerEnableDepthTest()) {
+            for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
+                SRenderableObject &theObject(*theTransparentObjects[idx]);
+                if (!(theObject.m_RenderableFlags.IsCompletelyTransparent())) {
 #ifdef ADVANCED_BLEND_SW_FALLBACK
-                        // SW fallback for advanced blend modes.
-                        // Continue blending after transparent objects have been rendered to a FBO
-                        if (useBlendFallback) {
-                            BlendAdvancedToFB(blendMode, true, theFB);
-                            // restore blending status
-                            theRenderContext.SetBlendingEnabled(inEnableBlending);
-                            // restore depth test status
-                            theRenderContext.SetDepthTestEnabled(
-                                        m_Layer.m_Flags.IsLayerEnableDepthTest());
-                            theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
-                        }
+                    // SW fallback for advanced blend modes.
+                    // Renders transparent objects to a separate FBO and blends them in shader
+                    // with the opaque items and background.
+                    DefaultMaterialBlendMode::Enum blendMode
+                            = DefaultMaterialBlendMode::Enum::Normal;
+                    if (theObject.m_RenderableFlags.IsDefaultMaterialMeshSubset())
+                        blendMode = static_cast<SSubsetRenderable &>(theObject).getBlendingMode();
+                    bool useBlendFallback
+                            = (blendMode == DefaultMaterialBlendMode::Overlay
+                               || blendMode == DefaultMaterialBlendMode::ColorBurn
+                               || blendMode == DefaultMaterialBlendMode::ColorDodge)
+                            && !theRenderContext.IsAdvancedBlendHwSupported()
+                            && !theRenderContext.IsAdvancedBlendHwSupportedKHR()
+                            && m_LayerPrepassDepthTexture;
+                    if (useBlendFallback)
+                        SetupDrawFB(true);
 #endif
+                    SScopedLightsListScope lightsScope(m_Lights, m_LightDirections,
+                                                       m_SourceLightDirections,
+                                                       theObject.m_ScopedLights);
+                    SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+
+                    inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(),
+                               indexLight, inCamera);
+#ifdef ADVANCED_BLEND_SW_FALLBACK
+                    // SW fallback for advanced blend modes.
+                    // Continue blending after transparent objects have been rendered to a FBO
+                    if (useBlendFallback) {
+                        BlendAdvancedToFB(blendMode, true, theFB);
+                        // restore blending status
+                        theRenderContext.SetBlendingEnabled(inEnableBlending);
+                        // restore depth test status
+                        theRenderContext.SetDepthTestEnabled(
+                                    m_Layer.m_Flags.IsLayerEnableDepthTest());
+                        theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
                     }
+#endif
                 }
             }
-            // If the layer doesn't have depth enabled then we have to render via an alternate route
-            // where the transparent objects vector could have both opaque and transparent objects.
-            else {
-                for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
-                    SRenderableObject &theObject(*theTransparentObjects[idx]);
-                    if (!(theObject.m_RenderableFlags.IsCompletelyTransparent())) {
+        }
+        // If the layer doesn't have depth enabled then we have to render via an alternate route
+        // where the transparent objects vector could have both opaque and transparent objects.
+        else {
+            for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
+                SRenderableObject &theObject(*theTransparentObjects[idx]);
+                if (!(theObject.m_RenderableFlags.IsCompletelyTransparent())) {
+                    if (theObject.m_RenderableFlags.isOrderedGroup()) {
+                        renderOrderedGroup(theObject, inRenderFn, inEnableBlending,
+                                           inEnableDepthWrite, inEnableTransparentDepthWrite,
+                                           indexLight, inCamera, theFB);
+                    } else {
 #ifdef ADVANCED_BLEND_SW_FALLBACK
                         DefaultMaterialBlendMode::Enum blendMode
                                 = DefaultMaterialBlendMode::Enum::Normal;
                         if (theObject.m_RenderableFlags.IsDefaultMaterialMeshSubset())
                             blendMode = static_cast<SSubsetRenderable &>(theObject).getBlendingMode();
-                        bool useBlendFallback = (blendMode == DefaultMaterialBlendMode::Overlay ||
-                                                 blendMode == DefaultMaterialBlendMode::ColorBurn ||
-                                                 blendMode == DefaultMaterialBlendMode::ColorDodge) &&
-                                                !theRenderContext.IsAdvancedBlendHwSupported() &&
-                                                !theRenderContext.IsAdvancedBlendHwSupportedKHR();
+                        bool useBlendFallback
+                                = (blendMode == DefaultMaterialBlendMode::Overlay
+                                   || blendMode == DefaultMaterialBlendMode::ColorBurn
+                                   || blendMode == DefaultMaterialBlendMode::ColorDodge)
+                                && !theRenderContext.IsAdvancedBlendHwSupported()
+                                && !theRenderContext.IsAdvancedBlendHwSupportedKHR();
 
                         if (theObject.m_RenderableFlags.HasTransparency()) {
                             theRenderContext.SetBlendingEnabled(true && inEnableBlending);
@@ -996,75 +1074,82 @@ namespace render {
                 }
             }
         }
-    };
+    }
+};
 
-    void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
-                                         bool inEnableBlending, bool inEnableDepthWrite,
-                                         bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
-                                         const SCamera &inCamera, CResourceFrameBuffer *theFB)
+void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
+                                     bool inEnableBlending, bool inEnableDepthWrite,
+                                     bool inEnableTransparentDepthWrite, QT3DSU32 indexLight,
+                                     const SCamera &inCamera, CResourceFrameBuffer *theFB)
+{
+    NVRenderContext &theRenderContext(m_Renderer.GetContext());
+    theRenderContext.SetDepthFunction(qt3ds::render::NVRenderBoolOp::LessThanOrEqual);
+    theRenderContext.SetBlendingEnabled(false);
+    QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
     {
-        NVRenderContext &theRenderContext(m_Renderer.GetContext());
-        theRenderContext.SetDepthFunction(qt3ds::render::NVRenderBoolOp::LessThanOrEqual);
-        theRenderContext.SetBlendingEnabled(false);
-        QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
-        {
-            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                    "LayerRenderData: Render opaque")
-            NVDataRef<SRenderableObject *> theOpaqueObjects = GetOpaqueRenderableObjects();
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "LayerRenderData: Render opaque")
+        NVDataRef<SRenderableObject *> theOpaqueObjects = GetOpaqueRenderableObjects();
 
-            if (m_Layer.m_Flags.IsLayerEnableDepthTest()) {
-                theRenderContext.SetDepthTestEnabled(true);
-                theRenderContext.SetDepthWriteEnabled(inEnableDepthWrite);
+        const bool opaqueDepthTest = m_Layer.m_Flags.IsLayerEnableDepthTest();
+        const bool opaqueDepthWrite = opaqueDepthTest && inEnableDepthWrite;
+
+        theRenderContext.SetDepthTestEnabled(opaqueDepthTest);
+        theRenderContext.SetDepthWriteEnabled(opaqueDepthWrite);
+
+        for (QT3DSU32 idx = 0, end = theOpaqueObjects.size(); idx < end; ++idx) {
+            SRenderableObject &theObject(*theOpaqueObjects[idx]);
+
+            if (theObject.m_RenderableFlags.isOrderedGroup()) {
+                renderOrderedGroup(theObject, inRenderFn, inEnableBlending, inEnableDepthWrite,
+                                   inEnableTransparentDepthWrite, indexLight, inCamera, theFB);
             } else {
-                theRenderContext.SetDepthWriteEnabled(false);
-                theRenderContext.SetDepthTestEnabled(false);
-            }
-
-            for (QT3DSU32 idx = 0, end = theOpaqueObjects.size(); idx < end; ++idx) {
-                SRenderableObject &theObject(*theOpaqueObjects[idx]);
+                theRenderContext.SetBlendingEnabled(false);
+                theRenderContext.SetDepthWriteEnabled(opaqueDepthWrite);
+                SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
                 SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
                                                    theObject.m_ScopedLights);
-                SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
                 inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
                            inCamera);
             }
-        }
-        {
-            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                    "LayerRenderData: Render transparent pass1")
-
-            NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
-            // Also draw opaque parts of transparent objects
-            m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
-            for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
-                SRenderableObject &theObject(*theTransparentObjects[idx]);
-                SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
-                                                   theObject.m_ScopedLights);
-                SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
-                inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
-                           inCamera);
-            }
-        }
-
-        {
-            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                    "LayerRenderData: Render transparent pass2")
-            m_Renderer.setAlphaTest(true, -1.0f, 1.0f);
-            // transparent parts of transparent objects
-            // does not render objects without alpha test enabled so
-            // we need another pass without alpha test
-            renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
-                                         indexLight, inCamera, theFB);
-        }
-        {
-            QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
-                                    "LayerRenderData: Render transparent pass3")
-            m_Renderer.setAlphaTest(false, 1.0, 1.0);
-            // transparent objects without alpha test
-            renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
-                                         indexLight, inCamera, theFB);
         }
     }
+    {
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "LayerRenderData: Render transparent pass1")
+
+        NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
+        // Also draw opaque parts of transparent objects
+        m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
+        for (QT3DSU32 idx = 0, end = theTransparentObjects.size(); idx < end; ++idx) {
+            SRenderableObject &theObject(*theTransparentObjects[idx]);
+            SScopedLightsListScope lightsScope(m_Lights, m_LightDirections, m_SourceLightDirections,
+                                               theObject.m_ScopedLights);
+            SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
+            inRenderFn(*this, theObject, theCameraProps, GetShaderFeatureSet(), indexLight,
+                       inCamera);
+        }
+    }
+
+    {
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "LayerRenderData: Render transparent pass2")
+        m_Renderer.setAlphaTest(true, -1.0f, 1.0f);
+        // transparent parts of transparent objects
+        // does not render objects without alpha test enabled so
+        // we need another pass without alpha test
+        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
+                                     inEnableDepthWrite, indexLight, inCamera, theFB);
+    }
+    {
+        QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
+                                "LayerRenderData: Render transparent pass3")
+        m_Renderer.setAlphaTest(false, 1.0, 1.0);
+        // transparent objects without alpha test
+        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
+                                     inEnableDepthWrite, indexLight, inCamera, theFB);
+    }
+}
 
     void SLayerRenderData::Render(CResourceFrameBuffer *theFB)
     {
@@ -1546,7 +1631,8 @@ namespace render {
         // to that frame buffer.
         theFB.EnsureFrameBuffer();
 
-        bool hasDepthObjects = m_OpaqueObjects.size() > 0 || m_TransparentObjects.size() > 0;
+        bool hasDepthObjects = m_OpaqueObjects.size() > 0 || m_TransparentObjects.size() > 0
+                                  || m_GroupObjects.size() > 0;
         bool requiresDepthStencilBuffer =
             hasDepthObjects || thePrepResult.m_Flags.RequiresStencilBuffer();
         NVRenderRect theNewViewport(0, 0, theLayerTextureDimensions.width(),
@@ -1834,13 +1920,13 @@ namespace render {
     void SLayerRenderData::RunnableRenderToViewport(qt3ds::render::NVRenderFrameBuffer *theFB)
     {
         // If we have an effect, an opaque object, or any transparent objects that aren't completely
-        // transparent
-        // or an offscreen renderer or a layer widget texture
+        // transparent or an offscreen renderer or a layer widget texture
         // Then we can't possible affect the resulting render target.
-        bool needsToRender = m_Layer.m_FirstEffect != NULL || m_OpaqueObjects.empty() == false
+        bool needsToRender = m_Layer.m_FirstEffect || !m_OpaqueObjects.empty()
             || AnyCompletelyNonTransparentObjects(m_TransparentObjects) || GetOffscreenRenderer()
             || m_LayerWidgetTexture || m_BoundingRectColor.hasValue()
-            || m_Layer.m_Background == LayerBackground::Color;
+            || m_Layer.m_Background == LayerBackground::Color
+            || !m_GroupObjects.empty();
 
         if (needsToRender == false)
             return;

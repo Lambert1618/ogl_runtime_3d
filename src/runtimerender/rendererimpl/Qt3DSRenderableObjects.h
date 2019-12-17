@@ -63,6 +63,7 @@ namespace render {
             ShadowCaster = 1 << 10,
             DistanceField = 1 << 11,
             HasAlphaTest = 1 << 12,
+            OrderedGroup = 1 << 13,
         };
     };
 
@@ -166,6 +167,14 @@ namespace render {
         bool hasAlphaTest() const
         {
             return *this & RenderPreparationResultFlagValues::HasAlphaTest;
+        }
+        bool isOrderedGroup() const
+        {
+            return *this & RenderPreparationResultFlagValues::OrderedGroup;
+        }
+        void setOrderedGroup(bool ordered)
+        {
+            ClearOrSet(ordered, RenderPreparationResultFlagValues::OrderedGroup);
         }
     };
 
@@ -479,6 +488,20 @@ namespace render {
 
         void RenderShadowMapPass(const QT3DSVec2 &inCameraVec, const SLight *inLight,
                                  const SCamera &inCamera, SShadowMapEntry *inShadowMapEntry);
+    };
+
+    struct SOrderedGroupRenderable : public SRenderableObject
+    {
+        SOrderedGroupRenderable(SRenderableObjectFlags inFlags, const QT3DSVec3 &inWorldCenterPt,
+                               const QT3DSMat44 &inGlobalTransform, const NVBounds3 &inBounds,
+                               NVAllocatorCallback &allocator)
+            : SRenderableObject(inFlags, inWorldCenterPt, inGlobalTransform, inBounds)
+            , m_renderables(allocator, "SOrderedGroupRenderable::m_renderables")
+        {
+            m_RenderableFlags.setOrderedGroup(true);
+        }
+        void update();
+        nvvector<SRenderableObject *> m_renderables;
     };
 }
 }
