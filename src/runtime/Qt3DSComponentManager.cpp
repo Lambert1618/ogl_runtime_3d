@@ -100,7 +100,13 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
 
     const UINT8 theCurrentSlideIndex = theComponent->GetCurrentSlide();
 
-    QString elementPath = QString::fromUtf8(inComponent->m_Path.c_str());
+    QString elementPath;
+    // Primary presentation stores elementpaths with subpresentation prefix.
+    // Prepend it here so that slide change notification is directed at a correct elementpath.
+    if (&m_Presentation != m_Presentation.GetApplication().GetPrimaryPresentation())
+        elementPath = m_Presentation.GetName() + QLatin1Char(':');
+
+    elementPath.append(QString::fromUtf8(inComponent->m_Path.c_str()));
 
     if (inSlideExit) {
         SEventCommand theEvent = { inComponent, EVENT_ONSLIDEEXIT };

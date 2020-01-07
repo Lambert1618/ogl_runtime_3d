@@ -325,26 +325,31 @@ bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayed
 
 void CRuntimeView::connectSignals()
 {
-    m_Presentation->signalProxy()->moveToThread(QThread::currentThread());
     signalProxy()->moveToThread(QThread::currentThread());
 
-    QObject::connect(m_Presentation->signalProxy(), &QPresentationSignalProxy::SigSlideEntered,
-                     signalProxy(), &QRuntimeViewSignalProxy::SigSlideEntered);
-    QObject::connect(m_Presentation->signalProxy(), &QPresentationSignalProxy::SigSlideExited,
-                     signalProxy(), &QRuntimeViewSignalProxy::SigSlideExited);
-    QObject::connect(m_Presentation->signalProxy(), &QPresentationSignalProxy::SigCustomSignal,
-                     signalProxy(), &QRuntimeViewSignalProxy::SigCustomSignal);
-    QObject::connect(m_Presentation->signalProxy(),
-                     &QPresentationSignalProxy::SigPresentationReady,
-                     signalProxy(), &QRuntimeViewSignalProxy::SigPresentationReady);
-    QObject::connect(m_Presentation->signalProxy(), &QPresentationSignalProxy::SigElementsCreated,
-                     signalProxy(), &QRuntimeViewSignalProxy::SigElementsCreated);
-    QObject::connect(m_Presentation->signalProxy(), &QPresentationSignalProxy::SigMaterialsCreated,
-                     signalProxy(), &QRuntimeViewSignalProxy::SigMaterialsCreated);
-    QObject::connect(m_Presentation->signalProxy(),
-                     &QPresentationSignalProxy::SigDataOutputValueUpdated,
-                     signalProxy(),
-                     &QRuntimeViewSignalProxy::SigDataOutputValueUpdated);
+    const auto preslist = m_Application->GetPresentationList();
+
+    // Connect signalproxies of every presentation.
+    for (const auto &it : preslist) {
+        it->signalProxy()->moveToThread((QThread::currentThread()));
+        QObject::connect(it->signalProxy(), &QPresentationSignalProxy::SigSlideEntered,
+                         signalProxy(), &QRuntimeViewSignalProxy::SigSlideEntered);
+        QObject::connect(it->signalProxy(), &QPresentationSignalProxy::SigSlideExited,
+                         signalProxy(), &QRuntimeViewSignalProxy::SigSlideExited);
+        QObject::connect(it->signalProxy(), &QPresentationSignalProxy::SigCustomSignal,
+                         signalProxy(), &QRuntimeViewSignalProxy::SigCustomSignal);
+        QObject::connect(it->signalProxy(),
+                         &QPresentationSignalProxy::SigPresentationReady,
+                         signalProxy(), &QRuntimeViewSignalProxy::SigPresentationReady);
+        QObject::connect(it->signalProxy(), &QPresentationSignalProxy::SigElementsCreated,
+                         signalProxy(), &QRuntimeViewSignalProxy::SigElementsCreated);
+        QObject::connect(it->signalProxy(), &QPresentationSignalProxy::SigMaterialsCreated,
+                         signalProxy(), &QRuntimeViewSignalProxy::SigMaterialsCreated);
+        QObject::connect(it->signalProxy(),
+                         &QPresentationSignalProxy::SigDataOutputValueUpdated,
+                         signalProxy(),
+                         &QRuntimeViewSignalProxy::SigDataOutputValueUpdated);
+    }
 }
 
 void CRuntimeView::finishAsyncInit()
@@ -358,6 +363,11 @@ void CRuntimeView::Cleanup()
 {
     // Q3DStudio_virtual_delete( m_Timer, CTimer );
     // Q3DStudio_virtual_delete( m_PerfFileStream, CFileStream );
+    const auto preslist = m_Application->GetPresentationList();
+
+    for (const auto &it : preslist)
+        QObject::disconnect(it->signalProxy(), 0, signalProxy(), 0);
+
     m_Application = nullptr;
     Q3DStudio_virtual_delete(m_InputEngine, CTegraInputEngine);
     if (m_RenderEngine) {
@@ -367,8 +377,6 @@ void CRuntimeView::Cleanup()
 
     CDLLManager &theDLLManager = CDLLManager::GetDLLManager();
     theDLLManager.Cleanup();
-    if (m_Presentation)
-        QObject::disconnect(m_Presentation->signalProxy(), 0, signalProxy(), 0);
 
     m_InputEngine = nullptr;
     m_RenderEngine = nullptr;
