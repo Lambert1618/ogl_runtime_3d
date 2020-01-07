@@ -644,10 +644,13 @@ void SElement::SetAttribute(const Q3DStudio::TAttributeHash inKey,
                             const Q3DStudio::UVariant inValue)
 {
     Option<TPropertyDescAndValuePtr> existing = FindProperty(inKey);
-    if (existing.hasValue() == false) {
+    if (!existing.hasValue()) {
         if (Q3DStudio::ATTRIBUTE_EYEBALL == inKey)
             SetFlag(Q3DStudio::ELEMENTFLAG_EXPLICITACTIVE, inValue.m_INT32 ? true : false);
-        return;
+        else
+            existing = FindDynamicProperty(inKey);
+        if (!existing.hasValue())
+            return;
     }
     SetAttribute(*existing, inValue);
 }

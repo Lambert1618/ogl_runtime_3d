@@ -614,6 +614,7 @@ bool queueAttributeChange(TElement *target, const char *attName, const char *val
         // Queue changes to elements inside components that have not been activated even once
         if (component->GetCurrentSlide() == 0) {
             IPresentation *presentation = target->GetBelongedPresentation();
+            CQmlElementHelper::EnsureAttribute(target, attName);
             presentation->GetComponentManager().queueChange(componentElement, target,
                                                             attName, value);
             return true;

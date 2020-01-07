@@ -49,6 +49,7 @@ public:
                                 TElement *inStartElement = NULL);
 
     static bool SetAttribute(TElement *inElement, const char *inAttribute, const void *value);
+    static bool EnsureAttribute(TElement *inElement, const char *inAttribute);
     static bool GetAttribute(TElement *inElement, const char *inAttribute, void *value);
 
     struct TypedAttributeAndValue {

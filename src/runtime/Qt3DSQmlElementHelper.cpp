@@ -246,6 +246,37 @@ CQmlElementHelper::TypedAttributeAndValue CQmlElementHelper::getTypedAttributeAn
     return retVal;
 }
 
+bool CQmlElementHelper::EnsureAttribute(TElement *theElement, const char *theAttName)
+{
+    SAttributeKey theAttributeKey;
+    theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
+
+    if (theAttributeKey.m_Hash == ATTRIBUTE_EYEBALL || theAttributeKey.m_Hash == ATTRIBUTE_URI)
+        return false;
+
+    // first search if it is a static property
+    Option<qt3ds::runtime::element::TPropertyDescAndValuePtr> thePropertyInfo =
+        theElement->FindProperty(theAttributeKey.m_Hash);
+
+    // Do not create property for eyeball, it uses the explicit activity flag
+    if (!thePropertyInfo.hasValue()) {
+        // if not search in the dynamic properties
+        thePropertyInfo = theElement->FindDynamicProperty(theAttributeKey.m_Hash);
+        if (!thePropertyInfo.hasValue()) {
+            // create a new dynamic porperty
+            qt3ds::runtime::IElementAllocator &theElemAllocator(
+                theElement->GetBelongedPresentation()->GetApplication().GetElementAllocator());
+            qt3ds::foundation::IStringTable &theStringTable(
+                theElement->GetBelongedPresentation()->GetStringTable());
+            IRuntimeMetaData &theMetaData =
+                theElement->GetBelongedPresentation()->GetApplication().GetMetaData();
+            thePropertyInfo = theElemAllocator.CreateDynamicProperty(
+                theMetaData, *theElement, theStringTable.RegisterStr(theAttName));
+        }
+    }
+    return true;
+}
+
 bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttName,
                                      const void *value)
 {
