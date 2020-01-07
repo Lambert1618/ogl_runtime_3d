@@ -1073,7 +1073,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         } else if (normalImage != nullptr) {
             GenerateImageUVCoordinates(normalImageIdx, *normalImage);
 
-            fragmentShader.AddFunction("sampleNormalTexture.glsllib");
+            fragmentShader.AddFunction("sampleNormalTexture");
             fragmentShader.AddUniform("bumpAmount", "float");
 
             fragmentShader << "    world_normal = sampleNormalTexture( "
