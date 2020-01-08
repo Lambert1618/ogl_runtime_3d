@@ -291,23 +291,51 @@ struct ShaderCache : public IShaderCache
 
             // add precision qualifier depending on backend
             if (IQt3DSRenderer::IsGlEs3Context(m_RenderContext.GetRenderContextType())) {
-                m_InsertStr.append("precision highp float;\n"
-                                   "precision highp int;\n");
-                if( m_RenderContext.GetRenderBackendCap(render::NVRenderBackend::NVRenderBackendCaps::gpuShader5) ) {
-                    m_InsertStr.append("precision mediump sampler2D;\n"
-                                       "precision mediump sampler2DArray;\n"
-                                       "precision mediump sampler2DShadow;\n");
+                QString precision = qEnvironmentVariable("QT3DS_PRECISION");
+                QString samplerPrecision = qEnvironmentVariable("QT3DS_SAMPLER_PRECISION");
+
+                if ((!precision.isEmpty() && precision != QStringLiteral("mediump")
+                        && precision != QStringLiteral("lowp")
+                        && precision != QStringLiteral("highp")) || precision.isEmpty()) {
+                    precision = "highp";
+                }
+                if ((!samplerPrecision.isEmpty()
+                        && samplerPrecision != QStringLiteral("mediump")
+                        && samplerPrecision != QStringLiteral("lowp")
+                        && samplerPrecision != QStringLiteral("highp"))
+                        || samplerPrecision.isEmpty()) {
+                    samplerPrecision = "mediump";
+                }
+
+                QString precisionQualifiers("precision %1 float;\n"
+                                            "precision %1 int;\n");
+                m_InsertStr.append(precisionQualifiers.arg(precision));
+                if (m_RenderContext.GetRenderBackendCap(
+                            NVRenderBackend::NVRenderBackendCaps::gpuShader5)) {
+                    QString samplerQualifiers("precision %1 sampler2D;\n"
+                                              "precision %1 sampler2DArray;\n"
+                                              "precision %1 sampler2DShadow;\n");
+                    m_InsertStr.append(samplerQualifiers.arg(samplerPrecision));
                     if (m_RenderContext.IsShaderImageLoadStoreSupported()) {
-                        m_InsertStr.append("precision mediump image2D;\n");
+                        QString imageQualifiers("precision %1 image2D;\n");
+                        m_InsertStr.append(imageQualifiers.arg(samplerPrecision));
                     }
                 }
 
                 AddBackwardCompatibilityDefines(shaderType);
             } else {
                 // GLES2
-                m_InsertStr.append("precision mediump float;\n"
-                                   "precision mediump int;\n"
-                                   "#define texture texture2D\n");
+                QString precision = qEnvironmentVariable("QT3DS_PRECISION");
+                if ((!precision.isEmpty() && precision != QStringLiteral("mediump")
+                        && precision != QStringLiteral("lowp")
+                        && precision != QStringLiteral("highp")) || precision.isEmpty()) {
+                    precision = "mediump";
+                }
+                QString precisionQualifiers("precision %1 float;\n"
+                                            "precision %1 int;\n");
+                m_InsertStr.append(precisionQualifiers.arg(precision));
+                m_InsertStr.append("#define texture texture2D\n");
+
                 if (m_RenderContext.IsTextureLodSupported())
                     m_InsertStr.append("#define textureLod texture2DLodEXT\n");
                 else
