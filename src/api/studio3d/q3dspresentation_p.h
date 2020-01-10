@@ -102,6 +102,7 @@ public:
     void requestResponseHandler(CommandType commandType, void *requestData);
 
     void writeShaderCache(const QUrl &shaderCacheFile);
+    void getShaderCacheData(QByteArray &shaderCacheData);
     QByteArray loadShaderCache() const;
     void exportShaderCache(bool binaryShaders, bool dumpCache);
     void dumpShaderCache();
@@ -132,6 +133,7 @@ private:
     bool m_dataInputsChanged;
     QUrl m_shaderCacheFile;
     QByteArray m_shaderCacheExport;
+    QByteArray m_shaderCacheImport;
     QUrl m_shaderCacheWritePending;
     bool m_shaderCacheDumpPending = false;
     int m_dataInputCallIndex = 0;

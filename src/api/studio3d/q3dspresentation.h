@@ -95,6 +95,8 @@ public:
     Q_REVISION(1) Q_INVOKABLE void exportShaderCache(const QUrl &shaderCacheFile,
                                                      bool binaryShaders);
     Q_REVISION(1) Q_INVOKABLE void exportShaderCache(bool binaryShaders);
+    void exportShaderCache(QByteArray &cacheData, bool binaryShaders);
+    void setShaderCacheData(const QByteArray &shaderCache);
     QUrl shaderCacheFile() const;
 
     // Input event handlers

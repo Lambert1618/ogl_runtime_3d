@@ -617,7 +617,7 @@ void Q3DSPresentation::unloadSlide(const QString &elementPath)
 
     Writes the shaders currently in use to the file specified by \a shaderCacheFile URL.
     If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
-    the shader source code is exported.
+    compressed shader source code is exported.
 
     Exporting shader cache is an asynchronous operation.
     The shaderCacheExported signal is emitted when the export is complete.
@@ -629,13 +629,13 @@ void Q3DSPresentation::unloadSlide(const QString &elementPath)
     from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
     with shaderCacheFile property allows shader generation.
 
-    \sa shaderCacheFile, shaderCacheExported
+    \sa shaderCacheFile, shaderCacheExported, qCompress
  */
 /*!
     \since Qt 3D Studio 2.5
     Writes the shaders currently in use to the file specified by \a shaderCacheFile URL.
     If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
-    the shader source code is exported.
+    compressed shader source code is exported.
 
     The shaderCacheExported signal is emitted when the export is complete.
 
@@ -646,7 +646,7 @@ void Q3DSPresentation::unloadSlide(const QString &elementPath)
     from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
     with shaderCacheFile property allows shader generation.
 
-    \sa shaderCacheFile, shaderCacheExported
+    \sa shaderCacheFile, shaderCacheExported, qCompress
  */
 void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binaryShaders)
 {
@@ -668,7 +668,7 @@ void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binar
     a command line parameter \c --convert-shader-cache to do this conversion.
 
     If \a binaryShaders property is \c{true}, precompiled shaders are exported.
-    Otherwise, the shader source code is exported.
+    Otherwise, compressed shader source code is exported.
 
     Exporting shader cache is an asynchronous operation.
     The shaderCacheExported signal is emitted when the export is complete.
@@ -680,7 +680,7 @@ void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binar
     from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
     with shaderCacheFile property allows shader generation.
 
-    \sa shaderCacheFile, shaderCacheExported
+    \sa shaderCacheFile, shaderCacheExported, qCompress
  */
 /*!
     \since Qt 3D Studio 2.5
@@ -691,7 +691,7 @@ void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binar
     a command line parameter \c --convert-shader-cache to do this conversion.
 
     If \a binaryShaders property is \c{true}, precompiled shaders are exported.
-    Otherwise, the shader source code is exported.
+    Otherwise, compressed shader source code is exported.
 
     The shaderCacheExported signal is emitted when the export is complete.
 
@@ -702,11 +702,51 @@ void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binar
     from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
     with shaderCacheFile property allows shader generation.
 
-    \sa shaderCacheFile, shaderCacheExported
+    \sa shaderCacheFile, shaderCacheExported, qCompress
  */
 void Q3DSPresentation::exportShaderCache(bool binaryShaders)
 {
     d_ptr->exportShaderCache(binaryShaders, true);
+}
+
+/*!
+    \since Qt 3D Studio 2.6
+    Exports the shaders currently in use to a byte array specified by \a cacheData parameter.
+    If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
+    compressed shader source code is exported.
+
+    The shaderCacheExported signal is emitted when the export is complete.
+
+    Exporting shader cache should be done at the point of application execution where all the
+    shaders that should be initialized at application startup have been initialized.
+
+    \note Exporting shader cache is only supported if no shaders have been originally loaded
+    from a shader cache.
+
+    \sa setShaderCacheData, shaderCacheExported, qCompress
+ */
+void Q3DSPresentation::exportShaderCache(QByteArray &cacheData, bool binaryShaders)
+{
+    d_ptr->exportShaderCache(binaryShaders, false);
+    d_ptr->getShaderCacheData(cacheData);
+}
+
+/*!
+    \since Qt 3D Studio 2.6
+    Specifies the shader cache data to be used for initial shader initialization.
+    This method must be called before the presentation is shown.
+    Using cached shaders improves presentation initialization speed.
+
+    If this method is not called and shaderCacheFile property is not set, all shaders are generated
+    normally.
+
+    If this method is called, new shader cache generation is not supported.
+
+    \sa exportShaderCache(), shaderCacheFile
+ */
+void Q3DSPresentation::setShaderCacheData(const QByteArray &shaderCache)
+{
+    d_ptr->m_shaderCacheImport = shaderCache;
 }
 
 /*!
@@ -724,22 +764,24 @@ void Q3DSPresentation::exportShaderCache(bool binaryShaders)
 
     The default value is an empty url.
 
-    \sa exportShaderCache(), shaderCacheExport
+    \sa exportShaderCache()
  */
 /*!
+    \property Q3DSPresentation::shaderCacheFile
     \since Qt 3D Studio 2.5
     Specifies the shader cache file to be used for initial shader initialization.
     This property value must be set before the presentation is shown.
     Using cached shaders improves presentation initialization speed.
 
-    If this property is not set, all shaders are generated normally.
+    If this property is not set and setShaderCacheData is not called, all shaders are generated
+    normally.
 
     If this property points to a valid shader cache file, new shader cache generation is not
     supported.
 
     The default value is an empty url.
 
-    \sa exportShaderCache(), shaderCacheExport
+    \sa exportShaderCache(), setShaderCacheData
  */
 QUrl Q3DSPresentation::shaderCacheFile() const
 {
@@ -761,7 +803,7 @@ void Q3DSPresentation::setShaderCacheFile(const QUrl &fileName)
     Emitted when a shader cache export is completed. The parameter \a success indicates whether
     or not the export was successful.
 
-    \sa shaderCacheExport(), shaderCacheFile
+    \sa exportShaderCache(), shaderCacheFile
  */
 
 /*!
@@ -771,7 +813,7 @@ void Q3DSPresentation::setShaderCacheFile(const QUrl &fileName)
     Emitted when a shader cache export is completed. The parameter \a success indicates whether
     or not the export was successful.
 
-    \sa shaderCacheExport(), shaderCacheFile
+    \sa exportShaderCache(), shaderCacheFile
  */
 
 /*!
@@ -1933,8 +1975,10 @@ void Q3DSPresentationPrivate::requestResponseHandler(CommandType commandType, vo
 // Writes current shader cache to the specified file in UTF-8 format
 void Q3DSPresentationPrivate::writeShaderCache(const QUrl &shaderCacheFile)
 {
-    if (m_shaderCacheExport.isEmpty())
+    if (m_shaderCacheExport.isEmpty()) {
+        Q_EMIT q_ptr->shaderCacheExported(false);
         return; // Warning is already printed by export function
+    }
     const QString filePath = shaderCacheFile.toLocalFile();
     QSaveFile file(filePath);
     QFileInfo(filePath).dir().mkpath(QStringLiteral("."));
@@ -1949,6 +1993,17 @@ void Q3DSPresentationPrivate::writeShaderCache(const QUrl &shaderCacheFile)
     Q_EMIT q_ptr->shaderCacheExported(success);
 }
 
+void Q3DSPresentationPrivate::getShaderCacheData(QByteArray &shaderCacheData)
+{
+    bool success = false;
+
+    if (!m_shaderCacheExport.isEmpty()) {
+        shaderCacheData = m_shaderCacheExport;
+        success = true;
+    }
+    Q_EMIT q_ptr->shaderCacheExported(success);
+}
+
 QByteArray Q3DSPresentationPrivate::loadShaderCache() const
 {
     if (!m_shaderCacheFile.isEmpty()) {
@@ -1958,7 +2013,10 @@ QByteArray Q3DSPresentationPrivate::loadShaderCache() const
 
         qWarning() << __FUNCTION__ << "Warning: Failed to read shader cache:"
                    << m_shaderCacheFile << file.errorString();
+    } else if (!m_shaderCacheImport.isEmpty()) {
+        return qUncompress(m_shaderCacheImport);
     }
+
     return {};
 }
 
