@@ -1021,7 +1021,7 @@ EElementType GetElementType(const char *inType)
  */
 BOOL CUIPParserImpl::LoadSceneGraph(IPresentation &inPresentation, IDOMReader &inReader,
                                     qt3ds::runtime::element::SElement *inNewStyleParent,
-                                    bool initInRenderThread)
+                                    bool initInRenderThread, bool isInsideLayer)
 {
     IDOMReader::Scope __childScope(inReader);
     IScriptBridge *theScriptBridgeQml = inPresentation.GetScriptBridgeQml();
@@ -1046,6 +1046,7 @@ BOOL CUIPParserImpl::LoadSceneGraph(IPresentation &inPresentation, IDOMReader &i
         UINT32 theLoopTime = 0;
         bool isComponent = false;
         bool isBehavior = false;
+        bool isChildInsideLayer = isInsideLayer;
 
         // Create SElement
         if (AreEqual(theType, "Scene") || AreEqual(theType, "Component")) {
@@ -1055,7 +1056,14 @@ BOOL CUIPParserImpl::LoadSceneGraph(IPresentation &inPresentation, IDOMReader &i
             Q3DStudio_ASSERT(theLoopTime != 0); // Something is wrong here
             isComponent = true;
         } else {
-            if (AreEqual(theType, "Behavior") && !IsTrivial(theClass)) {
+            if (AreEqual(theType, "Layer")) {
+                isChildInsideLayer = true;
+            } else if ((AreEqual(theType, "Material") || AreEqual(theType, "CustomMaterial")
+                        || AreEqual(theType, "Image")) && !isInsideLayer) {
+                // Identify objects outside a Layer object with types of Material, CustomMaterial
+                // or Image to be inside the material container
+                m_materialContainerIds.append(QString::fromUtf8(theId));
+            } else if (AreEqual(theType, "Behavior") && !IsTrivial(theClass)) {
                 // Find the sourcepath and load the script
                 ++theClass; // remove the '#'
                 TIdSourcePathMap::iterator theSourcePathIter = m_IdScriptMap.find(theClass);
@@ -1156,7 +1164,8 @@ BOOL CUIPParserImpl::LoadSceneGraph(IPresentation &inPresentation, IDOMReader &i
                                                theFileString.c_str(), initInRenderThread);
             }
         }
-        LoadSceneGraph(inPresentation, inReader, &theNewElem, initInRenderThread);
+        LoadSceneGraph(inPresentation, inReader, &theNewElem, initInRenderThread,
+                       isChildInsideLayer);
     }
 
     return true;
@@ -1627,6 +1636,32 @@ BOOL CUIPParserImpl::LoadStateGraph(IPresentation &inPresentation, qt3dsdm::IDOM
         }
     }
 
+    // Add source paths of the source materials of the ReferencedMaterials
+    // to the slide source paths
+    for (const auto &slideRefMats : qAsConst(m_referencedMaterialsBySlide)) {
+        const auto &slideKey = slideRefMats.first;
+        const auto &refMats = slideRefMats.second;
+
+        QVector<QString> sourcePathRefs;
+        for (const auto &refMat : refMats) {
+            // CustomMaterials contains their own source paths
+            sourcePathRefs.append(refMat);
+            // Materials have their source paths inside Image objects
+            if (m_imagesByMaterial.contains(refMat))
+                sourcePathRefs.append(m_imagesByMaterial[refMat]);
+        }
+
+        for (const auto &sourcePathRef : qAsConst(sourcePathRefs)) {
+            if (m_sourcePathsById.contains(sourcePathRef)) {
+                const auto &sourcePaths = m_sourcePathsById[sourcePathRef];
+                for (const auto &sourcePath : sourcePaths) {
+                    inPresentation.GetSlideSystem().AddSourcePath(slideKey,
+                                                                  sourcePath.toUtf8().constData());
+                }
+            }
+        }
+    }
+
     return theStatus;
 }
 
@@ -1643,6 +1678,7 @@ BOOL CUIPParserImpl::LoadState(IPresentation &inPresentation, SElement *inCompon
 
     BOOL theResult = true;
     ISlideSystem &theBuilder = inPresentation.GetSlideSystem();
+    m_currentSlideReferencedMaterials.clear();
 
     eastl::string theSlideName = GetSlideName(inReader);
 
@@ -1672,6 +1708,16 @@ BOOL CUIPParserImpl::LoadState(IPresentation &inPresentation, SElement *inCompon
         LoadSlideElements(inPresentation, inReader, inSlideIndex == 0, inComponent, &theMaxTime);
     if (theMaxTime != 0)
         theBuilder.SetSlideMaxTime((QT3DSU32)theMaxTime);
+
+    if (!m_currentSlideReferencedMaterials.empty()) {
+        qt3ds::runtime::SSlideKey key;
+        key.m_Component = inComponent;
+        key.m_Index = inSlideIndex;
+        QPair<qt3ds::runtime::SSlideKey, QVector<QString>> pair;
+        pair.first = key;
+        pair.second = m_currentSlideReferencedMaterials;
+        m_referencedMaterialsBySlide.append(pair);
+    }
 
     return theResult;
 }
@@ -2155,6 +2201,9 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
     inReader.Att("ref", theRef);
     if (theRef && *theRef && theRef[0] == '#')
         ++theRef;
+
+    bool isInsideMaterialContainer = m_materialContainerIds.contains(theRef);
+
     bool isSet = AreEqual(inReader.GetNarrowElementName(), "Set");
     const char8_t *sourcepath;
     if (inReader.UnregisteredAtt("sourcepath", sourcepath)) {
@@ -2165,19 +2214,51 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
                 ibl = true;
         }
         if (!IsTrivial(sourcepath) && sourcepath[0] != '#') {
-            AddSourcePath(sourcepath, ibl);
-            theBuilder.AddSourcePath(sourcepath);
-            if (!masterSlide)
+            m_sourcePathsById[QLatin1Char('#') + QString::fromUtf8(theRef)].append(
+                        QString::fromUtf8(sourcepath));
+            // Don't add material container assets to the Master Slide source path list
+            if (!isInsideMaterialContainer) {
+                AddSourcePath(sourcepath, ibl);
+                theBuilder.AddSourcePath(sourcepath);
+            }
+            // Add the material container assets to the list of source paths used by slides
+            // other than the Master Slide, so that the assets are not loaded at startup
+            if (!masterSlide || isInsideMaterialContainer)
                 m_slideSourcePaths.push_back(QString::fromLatin1(sourcepath));
             if (AreEqual(inElementData.m_Type.c_str(), "Layer"))
                 theBuilder.AddSubPresentation(sourcepath);
-
         }
     }
+
     const char8_t *subpres;
     if (inReader.UnregisteredAtt("subpresentation", subpres)) {
         if (!IsTrivial(subpres))
             theBuilder.AddSubPresentation(subpres);
+    }
+
+    const char8_t *referencedmaterial;
+    if (inReader.UnregisteredAtt("referencedmaterial", referencedmaterial)) {
+        if (!IsTrivial(referencedmaterial))
+            m_currentSlideReferencedMaterials.append(referencedmaterial);
+    }
+
+    if (strcmp(inElementData.m_Type, "Material") == 0) {
+        eastl::vector<eastl::string> propertyList;
+        m_MetaData.GetInstanceProperties(inElementData.m_Type, inElementData.m_Class,
+                                         propertyList, false);
+        for (int i = 0; i < propertyList.size(); ++i) {
+            ERuntimeDataModelDataType type = m_MetaData.GetPropertyType(inElementData.m_Type,
+                                       m_MetaData.Register(propertyList[i].c_str()),
+                                       inElementData.m_Class);
+            if (type == ERuntimeDataModelDataTypeLong4) {
+                const char8_t *attValue = "";
+                bool hasAtt = inReader.UnregisteredAtt(propertyList[i].c_str(), attValue);
+                if (hasAtt) {
+                    m_imagesByMaterial[QLatin1Char('#') + inElementData.m_Id.c_str()]
+                            .append(QString::fromUtf8(attValue));
+                }
+            }
+        }
     }
 
     const bool dyn = IsDynamicObject(inElementData.m_Type);
@@ -2226,9 +2307,13 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
         // Handle dynamic object texture source paths
         if (hasAtt && !IsTrivial(theAttValue) && IsDynamicObject(inElementData.m_Type)
                 && theIter->second.m_AdditionalType == ERuntimeAdditionalMetaDataTypeTexture) {
-            AddSourcePath(theAttValue, false);
-            theBuilder.AddSourcePath(theAttValue);
-            if (!masterSlide)
+            m_sourcePathsById[QLatin1Char('#') + QString::fromUtf8(theRef)].append(
+                        QString::fromUtf8(theAttValue));
+            if (!isInsideMaterialContainer) {
+                AddSourcePath(theAttValue, false);
+                theBuilder.AddSourcePath(theAttValue);
+            }
+            if (!masterSlide || isInsideMaterialContainer)
                 m_slideSourcePaths.push_back(QString::fromLatin1(theAttValue));
         }
         if (isSet == false && theIter->second.m_SlideForceFlag == false) {
@@ -2251,10 +2336,14 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
             if (prop.m_DataType == qt3ds::render::NVRenderShaderDataTypes::NVRenderTexture2DPtr) {
                 const char8_t *theAttValue = "";
                 bool hasAtt = inReader.UnregisteredAtt(prop.m_Name, theAttValue);
-                if (hasAtt && !IsTrivial(theAttValue) ) {
-                    AddSourcePath(theAttValue, false);
-                    theBuilder.AddSourcePath(theAttValue);
-                    if (!masterSlide)
+                if (hasAtt && !IsTrivial(theAttValue)) {
+                    m_sourcePathsById[QLatin1Char('#') + QString::fromUtf8(theRef)].append(
+                                QString::fromUtf8(theAttValue));
+                    if (!isInsideMaterialContainer) {
+                        AddSourcePath(theAttValue, false);
+                        theBuilder.AddSourcePath(theAttValue);
+                    }
+                    if (!masterSlide || isInsideMaterialContainer)
                         m_slideSourcePaths.push_back(QString::fromLatin1(theAttValue));
                 }
             }

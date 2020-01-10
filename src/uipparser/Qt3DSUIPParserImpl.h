@@ -430,6 +430,11 @@ protected:
     TStringVector m_SourcePathList;
     TStringSet m_iblSources;
     QVector<QString> m_slideSourcePaths;
+    QVector<QString> m_materialContainerIds;
+    QHash<QString, QVector<QString>> m_imagesByMaterial;
+    QHash<QString, QVector<QString>> m_sourcePathsById;
+    QVector<QString> m_currentSlideReferencedMaterials;
+    QVector<QPair<qt3ds::runtime::SSlideKey, QVector<QString>>> m_referencedMaterialsBySlide;
 
     struct SElementRefCache
     {
@@ -554,7 +559,7 @@ protected: // Operation
                    bool initInRenderThread);
     BOOL LoadSceneGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader,
                         qt3ds::runtime::element::SElement *inNewStyleParent,
-                        bool initInRenderThread);
+                        bool initInRenderThread, bool isInsideLayer = false);
     BOOL LoadLogic(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader);
     BOOL LoadStateGraph(IPresentation &inPresentation, qt3dsdm::IDOMReader &inReader);
 

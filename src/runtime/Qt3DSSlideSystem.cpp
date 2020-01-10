@@ -223,6 +223,13 @@ struct SSlideSystem : public ISlideSystem
             m_CurrentSlide->m_sourcePaths.push_back(QString::fromUtf8(path));
     }
 
+    void AddSourcePath(SSlideKey key, const char8_t *path) override
+    {
+        auto slide = FindSlide(key);
+        if (slide)
+            slide->m_sourcePaths.push_back(QString::fromUtf8(path));
+    }
+
     void AddSubPresentation(const char8_t *subpresentationId) override
     {
         if (m_CurrentSlide)
