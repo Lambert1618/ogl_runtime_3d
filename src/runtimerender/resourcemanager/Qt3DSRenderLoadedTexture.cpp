@@ -739,6 +739,7 @@ bool SLoadedTexture::ScanForTransparency(bool &alsoOpaquePixels)
     // Scan the image.
     case NVRenderTextureFormats::SRGB8:
     case NVRenderTextureFormats::RGB8:
+    case NVRenderTextureFormats::RGBE8:
         return false;
         break;
     case NVRenderTextureFormats::RGB565:
