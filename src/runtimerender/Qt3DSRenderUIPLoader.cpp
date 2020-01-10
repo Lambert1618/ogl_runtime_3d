@@ -826,6 +826,7 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
 #define Material_ReferencedMaterial "referencedmaterial"
 #define Material_VertexColors "vertexcolors"
 #define Material_TransparencyMode "transparencymode"
+#define Material_CullMode "cullmode"
 #define Image_ImagePath "sourcepath"
 #define Image_OffscreenRendererId "subpresentation"
 #define Image_Scale_X "scaleu"

@@ -63,6 +63,7 @@ namespace render {
                 ApplyImageValue,
                 AllocateDataBuffer,
                 ApplyDataBufferValue,
+                ApplyCulling
             };
         };
 
@@ -83,7 +84,8 @@ namespace render {
     QT3DS_RENDER_EFFECTS_HANDLE_COMMAND_TYPES(AllocateImage)                                         \
     QT3DS_RENDER_EFFECTS_HANDLE_COMMAND_TYPES(ApplyImageValue)                                       \
     QT3DS_RENDER_EFFECTS_HANDLE_COMMAND_TYPES(AllocateDataBuffer)                                    \
-    QT3DS_RENDER_EFFECTS_HANDLE_COMMAND_TYPES(ApplyDataBufferValue)
+    QT3DS_RENDER_EFFECTS_HANDLE_COMMAND_TYPES(ApplyDataBufferValue)                                  \
+    QT3DS_RENDER_EFFECTS_HANDLE_COMMAND_TYPES(ApplyCulling)
 
         // All commands need at least two constructors.  One for when they are created that should
         // setup all their member variables and one for when we are copying commands from an outside
@@ -469,6 +471,21 @@ namespace render {
             SRender(const SRender &inOther, IStringTable &)
                 : SCommand(CommandTypes::Render)
                 , m_DrawIndirect(inOther.m_DrawIndirect)
+            {
+            }
+        };
+
+        struct SApplyCulling : public SCommand
+        {
+            NVRenderFaces::Enum m_CullMode;
+            SApplyCulling(NVRenderFaces::Enum cullMode)
+                : SCommand(CommandTypes::ApplyCulling)
+                , m_CullMode(cullMode)
+            {
+            }
+            SApplyCulling(const SApplyCulling &inOther, IStringTable &)
+                : SCommand(CommandTypes::ApplyCulling)
+                , m_CullMode(inOther.m_CullMode)
             {
             }
         };

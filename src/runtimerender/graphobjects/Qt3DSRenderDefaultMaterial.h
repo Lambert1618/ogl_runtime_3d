@@ -78,6 +78,16 @@ namespace render {
         };
     };
 
+    struct DefaultMaterialCullMode
+    {
+        enum Enum {
+            Back = 0,
+            Front,
+            FrontAndBack,
+            None
+        };
+    };
+
     struct SImage;
 
     struct QT3DS_AUTOTEST_EXPORT SDefaultMaterial : SGraphObject
@@ -116,6 +126,7 @@ namespace render {
         QT3DSF32 m_DiffuseLightWrap; // 0 - 1
         bool m_VertexColors;
         DefaultMaterialTransparencyMode::Enum m_TransparencyMode;
+        DefaultMaterialCullMode::Enum m_CullMode;
         // Materials are stored as a linked list on models.
         SGraphObject *m_NextSibling;
         SModel *m_Parent;

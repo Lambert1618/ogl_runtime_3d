@@ -191,6 +191,7 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY(fresnelPower, m_FresnelPower, float, 0)                               \
     HANDLE_COMPOSER_PROPERTY(vertexcolors, m_VertexColors, bool, false)                            \
     HANDLE_COMPOSER_PROPERTY(transparencymode, m_TransparencyMode, TDataStrPtr, L"Default")        \
+    HANDLE_COMPOSER_PROPERTY(cullmode, m_CullMode, TDataStrPtr, L"Back")                           \
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(controlledproperty, m_ControlledProperty, TDataStrPtr, L"")
 
 #define ITERATE_COMPOSER_REFERENCED_MATERIAL_PROPERTIES                                            \

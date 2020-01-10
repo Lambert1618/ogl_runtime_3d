@@ -1397,6 +1397,31 @@ struct SMaterialSystem : public ICustomMaterialSystem
         theContext.SetBlendEquation(blendEqu);
     }
 
+    void ApplyRenderState(const SApplyRenderState &inCommand)
+    {
+        NVRenderContext &theContext(m_Context->GetRenderContext());
+
+        switch (inCommand.m_RenderState) {
+        case NVRenderState::CullFace:
+            theContext.SetCullingEnabled(inCommand.m_Enabled);
+            break;
+        case NVRenderState::StencilTest:
+            theContext.SetStencilTestEnabled(inCommand.m_Enabled);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void ApplyCulling(const SApplyCulling &inCommand)
+    {
+        NVRenderContext &theContext(m_Context->GetRenderContext());
+
+        NVScopedRefCounted<qt3ds::render::NVRenderRasterizerState> state =
+            theContext.CreateRasterizerState(0.0, 0.0, inCommand.m_CullMode);
+        theContext.SetRasterizerState(state);
+    }
+
     // we currently only bind a source texture
     const NVRenderTexture2D *ApplyBufferValue(const SCustomMaterial &inMaterial,
                                               NVRenderShaderProgram &inShader,
@@ -1735,7 +1760,6 @@ struct SMaterialSystem : public ICustomMaterialSystem
 
         theContext.SetInputAssembler(&inAssembler);
 
-        theContext.SetCullingEnabled(true);
         QT3DSU32 count = inCount;
         QT3DSU32 offset = inOffset;
 
@@ -1756,8 +1780,10 @@ struct SMaterialSystem : public ICustomMaterialSystem
         // for refrative materials we come from the transparent render path
         // but we do not want to do blending
         bool wasBlendingEnabled = theContext.IsBlendingEnabled();
+        bool wasStencilEnabled = theContext.IsStencilTestEnabled();
         if (inMaterial.m_hasRefraction)
             theContext.SetBlendingEnabled(false);
+        theContext.SetCullingEnabled(true);
 
         NVRenderContextScopedProperty<NVRenderFrameBuffer *> __framebuffer(
             theContext, &NVRenderContext::GetRenderTarget, &NVRenderContext::SetRenderTarget);
@@ -1810,6 +1836,12 @@ struct SMaterialSystem : public ICustomMaterialSystem
                 // reset
                 theRenderTargetNeedsClear = false;
                 break;
+            case CommandTypes::ApplyCulling:
+                ApplyCulling(static_cast<const SApplyCulling &>(theCommand));
+                break;
+            case CommandTypes::ApplyRenderState:
+                ApplyRenderState(static_cast<const SApplyRenderState &>(theCommand));
+                break;
             case CommandTypes::ApplyBlending:
                 ApplyBlending(static_cast<const SApplyBlending &>(theCommand));
                 break;
@@ -1831,6 +1863,11 @@ struct SMaterialSystem : public ICustomMaterialSystem
 
         if (inMaterial.m_hasRefraction)
             theContext.SetBlendingEnabled(wasBlendingEnabled);
+        theContext.SetStencilTestEnabled(wasStencilEnabled);
+        NVScopedRefCounted<qt3ds::render::NVRenderRasterizerState> state =
+            theContext.CreateRasterizerState(0.0, 0.0, qt3ds::render::NVRenderFaces::Back);
+        theContext.SetRasterizerState(state);
+        theContext.SetCullingEnabled(true);
 
         // Release any per-frame buffers
         for (QT3DSU32 idx = 0; idx < m_AllocatedBuffers.size(); ++idx) {

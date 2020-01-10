@@ -66,13 +66,11 @@ namespace render {
 #define WCHAR_T_4x L"4x"
 #define WCHAR_T_8x L"8x"
 #define WCHAR_T_SSAA L"SSAA"
-#define WCHAR_T_NoRotation L"NoRotation"
 #define WCHAR_T_Clockwise90 L"90"
 #define WCHAR_T_Clockwise180 L"180"
 #define WCHAR_T_Clockwise270 L"270"
 #define WCHAR_T_Fit L"Fit"
 #define WCHAR_T_Same_Size L"Same Size"
-#define WCHAR_T_CENTER L"Center"
 #define WCHAR_T_North L"N"
 #define WCHAR_T_NorthEast L"NE"
 #define WCHAR_T_East L"E"
@@ -108,14 +106,13 @@ namespace render {
 #define WCHAR_T_Filled L"Filled"
 #define WCHAR_T_Stroked L"Stroked"
 #define WCHAR_T_FilledAndStroked L"Filled and Stroked"
-#define WCHAR_T_Simple L"Simple"
-#define WCHAR_T_Smoke L"Smoke"
-#define WCHAR_T_Cloud L"Cloud"
-#define WCHAR_T_Fluid L"Fluid"
-#define WCHAR_T_User L"User"
 #define WCHAR_T_Clip L"Clip"
 #define WCHAR_T_WrapWord L"WrapWord"
 #define WCHAR_T_WrapAnywhere L"WrapAnywhere"
+#define WCHAR_T_Back L"Back"
+#define WCHAR_T_Front L"Front"
+#define WCHAR_T_All L"All"
+#define WCHAR_T_None L"None"
 
 #define CHAR_T_Directional "Directional"
 #define CHAR_T_Point "Point"
@@ -151,13 +148,11 @@ namespace render {
 #define CHAR_T_4x "4x"
 #define CHAR_T_8x "8x"
 #define CHAR_T_SSAA "SSAA"
-#define CHAR_T_NoRotation "NoRotation"
 #define CHAR_T_Clockwise90 "90"
 #define CHAR_T_Clockwise180 "180"
 #define CHAR_T_Clockwise270 "270"
 #define CHAR_T_Fit "Fit"
 #define CHAR_T_Same_Size "Same Size"
-#define CHAR_T_CENTER "Center"
 #define CHAR_T_North "N"
 #define CHAR_T_NorthEast "NE"
 #define CHAR_T_East "E"
@@ -193,14 +188,13 @@ namespace render {
 #define CHAR_T_Filled "Filled"
 #define CHAR_T_Stroked "Stroked"
 #define CHAR_T_FilledAndStroked "Filled and Stroked"
-#define CHAR_T_Simple "Simple"
-#define CHAR_T_Smoke "Smoke"
-#define CHAR_T_Cloud "Cloud"
-#define CHAR_T_Fluid "Fluid"
-#define CHAR_T_User "User"
 #define CHAR_T_Clip "Clip"
 #define CHAR_T_WrapWord "WrapWord"
 #define CHAR_T_WrapAnywhere "WrapAnywhere"
+#define CHAR_T_Back "Back"
+#define CHAR_T_Front "Front"
+#define CHAR_T_All "All"
+#define CHAR_T_None "None"
 
 #define DEFINE_NAME_MAP_ENTRY(enumval, name)                                                       \
     {                                                                                              \
@@ -234,6 +228,14 @@ namespace render {
         DEFINE_NAME_MAP_ENTRY(ImageMappingModes::Normal, UV_Mapping),
         DEFINE_NAME_MAP_ENTRY(ImageMappingModes::Environment, Environmental_Mapping),
         DEFINE_NAME_MAP_ENTRY(ImageMappingModes::LightProbe, Light_Probe),
+        { (QT3DSU32)-1, NULL },
+    };
+
+    SEnumNameMap g_CullModeMap[] = {
+        DEFINE_NAME_MAP_ENTRY(DefaultMaterialCullMode::Back, Back),
+        DEFINE_NAME_MAP_ENTRY(DefaultMaterialCullMode::Front, Front),
+        DEFINE_NAME_MAP_ENTRY(DefaultMaterialCullMode::FrontAndBack, All),
+        DEFINE_NAME_MAP_ENTRY(DefaultMaterialCullMode::None, None),
         { (QT3DSU32)-1, NULL },
     };
 
@@ -404,6 +406,8 @@ namespace render {
     SEnumNameMap *SEnumParseMap<DefaultMaterialBlendMode::Enum>::GetMap() { return g_BlendModeMap; }
 
     SEnumNameMap *SEnumParseMap<ImageMappingModes::Enum>::GetMap() { return g_ImageMappingModeMap; }
+
+    SEnumNameMap *SEnumParseMap<DefaultMaterialCullMode::Enum>::GetMap() { return g_CullModeMap; }
 
     SEnumNameMap *SEnumParseMap<NVRenderTextureCoordOp::Enum>::GetMap()
     {

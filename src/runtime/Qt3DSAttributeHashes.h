@@ -278,6 +278,7 @@ enum EAttribute {
     ATTRIBUTE_CONTROLLEDPROPERTY =   0x022C0A1D, // controlledproperty
     ATTRIBUTE_OBSERVEDPROPERTY =     0x02D1CE03, // observedproperty
     ATTRIBUTE_ORDERED =              0x038AEAD3, // ordered
+    ATTRIBUTE_CULLMODE =             0x009C792B, // cullmode
     ATTRIBUTE_QT_IO =                0x010EF2CF, // qt.io
 }; // enum EAttribute
 

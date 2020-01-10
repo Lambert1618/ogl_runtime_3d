@@ -290,9 +290,31 @@ namespace render {
             }
         }
 
-        context.SetCullingEnabled(true);
+        context.SetCullingEnabled(m_Material.m_CullMode != DefaultMaterialCullMode::None);
         context.SetInputAssembler(m_Subset.m_InputAssembler);
-        context.Draw(m_Subset.m_PrimitiveType, m_Subset.m_Count, m_Subset.m_Offset);
+        if (m_Material.m_CullMode != DefaultMaterialCullMode::None) {
+            NVScopedRefCounted<qt3ds::render::NVRenderRasterizerState> rsdefaultstate =
+                context.CreateRasterizerState(0.0, 0.0, qt3ds::render::NVRenderFaces::Back);
+            qt3ds::render::NVRenderFaces::Enum face = qt3ds::render::NVRenderFaces::Back;
+            switch (m_Material.m_CullMode) {
+            case DefaultMaterialCullMode::Front:
+                face = qt3ds::render::NVRenderFaces::Front;
+                break;
+            case DefaultMaterialCullMode::FrontAndBack:
+                face = qt3ds::render::NVRenderFaces::FrontAndBack;
+                break;
+            default:
+                break;
+            }
+
+            NVScopedRefCounted<qt3ds::render::NVRenderRasterizerState> rasterState =
+                context.CreateRasterizerState(0.0, 0.0, face);
+            context.SetRasterizerState(rasterState);
+            context.Draw(m_Subset.m_PrimitiveType, m_Subset.m_Count, m_Subset.m_Offset);
+            context.SetRasterizerState(rsdefaultstate);
+        } else {
+            context.Draw(m_Subset.m_PrimitiveType, m_Subset.m_Count, m_Subset.m_Offset);
+        }
     }
 
     void SSubsetRenderable::RenderShadow(const QT3DSVec2 &inCameraVec,

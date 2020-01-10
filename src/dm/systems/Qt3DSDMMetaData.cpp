@@ -2998,10 +2998,27 @@ public:
         }
     }
 
+    static inline qt3ds::render::NVRenderFaces::Enum
+    ConvertToCullFace(const char8_t *inMode)
+    {
+        if (AreEqual(inMode, "Back"))
+            return qt3ds::render::NVRenderFaces::Back;
+        if (AreEqual(inMode, "Front"))
+            return qt3ds::render::NVRenderFaces::Front;
+        if (AreEqual(inMode, "All")) {
+            return qt3ds::render::NVRenderFaces::FrontAndBack;
+        } else {
+            QT3DS_ASSERT(false);
+            return qt3ds::render::NVRenderFaces::Back;
+        }
+    }
+
     static inline qt3ds::render::NVRenderState::Enum ConvertRenderState(const char8_t *inState)
     {
         if (AreEqual(inState, "Stencil"))
             return qt3ds::render::NVRenderState::StencilTest;
+        if (AreEqual(inState, "Culling"))
+            return qt3ds::render::NVRenderState::CullFace;
         else {
             QT3DS_ASSERT(false);
             // inFoundation.error( QT3DS_INVALID_PARAMETER, "Unsupported filter type %s, defaulting
@@ -4030,8 +4047,31 @@ public:
                                         theMaterial.m_HasTransparency = true;
                                     } else if (AreEqual("RenderState",
                                                         inStream.GetNarrowElementName())) {
-                                        // UdoL Todo: add this one
-                                    }
+                                        const char8_t *name = "";
+                                        inStream.Att("name", name);
+                                        const char8_t *value = "";
+                                        inStream.Att("value", value);
+                                        // find the param and the type.
+                                        bool theStateEnable = false;
+                                        qt3ds::render::NVRenderState::Enum theState
+                                                = ConvertRenderState(name);
+                                        if (AreEqual("true", value))
+                                            theStateEnable = true;
+
+                                        theMaterial.m_CustomerMaterialCommands.push_back(
+                                                    new SApplyRenderState(theState, theStateEnable));
+                                    } else if (AreEqual("Culling",
+                                                         inStream.GetNarrowElementName())) {
+                                        const char8_t *cullMode = "";
+                                        inStream.Att("mode", cullMode);
+
+                                        qt3ds::render::NVRenderFaces::Enum face =
+                                                ConvertToCullFace(cullMode);
+
+                                        // this will setup blending
+                                        theMaterial.m_CustomerMaterialCommands.push_back(
+                                                    new SApplyCulling(face));
+                                      }
                                 }
                             }
                             // add the render command as last thing in the pass, it is a render

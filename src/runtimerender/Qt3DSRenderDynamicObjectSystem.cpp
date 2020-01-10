@@ -109,6 +109,8 @@ namespace render {
                 return sizeof(SAllocateDataBuffer);
             case CommandTypes::ApplyDataBufferValue:
                 return sizeof(SApplyDataBufferValue);
+            case CommandTypes::ApplyCulling:
+                return sizeof(SApplyCulling);
             default:
                 break;
             }
@@ -158,6 +160,9 @@ namespace render {
                 break;
             case CommandTypes::ApplyRenderState:
                 CopyConstructCommandT<SApplyRenderState>(inDataBuffer, inCommand, inStrTable);
+                break;
+            case CommandTypes::ApplyCulling:
+                CopyConstructCommandT<SApplyCulling>(inDataBuffer, inCommand, inStrTable);
                 break;
             case CommandTypes::ApplyBlitFramebuffer:
                 CopyConstructCommandT<SApplyBlitFramebuffer>(inDataBuffer, inCommand, inStrTable);

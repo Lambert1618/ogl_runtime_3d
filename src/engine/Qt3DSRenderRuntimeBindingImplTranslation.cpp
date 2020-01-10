@@ -637,6 +637,7 @@ struct SRuntimePropertyParser
 #define Material_ReferencedMaterial ATTRIBUTE_REFERENCEDMATERIAL
 #define Material_VertexColors ATTRIBUTE_VERTEXCOLORS
 #define Material_TransparencyMode ATTRIBUTE_TRANSPARENCYMODE
+#define Material_CullMode ATTRIBUTE_CULLMODE
 #define Image_ImagePath ATTRIBUTE_SOURCEPATH
 #define Image_OffscreenRendererId ATTRIBUTE_SUBPRESENTATION
 #define Image_Scale_X ATTRIBUTE_SCALEU

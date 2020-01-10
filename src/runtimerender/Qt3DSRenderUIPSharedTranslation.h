@@ -197,6 +197,11 @@ namespace render {
     {
         static SEnumNameMap *GetMap();
     };
+    template <>
+    struct SEnumParseMap<DefaultMaterialCullMode::Enum>
+    {
+        static SEnumNameMap *GetMap();
+    };
 
 #define QT3DS_RENDER_WCHAR_T_XYZs L"XYZ"
 #define QT3DS_RENDER_WCHAR_T_YZXs L"YZX"
@@ -435,7 +440,8 @@ namespace render {
     HANDLE_QT3DS_RENDER_PROPERTY(Material, DisplaceAmount, Dirty)                                    \
     HANDLE_QT3DS_RENDER_PROPERTY(Material, TranslucencyMap, Dirty)                                   \
     HANDLE_QT3DS_RENDER_PROPERTY(Material, TranslucentFalloff, Dirty)                                \
-    HANDLE_QT3DS_RENDER_PROPERTY(Material, DiffuseLightWrap, Dirty)
+    HANDLE_QT3DS_RENDER_PROPERTY(Material, DiffuseLightWrap, Dirty)                                  \
+    HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Material, CullMode, Dirty)
 
 #define ITERATE_QT3DS_RENDER_REFERENCED_MATERIAL_PROPERTIES                                          \
     HANDLE_QT3DS_RENDER_PROPERTY(Material, ReferencedMaterial, Dirty)

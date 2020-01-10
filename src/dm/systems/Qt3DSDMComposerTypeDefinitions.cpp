@@ -319,6 +319,7 @@ struct DataConstructor<SObjectRefType>
 #define QT3DS_WCHAR_T_controlledproperty L"controlledproperty"
 #define QT3DS_WCHAR_T_variants L"variants"
 #define QT3DS_WCHAR_T_ordered L"ordered"
+#define QT3DS_WCHAR_T_cullmode L"cullmode"
 
 const wchar_t *ComposerObjectTypes::Convert(ComposerObjectTypes::Enum inType)
 {
