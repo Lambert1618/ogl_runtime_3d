@@ -308,7 +308,10 @@
         </Property>
 
         <!-- Ambient Occlusion -->
-        <Property name="aostrength" formalName="Ambient Occlusion" description="Amount of ambient occlusion shading\nto apply" min="0" max="100" default="0" category="Ambient Occlusion" >
+        <Property name="aoenabled" formalName="Ambient Occlusion" description="Use ambient occlusion" type="Boolean" default="False" category="Ambient Occlusion">
+            <ShowIfEqual property="sourcepath" value=""/>
+        </Property>
+        <Property name="aostrength" formalName="AO Strength" description="Amount of ambient occlusion shading\nto apply" min="0" max="100" default="0" category="Ambient Occlusion" >
             <ShowIfEqual property="sourcepath" value=""/>
         </Property>
         <Property name="aodistance" formalName="AO Distance" description="Size of the ambient occlusion shading" default="5" category="Ambient Occlusion">

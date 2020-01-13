@@ -1250,7 +1250,8 @@ namespace render {
         SLayerRenderPreparationResult thePrepResult;
         bool hasOffscreenRenderer = GetOffscreenRenderer();
 
-        bool SSAOEnabled = (m_Layer.m_AoStrength > 0.0f && m_Layer.m_AoDistance > 0.0f);
+        bool SSAOEnabled = (m_Layer.m_AoStrength > 0.0f && m_Layer.m_AoDistance > 0.0f
+                            && m_Layer.m_AoEnabled);
         bool SSDOEnabled = (m_Layer.m_ShadowStrength > 0.0f && m_Layer.m_ShadowDist > 0.0f);
         SetShaderFeature("QT3DS_ENABLE_SSAO", SSAOEnabled);
         SetShaderFeature("QT3DS_ENABLE_SSDO", SSDOEnabled);

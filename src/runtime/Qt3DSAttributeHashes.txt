@@ -155,6 +155,7 @@ height
 heightunits
 bottom
 bottomunits
+aoenabled
 aostrength
 aodistance
 aosoftness

@@ -198,6 +198,7 @@ const char *GetAttributeString(const EAttribute inAttribute)
         case ATTRIBUTE_HEIGHTUNITS: return "heightunits";
         case ATTRIBUTE_BOTTOM: return "bottom";
         case ATTRIBUTE_BOTTOMUNITS: return "bottomunits";
+        case ATTRIBUTE_AOENABLED: return "aoenabled";
         case ATTRIBUTE_AOSTRENGTH: return "aostrength";
         case ATTRIBUTE_AODISTANCE: return "aodistance";
         case ATTRIBUTE_AOSOFTNESS: return "aosoftness";

@@ -146,6 +146,7 @@ namespace render {
         LayerUnitTypes::Enum m_BottomUnits;
 
         // Ambient occlusion
+        bool m_AoEnabled;
         QT3DSF32 m_AoStrength;
         QT3DSF32 m_AoDistance;
         QT3DSF32 m_AoSoftness;

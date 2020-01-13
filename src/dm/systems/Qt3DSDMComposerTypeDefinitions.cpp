@@ -258,6 +258,7 @@ struct DataConstructor<SObjectRefType>
 #define QT3DS_WCHAR_T_heightunits L"heightunits"
 #define QT3DS_WCHAR_T_bottom L"bottom"
 #define QT3DS_WCHAR_T_bottomunits L"bottomunits"
+#define QT3DS_WCHAR_T_aoenabled L"aoenabled"
 #define QT3DS_WCHAR_T_aostrength L"aostrength"
 #define QT3DS_WCHAR_T_aodistance L"aodistance"
 #define QT3DS_WCHAR_T_aosoftness L"aosoftness"

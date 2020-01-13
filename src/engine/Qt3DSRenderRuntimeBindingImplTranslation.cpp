@@ -519,6 +519,7 @@ struct SRuntimePropertyParser
 #define Layer_HeightUnits ATTRIBUTE_HEIGHTUNITS
 #define Layer_Bottom ATTRIBUTE_BOTTOM
 #define Layer_BottomUnits ATTRIBUTE_BOTTOMUNITS
+#define Layer_AoEnabled ATTRIBUTE_AOENABLED
 #define Layer_AoStrength ATTRIBUTE_AOSTRENGTH
 #define Layer_AoDistance ATTRIBUTE_AODISTANCE
 #define Layer_AoSoftness ATTRIBUTE_AOSOFTNESS

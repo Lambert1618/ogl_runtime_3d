@@ -741,6 +741,7 @@ struct SRenderUIPLoader : public IDOMReferenceResolver
 #define Layer_HeightUnits "heightunits"
 #define Layer_Bottom "bottom"
 #define Layer_BottomUnits "bottomunits"
+#define Layer_AoEnabled "aoenabled"
 #define Layer_AoStrength "aostrength"
 #define Layer_AoDistance "aodistance"
 #define Layer_AoSoftness "aosoftness"

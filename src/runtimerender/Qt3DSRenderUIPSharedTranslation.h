@@ -334,6 +334,7 @@ namespace render {
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Layer, HeightUnits, Dirty)                                     \
     HANDLE_QT3DS_RENDER_PROPERTY(Layer, Bottom, Dirty)                                               \
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Layer, BottomUnits, Dirty)                                     \
+    HANDLE_QT3DS_RENDER_PROPERTY(Layer, AoEnabled, Dirty)                                            \
     HANDLE_QT3DS_RENDER_PROPERTY(Layer, AoStrength, Dirty)                                           \
     HANDLE_QT3DS_RENDER_PROPERTY(Layer, AoDistance, Dirty)                                           \
     HANDLE_QT3DS_RENDER_PROPERTY(Layer, AoSoftness, Dirty)                                           \

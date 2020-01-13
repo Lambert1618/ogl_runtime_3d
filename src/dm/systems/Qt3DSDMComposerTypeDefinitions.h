@@ -220,6 +220,7 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY(heightunits, m_HeightUnits, TDataStrPtr, L"percent")                  \
     HANDLE_COMPOSER_PROPERTY(bottom, m_Bottom, float, 0)                                           \
     HANDLE_COMPOSER_PROPERTY(bottomunits, m_BottomUnits, TDataStrPtr, L"percent")                  \
+    HANDLE_COMPOSER_PROPERTY(aoenabled, m_AoEnabled, bool, false)                                  \
     HANDLE_COMPOSER_PROPERTY(aostrength, m_AoStrength, float, 0)                                   \
     HANDLE_COMPOSER_PROPERTY(aodistance, m_AoDistance, float, 0)                                   \
     HANDLE_COMPOSER_PROPERTY(aosoftness, m_AoSoftness, float, 0)                                   \

@@ -189,6 +189,7 @@ enum EAttribute {
     ATTRIBUTE_HEIGHTUNITS =          0x00C91D18, // heightunits
     ATTRIBUTE_BOTTOM =               0x00F4EE75, // bottom
     ATTRIBUTE_BOTTOMUNITS =          0x0174091C, // bottomunits
+    ATTRIBUTE_AOENABLED =            0x00C4166D, // aoenabled
     ATTRIBUTE_AOSTRENGTH =           0x010F7ED1, // aostrength
     ATTRIBUTE_AODISTANCE =           0x01DC349D, // aodistance
     ATTRIBUTE_AOSOFTNESS =           0x02CCDC71, // aosoftness
