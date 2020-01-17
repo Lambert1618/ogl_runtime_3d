@@ -197,27 +197,32 @@ void Q3DSRenderer::render()
     // Don't render if the plugin is hidden; however, if hidden, but sure
     // to process pending commands so we can be shown again.
     if (m_initialized) {
+        bool updateAgain = false;
         if (m_visibleFlag)
-            draw();
+            updateAgain = draw();
         else
             processCommands();
-        update(); // mark as dirty to ensure update again
+
+        if (updateAgain)
+            update(); // mark as dirty to ensure update again
     }
 }
 
 /** Cause Qt3DS runtime to render content.
  *  Initializes GL and the runtime when called the first time.
  */
-void Q3DSRenderer::draw()
+bool Q3DSRenderer::draw()
 {
+    bool ret = true;
     if (m_runtime && m_runtime->IsInitialised() && m_window) {
         if (m_initialized)
             m_runtime->RestoreState();
-        m_runtime->Render();
+        ret = m_runtime->Render();
         m_runtime->SaveState();
 
         m_window->resetOpenGLState();
     }
+    return ret;
 }
 
 bool Q3DSRenderer::initializeRuntime(QOpenGLFramebufferObject *inFbo)

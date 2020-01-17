@@ -174,7 +174,7 @@ public:
     virtual QList<Q3DStudio::CPresentation *> GetPresentationList() = 0;
 
     // Update all the presentations and render them.  Called exactly once per frame.
-    virtual void UpdateAndRender() = 0;
+    virtual bool UpdateAndRender() = 0;
 
     virtual bool IsApplicationDirty() = 0;
 

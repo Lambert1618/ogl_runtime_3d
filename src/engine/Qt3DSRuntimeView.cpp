@@ -179,7 +179,7 @@ public:
     void Cleanup() override;
 
     bool CanRender() override;
-    void Render() override;
+    bool Render() override;
     bool WasLastFrameDirty() override;
 
     bool HandleMessage(const QEvent *inEvent) override;
@@ -394,8 +394,9 @@ bool CRuntimeView::CanRender()
  *  returns KD_TRUE to call egl_render and swap properly, KD_FALSE if there has been no scene update
  *or redraw.
  */
-void CRuntimeView::Render()
+bool CRuntimeView::Render()
 {
+    bool ret = true;
     if (m_Application.mPtr == nullptr) {
         // InitializeGraphics has not been called
         QT3DS_ASSERT(false);
@@ -403,7 +404,7 @@ void CRuntimeView::Render()
 
     PerfLogGeneralEvent1(DATALOGGER_FRAME);
 
-    m_Application->UpdateAndRender();
+    ret = m_Application->UpdateAndRender();
 
     if (m_startupTime < 0 && m_startupTimer && m_startupTimer->isValid()) {
 
@@ -457,6 +458,7 @@ void CRuntimeView::Render()
 
         manager.PopState();
     }
+    return ret;
 }
 
 bool CRuntimeView::WasLastFrameDirty()

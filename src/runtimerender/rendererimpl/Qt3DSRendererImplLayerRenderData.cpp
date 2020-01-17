@@ -120,9 +120,9 @@ namespace render {
         if (m_AdvancedBlendDrawTexture)
             m_AdvancedBlendDrawTexture = NULL;
     }
-    void SLayerRenderData::PrepareForRender(const QSize &inViewportDimensions)
+    bool SLayerRenderData::PrepareForRender(const QSize &inViewportDimensions)
     {
-        SLayerRenderPreparationData::PrepareForRender(inViewportDimensions);
+        bool needsRender = SLayerRenderPreparationData::PrepareForRender(inViewportDimensions);
         SLayerRenderPreparationResult &thePrepResult(*m_LayerPrepResult);
         IResourceManager &theResourceManager(m_Renderer.GetQt3DSContext().GetResourceManager());
 
@@ -182,6 +182,9 @@ namespace render {
             m_Renderer.GetQt3DSContext().GetEffectSystem().GetResourceManager()
                     .DestroyFreeSizedResources();
         }
+        bool isProgressiveAABlendPass =
+            m_ProgressiveAAPassIndex && m_ProgressiveAAPassIndex < thePrepResult.m_MaxAAPassIndex;
+        return needsRender || isProgressiveAABlendPass;
     }
 
     NVRenderTextureFormats::Enum SLayerRenderData::GetDepthBufferFormat()
@@ -2328,13 +2331,13 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
                 QSize(theCurrentViewport.m_Width, theCurrentViewport.m_Height));
     }
 
-    void SLayerRenderData::PrepareForRender()
+    bool SLayerRenderData::PrepareForRender()
     {
         // When we render to the scene itself (as opposed to an offscreen buffer somewhere)
         // then we use the MVP of the layer somewhat.
         NVRenderRect theViewport = m_Renderer.GetQt3DSContext().GetRenderList().GetViewport();
-        PrepareForRender(
-            QSize((QT3DSU32)theViewport.m_Width, (QT3DSU32)theViewport.m_Height));
+        return PrepareForRender(
+                    QSize((QT3DSU32)theViewport.m_Width, (QT3DSU32)theViewport.m_Height));
     }
 
     void SLayerRenderData::ResetForFrame()

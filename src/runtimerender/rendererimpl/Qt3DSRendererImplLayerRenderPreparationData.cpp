@@ -1219,12 +1219,12 @@ namespace render {
         }
     };
 
-    void SLayerRenderPreparationData::PrepareForRender(const QSize &inViewportDimensions)
+    bool SLayerRenderPreparationData::PrepareForRender(const QSize &inViewportDimensions)
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
                                 "LayerRenderData: PrepareForRender")
         if (m_LayerPrepResult.hasValue())
-            return;
+            return false;
 
         m_Features.clear();
         m_FeatureSetHash = 0;
@@ -1576,6 +1576,7 @@ namespace render {
         GetTransparentRenderableObjects();
 
         GetCameraDirection();
+        return wasDirty;
     }
 
     void SLayerRenderPreparationData::ResetForFrame()

@@ -522,8 +522,9 @@ void Q3DSViewerApp::setupSearchPath(std::vector<std::string> &cmdLineArgs)
     //NvFAppendSearchPath(theModuleDirectory.c_str());
 }
 
-void Q3DSViewerApp::Render()
+bool Q3DSViewerApp::Render()
 {
+    bool ret = true;
     if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine()) {
         if (m_Impl.m_appInitSuccessful) {
             for (QEvent *e : m_Impl.m_pendingEvents) {
@@ -535,9 +536,10 @@ void Q3DSViewerApp::Render()
             HandleController(*m_Impl.m_view);
 #endif
 
-            m_Impl.m_view->Render();
+            ret = m_Impl.m_view->Render();
         }
     }
+    return ret;
 }
 
 void Q3DSViewerApp::SaveState()

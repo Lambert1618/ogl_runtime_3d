@@ -257,9 +257,9 @@ public:
     /*
      * @brief does the actual scene rendering
      *
-     * @return no return
+     * @return true if the scene needs to be rendered again in next frame
      */
-    void Render();
+    bool Render();
 
     /*
      * @brief handle keyboard input

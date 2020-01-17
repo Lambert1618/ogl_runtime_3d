@@ -253,7 +253,7 @@ namespace render {
             SLayerRenderData *theRenderData = GetOrCreateLayerRenderDataForNode(*theLayer, id);
 
             if (theRenderData) {
-                theRenderData->PrepareForRender();
+                bool needsRender = theRenderData->PrepareForRender();
                 if (id) {
                     if (m_initialPrepareData.contains(theLayer)) {
                         // Copy dirty state from the initial since the graph is
@@ -268,7 +268,8 @@ namespace render {
                         m_initialPrepareData.insert(theLayer, theRenderData);
                     }
                 }
-                retval = retval || theRenderData->m_LayerPrepResult->m_Flags.WasDirty();
+                retval = retval || needsRender
+                        || theRenderData->m_LayerPrepResult->m_Flags.WasDirty() ;
             } else {
                 QT3DS_ASSERT(false);
             }

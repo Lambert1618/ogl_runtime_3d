@@ -1031,7 +1031,7 @@ struct SApp : public IApplication
         } // End QT3DS_PERF_SCOPED_TIMER scope
     }
 
-    void UpdateScenes() { m_RuntimeFactory->GetSceneManager().Update(); }
+    bool UpdateScenes() { return m_RuntimeFactory->GetSceneManager().Update(); }
 
     bool LazyLoadSubPresentations()
     {
@@ -1113,7 +1113,7 @@ struct SApp : public IApplication
     void ResetDirtyCounter() { m_DirtyCountdown = 5; }
 
     // Update all the presentations and render them.
-    void UpdateAndRender() override
+    bool UpdateAndRender() override
     {
         QT3DS_ASSERT(m_AppLoadContext.mPtr == NULL);
         m_ThisFrameStartTime = qt3ds::foundation::Time::getCurrentCounterValue();
@@ -1147,15 +1147,17 @@ struct SApp : public IApplication
         }
 
         UpdatePresentations();
-        UpdateScenes();
+        bool dirty = UpdateScenes();
 
         // If subpresentations changed we need to check if any of them needs to be loaded.
         if (LazyLoadSubPresentations()) {
             // Just redo all
             UpdatePresentations();
-            UpdateScenes();
+            dirty |= UpdateScenes();
         }
-
+        bool renderNextFrame = false;
+        if (m_LastRenderWasDirty || dirty || m_initialFrame)
+            renderNextFrame = true;
         Render();
 
         m_InputEnginePtr->ClearInputFrame();
@@ -1185,6 +1187,7 @@ struct SApp : public IApplication
             ResetDirtyCounter();
         else
             m_DirtyCountdown = NVMax(0, m_DirtyCountdown - 1);
+        return renderNextFrame;
     }
 
     // hook this up to -layer-caching.

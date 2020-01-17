@@ -102,10 +102,10 @@ struct AdvancedBlendModes
 
         virtual ~SLayerRenderData();
 
-        void PrepareForRender();
+        bool PrepareForRender();
 
         // Internal Call
-        void PrepareForRender(const QSize &inViewportDimensions) override;
+        bool PrepareForRender(const QSize &inViewportDimensions) override;
 
         NVRenderTextureFormats::Enum GetDepthBufferFormat();
         NVRenderFrameBufferAttachments::Enum

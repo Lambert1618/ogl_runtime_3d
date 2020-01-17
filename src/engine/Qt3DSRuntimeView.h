@@ -185,7 +185,7 @@ public: // loading
 
     virtual bool CanRender() = 0;
 
-    virtual void Render() = 0;
+    virtual bool Render() = 0;
 
     virtual bool WasLastFrameDirty() = 0;
 

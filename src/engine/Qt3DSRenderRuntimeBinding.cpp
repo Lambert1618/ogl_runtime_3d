@@ -1505,9 +1505,11 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
                                        bool firstFrame) override
     {
         Qt3DSRenderScene *theFirstScene = nullptr;
-        for (QT3DSU32 idx = 0, end = m_Scenes.size(); idx < end && theFirstScene == nullptr; ++idx)
+        for (QT3DSU32 idx = 0, end = m_Scenes.size(); idx < end; ++idx) {
             if (m_Scenes[idx].second->m_RuntimePresentation == inPresentation)
                 theFirstScene = m_Scenes[idx].second;
+            m_Scenes[idx].second->TransferDirtyProperties();
+        }
 
         if (theFirstScene && theFirstScene->m_Presentation) {
             m_LastRenderedScene = theFirstScene;

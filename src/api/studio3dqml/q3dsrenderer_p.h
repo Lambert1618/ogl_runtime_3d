@@ -89,7 +89,7 @@ protected:
     static void onInitHandler(void *userData);
     static void onUpdateHandler(void *userData);
     bool initializeRuntime(QOpenGLFramebufferObject *inFbo);
-    void draw();
+    bool draw();
     void render() override;
     void synchronize(QQuickFramebufferObject *inView) override;
     void releaseRuntime();

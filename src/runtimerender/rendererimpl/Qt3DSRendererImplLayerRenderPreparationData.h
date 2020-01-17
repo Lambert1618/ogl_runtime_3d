@@ -344,7 +344,7 @@ namespace render {
 
         // returns true if this object will render something different than it rendered the last
         // time.
-        virtual void PrepareForRender(const QSize &inViewportDimensions);
+        virtual bool PrepareForRender(const QSize &inViewportDimensions);
         bool CheckLightProbeDirty(SImage &inLightProbe);
         void AddRenderWidget(IRenderWidget &inWidget);
         void SetShaderFeature(const char *inName, bool inValue);
