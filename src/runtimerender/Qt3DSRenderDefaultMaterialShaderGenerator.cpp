@@ -1038,7 +1038,7 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
         // generated.
         // we rely on the linker to strip out what isn't necessary instead of explicitly stripping
         // it for code simplicity.
-        if (hasImage && hasLighting && hasLightmaps) {
+        if (hasImage || hasLighting || hasLightmaps) {
             fragmentShader.Append("    vec3 uTransform;");
             fragmentShader.Append("    vec3 vTransform;");
         }
