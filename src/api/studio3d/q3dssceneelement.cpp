@@ -112,6 +112,7 @@ Q3DSSceneElement::~Q3DSSceneElement()
     \qmlproperty int SceneElement::currentSlideIndex
 
     Holds the index of the currently active slide of the tracked time context.
+    Slide indexing starts from one.
 
     \note If this property is set to something else than the default slide for
     the scene at the initial declaration of SceneElement, a changed signal for
@@ -125,6 +126,7 @@ Q3DSSceneElement::~Q3DSSceneElement()
     \property Q3DSSceneElement::currentSlideIndex
 
     Holds the index of the currently active slide of the tracked time context.
+    Slide indexing starts from one.
 
     \note If this property is set to something else than the default slide for
     the scene at the initial declaration of SceneElement, a changed signal for
@@ -132,6 +134,8 @@ Q3DSSceneElement::~Q3DSSceneElement()
     desired one. This happens in order to ensure we end up with the index of
     the slide that is actually shown even if the slide specified in the initial
     declaration is invalid.
+
+    \sa Q3DSPresentation::slideEntered()
 */
 int Q3DSSceneElement::currentSlideIndex() const
 {
@@ -144,13 +148,13 @@ void Q3DSSceneElement::setCurrentSlideIndex(int currentSlideIndex)
     Q_D(Q3DSSceneElement);
     if (d->m_viewerApp) {
         const QByteArray path(d->m_elementPath.toUtf8());
-        d->m_viewerApp->GoToSlideByIndex(path, currentSlideIndex + 1);
+        d->m_viewerApp->GoToSlideByIndex(path, currentSlideIndex);
     } else if (d->m_commandQueue) {
         d->m_commandQueue->queueCommand(d->m_elementPath, CommandType_GoToSlide,
-                                            int(currentSlideIndex + 1));
+                                        currentSlideIndex);
     } else {
         // Store desired slide until we have either app or queue. Only name or index can be set.
-        d->m_initialSlideIndex = currentSlideIndex + 1;
+        d->m_initialSlideIndex = currentSlideIndex;
         d->m_initialSlideName.clear();
     }
 }
@@ -218,7 +222,7 @@ void Q3DSSceneElement::setCurrentSlideName(const QString &currentSlideName)
     } else {
         // Store desired slide until we have either app or queue. Only name or index can be set.
         d->m_initialSlideName = currentSlideName;
-        d->m_initialSlideIndex = 0;
+        d->m_initialSlideIndex = 1;
     }
 }
 
@@ -366,12 +370,12 @@ void Q3DSSceneElementPrivate::setViewerApp(Q3DSViewer::Q3DSViewerApp *app)
 
         // If user has set current slide before viewer app has been set for the first time,
         // we will switch to the desired slide after we initialize.
-        if (m_initialSlideIndex != 0)
-            q->setCurrentSlideIndex(m_initialSlideIndex - 1);
+        if (m_initialSlideIndex != 1)
+            q->setCurrentSlideIndex(m_initialSlideIndex);
         else if (!m_initialSlideName.isEmpty())
             q->setCurrentSlideName(m_initialSlideName);
 
-        m_initialSlideIndex = 0;
+        m_initialSlideIndex = 1;
         m_initialSlideName.clear();
     }
 }
@@ -396,12 +400,12 @@ void Q3DSSceneElementPrivate::setCommandQueue(CommandQueue *queue)
         m_slideInfoRequestPending = true;
         // If user has set current slide before the queue has been set for the first time,
         // we will switch to the desired slide after we initialize.
-        if (m_initialSlideIndex != 0)
-            q->setCurrentSlideIndex(m_initialSlideIndex - 1);
+        if (m_initialSlideIndex != 1)
+            q->setCurrentSlideIndex(m_initialSlideIndex);
         else if (!m_initialSlideName.isEmpty())
             q->setCurrentSlideName(m_initialSlideName);
 
-        m_initialSlideIndex = 0;
+        m_initialSlideIndex = 1;
         m_initialSlideName.clear();
     }
 }

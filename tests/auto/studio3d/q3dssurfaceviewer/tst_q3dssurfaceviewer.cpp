@@ -1249,7 +1249,7 @@ void tst_Q3DSSurfaceViewer::testSceneElement()
     QCOMPARE(spy1.count(), 6);
     QCOMPARE(spy2.count(), 6);
 
-    scene->setCurrentSlideIndex(0);
+    scene->setCurrentSlideIndex(1);
     checkPixel(m_viewer, Qt::red);
 
     QCOMPARE(spy1.count(), 7);
@@ -1305,7 +1305,7 @@ void tst_Q3DSSurfaceViewer::testSceneElement()
     QCOMPARE(spy2.count(), 11);
 
     // Back to first slide for further tests
-    scene->setCurrentSlideIndex(0);
+    scene->setCurrentSlideIndex(1);
     checkPixel(m_viewer, Qt::red);
 
     QCOMPARE(spy1.count(), 12);

@@ -823,7 +823,7 @@ void Q3DSPresentation::setShaderCacheFile(const QUrl &fileName)
 
     Requests a time context (a Scene or a Component object) to change
     to a specific slide by \a index. If the context is already on that
-    slide, playback will start over.
+    slide, playback will start over. Slide indexing starts from one.
 
     If \a elementPath points to a time context, that element is
     controlled. For all other element types the time context owning
@@ -1597,7 +1597,7 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
     Emitted when a slide in a presentation or component is entered. \a elementPath
     specifies the slide path. \a index and \a name contain the index and
-    the name of the entered slide.
+    the name of the entered slide. Slide indexing starts from one.
 
     This signal is emitted for each component, meaning that it can be emitted multiple
     times on one slide change.
@@ -1608,7 +1608,7 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
     Emitted when a slide in a presentation or component is entered. \a elementPath
     specifies the slide path. \a index and \a name contain the index and
-    the name of the entered slide.
+    the name of the entered slide. Slide indexing starts from one.
 
     This signal is emitted for each component, meaning that it can be emitted multiple
     times on one slide change.
@@ -1619,7 +1619,7 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
     Emitted when a slide in a presentation or component is exited. \a elementPath
     specifies the slide path. \a index and \a name contain the index and
-    the name of the exited slide.
+    the name of the exited slide. Slide indexing starts from one.
 
     This signal is emitted for each component, meaning that it can be emitted multiple
     times on one slide change.
@@ -1630,7 +1630,7 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
     Emitted when a slide in a presentation or component is exited. \a elementPath
     specifies the slide path. \a index and \a name contain the index and
-    the name of the exited slide.
+    the name of the exited slide. Slide indexing starts from one.
 
     This signal is emitted for each component, meaning that it can be emitted multiple
     times on one slide change.
