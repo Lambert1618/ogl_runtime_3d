@@ -37,7 +37,7 @@
 #include "Qt3DSHash.h"
 #include "Qt3DSRenderPlugin.h"
 #include "Qt3DSRenderPluginPropertyValue.h"
-#include "Qt3DSElementHelper.h"
+#include "Qt3DSQmlElementHelper.h"
 #include "Qt3DSPresentation.h"
 #include "Qt3DSApplication.h"
 #include "Qt3DSRenderCustomMaterialSystem.h"
@@ -191,7 +191,7 @@ struct SRuntimePropertyParser
         } else if (m_Type == Q3DStudio::ATTRIBUTETYPE_STRING) {
             CRegisteredString theString =
                 m_RenderContext.GetStringTable().HandleToStr(m_Value.m_StringHandle);
-            theElem = Q3DStudio::CElementHelper::GetElement(
+            theElem = Q3DStudio::CQmlElementHelper::GetElement(
                 m_Element.GetBelongedPresentation()->GetApplication(),
                 m_Element.GetBelongedPresentation(), theString.c_str(), &m_Element);
         }

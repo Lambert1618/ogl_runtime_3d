@@ -58,7 +58,6 @@ SOURCES += \
     ../runtime/Qt3DSInputEngine.cpp \
     ../runtime/Qt3DSLogicSystem.cpp \
     ../runtime/Qt3DSCommandHelper.cpp \
-    ../runtime/Qt3DSElementHelper.cpp \
     ../runtime/Qt3DSOutputMemoryStream.cpp \
     ../runtime/Qt3DSParametersSystem.cpp \
     ../runtime/Qt3DSPresentation.cpp \
@@ -251,7 +250,6 @@ HEADERS += \
     ../runtime/Qt3DSInputEngine.h \
     ../runtime/Qt3DSLogicSystem.h \
     ../runtime/Qt3DSCommandHelper.h \
-    ../runtime/Qt3DSElementHelper.h \
     ../runtime/Qt3DSOutputMemoryStream.h \
     ../runtime/Qt3DSParametersSystem.h \
     ../runtime/Qt3DSPresentation.h \

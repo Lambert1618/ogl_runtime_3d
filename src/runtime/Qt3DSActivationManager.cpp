@@ -107,21 +107,6 @@ typedef nvvector<STimeEvent *> TTimeEventList;
 struct STimeContext;
 typedef NVDataRef<NVScopedRefCounted<STimeContext>> TTimeContextSet;
 
-// Tree navigation
-
-SElement *GetElementNodeFirstChild(SElement &inNode)
-{
-    return inNode.m_Child;
-}
-SElement *GetElementNodeNextSibling(SElement &inNode)
-{
-    return inNode.m_Sibling;
-}
-SElement *GetElementNodeParent(SElement &inNode)
-{
-    return inNode.m_Parent;
-}
-
 struct SScanBufferEntry
 {
     SElement *m_Node;
