@@ -829,7 +829,7 @@ bool CRuntimeView::PeekCustomAction(char *&outElementPath, char *&outActionName)
         Q3DStudio::TElement *theElement = nullptr;
         actionAvailable = theBridgeEngine.PeekSignal(theElement, outActionName);
         if (actionAvailable && theElement)
-            outElementPath = (char *)theElement->m_Path.c_str();
+            outElementPath = (char *)theElement->path().c_str();
     }
 
     return actionAvailable;

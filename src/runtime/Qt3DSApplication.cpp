@@ -1219,7 +1219,7 @@ struct SApp : public IApplication
             key.m_Index = index;
             slidesystem.setUnloadSlide(key, false);
             const QString completeName = presentation->GetName() + QLatin1Char(':')
-                    + QString::fromUtf8(key.m_Component->m_Name) + QLatin1Char(':') + slideName;
+                    + QString::fromUtf8(key.m_Component->name()) + QLatin1Char(':') + slideName;
             qCInfo(TRACE_INFO) << "Load component slide resources: " << completeName;
             m_resourceCounter.handleLoadSlide(completeName, key, slidesystem);
             if (m_uploadRenderTask)
@@ -1291,7 +1291,7 @@ struct SApp : public IApplication
             slidesystem.setUnloadSlide(key, true);
             if (!slidesystem.isActiveSlide(key)) {
                 const QString completeName = presentation->GetName() + QLatin1Char(':')
-                        + QString::fromUtf8(key.m_Component->m_Name) + QLatin1Char(':') + slideName;
+                        + QString::fromUtf8(key.m_Component->name()) + QLatin1Char(':') + slideName;
                 qCInfo(TRACE_INFO) << "Unload component slide resources: " << completeName;
                 m_resourceCounter.handleUnloadSlide(completeName, key, slidesystem);
 
@@ -1717,7 +1717,7 @@ struct SApp : public IApplication
             // else assume main presentation and component:slide
         }
         component = presentation->GetRoot();
-        if (!componentName.isNull() && componentName != component->m_Name) {
+        if (!componentName.isNull() && componentName != component->name()) {
             component = CQmlElementHelper::GetElement(*this, presentation,
                                                       qPrintable(componentName), nullptr);
         }
@@ -1912,19 +1912,22 @@ struct SApp : public IApplication
     Q3DStudio::IRuntimeFactory &GetRuntimeFactory() const override { return *m_RuntimeFactory.mPtr; }
     Q3DStudio::IRuntimeFactoryCore &GetRuntimeFactoryCore() override { return *m_CoreFactory; }
 
+    Q3DStudio::CPresentation *m_primaryPresentation = nullptr;
     Q3DStudio::CPresentation *GetPrimaryPresentation() override
     {
-        return GetPresentationById(m_PresentationId.c_str());
+        if (!m_primaryPresentation)
+            m_primaryPresentation = GetPresentationById(m_PresentationId.c_str());
+        return m_primaryPresentation;
     }
 
-    virtual Q3DStudio::CPresentation *LoadAndGetPresentationById(const char8_t *inId) override
+    virtual Q3DStudio::CPresentation *LoadAndGetPresentationById(const QString &inId) override
     {
         return GetPresentationById(inId, true);
     }
 
-    Q3DStudio::CPresentation *GetPresentationById(const char8_t *inId, bool load = false)
+    Q3DStudio::CPresentation *GetPresentationById(const QString &inId, bool load = false)
     {
-        if (!isTrivial(inId)) {
+        if (!inId.isEmpty()) {
             TIdAssetMap::iterator iter
                     = m_AssetMap.find(m_CoreFactory->GetStringTable().RegisterStr(inId));
             if (iter != m_AssetMap.end()

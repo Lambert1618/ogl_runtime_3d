@@ -341,7 +341,7 @@ void CUIPParserActionHelper::BuildAction(TElement &inElement, UINT32 inEventName
                 Q3DStudio_ASSERT(theActionCount > 0);
                 for (UINT32 theActionIndex = 0; theActionIndex < theActionCount; ++theActionIndex) {
                     INT32 actionId = theAdder.AddAction(
-                        COMMAND_SETPROPERTY, theProperties[theActionIndex].first.GetNameHash(),
+                        COMMAND_SETPROPERTY, theProperties[theActionIndex].first.nameHash(),
                         theProperties[theActionIndex].second.m_INT32);
                     if (theActionIndex == 0)
                         theAddActionIndex = actionId;

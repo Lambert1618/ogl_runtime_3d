@@ -213,7 +213,7 @@ struct SAnimSystem : public IAnimationSystem
             theProperty = inElement.GetPropertyByIndex(*theIndex);
 
         if (theProperty.hasValue() == false
-            || theProperty->first.m_Type != Q3DStudio::ATTRIBUTETYPE_FLOAT) {
+            || theProperty->first.type() != Q3DStudio::ATTRIBUTETYPE_FLOAT) {
             QT3DS_ASSERT(false);
             return 0;
         }

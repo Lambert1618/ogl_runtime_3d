@@ -93,7 +93,7 @@ public: // Slide
     void PlaythroughToSlide(TElement *inComponent);
     void applyQueuedChanges(TElement *component) override;
     void queueChange(TElement *component, TElement *target, const char *attName,
-                     const char *value) override;
+                     const char *value, Q3DStudio::TAttributeHash attrHash) override;
     bool hasSlideChangeQueued(TElement *component) override;
 
     UINT8 GetSlideCount(TElement *inComponent) override;

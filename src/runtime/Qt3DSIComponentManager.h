@@ -122,7 +122,7 @@ public: // Slides
     virtual const CHAR *GetCurrentSlideName(TElement *inComponent) = 0;
     virtual void applyQueuedChanges(TElement *component) = 0;
     virtual void queueChange(TElement *component, TElement *target, const char *attName,
-                             const char *value) = 0;
+                             const char *value, TAttributeHash attrHash) = 0;
     virtual bool hasSlideChangeQueued(TElement *component) = 0;
 
     virtual void OnElementDeactivated(TElement *inElement) = 0;

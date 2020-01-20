@@ -67,98 +67,79 @@ CQmlElementHelper::~CQmlElementHelper()
 }
 
 TElement *CQmlElementHelper::GetElement(qt3ds::runtime::IApplication &inApplication,
-                                        IPresentation *inDefaultPresentation, const char *inPath,
+                                        IPresentation *inDefaultPresentation, const QString &inPath,
                                         TElement *inStartElement)
 {
-    if (inPath == nullptr || *inPath == 0)
+    if (inPath.isNull())
         return nullptr;
-    const char *thePath(inPath);
-    const char *theSubPath = nullptr;
+
+    int delimIndex = inPath.indexOf(QLatin1Char(PRESENTATION_DELIMITER));
     IPresentation *thePresentation = nullptr;
-    size_t thePathLength = ::strlen(thePath) + 1;
-    char *theToken =
-        Q3DStudio_allocate_desc(CHAR, thePathLength, "Token:TempPath"); // Temporary token storage
-    // Try to get the specified presentation
-    theSubPath = ::strchr(thePath, PRESENTATION_DELIMITER);
+    QString path = inPath;
+
     TElement *theElement = inStartElement;
-    if (theSubPath != nullptr) {
-        UINT32 theSubPathLength = static_cast<UINT32>(theSubPath - thePath);
-
-        ::strncpy(theToken, thePath, theSubPathLength);
-        theToken[theSubPathLength] = '\0';
-
-        thePath = theSubPath + 1;
-
-        const CHAR *thePresentationName = theToken;
-
-        thePresentation = inApplication.LoadAndGetPresentationById(thePresentationName);
+    if (delimIndex > 0) {
+        thePresentation = inApplication.LoadAndGetPresentationById(path.left(delimIndex));
+        path = path.right(delimIndex + 1);
     }
+
     if (thePresentation == nullptr)
         thePresentation = inDefaultPresentation;
 
     // Return nil if the inStartElement is not in the specified presentation
     if (theElement != nullptr
-        && (theSubPath == nullptr && theElement->GetBelongedPresentation() != thePresentation)) {
+        && (delimIndex < 0 && theElement->GetBelongedPresentation() != thePresentation)) {
         thePresentation = theElement->GetBelongedPresentation();
     }
 
     if (thePresentation == nullptr)
         return nullptr;
 
-    TStringHash theName;
-    INT32 theParseCounter = 0;
+    int curIdx = 0;
+    int nodeDelim;
+    int theParseCounter = 0;
+    bool last = false;
 
-    while (thePath != nullptr && thePath[0] != '\0') {
+    do {
+        nodeDelim = path.indexOf(QLatin1Char(NODE_DELIMITER), curIdx);
+        if (nodeDelim < 0) {
+            nodeDelim = path.length();
+            last = true;
+        }
+
         ++theParseCounter;
 
-        // Do some strtok() work here
-        theSubPath = ::strchr(thePath, NODE_DELIMITER);
-        if (theSubPath) {
-            UINT32 theSubPathLength = static_cast<UINT32>(theSubPath - thePath);
-            Q3DStudio_ASSERT(theSubPathLength < thePathLength);
-
-            ::strncpy(theToken, thePath, theSubPathLength);
-            theToken[theSubPathLength] = '\0';
-
-            thePath = theSubPath + 1;
-        } else {
-            ::strcpy(theToken, thePath);
-            thePath = nullptr;
-        }
-
-        // Hash the token and do some element searching
-        theName = CHash::HashString(theToken);
-
-        if (theName == RESERVED_PARENT) {
+        auto name = CHash::HashString(path, curIdx, nodeDelim);
+        if (name == RESERVED_PARENT) {
             if (theElement)
                 theElement = theElement->GetParent();
-        } else if (theName == RESERVED_THIS) {
+        } else if (RESERVED_THIS == name) {
             //Keep the original element if "this" wanted
         } else {
-            if (theName == RESERVED_SCENE && theParseCounter == 1)
-                theElement =
-                    thePresentation->GetRoot(); // theElement is nullptr, so using absolute path
-
+            if (name == RESERVED_SCENE && theParseCounter == 1)
+                theElement = thePresentation->GetRoot();
             else if (theElement)
-                theElement = theElement->FindChild(theName); // Using relative path
+                theElement = theElement->FindChild(name);
         }
-
         if (!theElement)
-            thePath = nullptr;
-    } // while
+            break;
 
-    Q3DStudio_free(theToken, CHAR, thePathLength);
+        curIdx = nodeDelim + 1;
+    } while (!last);
+
     return theElement;
 }
 
 CQmlElementHelper::TypedAttributeAndValue CQmlElementHelper::getTypedAttributeAndValue(
-        TElement *theElement, const char *theAttName, const void *value)
+        TElement *theElement, const char *theAttName, const void *value, TAttributeHash attrHash)
 {
     TypedAttributeAndValue retVal = { SAttributeKey(), UVariant() };
     retVal.attribute.m_Hash = 0;
 
     SAttributeKey theAttributeKey;
-    theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
+    theAttributeKey.m_Hash = attrHash;
+    if (!attrHash)
+        theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
 
     // Early out for our single 'read only' attribute
     if (ATTRIBUTE_URI == theAttributeKey.m_Hash) {
@@ -184,8 +165,8 @@ CQmlElementHelper::TypedAttributeAndValue CQmlElementHelper::getTypedAttributeAn
         retVal.value = theNewValue;
     } else if (thePropertyInfo.hasValue()) {
         UVariant theNewValue;
-        QString name(thePropertyInfo->first.m_Name.c_str());
-        EAttributeType theAttributeType = thePropertyInfo->first.m_Type;
+        QString name(thePropertyInfo->first.name().c_str());
+        EAttributeType theAttributeType = thePropertyInfo->first.type();
         switch (theAttributeType) {
         case ATTRIBUTETYPE_INT32:
         case ATTRIBUTETYPE_HASH:
@@ -246,10 +227,13 @@ CQmlElementHelper::TypedAttributeAndValue CQmlElementHelper::getTypedAttributeAn
     return retVal;
 }
 
-bool CQmlElementHelper::EnsureAttribute(TElement *theElement, const char *theAttName)
+bool CQmlElementHelper::EnsureAttribute(TElement *theElement, const char *theAttName,
+                                        TAttributeHash attrHash)
 {
     SAttributeKey theAttributeKey;
-    theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
+    theAttributeKey.m_Hash = attrHash;
+    if (!attrHash)
+        theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
 
     if (theAttributeKey.m_Hash == ATTRIBUTE_EYEBALL || theAttributeKey.m_Hash == ATTRIBUTE_URI)
         return false;
@@ -278,10 +262,12 @@ bool CQmlElementHelper::EnsureAttribute(TElement *theElement, const char *theAtt
 }
 
 bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttName,
-                                     const void *value)
+                                     const void *value, TAttributeHash attrHash)
 {
     SAttributeKey theAttributeKey;
-    theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
+    theAttributeKey.m_Hash = attrHash;
+    if (!attrHash)
+        theAttributeKey.m_Hash = CHash::HashAttribute(theAttName);
     bool force = false;
 
     // Fail if trying to change the activation state of an object in another slide
@@ -326,8 +312,8 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
         }
     }
 
-    TypedAttributeAndValue attributeAndValue = getTypedAttributeAndValue(theElement, theAttName,
-                                                                         value);
+    TypedAttributeAndValue attributeAndValue
+            = getTypedAttributeAndValue(theElement, theAttName, value, theAttributeKey.m_Hash);
 
     if (attributeAndValue.attribute.m_Hash == 0)
         return false;
@@ -359,7 +345,7 @@ bool CQmlElementHelper::GetAttribute(TElement *inElement, const char *inAttribut
         *(INT32 *)value = val;
     } else if (thePropertyInfo.hasValue()) {
         UVariant *theValuePtr = thePropertyInfo->second;
-        EAttributeType theAttributeType = thePropertyInfo->first.m_Type;
+        EAttributeType theAttributeType = thePropertyInfo->first.type();
         switch (theAttributeType) {
         case ATTRIBUTETYPE_INT32:
         case ATTRIBUTETYPE_HASH:

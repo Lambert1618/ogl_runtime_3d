@@ -38,8 +38,8 @@
 namespace qt3ds {
 namespace runtime {
     namespace element {
-        struct SElement;
-        struct SComponent;
+        class SElement;
+        class SComponent;
     }
 }
 }

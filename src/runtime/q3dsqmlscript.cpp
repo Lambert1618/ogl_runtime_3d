@@ -99,7 +99,7 @@ Q3DSQmlScript::Q3DSQmlScript(CQmlEngine &api, Q3DSQmlBehavior &object,
             auto nameHash = CHash::HashAttribute(property.name());
             Option<element::TPropertyDescAndValuePtr> value = behavior.FindProperty(nameHash);
             if (value.hasValue()) {
-                switch (value->first.m_Type) {
+                switch (value->first.type()) {
                 case ATTRIBUTETYPE_INT32:
                 case ATTRIBUTETYPE_HASH:
                     t = QVariant::Int;
@@ -235,7 +235,7 @@ Q3DSQmlScript::Q3DSQmlScript(CQmlEngine &api, Q3DSQmlBehavior &object,
             std::function<void()> mapper;
             auto nameHash = CHash::HashAttribute(property.name());
             Option<element::TPropertyDescAndValuePtr> prop = behavior.FindProperty(nameHash);
-            if (prop.hasValue() && prop->first.m_Type == Q3DStudio::ATTRIBUTETYPE_FLOAT2) {
+            if (prop.hasValue() && prop->first.type() == Q3DStudio::ATTRIBUTETYPE_FLOAT2) {
                 mapper = [&object, property, prop]() {
                     QVector2D vec;
                     Q3DStudio::UVariant *value = prop->second;
@@ -271,7 +271,7 @@ Q3DSQmlScript::Q3DSQmlScript(CQmlEngine &api, Q3DSQmlBehavior &object,
             std::function<void()> mapper;
             auto nameHash = CHash::HashAttribute(property.name());
             Option<element::TPropertyDescAndValuePtr> prop = behavior.FindProperty(nameHash);
-            if (prop.hasValue() && prop->first.m_Type == Q3DStudio::ATTRIBUTETYPE_FLOAT3) {
+            if (prop.hasValue() && prop->first.type() == Q3DStudio::ATTRIBUTETYPE_FLOAT3) {
                 mapper = [&object, property, prop]() {
                     QVector3D vec;
                     Q3DStudio::UVariant *value = prop->second;
@@ -314,7 +314,7 @@ Q3DSQmlScript::Q3DSQmlScript(CQmlEngine &api, Q3DSQmlBehavior &object,
             std::function<void()> mapper;
             auto nameHash = CHash::HashAttribute(property.name());
             Option<element::TPropertyDescAndValuePtr> prop = behavior.FindProperty(nameHash);
-            if (prop.hasValue() && prop->first.m_Type == Q3DStudio::ATTRIBUTETYPE_FLOAT4) {
+            if (prop.hasValue() && prop->first.type() == Q3DStudio::ATTRIBUTETYPE_FLOAT4) {
                 mapper = [&object, property, prop]() {
                     QVector4D vec;
                     Q3DStudio::UVariant *value = prop->second;
@@ -578,7 +578,7 @@ void Q3DSQmlScript::fireEvent(const QString &event)
 {
     if (!m_behavior.GetActive())
         return;
-    m_api.FireEvent(m_behavior.m_Path, event.toUtf8().constData());
+    m_api.FireEvent(m_behavior.path(), event.toUtf8().constData());
 }
 
 void Q3DSQmlScript::registerForEvent(const QString &event, const QJSValue &function)
@@ -720,7 +720,7 @@ QString Q3DSQmlScript::getParent(const QString &handle)
     TElement *parent = element->GetParent();
     if (!parent)
         return "";
-    return parent->m_Path.c_str();
+    return parent->path().c_str();
 }
 
 void Q3DSQmlScript::setDataInputValue(const QString &name, const QVariant &value,

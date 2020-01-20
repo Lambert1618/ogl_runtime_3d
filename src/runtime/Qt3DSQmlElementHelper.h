@@ -45,11 +45,13 @@ private:
 
 public:
     static TElement *GetElement(qt3ds::runtime::IApplication &inApplication,
-                                IPresentation *inDefaultPresentation, const char *inPath,
+                                IPresentation *inDefaultPresentation, const QString &inPath,
                                 TElement *inStartElement = NULL);
 
-    static bool SetAttribute(TElement *inElement, const char *inAttribute, const void *value);
-    static bool EnsureAttribute(TElement *inElement, const char *inAttribute);
+    static bool SetAttribute(TElement *inElement, const char *inAttribute, const void *value,
+                             TAttributeHash attrHash);
+    static bool EnsureAttribute(TElement *inElement, const char *inAttribute,
+                                TAttributeHash attrHash);
     static bool GetAttribute(TElement *inElement, const char *inAttribute, void *value);
 
     struct TypedAttributeAndValue {
@@ -59,7 +61,8 @@ public:
 
     static TypedAttributeAndValue getTypedAttributeAndValue(TElement *inElement,
                                                             const char *inAttribute,
-                                                            const void *value);
+                                                            const void *value,
+                                                            TAttributeHash attrHash);
 };
 }
 

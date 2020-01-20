@@ -1031,8 +1031,8 @@ struct SPathSubPathTranslator : public Qt3DSTranslator
         bool updatePath = false;
         CRegisteredString theAnchorType =
             inParser.m_RenderContext.GetStringTable().RegisterStr("PathAnchorPoint");
-        for (Q3DStudio::TElement *theChild = Element().GetChild(); theChild;
-             theChild = theChild->GetSibling()) {
+        const auto children = Element().children();
+        for (auto theChild : children) {
             if (theChild->GetType() == theAnchorType) {
                 ++numAnchors;
                 if (theChild->IsDirty())
@@ -1044,8 +1044,7 @@ struct SPathSubPathTranslator : public Qt3DSTranslator
                 theManager.ResizePathSubPathBuffer(theItem, numAnchors);
             if (thePathBuffer.size()) {
                 QT3DSU32 anchorIndex = 0;
-                for (Q3DStudio::TElement *theChild = Element().GetChild(); theChild;
-                     theChild = theChild->GetSibling()) {
+                for (auto theChild : children) {
                     if (theChild->GetType() == theAnchorType) {
                         if (theChild->IsDirty()) {
                             qt3ds::render::SPathAnchorPoint &thePoint(thePathBuffer[anchorIndex]);
@@ -1054,7 +1053,7 @@ struct SPathSubPathTranslator : public Qt3DSTranslator
                                  ++idx) {
                                 qt3ds::runtime::element::TPropertyDescAndValuePtr thePropInfo =
                                     theChild->GetPropertyByIndex(idx);
-                                switch (thePropInfo.first.GetNameHash()) {
+                                switch (thePropInfo.first.nameHash()) {
                                 case Q3DStudio::ATTRIBUTE_POSITION_X:
                                     thePoint.m_Position.x = thePropInfo.second->m_FLOAT;
                                     break;
@@ -1367,13 +1366,13 @@ struct SDynamicObjectTranslatorContext : public STranslatorContext
                 qt3ds::runtime::element::TPropertyDescAndValuePtr thePropInfo =
                     *element.GetPropertyByIndex(idx);
                 THashToOffsetMap::iterator theFind =
-                    m_PropertyHashes.find(thePropInfo.first.GetNameHash());
+                    m_PropertyHashes.find(thePropInfo.first.nameHash());
                 if (theFind != m_PropertyHashes.end()) {
                     const SEffectPropertyEntry &theEntry(theFind->second);
                     const qt3ds::render::dynamic::SPropertyDefinition &theDefinition(
                         theProperties[theEntry.m_PropertyOffset]);
                     if (theEntry.m_AttributeType
-                        == (Q3DStudio::EAttributeType)thePropInfo.first.m_Type) {
+                        == (Q3DStudio::EAttributeType)thePropInfo.first.type()) {
                         switch (theEntry.m_AttributeType) {
                         case Q3DStudio::ATTRIBUTETYPE_BOOL:
                             theItem.SetPropertyValue(theDefinition,
@@ -1542,11 +1541,11 @@ struct SRenderPluginTranslator : public Qt3DSTranslator
                 qt3ds::runtime::element::TPropertyDescAndValuePtr thePropInfo =
                     *Element().GetPropertyByIndex(idx);
                 nvhash_map<int, CRegisteredString>::iterator theFind =
-                    theTransContext.m_AttribHashIndexMap.find(thePropInfo.first.GetNameHash());
+                    theTransContext.m_AttribHashIndexMap.find(thePropInfo.first.nameHash());
                 if (theFind != theTransContext.m_AttribHashIndexMap.end()) {
                     CRegisteredString thePropName(theFind->second);
                     Q3DStudio::EAttributeType theType =
-                        (Q3DStudio::EAttributeType)thePropInfo.first.m_Type;
+                        (Q3DStudio::EAttributeType)thePropInfo.first.type();
                     switch (theType) {
                     case Q3DStudio::ATTRIBUTETYPE_BOOL:
                         theTransContext.m_PropertyUpdates.push_back(SRenderPropertyValueUpdate(
@@ -1654,8 +1653,8 @@ struct STranslatorCreator
                  ++idx) {
                 qt3ds::runtime::element::TPropertyDescAndValuePtr thePropInfo =
                     *theTranslator.Element().GetPropertyByIndex(idx);
-                theParser.Setup(thePropInfo.first.GetNameHash(), *thePropInfo.second,
-                                (Q3DStudio::EAttributeType)thePropInfo.first.m_Type);
+                theParser.Setup(thePropInfo.first.nameHash(), *thePropInfo.second,
+                                (Q3DStudio::EAttributeType)thePropInfo.first.type());
                 // right now, this is the best we can do because the attribute's dirty system
                 // is all jacked up.
                 theTranslator.OnSpecificPropertyChange(theParser);
@@ -1665,8 +1664,8 @@ struct STranslatorCreator
                  ++idx) {
                 qt3ds::runtime::element::TPropertyDescAndValuePtr thePropInfo =
                     *theTranslator.Element().GetDynamicPropertyByIndex(idx);
-                theParser.Setup(thePropInfo.first.GetNameHash(), *thePropInfo.second,
-                                (Q3DStudio::EAttributeType)thePropInfo.first.m_Type);
+                theParser.Setup(thePropInfo.first.nameHash(), *thePropInfo.second,
+                                (Q3DStudio::EAttributeType)thePropInfo.first.type());
                 // right now, this is the best we can do because the attribute's dirty system
                 // is all jacked up.
                 theTranslator.OnSpecificPropertyChange(theParser);

@@ -106,7 +106,7 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
     if (&m_Presentation != m_Presentation.GetApplication().GetPrimaryPresentation())
         elementPath = m_Presentation.GetName() + QLatin1Char(':');
 
-    elementPath.append(QString::fromUtf8(inComponent->m_Path.c_str()));
+    elementPath.append(QString::fromUtf8(inComponent->path().c_str()));
 
     if (inSlideExit) {
         SEventCommand theEvent = { inComponent, EVENT_ONSLIDEEXIT };
@@ -335,10 +335,10 @@ void CComponentManager::applyQueuedChanges(TElement *component)
 }
 
 void CComponentManager::queueChange(TElement *component, TElement *target, const char *attName,
-                                    const char *value)
+                                    const char *value, TAttributeHash attrHash)
 {
     CQmlElementHelper::TypedAttributeAndValue attributeAndValue
-            = CQmlElementHelper::getTypedAttributeAndValue(target, attName, value);
+            = CQmlElementHelper::getTypedAttributeAndValue(target, attName, value, attrHash);
     if (attributeAndValue.attribute.m_Hash != 0) {
         auto &targetQueue = m_queuedChanges[component];
         auto &attQueue = targetQueue[target];

@@ -420,23 +420,23 @@ struct STimeContext
         QT3DS_ASSERT(m_TimeDataNeedsUpdate);
         m_TimeDataNeedsUpdate = false;
         SComponent &myNode = m_Component;
-        SElement *theChild = myNode.m_Child;
-        if (theChild == NULL) {
+        const auto children  = myNode.children();
+        if (children.isEmpty())
             return;
-        }
+
         inScanBuffer.clear();
-        for (SElement *theChild = myNode.m_Child; theChild; theChild = theChild->m_Sibling) {
-            inScanBuffer.push_back(theChild);
-        }
+        for (auto child : children)
+            inScanBuffer.push_back(child);
+
         for (QT3DSU32 idx = 0, end = (QT3DSU32)inScanBuffer.size(); idx < end; ++idx) {
             SScanBufferEntry theEntry(inScanBuffer[idx]);
             bool careAboutChildren = BuildTimeContextElementNode(
                 *theEntry.m_Node, theEntry.m_StartTime, theEntry.m_EndTime);
             if (careAboutChildren && theEntry.m_Node->IsComponent() == false) {
-                for (SElement *theChild = theEntry.m_Node->m_Child; theChild;
-                     theChild = theChild->m_Sibling) {
+                const auto nodeChildren = theEntry.m_Node->children();
+                for (auto child : nodeChildren) {
                     inScanBuffer.push_back(SScanBufferEntry(
-                        theChild, theEntry.m_Node->m_ActivationManagerNode.m_StartTime,
+                        child, theEntry.m_Node->m_ActivationManagerNode.m_StartTime,
                         theEntry.m_Node->m_ActivationManagerNode.m_StopTime));
                 }
                 end = (QT3DSU32)inScanBuffer.size();
@@ -449,8 +449,8 @@ struct STimeContext
     void SetElementDirty(SElement &inNode)
     {
         SElement *theComponentParent = &inNode.GetComponentParent();
-        if (inNode.IsComponent() && inNode.m_Parent)
-            theComponentParent = &inNode.m_Parent->GetComponentParent();
+        if (inNode.IsComponent() && inNode.GetParent())
+            theComponentParent = &inNode.GetParent()->GetComponentParent();
 
         QT3DS_ASSERT(theComponentParent == &m_Component);
         if (m_AllNodesDirty == false) {
@@ -466,7 +466,7 @@ struct STimeContext
             // This also makes sure that if we mark all nodes dirty we continue the activate scan
             // till we hit at least
             // this node.
-            SElement *theParent = inNode.m_Parent;
+            SElement *theParent = inNode.GetParent();
             while (theParent) {
                 if (theParent->IsComponent()
                     || theParent->m_ActivationManagerNode.m_Flags.IsChildDirty())
@@ -474,7 +474,7 @@ struct STimeContext
                 else {
                     SActivationManagerNode &theNode = theParent->m_ActivationManagerNode;
                     theNode.m_Flags.SetChildDirty();
-                    theParent = theParent->m_Parent;
+                    theParent = theParent->GetParent();
                 }
             }
         }
@@ -484,7 +484,7 @@ struct STimeContext
     {
         if (!m_ControlledList.contains(item)) {
             m_ControlledList.insert(item);
-            qCInfo(TRACE_INFO) << "Element" << item.m_Name.c_str()
+            qCInfo(TRACE_INFO) << "Element" << item.name().c_str()
                                << "visibility now controlled by datainput. "
                                   "Visibility will no longer be affected by slide transitions.";
         }
@@ -549,7 +549,7 @@ struct STimeContext
         // Block used to hide variables to avoid an error.
         {
             bool parentActive = true;
-            SElement *theParent = inNode.m_Parent;
+            SElement *theParent = inNode.GetParent();
             if (theParent != NULL)
                 parentActive = theParent->IsGlobalActive();
 
@@ -581,13 +581,13 @@ struct STimeContext
                            != theScanNode->IsControlledActive())) {
                 // Notify only if datainput control actually disagreed with activity value
                 // coming from activity manager.
-                qCInfo(TRACE_INFO) << "Element" << theScanNode->m_Name.c_str()
+                qCInfo(TRACE_INFO) << "Element" << theScanNode->name().c_str()
                                    << "visibility persistently controlled by datainput.";
             }
 
-            if (checkChildren && theScanNode->m_Child) {
-                for (SElement *theScanNodeChild = theScanNode->m_Child; theScanNodeChild;
-                     theScanNodeChild = theScanNodeChild->m_Sibling) {
+            if (checkChildren && !theScanNode->children().isEmpty()) {
+                const auto children = theScanNode->children();
+                for (auto theScanNodeChild : children) {
                     // Override visibility for master slide elements that have datainput
                     // eyeball controller.
                     isControlledByDi
@@ -612,7 +612,8 @@ struct STimeContext
         if (m_AllNodesDirty == true) {
             inTempDirtyList.clear();
             SComponent &myNode = m_Component;
-            for (SElement *theChild = myNode.m_Child; theChild; theChild = theChild->m_Sibling) {
+            const auto children = myNode.children();
+            for (auto theChild : children) {
                 // Independent nodes don't need to be in the dirty list.
                 if (theChild->IsIndependent() == false)
                     inTempDirtyList.push_back(theChild);
@@ -647,7 +648,7 @@ struct STimeContext
     {
         SComponent &theContextNode = m_Component;
         bool parentActive = true;
-        SElement *theParent = theContextNode.m_Parent;
+        SElement *theParent = theContextNode.GetParent();
         if (theParent != NULL)
             parentActive = theParent->IsGlobalActive();
 
@@ -830,10 +831,10 @@ struct SActivityZone : public IActivityZone
                 m_Foundation.getAllocator(), static_cast<SComponent &>(theComponent),
                 m_ElementAccessMutex);
             STimeContext &theNewContext = *inserter.first->second;
-            if (theComponent.m_Parent == NULL)
+            if (theComponent.GetParent() == NULL)
                 m_RootContexts.push_back(theNewContext);
             else {
-                STimeContext &parentContext = GetItemTimeContext(*theComponent.m_Parent);
+                STimeContext &parentContext = GetItemTimeContext(*theComponent.GetParent());
                 parentContext.m_Children.push_back(theNewContext);
             }
         }
@@ -842,7 +843,7 @@ struct SActivityZone : public IActivityZone
 
     void AddActivityItems(TActivityItem inNode) override
     {
-        if (inNode.m_Parent == NULL)
+        if (inNode.GetParent() == NULL)
             m_RootElements.push_back(&inNode);
 
         GetItemTimeContext(inNode);
@@ -872,8 +873,8 @@ struct SActivityZone : public IActivityZone
     // else travel up the chain till you find an indpendent node.
     SElement &GetItemTimeParentNode(SElement &inNode)
     {
-        if (inNode.m_Parent != NULL) {
-            SElement &theParent = *inNode.m_Parent;
+        if (inNode.GetParent() != NULL) {
+            SElement &theParent = *inNode.GetParent();
             if (theParent.IsIndependent())
                 return theParent;
             return GetItemTimeParentNode(theParent);
@@ -931,8 +932,8 @@ struct SActivityZone : public IActivityZone
     TTimeUnit GetItemLocalTime(TActivityItem item) override
     {
         SElement *theElem = &item.GetComponentParent();
-        if (item.IsComponent() && item.m_Parent)
-            theElem = &item.m_Parent->GetComponentParent();
+        if (item.IsComponent() && item.GetParent())
+            theElem = &item.GetParent()->GetComponentParent();
 
         return GetItemTimeContext(*theElem).m_CurrentTime;
     }

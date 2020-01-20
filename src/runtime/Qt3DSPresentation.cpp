@@ -237,16 +237,16 @@ void CPresentation::NotifyDataOutputs()
     Q3DStudio::TElementList &dirtyList = GetFrameData().GetDirtyList();
     for (int idx = 0, end = dirtyList.GetCount(); idx < end; ++idx) {
         Q3DStudio::TElement &element = *dirtyList[idx];
-        if (m_pathToDataOutMap.contains(element.m_Path)) {
-            auto outDefIter = m_pathToDataOutMap.find(element.m_Path);
+        if (m_pathToDataOutMap.contains(element.path())) {
+            auto outDefIter = m_pathToDataOutMap.find(element.path());
 
-            while (outDefIter != m_pathToDataOutMap.end() && outDefIter.key() == element.m_Path) {
+            while (outDefIter != m_pathToDataOutMap.end() && outDefIter.key() == element.path()) {
                 qt3ds::runtime::DataOutputDef &outDef = outDefIter.value();
 
                 // Get current value
                 Q3DStudio::UVariant value;
-                qt3ds::QT3DSU32 attribHash
-                        = CHash::HashAttribute(outDef.observedAttribute.attributeName[0]);
+                qt3ds::QT3DSU32 attribHash = CHash::HashAttribute(
+                            outDef.observedAttribute.attributeName[0].constData());
                 element.GetAttribute(attribHash, value);
                 QVariant qvar;
                 switch (outDef.observedAttribute.propertyType) {
@@ -439,7 +439,7 @@ void CPresentation::ProcessEventBubbling(SEventCommand &ioEvent, INT32 &ioEventC
 
     // Event bubbling
     if (ioEvent.m_BubbleUp) {
-        TElement *theParent = ioEvent.m_Target->m_Parent;
+        TElement *theParent = ioEvent.m_Target->GetParent();
         if (theParent) {
             ioEvent.m_Target = theParent;
             ProcessEvent(ioEvent, ioEventCount);
@@ -513,7 +513,7 @@ void CPresentation::ProcessCommand(const SEventCommand &inCommand)
     } else if (inCommand.m_Type == COMMAND_EMITSIGNAL) {
         CRegisteredString nameStr = GetStringTable().HandleToStr(inCommand.m_Arg1.m_INT32);
         m_Application->GetRuntimeFactoryCore().GetScriptEngineQml().ProcessSignal(this, inCommand);
-        QString path = QString::fromLatin1(inCommand.m_Target->m_Path.c_str());
+        QString path = QString::fromLatin1(inCommand.m_Target->path().c_str());
         QString name = QString::fromLatin1(nameStr.c_str());
         signalProxy()->SigCustomSignal(path, name);
     } else {

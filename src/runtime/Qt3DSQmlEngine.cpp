@@ -428,8 +428,8 @@ public:
     void ProcessCustomCallback(IPresentation *, const SEventCommand &) override {}
 
     void SetTableForElement(TElement &, IScriptTableProvider &) override {}
-    void SetAttribute(TElement *target, const char *attName, const char *value) override;
-    void SetAttribute(const char *element, const char *attName, const char *value) override;
+    void SetAttribute(TElement *target, const QString &attName, const char *value) override;
+    void SetAttribute(const QString &element, const QString &attName, const char *value) override;
     bool GetAttribute(TElement *target, const char *attName, char *value) override;
     bool GetAttribute(const char *element, const char *attName, char *value) override;
     void FireEvent(const char *element, const char *evtName) override;
@@ -480,7 +480,7 @@ public:
 private:
     TElement *createMaterialContainer(TElement *parent, CPresentation *presentation);
     void createComponent(QQmlComponent *component, TElement *element);
-    TElement *getTarget(const char *component);
+    TElement *getTarget(const QString &component);
     void listAllElements(TElement *root, QList<TElement *> &elements);
     void initializeDataInputsInPresentation(CPresentation &presentation, bool isPrimary,
                                             bool isDynamicAdd = false,
@@ -606,7 +606,8 @@ void CQmlEngineImpl::Initialize()
     }
 }
 
-bool queueAttributeChange(TElement *target, const char *attName, const char *value)
+bool queueAttributeChange(TElement *target, const char *attName, const char *value,
+                          TAttributeHash attrHash)
 {
     if (target->m_BelongedPresentation->GetActivityZone()) {
         TElement *componentElement = target->GetActivityZone().GetItemTimeParent(*target);
@@ -614,40 +615,46 @@ bool queueAttributeChange(TElement *target, const char *attName, const char *val
         // Queue changes to elements inside components that have not been activated even once
         if (component->GetCurrentSlide() == 0) {
             IPresentation *presentation = target->GetBelongedPresentation();
-            CQmlElementHelper::EnsureAttribute(target, attName);
+            CQmlElementHelper::EnsureAttribute(target, attName, attrHash);
             presentation->GetComponentManager().queueChange(componentElement, target,
-                                                            attName, value);
+                                                            attName, value, attrHash);
             return true;
         }
     }
     return false;
 }
 
-void CQmlEngineImpl::SetAttribute(TElement *target, const char *attName, const char *value)
+void CQmlEngineImpl::SetAttribute(TElement *target, const QString &attName, const char *value)
 {
     QML_ENGINE_MULTITHREAD_PROTECT_METHOD;
 
     if (target) {
-        if (!queueAttributeChange(target, attName, value)) {
-            bool success = CQmlElementHelper::SetAttribute(target, attName, value);
+        QByteArray att = attName.toUtf8();
+        auto attrHash = CHash::HashAttribute(attName);
+        if (!queueAttributeChange(target, att.constData(), value, attrHash)) {
+            bool success = CQmlElementHelper::SetAttribute(target, att.constData(), value,
+                                                           attrHash);
             if (!success) {
                 qCCritical(qt3ds::INVALID_OPERATION)
                         << "CQmlEngineImpl::SetAttribute: "
                         << "failed to set attribute on element"
-                        << target->m_Path.c_str() << ":" << attName << ":" << value;
+                        << target->path().c_str() << ":" << attName << ":" << value;
             }
         }
     }
 }
 
-void CQmlEngineImpl::SetAttribute(const char *element, const char *attName, const char *value)
+void CQmlEngineImpl::SetAttribute(const QString &element, const QString &attName, const char *value)
 {
     QML_ENGINE_MULTITHREAD_PROTECT_METHOD;
 
     TElement *theTarget = getTarget(element);
     if (theTarget) {
-        if (!queueAttributeChange(theTarget, attName, value)) {
-            bool success = CQmlElementHelper::SetAttribute(theTarget, attName, value);
+        QByteArray att = attName.toUtf8();
+        auto attrHash = CHash::HashAttribute(attName);
+        if (!queueAttributeChange(theTarget, att.constData(), value, attrHash)) {
+            bool success = CQmlElementHelper::SetAttribute(theTarget, att.constData(), value,
+                                                           attrHash);
             if (!success) {
                 qCCritical(qt3ds::INVALID_OPERATION)
                         << "CQmlEngineImpl::SetAttribute: "
@@ -934,7 +941,7 @@ void CQmlEngineImpl::SetDataInputValue(
                     // on master slide, and whose visibility setting must be persistent over
                     // slide changes.
                     TElement *element = getTarget(ctrlElem.elementPath.constData());
-                    auto hash = CHash::HashAttribute(ctrlElem.attributeName.first().constData());
+                    auto hash = CHash::HashAttribute(QString(ctrlElem.attributeName.first()));
 
                     if (hash == Q3DStudio::ATTRIBUTE_EYEBALL && element->m_OnMaster) {
                         element->GetActivityZone().setControlled(*element);
@@ -1104,14 +1111,14 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
 
         // Make sure the name is not duplicate
         TElement *existingChild
-                = parentElement->FindChild(CHash::HashString(newElementNameBa.constData()));
+                = parentElement->FindChild(CHash::HashString(newElementName));
         if (existingChild) {
             error = QObject::tr("Element already exists: '%1'").arg(elementPaths[elementIndex]);
             handleError();
             return;
         }
 
-        const CRegisteredString regName = strTable.RegisterStr(newElementNameBa);
+        const CRegisteredString regName = strTable.RegisterStr(newElementName);
         TPropertyDescAndValueList elementProperties;
         CRegisteredString metaType;
         const CRegisteredString elementSubType;
@@ -1191,7 +1198,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
                     regName, metaType, elementSubType,
                     toConstDataRef(elementProperties.data(), QT3DSU32(elementProperties.size())),
                     presentation, parentElement, false);
-        newElem.m_Path = strTable.RegisterStr(localElementPath);
+        newElem.setPath(strTable.RegisterStr(localElementPath));
 
         // Insert the new element into the correct slide
         if (!slideSystem.addSlideElement(component, slideIndex, newElem, eyeBall)) {
@@ -1214,7 +1221,7 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
                         presentation, &newElem, false);
 
             QString matElemPath = localElementPath + QLatin1String(".refmat");
-            newMatElem.m_Path = strTable.RegisterStr(matElemPath);
+            newMatElem.setPath(strTable.RegisterStr(matElemPath));
 
             if (!slideSystem.addSlideElement(component, slideIndex, newMatElem, eyeBall)) {
                 // Delete created element and material element if adding to slide failed
@@ -1231,10 +1238,11 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
             TElement *container = rootElement->FindChild(CHash::HashString("__Container"));
             TElement *firstChild = nullptr;
             if (container) {
-                TElement *nextChild = container->GetChild();
-                firstChild = nextChild;
-                while (nextChild) {
-                    QString childName = QString::fromUtf8(nextChild->m_Name);
+                auto children = container->children();
+                if (!children.isEmpty())
+                    firstChild = children.first();
+                for (auto nextChild : children) {
+                    QString childName = QString::fromUtf8(nextChild->name());
                     if (childName.endsWith(refMatName)) {
                         auto tr = static_cast<Qt3DSTranslator *>(
                                     nextChild->GetAssociation());
@@ -1242,7 +1250,6 @@ void CQmlEngineImpl::createElements(const QString &parentElementPath, const QStr
                                     &tr->RenderObject());
                         break;
                     }
-                    nextChild = nextChild->GetSibling();
                 }
             }
 
@@ -1459,17 +1466,14 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
             materialInfo->materialProps.remove(pathStr);
 
         // Check that the material doesn't already exist in container
-        TElement *firstChild = nullptr;
-        TElement *nextChild = container->GetChild();
-        firstChild = nextChild;
-        while (nextChild) {
-            QString childName = QString::fromUtf8(nextChild->m_Name);
+        const auto children = container->children();
+        for (auto nextChild : children) {
+            QString childName = QString::fromUtf8(nextChild->name());
             if (childName == materialInfo->materialName) {
                 error = QObject::tr("Material already exists in material container");
                 handleError();
                 return;
             }
-            nextChild = nextChild->GetSibling();
         }
 
         // Create material element in the container based on the material definition
@@ -1721,7 +1725,7 @@ void CQmlEngineImpl::createMaterials(const QString &subPresId,
             while (imageIter.hasNext()) {
                 imageIter.next();
                 TElement *imageElem = imageIter.value();
-                UVariant *propValue = newMatElem.FindPropertyValue(imageElem->m_Name);
+                UVariant *propValue = newMatElem.FindPropertyValue(imageElem->name());
                 if (propValue) {
                     propValue->m_ElementHandle = imageIter.value()->GetHandle();
 
@@ -1787,18 +1791,15 @@ void CQmlEngineImpl::deleteMaterials(const QStringList &materialNames, IQt3DSRen
             QVector<TElement *> elementsToDelete;
             const QList<QString> matNames = presMaterialMap.values(presId);
             for (const auto &materialName : matNames) {
-                TElement *firstChild = nullptr;
-                TElement *nextChild = container->GetChild();
-                firstChild = nextChild;
+                const auto children = container->children();
                 bool added = false;
-                while (nextChild) {
-                    QString childName = QString::fromUtf8(nextChild->m_Name);
+                for (auto nextChild : children) {
+                    QString childName = QString::fromUtf8(nextChild->name());
                     if (childName == materialName) {
                         elementsToDelete << nextChild;
                         added = true;
                         break;
                     }
-                    nextChild = nextChild->GetSibling();
                 }
                 if (!added) {
                     if (presId.isEmpty()) {
@@ -2106,19 +2107,19 @@ void CQmlEngineImpl::createComponent(QQmlComponent *component, TElement *element
     m_scripts.push_back(script);
 }
 
-TElement *CQmlEngineImpl::getTarget(const char *component) {
+TElement *CQmlEngineImpl::getTarget(const QString &component) {
     TElement *target = NULL;
-    QStringList split = QString(component).split(":");
-    if (split.size() > 1) {
+    int delimIndex = component.indexOf(":");
+    if (delimIndex > 0) {
         target = CQmlElementHelper::GetElement(
                     *m_Application,
-                    m_Application->LoadAndGetPresentationById(split.at(0).toStdString().c_str()),
-                    split.at(1).toStdString().c_str(), NULL);
+                    m_Application->LoadAndGetPresentationById(component.left(delimIndex)),
+                    component.right(delimIndex + 1), NULL);
     } else {
         target = CQmlElementHelper::GetElement(
                     *m_Application,
                     m_Application->GetPrimaryPresentation(),
-                    split.at(0).toStdString().c_str(), NULL);
+                    component, NULL);
     }
     return target;
 }
@@ -2126,11 +2127,9 @@ TElement *CQmlEngineImpl::getTarget(const char *component) {
 void CQmlEngineImpl::listAllElements(TElement *root, QList<TElement *> &elements)
 {
     elements.append(root);
-    TElement *nextChild = root->GetChild();
-    while (nextChild) {
+    const auto children(root->children());
+    for (auto nextChild : children)
         listAllElements(nextChild, elements);
-        nextChild = nextChild->GetSibling();
-    }
 }
 
 // Initializes datainput bindings in the presentation starting by default from the root element.
@@ -2179,11 +2178,11 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                         if (ctrlElem.attributeName.first() == QByteArrayLiteral("@timeline")) {
                             ctrlElem.propertyType = ATTRIBUTETYPE_DATAINPUT_TIMELINE;
                             TElement *component = &element->GetComponentParent();
-                            ctrlElem.elementPath.append(component->m_Path);
+                            ctrlElem.elementPath.append(component->path());
                         } else if (ctrlElem.attributeName.first() == QByteArrayLiteral("@slide")) {
                             ctrlElem.propertyType = ATTRIBUTETYPE_DATAINPUT_SLIDE;
                             TElement *component = &element->GetComponentParent();
-                            ctrlElem.elementPath.append(component->m_Path);
+                            ctrlElem.elementPath.append(component->path());
                         } else if (diMap[controllerName].type
                                    == qt3ds::runtime::DataInOutTypeVector4) {
                             // special handling for vector datatype to handle
@@ -2194,7 +2193,7 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                                 element);
                             if (!attVec.empty() && success) {
                                 ctrlElem.attributeName = attVec;
-                                ctrlElem.elementPath.append(element->m_Path);
+                                ctrlElem.elementPath.append(element->path());
                                 ctrlElem.propertyType = ATTRIBUTETYPE_FLOAT4;
                             } else {
                                 qWarning() << __FUNCTION__ << "Property "
@@ -2212,7 +2211,7 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                                 element);
                             if (!attVec.empty() && success) {
                                 ctrlElem.attributeName = attVec;
-                                ctrlElem.elementPath.append(element->m_Path);
+                                ctrlElem.elementPath.append(element->path());
                                 ctrlElem.propertyType = ATTRIBUTETYPE_FLOAT3;
                             } else {
                                 qWarning() << __FUNCTION__ << "Property "
@@ -2230,7 +2229,7 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                                 element);
                             if (!attVec.empty() && success) {
                                 ctrlElem.attributeName = attVec;
-                                ctrlElem.elementPath.append(element->m_Path);
+                                ctrlElem.elementPath.append(element->path());
                                 ctrlElem.propertyType = ATTRIBUTETYPE_FLOAT2;
                             } else {
                                 qWarning() << __FUNCTION__ << "Property "
@@ -2250,22 +2249,22 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                             for (auto ref : referencedDIs)
                                 diMap[ref].dependents.append(controllerName);
 
-                            ctrlElem.elementPath.append(element->m_Path);
+                            ctrlElem.elementPath.append(element->path());
                             TStringHash attHash = CHash::HashAttribute(
-                                ctrlElem.attributeName.first().constData());
+                                QString(ctrlElem.attributeName.first()));
                             Option<qt3ds::runtime::element::TPropertyDescAndValuePtr> attInfo
                                 = element->FindProperty(attHash);
                             if (attInfo.hasValue())
-                                ctrlElem.propertyType = attInfo->first.m_Type;
+                                ctrlElem.propertyType = attInfo->first.type();
                         } else {
                             // all other scalar datatypes
-                            ctrlElem.elementPath.append(element->m_Path);
+                            ctrlElem.elementPath.append(element->path());
                             TStringHash attHash = CHash::HashAttribute(
-                                ctrlElem.attributeName.first().constData());
+                                QString(ctrlElem.attributeName.first()));
                             Option<qt3ds::runtime::element::TPropertyDescAndValuePtr> attInfo
                                 = element->FindProperty(attHash);
                             if (attInfo.hasValue()) {
-                                ctrlElem.propertyType = attInfo->first.m_Type;
+                                ctrlElem.propertyType = attInfo->first.type();
                             } else {
                                 ctrlElem.propertyType = ATTRIBUTETYPE_NONE;
                                 qWarning() << __FUNCTION__ << "Property "
@@ -2373,7 +2372,7 @@ void CQmlEngineImpl::initializeDataOutputsInPresentation(CPresentation &presenta
                         // Timeline requires special additional handling
                         obsElem.propertyType = ATTRIBUTETYPE_DATAINPUT_TIMELINE;
                         TElement *component = &element->GetComponentParent();
-                        obsElem.elementPath.append(component->m_Path);
+                        obsElem.elementPath.append(component->path());
 
                         // Find the TElement for the @timeline attrib
                         TElement *target = nullptr;
@@ -2396,13 +2395,13 @@ void CQmlEngineImpl::initializeDataOutputsInPresentation(CPresentation &presenta
                         // slide transitions
                     } else {
                         // Every other type is handled by CPresentation
-                        obsElem.elementPath.append(element->m_Path);
+                        obsElem.elementPath.append(element->path());
                         TStringHash attHash = CHash::HashAttribute(
                                     obsElem.attributeName.first().constData());
                         Option<qt3ds::runtime::element::TPropertyDescAndValuePtr> attInfo
                                 = element->FindProperty(attHash);
                         if (attInfo.hasValue()) {
-                            obsElem.propertyType = attInfo->first.m_Type;
+                            obsElem.propertyType = attInfo->first.type();
                         } else {
                             obsElem.propertyType = ATTRIBUTETYPE_NONE;
                             qWarning() << __FUNCTION__ << "Property"
@@ -2437,7 +2436,7 @@ void CQmlEngineImpl::removeDataInputControl(const QVector<TElement *> &inElement
         while (diMapIter.hasNext()) {
             diMapIter.next();
             for (const auto &inOutAttr : qAsConst(diMapIter.value().controlledAttributes)) {
-                if (inOutAttr.elementPath == QByteArray(elem->m_Path))
+                if (inOutAttr.elementPath == QByteArray(elem->path()))
                     elemAttrsToRemove.append({diMapIter.key(), inOutAttr});
             }
         }
@@ -2457,7 +2456,7 @@ bool CQmlEngineImpl::getAttributeVector4(QVector<QByteArray> &outAttVec,
                                          const QByteArray &attName,
                                          TElement *elem)
 {
-    auto hashName = Q3DStudio::CHash::HashAttribute(attName + ".x");
+    auto hashName = Q3DStudio::CHash::HashAttribute(QString(attName + ".x"));
 
     if (!elem->FindProperty(hashName).isEmpty()) {
         outAttVec.append(attName + ".x");
@@ -2466,7 +2465,7 @@ bool CQmlEngineImpl::getAttributeVector4(QVector<QByteArray> &outAttVec,
         outAttVec.append(attName + ".w");
         return true;
     }
-    hashName = Q3DStudio::CHash::HashAttribute(attName + ".r");
+    hashName = Q3DStudio::CHash::HashAttribute(QString(attName + ".r"));
     if (!elem->FindProperty(hashName).isEmpty()) {
         outAttVec.append(attName + ".r");
         outAttVec.append(attName + ".g");
@@ -2481,7 +2480,7 @@ bool CQmlEngineImpl::getAttributeVector3(QVector<QByteArray> &outAttVec,
                                          const QByteArray &attName,
                                          TElement *elem)
 {
-    auto hashName = Q3DStudio::CHash::HashAttribute(attName + ".x");
+    auto hashName = Q3DStudio::CHash::HashAttribute(QString(attName + ".x"));
 
     if (!elem->FindProperty(hashName).isEmpty()) {
         outAttVec.append(attName + ".x");
@@ -2489,7 +2488,7 @@ bool CQmlEngineImpl::getAttributeVector3(QVector<QByteArray> &outAttVec,
         outAttVec.append(attName + ".z");
         return true;
     }
-    hashName = Q3DStudio::CHash::HashAttribute(attName + ".r");
+    hashName = Q3DStudio::CHash::HashAttribute(QString(attName + ".r"));
     if (!elem->FindProperty(hashName).isEmpty()) {
         outAttVec.append(attName + ".r");
         outAttVec.append(attName + ".g");
@@ -2503,7 +2502,7 @@ bool CQmlEngineImpl::getAttributeVector2(QVector<QByteArray> &outAttVec,
                                          const QByteArray &attName,
                                          TElement *elem)
 {
-    auto hashName = Q3DStudio::CHash::HashAttribute(attName + ".x");
+    auto hashName = Q3DStudio::CHash::HashAttribute(QString(attName + ".x"));
 
     if (!elem->FindProperty(hashName).isEmpty()) {
         outAttVec.append(attName + ".x");
@@ -2511,7 +2510,7 @@ bool CQmlEngineImpl::getAttributeVector2(QVector<QByteArray> &outAttVec,
         return true;
     }
 
-    hashName = Q3DStudio::CHash::HashAttribute(attName + ".u");
+    hashName = Q3DStudio::CHash::HashAttribute(QString(attName + ".u"));
     if (!elem->FindProperty(hashName).isEmpty()) {
         outAttVec.append(attName + ".u");
         outAttVec.append(attName + ".v");
@@ -2798,12 +2797,9 @@ void CQmlEngineImpl::deleteElements(const QVector<TElement *> &elements,
             if (m_elementIdMap.contains(elem))
                 releaseId(m_elementIdMap.take(elem));
 
-            TElement *child = elem->m_Child;
-            while (child) {
-                TElement *sibling = child->m_Sibling;
+            const auto children(elem->children());
+            for (auto child : children)
                 deleteRenderObjects(child);
-                child = sibling;
-            }
 
             auto translator = static_cast<qt3ds::render::Qt3DSTranslator *>(elem->GetAssociation());
             if (translator) {

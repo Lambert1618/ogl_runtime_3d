@@ -337,11 +337,9 @@ struct SSlideSystem : public ISlideSystem
 
     void removeElementRecursive(SSlide *slide, element::SElement &inElement)
     {
-        element::SElement *child = inElement.m_Child;
-        while (child) {
+        const auto children = inElement.children();
+        for (auto child : children)
             removeElementRecursive(slide, *child);
-            child = child->m_Sibling;
-        }
 
         SSlideElement *slideElement = slide->m_FirstElement;
         SSlideElement *previousElement = nullptr;

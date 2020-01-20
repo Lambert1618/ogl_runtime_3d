@@ -1156,7 +1156,7 @@ BOOL CUIPParserImpl::LoadSceneGraph(IPresentation &inPresentation, IDOMReader &i
             thePath.insert(0, theNode->m_Name);
         }
         if (thePath.size())
-            theNewElem.m_Path = m_ParseElementManager.m_StringTable.RegisterStr(thePath.c_str());
+            theNewElem.setPath(m_ParseElementManager.m_StringTable.RegisterStr(thePath.c_str()));
 
         if (isBehavior) {
             if (theFileString.find(".qml") != eastl::string::npos) {
@@ -2321,7 +2321,7 @@ BOOL CUIPParserImpl::LoadSlideElementAttrs(IPresentation &inPresentation, bool m
                 for (QT3DSU32 idx = previousListSize, end = theAttributeList.size(); idx < end;
                      ++idx) {
                     UVariant *theValue = inElementData.m_Element->FindPropertyValue(
-                        theAttributeList[idx].first.m_Name);
+                        theAttributeList[idx].first.name());
                     if (theValue) {
                         *theValue = theAttributeList[idx].second;
                     }

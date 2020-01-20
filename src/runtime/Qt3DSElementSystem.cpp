@@ -65,7 +65,7 @@ struct SPropertyDescSorter
 {
     bool operator()(const TPropertyDescAndValue &lhs, const TPropertyDescAndValue &rhs) const
     {
-        return strcmp(lhs.first.m_Name.c_str(), rhs.first.m_Name.c_str()) < 0;
+        return strcmp(lhs.first.name().c_str(), rhs.first.name().c_str()) < 0;
     }
 };
 QT3DSU32 GetNumValueAllocations(const STypeDesc &inTypeDesc)
@@ -165,7 +165,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
         GetIgnoredProperties();
         const bool isImage = inType == m_StringTable.RegisterStr("Image");
         for (QT3DSU32 idx = 0, end = inPropertyDescriptions.size(); idx < end; ++idx) {
-            QT3DSU32 nameHash = inPropertyDescriptions[idx].first.GetNameHash();
+            QT3DSU32 nameHash = inPropertyDescriptions[idx].first.nameHash();
             // Make image instances explicitly not participate in the timegraph. This way their
             // default start/end time does not have impact into lifetimes of their parents.
             // This fixes QT3DS-3669 where image default end time overrode parent endtime when
@@ -175,7 +175,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                 participatesInTimeGraph = true;
             }
             if (eastl::find(m_IgnoredProperties.begin(), m_IgnoredProperties.end(),
-                            inPropertyDescriptions[idx].first.m_Name)
+                            inPropertyDescriptions[idx].first.name())
                 == m_IgnoredProperties.end()) {
                 m_TempPropertyDescsAndValues.push_back(inPropertyDescriptions[idx]);
             }
@@ -210,19 +210,11 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
         SElement *retval = inIsComponent ? m_Components.construct(theTypeDesc, __FILE__, __LINE__)
                                          : m_Elements.construct(theTypeDesc, __FILE__, __LINE__);
         retval->m_BelongedPresentation = inPresentation;
-        retval->m_Name = inName;
+        retval->setName(inName);
         // children
-        if (inParent) {
-            retval->m_Parent = inParent;
-            if (inParent->m_Child == NULL) {
-                inParent->m_Child = retval;
-            } else {
-                SElement *lastChild = inParent->m_Child;
-                while (lastChild->m_Sibling)
-                    lastChild = lastChild->m_Sibling;
-                lastChild->m_Sibling = retval;
-            }
-        }
+        if (inParent)
+            retval->setParent(inParent);
+
         while (FindElementByHandle(m_NextElementHandle)) {
             ++m_NextElementHandle;
             if (!m_NextElementHandle)
@@ -264,25 +256,13 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
     void ReleaseElement(SElement &inElement, bool inRecurse) override
     {
         if (inRecurse) {
-            while (inElement.m_Child)
-                ReleaseElement(*inElement.m_Child, true);
+            const auto children = inElement.children();
+            for (auto child : children)
+                ReleaseElement(*child, true);
         }
         // Trim out the element.
-        if (inElement.m_Parent) {
-            SElement *theParent = inElement.m_Parent;
-            if (theParent->m_Child == &inElement)
-                theParent->m_Child = inElement.m_Sibling;
-            else {
-                SElement *thePreviousChild = NULL;
-                // Empty loop to find the previous child
-                for (thePreviousChild = theParent->m_Child;
-                     thePreviousChild->m_Sibling != &inElement && thePreviousChild;
-                     thePreviousChild = thePreviousChild->m_Sibling) {
-                }
-                if (thePreviousChild)
-                    thePreviousChild->m_Sibling = inElement.m_Sibling;
-            }
-        }
+        if (inElement.GetParent())
+            inElement.GetParent()->removeChild(&inElement);
 
         m_HandleToElements.erase(inElement.m_Handle);
 
@@ -369,7 +349,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
             newProp = (SPropertyDesc *)m_AutoAllocator.allocate(allocSize, "SPropertyDesc",
                                                                 __FILE__, __LINE__, 0);
 
-            newProp->m_Name = inName;
+            newProp->setName(inName);
 
             // convert to appropriate type
             if (thePropertyType == Q3DStudio::ERuntimeDataModelDataTypeFloat) {
@@ -377,7 +357,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                     element.m_TypeDescription->m_TypeName, theWorkSpaceString,
                     element.m_TypeDescription->m_SubtypeName);
 
-                newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_FLOAT;
+                newProp->setType(Q3DStudio::ATTRIBUTETYPE_FLOAT);
 
                 Q3DStudio::UVariant theValue;
                 theValue.m_FLOAT = value;
@@ -389,7 +369,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                 qt3ds::QT3DSVec2 value = theMetaData.GetPropertyValueVector2(
                     element.m_TypeDescription->m_TypeName, theWorkSpaceString,
                     element.m_TypeDescription->m_SubtypeName);
-                newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_FLOAT;
+                newProp->setType(Q3DStudio::ATTRIBUTETYPE_FLOAT);
 
                 Q3DStudio::UVariant theVarValue;
                 theVarValue.m_FLOAT = value[extIndex];
@@ -404,7 +384,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                     element.m_TypeDescription->m_SubtypeName);
 
                 if (separateProperties) {
-                    newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_FLOAT;
+                    newProp->setType(Q3DStudio::ATTRIBUTETYPE_FLOAT);
 
                     Q3DStudio::UVariant theVarValue;
                     theVarValue.m_FLOAT = value[extIndex];
@@ -412,7 +392,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                         SPropertyDesc(theWorkSpaceString, Q3DStudio::ATTRIBUTETYPE_FLOAT),
                         theVarValue));
                 } else {
-                    newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_FLOAT3;
+                    newProp->setType(Q3DStudio::ATTRIBUTETYPE_FLOAT3);
 
                     Q3DStudio::UVariant theVarValue;
                     theVarValue.m_FLOAT3[0] = value[0];
@@ -429,7 +409,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                     element.m_TypeDescription->m_TypeName, theWorkSpaceString,
                     element.m_TypeDescription->m_SubtypeName);
 
-                newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_INT32;
+                newProp->setType(Q3DStudio::ATTRIBUTETYPE_INT32);
 
                 Q3DStudio::UVariant theVarValue;
                 theVarValue.m_INT32 = value;
@@ -443,7 +423,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                     element.m_TypeDescription->m_TypeName, theWorkSpaceString,
                     element.m_TypeDescription->m_SubtypeName);
 
-                newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_BOOL;
+                newProp->setType(Q3DStudio::ATTRIBUTETYPE_BOOL);
 
                 Q3DStudio::UVariant theVarValue;
                 theVarValue.m_INT32 = value;
@@ -456,7 +436,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
                     element.m_TypeDescription->m_TypeName, theWorkSpaceString,
                     element.m_TypeDescription->m_SubtypeName);
 
-                newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_STRING;
+                newProp->setType(Q3DStudio::ATTRIBUTETYPE_STRING);
 
                 CStringHandle theString = m_StringTable.GetHandle(theRuntimeStr->c_str());
                 Q3DStudio::UVariant theVarValue;
@@ -467,7 +447,7 @@ struct SElementAllocator : public qt3ds::runtime::IElementAllocator
 
                 theTypeDesc->m_DynamicProperties.push_back(*newProp);
             } else {
-                newProp->m_Type = Q3DStudio::ATTRIBUTETYPE_FLOAT;
+                newProp->setType(Q3DStudio::ATTRIBUTETYPE_FLOAT);
 
                 theTypeDesc->m_DynamicProperties.push_back(*newProp);
             }
@@ -539,7 +519,7 @@ bool STypeDesc::operator==(const STypeDesc &inOther) const
         for (QT3DSU32 idx = 0, end = m_Properties.size(); idx < end; ++idx) {
             const SPropertyDesc &lhs = m_Properties[idx];
             const SPropertyDesc &rhs = inOther.m_Properties[idx];
-            if (lhs.m_Name != rhs.m_Name || lhs.m_Type != rhs.m_Type)
+            if (lhs.name() != rhs.name() || lhs.type() != rhs.type())
                 return false;
         }
         return true;
@@ -551,7 +531,7 @@ Option<QT3DSU32> STypeDesc::FindProperty(QT3DSU32 inNameHash) const
 {
     for (QT3DSU32 idx = 0, end = m_Properties.size(); idx < end; ++idx) {
         const SPropertyDesc &theDesc = m_Properties[idx];
-        if (Q3DStudio::CHash::HashAttribute(theDesc.m_Name) == inNameHash)
+        if (theDesc.nameHash() == inNameHash)
             return idx;
     }
     return Empty();
@@ -559,19 +539,15 @@ Option<QT3DSU32> STypeDesc::FindProperty(QT3DSU32 inNameHash) const
 
 Option<QT3DSU32> STypeDesc::FindProperty(CRegisteredString inName) const
 {
-    for (QT3DSU32 idx = 0, end = m_Properties.size(); idx < end; ++idx) {
-        const SPropertyDesc &theDesc = m_Properties[idx];
-        if (theDesc.m_Name == inName)
-            return idx;
-    }
-    return Empty();
+    const auto hash = Q3DStudio::CHash::HashAttribute(inName);
+    return FindProperty(hash);
 }
 
 Option<QT3DSU32> STypeDesc::FindDynamicProperty(QT3DSU32 inNameHash) const
 {
     for (QT3DSU32 idx = 0, end = m_DynamicProperties.size(); idx < end; ++idx) {
         const SPropertyDesc &theDesc = m_DynamicProperties[idx];
-        if (Q3DStudio::CHash::HashAttribute(theDesc.m_Name) == inNameHash)
+        if (theDesc.nameHash() == inNameHash)
             return idx;
     }
     return Empty();
@@ -581,16 +557,29 @@ void STypeDesc::SetHashValue()
 {
     size_t typeDescHash = m_TypeName.hash() ^ m_SubtypeName.hash();
     for (QT3DSU32 idx = 0, end = m_Properties.size(); idx < end; ++idx) {
-        typeDescHash = typeDescHash ^ m_Properties[idx].m_Name.hash();
-        typeDescHash = typeDescHash ^ eastl::hash<QT3DSU32>()(m_Properties[idx].m_Type);
+        typeDescHash = typeDescHash ^ m_Properties[idx].name().hash();
+        typeDescHash = typeDescHash ^ eastl::hash<QT3DSU32>()(m_Properties[idx].type());
     }
     // TODO check 64 bit compatibility
     m_HashValue = (QT3DSU32)typeDescHash;
 }
 
-QT3DSU32 SPropertyDesc::GetNameHash() const
+SPropertyDesc::SPropertyDesc(CRegisteredString inStr, Q3DStudio::EAttributeType inType)
+    : m_Name(inStr)
+    , m_nameHash(Q3DStudio::CHash::HashAttribute(inStr.c_str()))
+    , m_Type(inType)
 {
-    return Q3DStudio::CHash::HashAttribute(m_Name.c_str());
+}
+
+void SPropertyDesc::setName(CRegisteredString name)
+{
+    m_Name = name;
+    m_nameHash = Q3DStudio::CHash::HashAttribute(name.c_str());
+}
+
+QT3DSU32 SPropertyDesc::nameHash() const
+{
+    return m_nameHash;
 }
 
 Q3DStudio::SAttributeKey SPropertyDesc::GetAttributeKey() const
@@ -598,7 +587,7 @@ Q3DStudio::SAttributeKey SPropertyDesc::GetAttributeKey() const
     Q3DStudio::SAttributeKey retval;
     memZero(&retval, sizeof(retval));
     retval.m_Type = m_Type;
-    retval.m_Hash = GetNameHash();
+    retval.m_Hash = nameHash();
     return retval;
 }
 
@@ -670,9 +659,9 @@ void SElement::stopAnimations(QT3DSU32 propHash)
 void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVariant inValue,
                             bool forceSet)
 {
-    Q3DStudio::EAttributeType theType = inKey.first.m_Type;
+    Q3DStudio::EAttributeType theType = inKey.first.type();
     Q3DStudio::UVariant *currentValue = inKey.second;
-    QT3DSU32 attHash = inKey.first.GetNameHash();
+    QT3DSU32 attHash = inKey.first.nameHash();
 
     // If there is an active animation for this property, disable it. Otherwise the set value
     // gets overwritten immediately as animation update takes place.
@@ -719,10 +708,44 @@ void SElement::SetAttribute(TPropertyDescAndValuePtr inKey, const Q3DStudio::UVa
     SetDirty();
 }
 
+void SElement::setParent(SElement *parent)
+{
+    if (m_Parent)
+        m_Parent->removeChild(this);
+    m_Parent = parent;
+    if (m_Parent)
+        m_Parent->addChild(this);
+}
+void SElement::addChild(SElement *child)
+{
+    m_children.insert(child->GetNameHash(), child);
+}
+
+void SElement::removeChild(SElement *child)
+{
+    auto key = m_children.key(child);
+    m_children.remove(key);
+}
+
+void SElement::updateChildName(SElement *child)
+{
+    auto key = m_children.key(child);
+    m_children.remove(key);
+    m_children.insert(child->GetNameHash(), child);
+}
+
+void SElement::setName(CRegisteredString name)
+{
+    m_Name = name;
+    m_nameHash = Q3DStudio::CHash::HashString(name);
+    if (m_Parent)
+        m_Parent->updateChildName(this);
+}
+
 // SElement implementation
 QT3DSU32 SElement::GetNameHash() const
 {
-    return Q3DStudio::CHash::HashString(m_Name.c_str());
+    return m_nameHash;
 }
 
 // Q3DStudio::CHash::HashAttribute
@@ -848,11 +871,7 @@ const SElement &SElement::GetComponentParent() const
 
 SElement *SElement::FindChild(QT3DSU32 inNameHash)
 {
-    for (SElement *theChild = m_Child; theChild; theChild = theChild->m_Sibling) {
-        if (theChild->GetNameHash() == inNameHash)
-            return theChild;
-    }
-    return NULL;
+    return m_children.value(inNameHash);
 }
 
 Q3DStudio::TTimeUnit SElement::GetInnerTime() const

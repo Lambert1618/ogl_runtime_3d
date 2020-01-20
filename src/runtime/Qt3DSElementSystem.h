@@ -68,19 +68,23 @@ namespace runtime {
     namespace element {
         struct SPropertyDesc
         {
+        private:
             CRegisteredString m_Name;
+            QT3DSU32 m_nameHash;
             Q3DStudio::EAttributeType m_Type;
+        public:
             SPropertyDesc()
-                : m_Type(Q3DStudio::ATTRIBUTETYPE_NONE)
+                : m_nameHash(0)
+                , m_Type(Q3DStudio::ATTRIBUTETYPE_NONE)
             {
             }
-            SPropertyDesc(CRegisteredString inStr, Q3DStudio::EAttributeType inType)
-                : m_Name(inStr)
-                , m_Type(inType)
-            {
-            }
-            QT3DSU32 GetNameHash() const; // CHash::HashAttribute
+            SPropertyDesc(CRegisteredString inStr, Q3DStudio::EAttributeType inType);
+            QT3DSU32 nameHash() const; // CHash::HashAttribute
             Q3DStudio::SAttributeKey GetAttributeKey() const;
+            Q3DStudio::EAttributeType type() const { return m_Type; }
+            CRegisteredString name() const { return m_Name; }
+            void setName(CRegisteredString name);
+            void setType(Q3DStudio::EAttributeType type) { m_Type = type; };
         };
 
         struct STypeDesc
@@ -157,7 +161,7 @@ namespace runtime {
             }
         };
 
-        struct SElement;
+        class SElement;
 
         struct SActivationManagerNode
         {
@@ -259,17 +263,19 @@ namespace runtime {
             Q3DStudio::UVariant m_Data[4];
             SPropertyValueGroup *m_NextNode;
             SPropertyValueGroup()
-                : m_NextNode(NULL)
+                : m_NextNode(nullptr)
             {
                 for (QT3DSU32 idx = 0; idx < NumValues; ++idx)
                     m_Data[idx].m_INT32 = 0;
             }
         };
 
-        struct SElement
+        class SElement
         {
             CRegisteredString m_Name; // const, do not set after creation.
             CRegisteredString m_Path;
+            QT3DSU32 m_nameHash;
+        public:
             const STypeDesc *m_TypeDescription; ///< static information created on load time
             // The property values are in order described in the type description.
             SPropertyValueGroup *m_PropertyValues;
@@ -283,29 +289,35 @@ namespace runtime {
             QT3DSU32 m_Handle;
             QT3DSU32 m_ScriptID; ///< Superfluous, could use handle to link to script representation
             QT3DSU32 m_Depth; ///< Distance from this node to the root of the graph.
+        private:
             SElement *m_Parent; ///< Parent element in activity graph
-            SElement *m_Sibling; ///< Next sibling element in activity graph
-            SElement *m_Child; ///< First child element in activity graph
+            QHash<QT3DSU32, SElement *> m_children;
+        public:
             bool m_OnMaster = false;
             void *m_Association; ///< Link to associated asset in scene
             Q3DStudio::IPresentation *m_BelongedPresentation;
             SActivationManagerNode m_ActivationManagerNode;
 
             SElement(const STypeDesc &inDesc)
-                : m_TypeDescription(&inDesc)
-                , m_PropertyValues(NULL)
-                , m_DynamicTypeDescription(NULL)
-                , m_DynamicPropertyValues(NULL)
+                : m_nameHash(0)
+                , m_TypeDescription(&inDesc)
+                , m_PropertyValues(nullptr)
+                , m_DynamicTypeDescription(nullptr)
+                , m_DynamicPropertyValues(nullptr)
                 , m_Handle(0)
                 , m_ScriptID(0)
                 , m_Depth(0)
-                , m_Parent(NULL)
-                , m_Sibling(NULL)
-                , m_Child(NULL)
-                , m_Association(NULL)
-                , m_BelongedPresentation(NULL)
+                , m_Parent(nullptr)
+                , m_Association(nullptr)
+                , m_BelongedPresentation(nullptr)
             {
             }
+            void updateChildName(SElement *child);
+            QList<SElement *> children() const { return m_children.values(); };
+            CRegisteredString name() const { return m_Name; }
+            CRegisteredString path() const { return m_Path; }
+            void setName(CRegisteredString name);
+            void setPath(CRegisteredString path) { m_Path = path; }
             QT3DSU32 GetHandle() const { return m_Handle; }
             const STypeDesc &GetTypeDescription() const { return *m_TypeDescription; }
             void SetTypeDescription(const STypeDesc *inDesc) { m_TypeDescription = inDesc; }
@@ -356,7 +368,7 @@ namespace runtime {
                     if (theVal.hasValue())
                         return theVal->second;
                 }
-                return NULL;
+                return nullptr;
             }
             const Q3DStudio::UVariant *FindPropertyValue(QT3DSU32 inNameHash) const
             {
@@ -366,7 +378,7 @@ namespace runtime {
                     if (theVal.hasValue())
                         return theVal->second;
                 }
-                return NULL;
+                return nullptr;
             }
             Q3DStudio::UVariant *FindPropertyValue(CRegisteredString inNameHash)
             {
@@ -376,7 +388,7 @@ namespace runtime {
                     if (theVal.hasValue())
                         return theVal->second;
                 }
-                return NULL;
+                return nullptr;
             }
 
             const Q3DStudio::UVariant *FindPropertyValue(CRegisteredString inNameHash) const
@@ -387,7 +399,7 @@ namespace runtime {
                     if (theVal.hasValue())
                         return theVal->second;
                 }
-                return NULL;
+                return nullptr;
             }
 
             Option<TPropertyDescAndValuePtr> FindProperty(QT3DSU32 inNameHash)
@@ -407,12 +419,11 @@ namespace runtime {
                 return Empty();
             }
 
+            void setParent(SElement *parent);
+            void addChild(SElement *child);
+            void removeChild(SElement *child);
             SElement *GetParent() { return m_Parent; }
             const SElement *GetParent() const { return m_Parent; }
-            SElement *GetSibling() { return m_Sibling; }
-            const SElement *GetSibling() const { return m_Sibling; }
-            SElement *GetChild() { return m_Child; }
-            const SElement *GetChild() const { return m_Child; }
             CRegisteredString GetType() const { return m_TypeDescription->m_TypeName; }
             bool IsComponent() const { return m_Flags.IsComponent(); }
 
@@ -514,7 +525,7 @@ namespace runtime {
 
             bool IsTimeActive() const
             {
-                if (m_Parent != NULL)
+                if (m_Parent != nullptr)
                     return m_ActivationManagerNode.m_Flags.IsTimeActive();
                 return true;
             }
@@ -532,11 +543,9 @@ namespace runtime {
             {
                 if (IsComponent())
                     components.push_back(this);
-                SElement *child = m_Child;
-                while (child) {
+                const auto list = children();
+                for (auto child : list)
                     child->findComponents(components);
-                    child = child->m_Sibling;
-                }
             }
 
             // Sets animation on property to inactive.
@@ -569,15 +578,18 @@ namespace runtime {
             }
         };
 
-        struct SComponent : public SElement
+        class SComponent : public SElement
         {
             Q3DStudio::SAlignedTimeUnit m_BeginTime;
             Q3DStudio::SAlignedTimeUnit m_Duration;
 
             // Slide related
+        public:
             QT3DSU8 m_SlideCount; ///< Number of slides starting from base index
+        private:
             QT3DSU8 m_CurrentSlide; ///< Current slide number
             QT3DSU8 m_PreviousSlide; ///< Previous slide number
+        public:
             SComponent(const STypeDesc &inDesc)
                 : SElement(inDesc)
                 , m_SlideCount(0)

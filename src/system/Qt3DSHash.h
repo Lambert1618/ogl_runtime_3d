@@ -30,6 +30,7 @@
 
 #pragma once
 #include "Qt3DSConfig.h"
+#include <qstring.h>
 
 //==============================================================================
 //	Namespace
@@ -77,6 +78,37 @@ public: // Static utility
         return theHash;
     }
 
+    static TStringHash HashString(const QString &inString)
+    {
+        TStringHash theHash = 0;
+        INT32 theCount = 0;
+        for (auto theChar : inString) {
+            if (theCount == HASH_LIMIT)
+                break;
+            theHash = theChar.toLatin1() + (theHash << 6) + (theHash << 16) - theHash;
+            ++theCount;
+        }
+        theHash = (theHash << 6) + (theHash << 16) - theHash;
+
+        return theHash;
+    }
+
+    static TStringHash HashString(const QString &inString, int begin, int end)
+    {
+        TStringHash theHash = 0;
+        INT32 theCount = 0;
+        for (int i = begin; i < end; ++i) {
+            if (theCount == HASH_LIMIT)
+                break;
+            theHash = inString.at(i).toLatin1() + (theHash << 6) + (theHash << 16) - theHash;
+            ++theCount;
+        }
+        theHash = (theHash << 6) + (theHash << 16) - theHash;
+
+        return theHash;
+    }
+
+
     //==============================================================================
     /**
      *	31-bit hash with MSB set to 0
@@ -97,6 +129,11 @@ public: // Static utility
      *	@return the 26-bit hash value
      */
     static TAttributeHash HashAttribute(const CHAR *inString)
+    {
+        return HashString(inString) & 0x03ffffff;
+    }
+
+    static TAttributeHash HashAttribute(const QString &inString)
     {
         return HashString(inString) & 0x03ffffff;
     }

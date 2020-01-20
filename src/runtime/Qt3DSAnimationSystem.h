@@ -45,7 +45,7 @@ namespace runtime {
     using namespace qt3ds::foundation;
 
     namespace element {
-        struct SElement;
+        class SElement;
     }
     class IElementAllocator;
 
