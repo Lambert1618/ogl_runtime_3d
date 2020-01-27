@@ -334,6 +334,8 @@ struct SBatchLoader : public IImageBatchLoader
     void ImageLoaded(SLoadingImage &inImage, SLoadedTexture *inTexture)
     {
         TScopedLock __loaderLock(m_LoaderMutex);
+        if (inTexture == nullptr)
+            qCWarning(WARNING, "Failed to load image: %s", inImage.m_SourcePath.c_str());
         m_LoadedImages.push_back(
             SBatchLoadedImage(inImage.m_SourcePath, inTexture, *inImage.m_Batch));
         inImage.m_Batch->IncrementLoadedImageCount();
