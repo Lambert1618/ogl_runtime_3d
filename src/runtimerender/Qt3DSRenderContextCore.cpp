@@ -667,56 +667,58 @@ struct SRenderContext : public IQt3DSRenderContext
 
     void BeginFrame(bool firstFrame) override
     {
-        m_PreRenderPresentationDimensions = m_PresentationDimensions;
-        QSize thePresentationDimensions(m_PreRenderPresentationDimensions);
-        NVRenderRect theContextViewport(GetContextViewport());
-        m_PerFrameAllocator.reset();
-        IRenderList &theRenderList(*m_RenderList);
-        theRenderList.BeginFrame();
-        if (m_Viewport.hasValue()) {
-            theRenderList.SetScissorTestEnabled(true);
-            theRenderList.SetScissorRect(theContextViewport);
-        } else {
-            theRenderList.SetScissorTestEnabled(false);
-        }
-        bool renderOffscreen = m_Rotation != RenderRotationValues::NoRotation;
-        eastl::pair<NVRenderRect, NVRenderRect> thePresViewportAndOuterViewport =
-            GetPresentationViewportAndOuterViewport();
-        NVRenderRect theOuterViewport = thePresViewportAndOuterViewport.second;
-        // Calculate the presentation viewport perhaps with the window width and height swapped.
-        NVRenderRect thePresentationViewport = thePresViewportAndOuterViewport.first;
-        m_PresentationViewport = thePresentationViewport;
-        m_PresentationScale = QT3DSVec2(
-            (QT3DSF32)thePresentationViewport.m_Width / (QT3DSF32)thePresentationDimensions.width(),
-            (QT3DSF32)thePresentationViewport.m_Height / (QT3DSF32)thePresentationDimensions.height());
-        QSize fboDimensions;
-        if (thePresentationViewport.m_Width > 0 && thePresentationViewport.m_Height > 0) {
-            if (renderOffscreen == false) {
-                m_PresentationDimensions = QSize(thePresentationViewport.m_Width,
-                                                             thePresentationViewport.m_Height);
-                m_RenderList->SetViewport(thePresentationViewport);
-                if (thePresentationViewport.m_X || thePresentationViewport.m_Y
-                    || thePresentationViewport.m_Width != (QT3DSI32)theOuterViewport.m_Width
-                    || thePresentationViewport.m_Height != (QT3DSI32)theOuterViewport.m_Height) {
-                    m_RenderList->SetScissorRect(thePresentationViewport);
-                    m_RenderList->SetScissorTestEnabled(true);
-                }
+        if (m_StereoView != StereoViews::Right) {
+            m_PreRenderPresentationDimensions = m_PresentationDimensions;
+            QSize thePresentationDimensions(m_PreRenderPresentationDimensions);
+            NVRenderRect theContextViewport(GetContextViewport());
+            m_PerFrameAllocator.reset();
+            IRenderList &theRenderList(*m_RenderList);
+            theRenderList.BeginFrame();
+            if (m_Viewport.hasValue()) {
+                theRenderList.SetScissorTestEnabled(true);
+                theRenderList.SetScissorRect(theContextViewport);
             } else {
-                QT3DSU32 imageWidth = ITextRenderer::NextMultipleOf4(thePresentationViewport.m_Width);
-                QT3DSU32 imageHeight =
-                    ITextRenderer::NextMultipleOf4(thePresentationViewport.m_Height);
-                fboDimensions = QSize(imageWidth, imageHeight);
-                m_PresentationDimensions = QSize(thePresentationViewport.m_Width,
-                                                             thePresentationViewport.m_Height);
-                NVRenderRect theSceneViewport = NVRenderRect(0, 0, imageWidth, imageHeight);
-                m_RenderList->SetScissorTestEnabled(false);
-                m_RenderList->SetViewport(theSceneViewport);
+                theRenderList.SetScissorTestEnabled(false);
             }
-        }
+            bool renderOffscreen = m_Rotation != RenderRotationValues::NoRotation;
+            eastl::pair<NVRenderRect, NVRenderRect> thePresViewportAndOuterViewport =
+                GetPresentationViewportAndOuterViewport();
+            NVRenderRect theOuterViewport = thePresViewportAndOuterViewport.second;
+            // Calculate the presentation viewport perhaps with the window width and height swapped.
+            NVRenderRect thePresentationViewport = thePresViewportAndOuterViewport.first;
+            m_PresentationViewport = thePresentationViewport;
+            m_PresentationScale = QT3DSVec2(
+                (QT3DSF32)thePresentationViewport.m_Width / (QT3DSF32)thePresentationDimensions.width(),
+                (QT3DSF32)thePresentationViewport.m_Height / (QT3DSF32)thePresentationDimensions.height());
+            QSize fboDimensions;
+            if (thePresentationViewport.m_Width > 0 && thePresentationViewport.m_Height > 0) {
+                if (renderOffscreen == false) {
+                    m_PresentationDimensions = QSize(thePresentationViewport.m_Width,
+                                                     thePresentationViewport.m_Height);
+                    m_RenderList->SetViewport(thePresentationViewport);
+                    if (thePresentationViewport.m_X || thePresentationViewport.m_Y
+                        || thePresentationViewport.m_Width != (QT3DSI32)theOuterViewport.m_Width
+                        || thePresentationViewport.m_Height != (QT3DSI32)theOuterViewport.m_Height) {
+                        m_RenderList->SetScissorRect(thePresentationViewport);
+                        m_RenderList->SetScissorTestEnabled(true);
+                    }
+                } else {
+                    QT3DSU32 imageWidth = ITextRenderer::NextMultipleOf4(thePresentationViewport.m_Width);
+                    QT3DSU32 imageHeight =
+                        ITextRenderer::NextMultipleOf4(thePresentationViewport.m_Height);
+                    fboDimensions = QSize(imageWidth, imageHeight);
+                    m_PresentationDimensions = QSize(thePresentationViewport.m_Width,
+                                                     thePresentationViewport.m_Height);
+                    NVRenderRect theSceneViewport = NVRenderRect(0, 0, imageWidth, imageHeight);
+                    m_RenderList->SetScissorTestEnabled(false);
+                    m_RenderList->SetViewport(theSceneViewport);
+                }
+            }
 
-        m_BeginFrameResult = SBeginFrameResult(
-            renderOffscreen, m_PresentationDimensions, m_RenderList->IsScissorTestEnabled(),
-            m_RenderList->GetScissor(), m_RenderList->GetViewport(), fboDimensions);
+            m_BeginFrameResult = SBeginFrameResult(
+                renderOffscreen, m_PresentationDimensions, m_RenderList->IsScissorTestEnabled(),
+                m_RenderList->GetScissor(), m_RenderList->GetViewport(), fboDimensions);
+        }
 
         m_Renderer->BeginFrame();
         m_OffscreenRenderManager->BeginFrame();
@@ -724,7 +726,8 @@ struct SRenderContext : public IQt3DSRenderContext
             m_TextRenderer->BeginFrame();
         if (m_TextTextureCache)
             m_TextTextureCache->BeginFrame();
-        m_ImageBatchLoader->BeginFrame(firstFrame);
+        if (m_StereoView != StereoViews::Right)
+            m_ImageBatchLoader->BeginFrame(firstFrame);
     }
 
     QT3DSVec2 GetPresentationScaleFactor() const override { return m_PresentationScale; }

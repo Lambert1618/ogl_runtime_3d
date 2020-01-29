@@ -1511,26 +1511,30 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
             m_Scenes[idx].second->TransferDirtyProperties();
         }
 
-        if (theFirstScene && theFirstScene->m_Presentation) {
-            m_LastRenderedScene = theFirstScene;
-            if (theFirstScene->m_Presentation->m_Scene
-                && theFirstScene->m_Presentation->m_Scene->m_UseClearColor) {
-                m_Context->m_Context->SetSceneColor(
-                    theFirstScene->m_Presentation->m_Scene->m_ClearColor);
-            } else
-                m_Context->m_Context->SetSceneColor(QT3DSVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        if (m_Context->m_Context->GetStereoView() != StereoViews::Right) {
+            if (theFirstScene && theFirstScene->m_Presentation) {
+                m_LastRenderedScene = theFirstScene;
+                if (theFirstScene->m_Presentation->m_Scene
+                    && theFirstScene->m_Presentation->m_Scene->m_UseClearColor) {
+                    m_Context->m_Context->SetSceneColor(
+                        theFirstScene->m_Presentation->m_Scene->m_ClearColor);
+                } else {
+                    m_Context->m_Context->SetSceneColor(QT3DSVec4(0.0f, 0.0f, 0.0f, 0.0f));
+                }
 
-            // Setup the render rotation *before* rendering so that the magic can happen on begin
-            // render.
-            if (m_Context->m_RenderRotationsEnabled)
-                m_Context->m_Context->SetRenderRotation(
-                    theFirstScene->m_Presentation->m_PresentationRotation);
-            else
-                m_Context->m_Context->SetRenderRotation(RenderRotationValues::NoRotation);
+                // Setup the render rotation *before* rendering so that the magic
+                // can happen on begin render.
+                if (m_Context->m_RenderRotationsEnabled) {
+                    m_Context->m_Context->SetRenderRotation(
+                        theFirstScene->m_Presentation->m_PresentationRotation);
+                } else {
+                    m_Context->m_Context->SetRenderRotation(RenderRotationValues::NoRotation);
+                }
 
-            m_Context->m_Context->SetPresentationDimensions(QSize(
-                int(theFirstScene->m_Presentation->m_PresentationDimensions.x),
-                int(theFirstScene->m_Presentation->m_PresentationDimensions.y)));
+                m_Context->m_Context->SetPresentationDimensions(QSize(
+                    int(theFirstScene->m_Presentation->m_PresentationDimensions.x),
+                    int(theFirstScene->m_Presentation->m_PresentationDimensions.y)));
+            }
         }
 
         m_Context->m_Context->BeginFrame(firstFrame);
@@ -1554,7 +1558,11 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
         if (theFirstScene)
             theFirstScene->Render();
 
-        m_Context->m_Context->EndFrame();
+        if (m_Context->m_Context->GetStereoMode() == StereoModes::Mono
+            || m_Context->m_Context->GetStereoView() == StereoViews::Right) {
+            // For stereo, run endframe only after right eye
+            m_Context->m_Context->EndFrame();
+        }
 
         return wasDirty;
     }
