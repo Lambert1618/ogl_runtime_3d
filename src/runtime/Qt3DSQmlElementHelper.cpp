@@ -80,7 +80,7 @@ TElement *CQmlElementHelper::GetElement(qt3ds::runtime::IApplication &inApplicat
     TElement *theElement = inStartElement;
     if (delimIndex > 0) {
         thePresentation = inApplication.LoadAndGetPresentationById(path.left(delimIndex));
-        path = path.right(delimIndex + 1);
+        path = path.right(path.length() - delimIndex - 1);
     }
 
     if (thePresentation == nullptr)
