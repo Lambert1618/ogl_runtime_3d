@@ -943,7 +943,7 @@ void CQmlEngineImpl::SetDataInputValue(
                     TElement *element = getTarget(ctrlElem.elementPath.constData());
                     auto hash = CHash::HashAttribute(QString(ctrlElem.attributeName.first()));
 
-                    if (hash == Q3DStudio::ATTRIBUTE_EYEBALL && element->m_OnMaster) {
+                    if (element && hash == Q3DStudio::ATTRIBUTE_EYEBALL && element->m_OnMaster) {
                         element->GetActivityZone().setControlled(*element);
                         element->SetControlledActive(valueBool);
                     }
