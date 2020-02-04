@@ -1230,6 +1230,21 @@ struct SApp : public IApplication
             QVector<QString> newAssets;
 
             getComponentSlideAssets(newAssets, presentation, component, index);
+
+            // Load subpresentations of components under non-master slides of the main scene
+            // Also load subpresentation located in master slides of sub-components
+            if (presentation->GetRoot() != component || index > 0) {
+                QVector<element::SElement *> components;
+                component->findComponents(components);
+                for (int i = 0; i < components.size(); ++i) {
+                    if (components[i] != component
+                            && slidesystem.isElementInSlide(*components[i], *component, index)) {
+                        getComponentSlideAssets(newAssets, presentation, components[i], 0);
+                        getComponentSlideAssets(newAssets, presentation, components[i], 1);
+                    }
+                }
+            }
+
             if (newAssets.size())
                 qCInfo(TRACE_INFO) << "Slide assets: " << newAssets;
             for (QT3DSU32 idx = 0, end = m_OrderedAssets.size(); idx < end; ++idx) {
@@ -1348,10 +1363,14 @@ struct SApp : public IApplication
                 if (inAsset.m_Id.IsValid())
                     newScene->RegisterOffscreenRenderer(inAsset.m_Id);
 
+                // Load scene master slide resources
+                // Also load master slide resources of components located in the master slide
                 QVector<TElement *> components;
                 thePresentation->GetRoot()->findComponents(components);
-                for (auto &component : qAsConst(components))
-                    loadComponentSlideResources(component, thePresentation, 0, "Master", true);
+                for (auto &component : qAsConst(components)) {
+                    if (component->m_OnMaster || component == thePresentation->GetRoot())
+                        loadComponentSlideResources(component, thePresentation, 0, "Master", true);
+                }
 
                 return true;
             }
@@ -2111,9 +2130,12 @@ struct SXMLLoader : public IAppLoadContext
         QVector<element::SElement*> components;
         mainPresentation->GetRoot()->findComponents(components);
 
+        // Load subpresentations of components under master slide
         for (int i = 0; i < components.size(); ++i) {
-            m_App.getComponentSlideAssets(initialAssets, mainPresentation, components[i], 0);
-            m_App.getComponentSlideAssets(initialAssets, mainPresentation, components[i], 1);
+            if (components[i]->m_OnMaster || components[i] == mainPresentation->GetRoot()) {
+                m_App.getComponentSlideAssets(initialAssets, mainPresentation, components[i], 0);
+                m_App.getComponentSlideAssets(initialAssets, mainPresentation, components[i], 1);
+            }
         }
 
         if (!delayedLoading || (m_App.m_OrderedAssets.size() > 1 && initialAssets.size() > 0)) {
