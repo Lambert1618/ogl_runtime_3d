@@ -96,6 +96,15 @@ Q3DSViewerSettings::~Q3DSViewerSettings()
 */
 
 /*!
+    \enum Q3DSViewerSettings::ShadeMode
+
+    This enumeration specifies the possible shading modes.
+
+    \value ShadeModeShaded Shades the surfaces normally. This is the default.
+    \value ShadeModeShadedWireframe Renders wireframe on top of shaded surfaces.
+*/
+
+/*!
     \qmlproperty QColor ViewerSettings::matteColor
 
     Specifies the matte color.
@@ -155,17 +164,18 @@ void Q3DSViewerSettings::setShowRenderStats(bool show)
     }
 }
 
-/*
-    //! TODO
-    \internal
-    \qmlproperty enumeration ViewerSettings::shadeMode
+/*!
+    \fn Q3DSViewerSettings::shadeModeChanged(ShadeMode mode)
+
+    Emitted when shade \a mode is changed.
+*/
+
+/*!
+    Returns the shading mode used.
+
+    \sa Q3DSViewerSettings::ShadeMode
  */
 
-/*
-    // TODO
-    \internal
-    \property Q3DSViewerSettings::shadeMode
- */
 Q3DSViewerSettings::ShadeMode Q3DSViewerSettings::shadeMode() const
 {
     return d_ptr->m_shadeMode;
@@ -200,21 +210,13 @@ void Q3DSViewerSettings::setShadeMode(Q3DSViewerSettings::ShadeMode mode)
 /*!
     \property Q3DSViewerSettings::scaleMode
 
-    Specifies the scaling mode. The default value \c is ScaleModeFill where the
-    size of the presentation on-screen follows and fills the size of the output
-    area (the window, the screen, or the area occupied by the \l Studio3D
-    element).
-
-    During the design phase it can be valuable to see the presentation with
-    some other scaling approach. For example, the Qt 3D Studio Viewer
-    application uses ScaleModeCenter by default.
+    Specifies the scaling mode.
 
     \value ScaleModeFit Scales the presentation to fit the output area.
     \value ScaleModeFill Scales the presentation to completely fill the output area.
     \value ScaleModeCenter Centers the presentation in the output area without scaling it.
+*/
 
-    The default value is \c{ScaleModeFill}.
- */
 Q3DSViewerSettings::ScaleMode Q3DSViewerSettings::scaleMode() const
 {
     return d_ptr->m_scaleMode;
@@ -262,6 +264,20 @@ void Q3DSViewerSettings::setScaleMode(Q3DSViewerSettings::ScaleMode mode)
 
     The default value is \c{StereoModeMono}.
  */
+
+/*!
+    \enum Q3DSViewerSettings::StereoMode
+
+    \since Qt 3D Studio 2.5
+
+    This enumeration specifies the possible stereoscopic viewing modes.
+
+    \value StereoModeMono This is the default value.
+    \value StereoModeTopBottom
+    \value StereoModeLeftRight
+    \value StereoModeAnaglyphRedCyan
+    \value StereoModeAnaglyphGreenMagenta
+*/
 Q3DSViewerSettings::StereoMode Q3DSViewerSettings::stereoMode() const
 {
     return d_ptr->m_stereoMode;

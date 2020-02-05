@@ -77,10 +77,10 @@ Q_SIGNALS:
 protected:
     explicit Q3DSDataInput(Q3DSDataInputPrivate *d, Q3DSPresentation *presentation,
                            const QString &name, QObject *parent = nullptr);
-    Q3DSDataInputPrivate *d_ptr;
 
 private:
     Q_DISABLE_COPY(Q3DSDataInput)
+    Q3DSDataInputPrivate *d_ptr;
     friend class Q3DSPresentationPrivate;
     friend class Q3DSPresentation;
     friend class Q3DSRenderer;

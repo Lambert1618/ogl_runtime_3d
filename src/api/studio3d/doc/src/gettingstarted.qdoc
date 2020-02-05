@@ -68,10 +68,7 @@
 
     \li Qt Quick: here applications import QtStudio3D.OpenGL \QtVer which
     provides the \l [QML] Studio3D QML type, a Qt Quick item that can be
-    added to Qt Quick scenes. Under the hood this is similar to adding a
-    \l [QML] Scene3D (when working directly with the lower level Qt 3D
-    framework) or a custom item based on \l QQuickFramebufferObject into
-    the scene.
+    added to Qt Quick scenes.
 
     \li QWindow or offscreen render targets (OpenGL texture): Q3DSSurfaceViewer
     can be used both to render to an on-screen QWindow, as well as off-screen

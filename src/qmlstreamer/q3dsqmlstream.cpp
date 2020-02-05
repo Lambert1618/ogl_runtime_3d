@@ -36,7 +36,7 @@
     \ingroup OpenGLRuntime
     \brief Allows streaming of QML as subpresentation.
 
-    \sa Studio3D, Presentation, SubPresentation
+    \sa Studio3D, Presentation
 */
 /*!
     \class Q3DSQmlStream

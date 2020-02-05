@@ -15,7 +15,7 @@ headerdirs              += ../.. \
 
 imagedirs               += ./src/images
 
-depends = qtcore qtgui qtwidgets qtqml qtquick qtquickcontrols qt3dstudio qt3dstudioruntime2 qtdoc qmake
+depends = qtcore qtgui qtwidgets qtqml qtquick qtquickcontrols qtdoc qmake
 
 qhp.projects            = QtStudio3D
 
@@ -55,9 +55,7 @@ buildversion                   = "Qt 3D Studio OpenGL Runtime $QT_VER Manual"
 
 macro.RUNTIME                  = Qt 3D Studio OpenGL Runtime
 
-#TODO: adjust these once we have runtime-specific examples
-# examplesinstallpath     = studio3d
-# exampledirs            += ../examples/studio3d
+examplesinstallpath     = studio3d
+exampledirs            += ../../../../examples/studio3d
 
 Cpp.ignoretokens     += Q3DSV_EXPORT Q_STUDIO3D_EXPORT
-depends += qt3d

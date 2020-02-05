@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
  * \brief Q3DSSurfaceViewer::Q3DSSurfaceViewer Constructor.
- * \param parent Optional parent of the object.
+ * \a parent Optional parent of the object.
  */
 Q3DSSurfaceViewer::Q3DSSurfaceViewer(QObject *parent)
     : QObject(parent)
@@ -277,6 +277,14 @@ int Q3DSSurfaceViewer::fboId() const
 }
 
 /*!
+    \property Q3DSSurfaceViewer::error
+
+    Error string.
+
+    This property is read-only.
+*/
+
+/*!
     Returns the error string.
 */
 QString Q3DSSurfaceViewer::error() const
@@ -375,6 +383,12 @@ void Q3DSSurfaceViewer::setQmlEngine(QQmlEngine *qmlEngine)
     \fn Q3DSSurfaceViewer::presentationReady()
     Emitted when first frame is about to be shown. DataInputs and setAttribute
     are ready to be used after this signal.
+ */
+
+/*!
+    \fn Q3DSSurfaceViewer::afterRendering()
+
+    Emitted when a frame has been rendered.
  */
 
 /*!

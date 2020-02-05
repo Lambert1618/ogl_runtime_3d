@@ -287,7 +287,9 @@ void Q3DSGeometry::addAttribute(Q3DSGeometry::Attribute::Semantic semantic,
 }
 
 /*!
-    This is an overloaded function.
+    Sets an attribute \a att to this geometry.
+
+    \sa addAttribute
  */
 void Q3DSGeometry::addAttribute(const Q3DSGeometry::Attribute &att)
 {

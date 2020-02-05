@@ -112,10 +112,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \dontdocument QMetaTypeId
-*/
-
-/*!
     \internal
  */
 Q3DSDataInput::Q3DSDataInput(QObject *parent)
@@ -410,28 +406,6 @@ void Q3DSDataInputPrivate::setCommandQueue(CommandQueue *queue)
 }
 
 /*!
-    \qmlproperty string DataInput::name
-
-    Specifies the name of the controlled data input element in the
-    presentation. This property must be set as part of DataInput declaration,
-    although it is changeable afterwards, if desired.
-*/
-
-/*!
-    \qmlproperty variant DataInput::value
-
-    Specifies the value of the controlled data input element in the presentation.
-
-    The value of this property only accounts for changes done via the same
-    DataInput instance. If the value of the underlying attribute in the
-    presentation is changed elsewhere, for example via animations or
-    Presentation::setAttribute(), those changes are not reflected in the value
-    of this property. Due to this uncertainty, this property treats all value
-    sets as changes even if the newly set value is the same value as the
-    previous value.
-*/
-
-/*!
     \qmlproperty real DataInput::min
 
     Contains the minimum value of the controlled data input element range.
@@ -459,6 +433,20 @@ void Q3DSDataInputPrivate::setCommandQueue(CommandQueue *queue)
     Contains the metadata keys specified for this datainput.
 
     \note This value is read-only.
+*/
+
+/*!
+    \property Q3DSDataInput::metadataKeys
+
+    Contains the metadata keys specified for this datainput.
+
+    \note This value is read-only.
+*/
+
+/*!
+    \qmlmethod list<string> DataInput::metadataKeys
+
+    Contains the metadata keys specified for this datainput.
 */
 
 QT_END_NAMESPACE

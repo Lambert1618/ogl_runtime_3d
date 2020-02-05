@@ -91,7 +91,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype Presentation
-    \instantiates Q3DSPresentationItem
     \inqmlmodule QtStudio3D.OpenGL
     \ingroup OpenGLRuntime
     \inherits Q3DSPresentation
@@ -733,7 +732,7 @@ void Q3DSPresentation::exportShaderCache(QByteArray &cacheData, bool binaryShade
 
 /*!
     \since Qt 3D Studio 2.6
-    Specifies the shader cache data to be used for initial shader initialization.
+    Specifies the \a shaderCache data to be used for initial shader initialization.
     This method must be called before the presentation is shown.
     Using cached shaders improves presentation initialization speed.
 
@@ -1162,8 +1161,8 @@ void Q3DSPresentation::createElement(const QString &parentElementPath, const QSt
     specified with \a slideName. Element properties are specified in \a properties.
     For more details, see createElement().
 
-    \sa createElement()
-    \sa elementsCreated()
+    \sa Q3DSPresentation::createElement()
+    \sa Q3DSPresentation::elementsCreated()
  */
 void Q3DSPresentation::createElements(const QString &parentElementPath, const QString &slideName,
                                       const QVector<QHash<QString, QVariant>> &properties)
@@ -1224,8 +1223,8 @@ void Q3DSPresentation::deleteElements(const QStringList &elementPaths)
 
     \note Elements can only be dynamically created via C++ API.
 
-    \sa createElement()
-    \sa createElements()
+    \sa Q3DSPresentation::createElement()
+    \sa Q3DSPresentation::createElements()
 */
 
 /*!
@@ -1360,9 +1359,6 @@ void Q3DSPresentation::deleteMaterials(const QStringList &materialNames)
     This property is read-only.
 
     \note Materials can only be dynamically created via C++ API.
-
-    \sa createMaterial()
-    \sa createMaterials()
 */
 
 /*!
@@ -1475,9 +1471,6 @@ void Q3DSPresentation::deleteMeshes(const QStringList &meshNames)
     This property is read-only.
 
     \note Meshes can only be dynamically created via C++ API.
-
-    \sa createMesh()
-    \sa createMeshes()
 */
 
 /*!
@@ -1691,8 +1684,7 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
     If creation failed, \a error string indicates the reason.
 
-    \sa createElement()
-    \sa createElements()
+    \note Elements can only be dynamically created via C++ API.
  */
 
 /*!
@@ -1716,8 +1708,7 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
     If creation failed, \a error string indicates the reason.
 
-    \sa createMaterial()
-    \sa createMaterials()
+    \note Materials can only be dynamically created via C++ API.
  */
 
 /*!
@@ -1742,8 +1733,7 @@ void Q3DSPresentation::keyReleaseEvent(QKeyEvent *e)
 
     If creation failed, \a error string indicates the reason.
 
-    \sa createMesh()
-    \sa createMeshes()
+    \note Meshes can only be dynamically created via C++ API.
  */
 
 /*!
