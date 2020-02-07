@@ -38,6 +38,7 @@
 #include <QtCore/qstringlist.h>
 #include <QtStudio3D/q3dsdatainput.h>
 #include <QtStudio3D/q3dsdataoutput.h>
+#include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -130,6 +131,7 @@ public:
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
 
     uint textureId(const QString &elementPath);
+    uint textureId(const QString &elementPath, QSize &size, GLenum &format);
 
 public Q_SLOTS:
     void setSource(const QUrl &source);

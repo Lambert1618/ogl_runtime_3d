@@ -38,6 +38,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
+#include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
 class QQmlImageProviderBase;
@@ -189,6 +190,8 @@ public: // Elements
                               qt3ds::render::IBufferManager *bufferManager) = 0;
     virtual uint textureId(const QString &elementPath,
                            qt3ds::render::IQt3DSRenderer *renderer) = 0;
+    virtual uint textureId(const QString &elementPath, qt3ds::render::IQt3DSRenderer *renderer,
+                           QSize &size, GLenum &format) = 0;
 
 public: // Components
     virtual void GotoSlide(const char *component, const char *slideName,

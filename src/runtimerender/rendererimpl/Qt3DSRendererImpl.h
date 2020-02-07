@@ -388,6 +388,10 @@ namespace render {
 
         uint getLayerTextureId(SLayer &layer) override;
 
+        STextureDetails getLayerTextureDetails(SLayer &inLayer) override;
+
+        GLenum getTextureGlFormat(NVRenderTextureFormats::Enum internalFormat) override;
+
         Option<SLayerPickSetup> GetLayerPickSetup(SLayer &inLayer,
                                                           const QT3DSVec2 &inMouseCoords,
                                                           const QSize &inPickDims) override;
@@ -566,7 +570,6 @@ namespace render {
         Option<QT3DSVec2> GetLayerMouseCoords(SLayer &inLayer, const QT3DSVec2 &inMouseCoords,
                                                    const QT3DSVec2 &inViewportDimensions,
                                                    bool forceImageIntersect = false) const override;
-
     protected:
         Option<QT3DSVec2> GetLayerMouseCoords(SLayerRenderData &inLayer, const QT3DSVec2 &inMouseCoords,
                                            const QT3DSVec2 &inViewportDimensions,

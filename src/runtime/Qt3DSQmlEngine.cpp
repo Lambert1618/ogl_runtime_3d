@@ -452,6 +452,8 @@ public:
                       qt3ds::render::IBufferManager *bufferManager) override;
     uint textureId(const QString &elementPath,
                    qt3ds::render::IQt3DSRenderer *renderer) override;
+    uint textureId(const QString &elementPath, qt3ds::render::IQt3DSRenderer *renderer, QSize &size,
+                   GLenum &format) override;
 
     void GotoSlide(const char *component, const char *slideName,
                            const SScriptEngineGotoSlideArgs &inArgs) override;
@@ -1859,6 +1861,38 @@ uint CQmlEngineImpl::textureId(const QString &elementPath,
             }
         }
     }
+    return 0;
+}
+
+uint CQmlEngineImpl::textureId(const QString &elementPath, qt3ds::render::IQt3DSRenderer *renderer,
+                               QSize &size, GLenum &format)
+{
+    TElement *elem = getTarget(elementPath.toUtf8().constData());
+    if (elem) {
+        auto translator = static_cast<qt3ds::render::Qt3DSTranslator *>(elem->GetAssociation());
+        if (translator) {
+            qt3ds::render::GraphObjectTypes::Enum elemType = translator->GetUIPType();
+            if (elemType == qt3ds::render::GraphObjectTypes::Layer) {
+                auto layer = static_cast<qt3ds::render::SLayer *>(&translator->RenderObject());
+                auto texdetails = renderer->getLayerTextureDetails(*layer);
+                size = QSize(texdetails.m_Width, texdetails.m_Height);
+                // Assume that NVRenderTextureFormats enums match GL texture format enums
+                format = renderer->getTextureGlFormat(texdetails.m_Format);
+                return renderer->getLayerTextureId(*layer);
+            } else if (elemType == qt3ds::render::GraphObjectTypes::Image) {
+                auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
+                if (image->m_TextureData.m_Texture) {
+                    auto texdetails = image->m_TextureData.m_Texture->GetTextureDetails();
+                    size = QSize(texdetails.m_Width, texdetails.m_Height);
+                    format = renderer->getTextureGlFormat(texdetails.m_Format);
+                    return static_cast<uint>(reinterpret_cast<size_t>(
+                                image->m_TextureData.m_Texture->GetTextureObjectHandle()));
+                }
+            }
+        }
+    }
+    size = {};
+    format = GL_INVALID_ENUM;
     return 0;
 }
 

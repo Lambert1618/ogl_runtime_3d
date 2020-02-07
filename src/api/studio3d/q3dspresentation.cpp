@@ -1025,6 +1025,25 @@ uint Q3DSPresentation::textureId(const QString &elementPath)
 }
 
 /*!
+    \since Qt 3D Studio 2.7
+    Returns the OpenGL texture id associated with a layer or an image specified
+    by \a elementPath. Texture \a size and \a format are returned in corresponding parameters.
+
+    For example, \c{Scene.Layer} returns the texture id of a layer while
+    \c{Scene.Layer.Rectangle.Material.diffusemap} returns the texture id of
+    an image or a subpresentation.
+ */
+uint Q3DSPresentation::textureId(const QString &elementPath, QSize &size, GLenum &format)
+{
+    if (d_ptr->m_viewerApp)
+        return d_ptr->m_viewerApp->textureId(elementPath, size, format);
+
+    size = {};
+    format = GL_INVALID_ENUM;
+    return 0;
+}
+
+/*!
     Activate or deactivate the presentation identified by \a id depending
     on the value of \a active.
  */

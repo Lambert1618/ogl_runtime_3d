@@ -85,6 +85,8 @@ private slots:
     void testMouseInput();
     void testDataInput_data();
     void testDataInput();
+    void testTextureQuery();
+    void testTextureQuery_data();
 
 private:
     QWindow *createWindow(const QSize &size);
@@ -1507,6 +1509,64 @@ void tst_Q3DSSurfaceViewer::testDataInput()
     delete slideInput;
 }
 
+void tst_Q3DSSurfaceViewer::testTextureQuery_data()
+{
+    testBasics_data();
+}
+
+void tst_Q3DSSurfaceViewer::testTextureQuery()
+{
+    QFETCH(bool, isWindow);
+
+    if (isWindow)
+        createWindowAndViewer(m_viewer, DATAINPUT);
+    else
+        createOffscreenAndViewer(m_viewer, DATAINPUT);
+
+    m_viewer->settings()->setScaleMode(Q3DSViewerSettings::ScaleModeFill);
+
+    QGuiApplication::processEvents();
+    // Test texture info getters, first for layer then for individual material.
+    // Texture id's are likely to change if test ordering changes.
+    QSize texsize;
+    GLenum format;
+
+    uint textureid = m_viewer->presentation()->textureId("Scene.Layer", texsize, format);
+    if (isWindow)
+        QCOMPARE(textureid, 6);
+    else
+        QCOMPARE(textureid, 7);
+
+    QCOMPARE(texsize, QSize(300,200));
+    QCOMPARE(format, GL_RGBA8);
+
+    textureid = m_viewer->presentation()->textureId("Scene.Layer.Rectangle.Default.diffusemap",
+                                                    texsize, format);
+    if (isWindow)
+        QCOMPARE(textureid, 1);
+    else
+        QCOMPARE(textureid, 2);
+    QCOMPARE(texsize, QSize(400,200));
+    QCOMPARE(format, GL_RGBA8);
+
+    m_viewer->presentation()->setAttribute("Scene.Layer.Rectangle.Default.diffusemap",
+                                           "subpresentation", "");
+    m_viewer->presentation()->setAttribute("Scene.Layer.Rectangle.Default.diffusemap", "sourcepath",
+                                           "maps/OpenfootageNET_garage-512.hdr");
+
+    QGuiApplication::processEvents();
+
+    // Changed to HDR texture, studio-internally RGB8E but texture query should map to GL RGBA8
+    textureid = m_viewer->presentation()->textureId("Scene.Layer.Rectangle.Default.diffusemap",
+                                                    texsize, format);
+    if (isWindow)
+        QCOMPARE(textureid, 8);
+    else
+        QCOMPARE(textureid, 9);
+
+    QCOMPARE(texsize, QSize(512,256));
+    QCOMPARE(format, GL_RGBA8);
+}
 
 QTEST_MAIN(tst_Q3DSSurfaceViewer)
 

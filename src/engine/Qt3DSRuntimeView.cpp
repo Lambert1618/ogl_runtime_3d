@@ -53,6 +53,8 @@
 #include "foundation/Qt3DSSimpleTypes.h"
 #include "foundation/TrackingAllocator.h"
 #include "foundation/Qt3DSPerfTimer.h"
+#include <QtGui/qopengl.h>
+
 // For perf log timestamp
 #include <time.h>
 #include "Qt3DSArray.h"
@@ -229,6 +231,7 @@ public:
     void deleteMeshes(const QStringList &meshNames) override;
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider) override;
     uint textureId(const QString &elementPath) override;
+    uint textureId(const QString &elementPath, QSize &size, GLenum &format) override;
     void SetAttribute(const char *elementPath, const char *attributeName,
                       const char *value) override;
     bool GetAttribute(const char *elementPath, const char *attributeName, void *value) override;
@@ -776,6 +779,20 @@ uint CRuntimeView::textureId(const QString &elementPath)
         return theBridgeEngine.textureId(elementPath,
                                          &m_RuntimeFactory->GetQt3DSRenderContext().GetRenderer());
     }
+    return 0;
+}
+
+uint CRuntimeView::textureId(const QString &elementPath, QSize &size, GLenum &format)
+{
+    if (m_Application) {
+        Q3DStudio::CQmlEngine &theBridgeEngine
+                = static_cast<Q3DStudio::CQmlEngine &>(m_RuntimeFactoryCore->GetScriptEngineQml());
+        return theBridgeEngine.textureId(elementPath,
+                                         &m_RuntimeFactory->GetQt3DSRenderContext().GetRenderer(),
+                                         size, format);
+    }
+    size = {};
+    format = GL_INVALID_ENUM;
     return 0;
 }
 

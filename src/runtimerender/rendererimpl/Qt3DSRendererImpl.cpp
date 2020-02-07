@@ -57,6 +57,7 @@
 #include "Qt3DSRenderPath.h"
 #include "Qt3DSRenderShaderCodeGeneratorV2.h"
 #include "Qt3DSRenderDefaultMaterialShaderGenerator.h"
+#include "backends/gl/Qt3DSOpenGLUtil.h"
 #include <stdlib.h>
 
 #ifdef _WIN32
@@ -981,6 +982,39 @@ namespace render {
                                          data->m_LayerTexture->GetTextureObjectHandle()));
         }
         return 0;
+    }
+
+    GLenum Qt3DSRendererImpl::getTextureGlFormat(NVRenderTextureFormats::Enum internalFormat)
+    {
+        auto ctxType = m_Context->GetRenderContextType();
+        GLConversion conversion;
+        GLenum glInternalFormat, glformat, gltype;
+
+        if (NVRenderTextureFormats::isUncompressedTextureFormat(internalFormat)) {
+            conversion.fromUncompressedTextureFormatToGL(ctxType, internalFormat,
+                                                         glformat, gltype, glInternalFormat);
+            return glInternalFormat;
+        } else if (NVRenderTextureFormats::isCompressedTextureFormat(internalFormat)) {
+            return conversion.fromCompressedTextureFormatToGL(internalFormat);
+        } else if (NVRenderTextureFormats::isDepthTextureFormat(internalFormat)) {
+            conversion.fromDepthTextureFormatToGL(ctxType, internalFormat, glformat,
+                                                  gltype, glInternalFormat);
+            return glInternalFormat;
+        } else {
+            return GL_INVALID_ENUM;
+        }
+    }
+
+    STextureDetails Qt3DSRendererImpl::getLayerTextureDetails(SLayer &inLayer)
+    {
+        SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inLayer);
+
+        if (theData->m_LayerCachedTexture)
+            return theData->m_LayerCachedTexture->GetTextureDetails();
+        if (theData->m_LayerTexture)
+            return theData->m_LayerTexture->GetTextureDetails();
+
+        return {};
     }
 
     Option<SLayerPickSetup> Qt3DSRendererImpl::GetLayerPickSetup(SLayer &inLayer,

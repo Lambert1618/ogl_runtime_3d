@@ -1064,6 +1064,16 @@ uint Q3DSViewerApp::textureId(const QString &elementPath)
     return m_Impl.m_view->textureId(elementPath);
 }
 
+uint Q3DSViewerApp::textureId(const QString &elementPath, QSize &size, GLenum &format)
+{
+    if (!m_Impl.m_view) {
+        size = {};
+        format = GL_INVALID_ENUM;
+        return 0;
+    }
+    return m_Impl.m_view->textureId(elementPath, size, format);
+}
+
 Q3DSViewerApp &Q3DSViewerApp::Create(void *glContext, Q3DStudio::IAudioPlayer *inAudioPlayer,
                                      QElapsedTimer *startupTimer)
 {

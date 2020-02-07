@@ -42,6 +42,7 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
 #include <QtGui/qsurfaceformat.h>
+#include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
 class QQmlImageProviderBase;
@@ -498,6 +499,7 @@ public:
     void addImageProvider(const QString &providerId, QQmlImageProviderBase *provider);
 
     uint textureId(const QString &elementPath);
+    uint textureId(const QString &elementPath, QSize &size, GLenum &format);
 
     QString error();
 

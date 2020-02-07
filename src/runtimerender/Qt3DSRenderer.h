@@ -40,6 +40,7 @@
 #include "Qt3DSRenderCamera.h"
 #include "render/Qt3DSRenderBaseTypes.h"
 #include "Qt3DSRenderRay.h"
+#include <QtGui/qopengl.h>
 
 namespace qt3ds {
 namespace render {
@@ -170,6 +171,10 @@ namespace render {
         virtual QT3DSVec3 ProjectPosition(SNode &inNode, const QT3DSVec3 &inPosition) const = 0;
 
         virtual uint getLayerTextureId(SLayer &layer) = 0;
+
+        virtual GLenum getTextureGlFormat(NVRenderTextureFormats::Enum internalFormat) = 0;
+
+        virtual STextureDetails getLayerTextureDetails(SLayer &layer) = 0;
 
         // Roughly equivalent of gluPickMatrix, allows users to setup a perspective transform that
         // will draw some sub component
