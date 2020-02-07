@@ -160,6 +160,7 @@ Q_SIGNALS:
     void meshesCreated(const QStringList &meshNames, const QString &error);
     void shaderCacheFileChanged(const QUrl &fileName);
     void shaderCacheExported(bool success);
+    void shaderCacheLoadErrors(const QString &errors);
 
 private:
     Q_DISABLE_COPY(Q3DSPresentation)

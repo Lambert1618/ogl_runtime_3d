@@ -103,7 +103,7 @@ namespace render {
         // source code is exported
         virtual QByteArray exportShaderCache(bool binaryShaders) = 0;
         // This call immediately blocks and attempts to load all shaders from the shaderCache
-        virtual void importShaderCache(const QByteArray &shaderCache) = 0;
+        virtual void importShaderCache(const QByteArray &shaderCache, QString &errors) = 0;
         // It is up to the caller to ensure that inFeatures contains unique keys.
         // It is also up the the caller to ensure the keys are ordered in some way.
         virtual NVRenderShaderProgram *

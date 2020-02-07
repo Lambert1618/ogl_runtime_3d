@@ -81,6 +81,7 @@ Q_SIGNALS:
     void materialsCreated(const QStringList &materialNames, const QString &error);
     void meshesCreated(const QStringList &meshNames, const QString &error);
     void dataOutputValueUpdated(const QString &name, const QVariant &newValue);
+    void shaderCacheLoadErrors(const QString &errors);
 
 protected Q_SLOTS:
     void handleRuntimeInitializedAsync();

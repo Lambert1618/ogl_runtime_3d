@@ -235,6 +235,8 @@ bool Q3DSRenderer::initializeRuntime(QOpenGLFramebufferObject *inFbo)
             this, &Q3DSRenderer::presentationReady);
     connect(m_runtime, &Q3DSViewer::Q3DSViewerApp::SigPresentationLoaded,
             this, &Q3DSRenderer::presentationLoaded);
+    connect(m_runtime, &Q3DSViewer::Q3DSViewerApp::SigLoadShaderCacheErrors,
+            this, &Q3DSRenderer::shaderCacheLoadErrors);
 
     int theWidth = inFbo->width();
     int theHeight = inFbo->height();

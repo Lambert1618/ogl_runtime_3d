@@ -571,10 +571,11 @@ struct ShaderCache : public IShaderCache
         return retval;
     }
 
-    void importShaderCache(const QByteArray &shaderCache) override
+    void importShaderCache(const QByteArray &shaderCache, QString &errors) override
     {
         #define BAILOUT(details) { \
-            qWarning() << "importShaderCache failed to import shader cache:" << details; \
+            errors = "importShaderCache failed to import shader cache: " details; \
+            qWarning() << errors; \
             return; \
         }
 
@@ -634,9 +635,13 @@ struct ShaderCache : public IShaderCache
                 qCInfo(TRACE_INFO) << "Loading binary program from shader cache: '<" << key << ">'";
 
                 eastl::pair<TShaderMap::iterator, bool> theInserter = m_Shaders.insert(tempKey);
-                theInserter.first->second
-                    = m_RenderContext.CompileBinary(theKey, format, binary).mShader;
-                theShader = theInserter.first->second;
+                auto ret = m_RenderContext.CompileBinary(theKey, format, binary);
+                if (!ret.errors.isEmpty()) {
+                    errors += ret.errors + "\n";
+                } else {
+                    theInserter.first->second = ret.mShader;
+                    theShader = ret.mShader;
+                }
             } else {
                 QByteArray loadVertexData;
                 QByteArray loadFragmentData;
@@ -663,6 +668,10 @@ struct ShaderCache : public IShaderCache
                                 qt3ds::foundation::toDataRef(
                                     features.data(), static_cast<QT3DSU32>(features.size())),
                                 error, false, true);
+                    if (!error.isEmpty()) {
+                        errors += error + "\n";
+                        theShader = nullptr;
+                    }
                 }
             }
             // If something doesn't save or load correctly, get the runtime to re-generate.

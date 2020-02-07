@@ -172,7 +172,8 @@ public:
     bool BeginLoad(const QString &sourcePath, const QStringList &variantList) override;
     bool HasOfflineLoadingCompleted() override;
     bool InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
-                            bool initInRenderThread, const QByteArray &shaderCache) override;
+                            bool initInRenderThread, const QByteArray &shaderCache,
+                            QString &errors) override;
     void connectSignals() override;
     void finishAsyncInit() override;
 
@@ -302,7 +303,8 @@ bool CRuntimeView::HasOfflineLoadingCompleted()
 }
 
 bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayedLoading,
-                                      bool initInRenderThread, const QByteArray &shaderCache)
+                                      bool initInRenderThread, const QByteArray &shaderCache,
+                                      QString &errors)
 {
     m_ApplicationCore->EndLoad();
     // Next call will initialize the render portion of the scenes.  This *must* have a loaded
@@ -311,7 +313,8 @@ bool CRuntimeView::InitializeGraphics(const QSurfaceFormat &format, bool delayed
     m_Application
             = m_ApplicationCore->CreateApplication(*m_InputEngine, m_AudioPlayer,
                                                    *m_RuntimeFactory, shaderCache,
-                                                   initInRenderThread);
+                                                   initInRenderThread,
+                                                   errors);
     if (!m_Application->createSuccessful())
         return false;
 

@@ -549,6 +549,7 @@ Q_SIGNALS:
     void SigDataOutputValueUpdated(const QString &name, const QVariant &newValue);
     void SigPresentationReady();
     void SigPresentationLoaded();
+    void SigLoadShaderCacheErrors(const QString &errors);
 };
 
 } // end namespace

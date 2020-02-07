@@ -427,10 +427,13 @@ bool Q3DSViewerApp::InitializeApp(int winWidth, int winHeight, const QSurfaceFor
             qCritical() << m_Impl.m_error;
             return false;
         }
-
+        QString errors;
         bool success = m_Impl.m_view->InitializeGraphics(format, delayedLoading,
                                                          initInRenderThread,
-                                                         shaderCache);
+                                                         shaderCache, errors);
+        if (!errors.isEmpty())
+            Q_EMIT SigLoadShaderCacheErrors(errors);
+
         if (!success) {
             m_Impl.m_error = QObject::tr("Viewer launch failure! Failed to load: '%1'").arg(source);
             m_Impl.m_error.append("\n");

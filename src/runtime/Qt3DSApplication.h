@@ -251,7 +251,8 @@ public:
                                             Q3DStudio::IAudioPlayer *inAudioPlayer,
                                             Q3DStudio::IRuntimeFactory &inFactory,
                                             const QByteArray &shaderCache,
-                                            bool initInRenderThread) = 0;
+                                            bool initInRenderThread,
+                                            QString &shaderCacheErrors) = 0;
 
     // maintains reference to runtime factory core.  AppDir is where the executable is located;
     // the system will expect res directory

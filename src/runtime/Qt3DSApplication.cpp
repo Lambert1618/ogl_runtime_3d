@@ -1801,7 +1801,8 @@ struct SApp : public IApplication
                                     Q3DStudio::IAudioPlayer *inAudioPlayer,
                                     Q3DStudio::IRuntimeFactory &inFactory,
                                     const QByteArray &shaderCache,
-                                    bool initInRenderThread) override
+                                    bool initInRenderThread,
+                                    QString &shaderCacheErrors) override
     {
         {
             QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
@@ -1871,8 +1872,12 @@ struct SApp : public IApplication
         }
 
 
-        if (!shaderCache.isEmpty())
-            inFactory.GetQt3DSRenderContext().GetShaderCache().importShaderCache(shaderCache);
+        if (!shaderCache.isEmpty()) {
+            QString errors;
+            inFactory.GetQt3DSRenderContext().GetShaderCache().importShaderCache(shaderCache, errors);
+            if (!errors.isEmpty())
+                shaderCacheErrors = errors;
+        }
 
         m_AudioPlayer.SetPlayer(inAudioPlayer);
 

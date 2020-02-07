@@ -430,6 +430,8 @@ QQuickFramebufferObject::Renderer *Q3DSStudio3D::createRenderer() const
             m_presentation->d_ptr, &Q3DSPresentationPrivate::handleMaterialsCreated);
     connect(renderer, &Q3DSRenderer::meshesCreated,
             m_presentation->d_ptr, &Q3DSPresentationPrivate::handleMeshesCreated);
+    connect(renderer, &Q3DSRenderer::shaderCacheLoadErrors,
+            m_presentation, &Q3DSPresentation::shaderCacheLoadErrors);
     connect(renderer, &Q3DSRenderer::exitSlide,
             m_presentation, &Q3DSPresentation::slideExited);
     connect(renderer, &Q3DSRenderer::customSignalEmitted,
