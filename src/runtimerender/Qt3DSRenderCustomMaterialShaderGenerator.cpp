@@ -155,10 +155,11 @@ struct SShaderGeneratorGeneratedShader
     NVRenderShaderProgram &m_Shader;
     // Specific properties we know the shader has to have.
     NVRenderCachedShaderProperty<QT3DSMat44> m_ModelMatrix;
-    NVRenderCachedShaderProperty<QT3DSMat44> m_ViewProjMatrix;
+    NVRenderCachedShaderProperty<QT3DSMat44> m_ModelViewProjMatrix;
     NVRenderCachedShaderProperty<QT3DSMat44> m_ViewMatrix;
     NVRenderCachedShaderProperty<QT3DSMat33> m_NormalMatrix;
     NVRenderCachedShaderProperty<QT3DSVec3> m_CameraPos;
+    NVRenderCachedShaderProperty<QT3DSMat44> m_ViewProjMatrix;
     NVRenderCachedShaderProperty<QT3DSMat44> m_ProjMatrix;
     NVRenderCachedShaderProperty<QT3DSMat44> m_ViewportMatrix;
     NVRenderCachedShaderProperty<QT3DSVec2> m_CamProperties;
@@ -199,11 +200,12 @@ struct SShaderGeneratorGeneratedShader
         : m_Allocator(inContext.GetAllocator())
         , m_Shader(inShader)
         , m_ModelMatrix("model_matrix", inShader)
-        , m_ViewProjMatrix("model_view_projection", inShader)
+        , m_ModelViewProjMatrix("model_view_projection", inShader)
         , m_ViewMatrix("view_matrix", inShader)
         , m_NormalMatrix("normal_matrix", inShader)
         , m_CameraPos("camera_position", inShader)
-        , m_ProjMatrix("view_projection_matrix", inShader)
+        , m_ViewProjMatrix("view_projection_matrix", inShader)
+        , m_ProjMatrix("projection_matrix", inShader)
         , m_ViewportMatrix("viewport_matrix", inShader)
         , m_CamProperties("camera_properties", inShader)
         , m_DepthTexture("depth_sampler", inShader)
@@ -627,11 +629,13 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
 
         if (theShader.m_ViewMatrix.IsValid())
             theShader.m_ViewMatrix.Set(theCamera.m_GlobalTransform.getInverse());
+        if (theShader.m_ProjMatrix.IsValid())
+            theShader.m_ProjMatrix.Set(inCamera.m_Projection);
 
-        if (theShader.m_ProjMatrix.IsValid()) {
+        if (theShader.m_ViewProjMatrix.IsValid()) {
             QT3DSMat44 vProjMat;
             inCamera.CalculateViewProjectionMatrix(vProjMat);
-            theShader.m_ProjMatrix.Set(vProjMat);
+            theShader.m_ViewProjMatrix.Set(vProjMat);
         }
 
         // set lights separate for area lights
@@ -761,7 +765,7 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
         ICustomMaterialSystem &theMaterialSystem(m_RenderContext.GetCustomMaterialSystem());
         SShaderGeneratorGeneratedShader &theShader(GetShaderForProgram(inProgram));
 
-        theShader.m_ViewProjMatrix.Set(inModelViewProjection);
+        theShader.m_ModelViewProjMatrix.Set(inModelViewProjection);
         theShader.m_NormalMatrix.Set(inNormalMatrix);
         theShader.m_ModelMatrix.Set(inGlobalTransform);
 
@@ -1239,12 +1243,14 @@ struct SShaderGenerator : public ICustomMaterialShaderGenerator
             SShaderGeneratorGeneratedShader &shader(GetShaderForProgram(*program));
             shader.m_ModelMatrix = NVRenderCachedShaderProperty<QT3DSMat44>("modelMatrix",
                                                                             *program);
-            shader.m_ViewProjMatrix = NVRenderCachedShaderProperty<QT3DSMat44>(
+            shader.m_ModelViewProjMatrix = NVRenderCachedShaderProperty<QT3DSMat44>(
                         "modelViewProjection", *program);
             shader.m_ViewMatrix = NVRenderCachedShaderProperty<QT3DSMat44>("viewMatrix", *program);
             shader.m_NormalMatrix = NVRenderCachedShaderProperty<QT3DSMat33>("modelNormalMatrix",
                                                                              *program);
-            shader.m_ProjMatrix = NVRenderCachedShaderProperty<QT3DSMat44>("viewProjectionMatrix",
+            shader.m_ProjMatrix = NVRenderCachedShaderProperty<QT3DSMat44>("projectionMatrix",
+                                                                             *program);
+            shader.m_ViewProjMatrix = NVRenderCachedShaderProperty<QT3DSMat44>("viewProjectionMatrix",
                                                                            *program);
             shader.m_ViewportMatrix = NVRenderCachedShaderProperty<QT3DSMat44>("viewportMatrix",
                                                                                *program);

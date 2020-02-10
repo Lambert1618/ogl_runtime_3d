@@ -687,11 +687,12 @@ struct SCustomMaterialShader
 {
     NVScopedRefCounted<NVRenderShaderProgram> m_Shader;
     NVRenderCachedShaderProperty<QT3DSMat44> m_ModelMatrix;
-    NVRenderCachedShaderProperty<QT3DSMat44> m_ViewProjMatrix;
+    NVRenderCachedShaderProperty<QT3DSMat44> m_ModelViewProjMatrix;
     NVRenderCachedShaderProperty<QT3DSMat44> m_ViewMatrix;
     NVRenderCachedShaderProperty<QT3DSMat33> m_NormalMatrix;
     NVRenderCachedShaderProperty<QT3DSVec3> m_CameraPos;
     NVRenderCachedShaderProperty<QT3DSMat44> m_ProjMatrix;
+    NVRenderCachedShaderProperty<QT3DSMat44> m_ViewProjMatrix;
     NVRenderCachedShaderProperty<QT3DSMat44> m_ViewportMatrix;
     NVRenderCachedShaderProperty<QT3DSVec2> m_CamProperties;
     NVRenderCachedShaderProperty<NVRenderTexture2D *> m_DepthTexture;
@@ -712,11 +713,12 @@ struct SCustomMaterialShader
     SCustomMaterialShader(NVRenderShaderProgram &inShader, SDynamicShaderProgramFlags inFlags)
         : m_Shader(inShader)
         , m_ModelMatrix("model_matrix", inShader)
-        , m_ViewProjMatrix("model_view_projection", inShader)
+        , m_ModelViewProjMatrix("model_view_projection", inShader)
         , m_ViewMatrix("view_matrix", inShader)
         , m_NormalMatrix("normal_matrix", inShader)
         , m_CameraPos("camera_position", inShader)
-        , m_ProjMatrix("view_projection_matrix", inShader)
+        , m_ProjMatrix("projection_matrix", inShader)
+        , m_ViewProjMatrix("view_projection_matrix", inShader)
         , m_ViewportMatrix("viewport_matrix", inShader)
         , m_CamProperties("camera_properties", inShader)
         , m_DepthTexture("depth_sampler", inShader)
