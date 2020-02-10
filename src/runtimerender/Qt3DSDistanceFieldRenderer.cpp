@@ -986,10 +986,12 @@ void Q3DSDistanceFieldRenderer::renderText(SText &text, const QT3DSMat44 &mvp)
                        glyphInfo.fontScale * float(m_pixelRatio), textColor);
         }
 
-        m_renderedGlyphs += glyphHashValue;
+        if (!m_renderedGlyphs.contains(glyphHashValue))
+            m_renderedGlyphs += glyphHashValue;
     }
 
-    m_renderedTexts += textHashValue;
+    if (!m_renderedTexts.contains(textHashValue))
+        m_renderedTexts += textHashValue;
 
     text.m_Bounds = NVBounds3(minimum, maximum);
 }
@@ -1013,9 +1015,20 @@ ITextRendererCore &ITextRendererCore::createDistanceFieldRenderer(NVFoundationBa
 
 void Q3DSDistanceFieldRenderer::checkAndAddRenderedTexts(SText &text)
 {
-    auto hashVal = getTextHashValue(text);
-    if (m_glyphCache.contains(hashVal))
-        m_renderedTexts += hashVal;
+    auto textHashVal = getTextHashValue(text);
+    if (m_glyphCache.contains(textHashVal)) {
+        m_renderedTexts += textHashVal;
+
+        QHash<Q3DSDistanceFieldGlyphCache::TextureInfo *, GlyphInfo> &glyphsPerTexture
+                = m_glyphCache[textHashVal];
+        QHash<Q3DSDistanceFieldGlyphCache::TextureInfo *, GlyphInfo>::const_iterator it;
+        for (it = glyphsPerTexture.constBegin(); it != glyphsPerTexture.constEnd(); ++it) {
+            const GlyphInfo &glyphInfo = it.value();
+            size_t glyphHashValue = getGlyphHashValue(glyphInfo);
+            if (m_meshCache.contains(glyphHashValue))
+                m_renderedGlyphs += glyphHashValue;
+        }
+    }
 }
 
 // Unused methods:
