@@ -2114,7 +2114,7 @@ TElement *CQmlEngineImpl::getTarget(const QString &component) {
         target = CQmlElementHelper::GetElement(
                     *m_Application,
                     m_Application->LoadAndGetPresentationById(component.left(delimIndex)),
-                    component.right(delimIndex + 1), NULL);
+                    component.right(component.length() - delimIndex - 1), NULL);
     } else {
         target = CQmlElementHelper::GetElement(
                     *m_Application,
