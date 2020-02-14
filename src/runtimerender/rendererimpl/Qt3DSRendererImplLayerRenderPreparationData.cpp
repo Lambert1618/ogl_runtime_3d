@@ -155,6 +155,7 @@ namespace render {
         , m_FeaturesDirty(true)
         , m_FeatureSetHash(0)
         , m_TooManyLightsError(false)
+        , m_StereoMode(StereoModes::Mono)
     {
     }
 
@@ -1331,6 +1332,12 @@ namespace render {
                 }
                 if (m_Layer.m_LightProbe && CheckLightProbeDirty(*m_Layer.m_LightProbe)) {
                     m_Renderer.PrepareImageForIbl(*m_Layer.m_LightProbe);
+                    wasDataDirty = true;
+                }
+                if (m_StereoMode != thePrepResult.getStereoMode()) {
+                    // When stereo mode changes we need to mark data dirty
+                    // for e.g. temporalAA to render correctly.
+                    m_StereoMode = thePrepResult.getStereoMode();
                     wasDataDirty = true;
                 }
 

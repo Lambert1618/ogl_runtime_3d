@@ -296,6 +296,7 @@ namespace render {
         bool m_FeaturesDirty;
         size_t m_FeatureSetHash;
         bool m_TooManyLightsError;
+        StereoModes::Enum m_StereoMode;
 
         // shadow mapps
         NVScopedRefCounted<Qt3DSShadowMap> m_ShadowMapManager;
