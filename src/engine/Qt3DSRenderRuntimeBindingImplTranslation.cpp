@@ -879,7 +879,7 @@ struct SNodeTranslator : public Qt3DSTranslator
             break;
         default:
             // Unknown attribute
-            // QT3DS_ASSERT( false );
+            QT3DS_ASSERT(false);
             break;
         }
     }

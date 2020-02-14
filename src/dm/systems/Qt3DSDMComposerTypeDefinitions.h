@@ -122,6 +122,7 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY(orientation, m_Orientation, TDataStrPtr, L"Left Handed")              \
     HANDLE_COMPOSER_PROPERTY(boneid, m_BoneId, qt3ds::QT3DSI32, 0)                                 \
     HANDLE_COMPOSER_PROPERTY(ignoresparent, m_IgnoresParent, bool, false)                          \
+    HANDLE_COMPOSER_PROPERTY(ordered, m_ordered, bool, false)                                      \
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(controlledproperty, m_ControlledProperty, TDataStrPtr, L"")
 
 #define ITERATE_COMPOSER_MODEL_PROPERTIES                                                          \
@@ -245,7 +246,7 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(controlledproperty, m_ControlledProperty, TDataStrPtr, L"")
 
 #define ITERATE_COMPOSER_GROUP_PROPERTIES                                                          \
-    HANDLE_COMPOSER_PROPERTY(ordered, m_ordered, bool, false)                                      \
+    HANDLE_COMPOSER_PROPERTY_DUPLICATE(ordered, m_ordered, bool, false)                            \
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(variants, m_variants, TDataStrPtr, L"")                     \
 
 #define ITERATE_COMPOSER_LIGHT_PROPERTIES                                                          \

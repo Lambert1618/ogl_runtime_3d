@@ -313,7 +313,8 @@ namespace render {
     HANDLE_QT3DS_RENDER_VEC3_PROPERTY(Node, Pivot, TransformDirty)                                   \
     HANDLE_QT3DS_RENDER_OPACITY_PROPERTY(Node, LocalOpacity, TransformDirty)                         \
     HANDLE_QT3DS_ROTATION_ORDER_PROPERTY(Node, RotationOrder, TransformDirty)                        \
-    HANDLE_QT3DS_NODE_ORIENTATION_PROPERTY(Node, LeftHanded, TransformDirty)
+    HANDLE_QT3DS_NODE_ORIENTATION_PROPERTY(Node, LeftHanded, TransformDirty)                         \
+    HANDLE_QT3DS_RENDER_PROPERTY(Group, ordered, Dirty)
 
 #define ITERATE_QT3DS_RENDER_LAYER_PROPERTIES                                                        \
     HANDLE_QT3DS_NODE_FLAGS_INVERSE_PROPERTY(Layer, LayerEnableDepthTest, Dirty)                     \
