@@ -184,6 +184,10 @@ const char *GetAttributeString(const EAttribute inAttribute)
         case ATTRIBUTE_MULTISAMPLEAA: return "multisampleaa";
         case ATTRIBUTE_TEMPORALAA: return "temporalaa";
         case ATTRIBUTE_BLENDTYPE: return "blendtype";
+        case ATTRIBUTE_DYNAMICRESIZE: return "dynamicresize";
+        case ATTRIBUTE_DYNAMICPADDINGUNITS: return "dynamicpaddingunits";
+        case ATTRIBUTE_DYNAMICPADDING: return "dynamicpadding";
+        case ATTRIBUTE_DYNAMICCOMBINE: return "dynamiccombine";
         case ATTRIBUTE_HORZFIELDS: return "horzfields";
         case ATTRIBUTE_LEFT: return "left";
         case ATTRIBUTE_LEFTUNITS: return "leftunits";

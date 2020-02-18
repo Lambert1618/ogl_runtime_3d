@@ -271,9 +271,25 @@ namespace render {
         // Get the bounds of us and our children in our local space.
         NVBounds3 GetBounds(IBufferManager &inManager, IPathManager &inPathManager,
                             bool inIncludeChildren = true,
-                            IQt3DSRenderNodeFilter *inChildFilter = NULL) const;
+                            IQt3DSRenderNodeFilter *inChildFilter = nullptr) const;
         NVBounds3 GetChildBounds(IBufferManager &inManager, IPathManager &inPathManager,
-                                 IQt3DSRenderNodeFilter *inChildFilter = NULL) const;
+                                 IQt3DSRenderNodeFilter *inChildFilter = nullptr) const;
+        NVBounds3 GetActiveBounds(IBufferManager &inManager, IPathManager &inPathManager,
+                                  bool inIncludeChildren = true,
+                                  IQt3DSRenderNodeFilter *inChildFilter = nullptr) const;
+        NVBounds3 GetActiveChildBounds(IBufferManager &inManager, IPathManager &inPathManager,
+                                       IQt3DSRenderNodeFilter *inChildFilter = nullptr) const;
+        void GetActiveBoundsList(QVector<QT3DSVec3> &points,
+                                 IBufferManager &inManager,
+                                 IPathManager &inPathManager,
+                                 QT3DSMat44 localTransform = QT3DSMat44::createIdentity(),
+                                 bool inIncludeChildren = true,
+                                 IQt3DSRenderNodeFilter *inChildFilter = nullptr) const;
+        void GetActiveChildBoundsList(QVector<QT3DSVec3> &points,
+                                      IBufferManager &inManager,
+                                      IPathManager &inPathManager,
+                                      QT3DSMat44 localTransform = QT3DSMat44::createIdentity(),
+                                      IQt3DSRenderNodeFilter *inChildFilter = nullptr) const;
         // Assumes CalculateGlobalVariables has already been called.
         QT3DSVec3 GetGlobalPos() const;
         QT3DSVec3 GetGlobalPivot() const;

@@ -1410,7 +1410,7 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
         QT3DS_ASSERT(m_LayerPrepResult->m_Flags.ShouldRenderToTexture());
         SLayerRenderPreparationResult &thePrepResult(*m_LayerPrepResult);
         NVRenderContext &theRenderContext(m_Renderer.GetContext());
-        QSize theLayerTextureDimensions = thePrepResult.GetTextureDimensions();
+        QSize theLayerTextureDimensions(thePrepResult.GetTextureDimensions());
         QSize theLayerOriginalTextureDimensions = theLayerTextureDimensions;
         NVRenderTextureFormats::Enum DepthTextureFormat = NVRenderTextureFormats::Depth24Stencil8;
         NVRenderTextureFormats::Enum ColorTextureFormat = NVRenderTextureFormats::RGBA8;
@@ -1647,6 +1647,20 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
             hasDepthObjects || thePrepResult.m_Flags.RequiresStencilBuffer();
         NVRenderRect theNewViewport(0, 0, theLayerTextureDimensions.width(),
                                     theLayerTextureDimensions.height());
+
+        if (m_Layer.m_DynamicResize && theLayerOriginalTextureDimensions.width() != 0) {
+            // With dynamic resize the viewport should behave like it just crops the full layer
+            // So a special viewport has to be calculated that keeps the original object sizes
+            float ratio = theLayerTextureDimensions.width()
+                    / theLayerOriginalTextureDimensions.width();
+            auto originalLayerViewport = thePrepResult.getOriginalLayerToPresentationViewport();
+            auto layerViewport = thePrepResult.GetLayerToPresentationViewport();
+            theNewViewport = NVRenderRect((-layerViewport.m_X + originalLayerViewport.m_X) * ratio,
+                                          (-layerViewport.m_Y + originalLayerViewport.m_Y) * ratio,
+                                          originalLayerViewport.m_Width * ratio,
+                                          originalLayerViewport.m_Height * ratio);
+        }
+
         {
             theRenderContext.SetRenderTarget(theFB);
             NVRenderContextScopedProperty<NVRenderRect> __viewport(

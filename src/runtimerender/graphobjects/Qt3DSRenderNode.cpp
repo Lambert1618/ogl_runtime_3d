@@ -434,7 +434,7 @@ NVBounds3 SNode::GetChildBounds(IBufferManager &inManager, IPathManager &inPathM
     NVBounds3 retval;
     retval.setEmpty();
     for (SNode *child = m_FirstChild; child != NULL; child = child->m_NextSibling) {
-        if (inChildFilter == NULL || inChildFilter->IncludeNode(*child)) {
+        if (inChildFilter == nullptr || inChildFilter->IncludeNode(*child)) {
             NVBounds3 childBounds;
             if (child->m_Flags.IsTransformDirty())
                 child->CalculateLocalTransform();
@@ -447,6 +447,96 @@ NVBounds3 SNode::GetChildBounds(IBufferManager &inManager, IPathManager &inPathM
         }
     }
     return retval;
+}
+
+NVBounds3 SNode::GetActiveBounds(IBufferManager &inManager, IPathManager &inPathManager,
+                                 bool inIncludeChildren,
+                                 IQt3DSRenderNodeFilter *inChildFilter) const
+{
+    NVBounds3 retval;
+    retval.setEmpty();
+    if (inIncludeChildren)
+        retval = GetActiveChildBounds(inManager, inPathManager, inChildFilter);
+
+    if (m_Type == GraphObjectTypes::Model)
+        retval.include(static_cast<const SModel *>(this)->GetModelBounds(inManager));
+    else if (m_Type == GraphObjectTypes::Text)
+        retval.include(static_cast<const SText *>(this)->GetTextBounds());
+    else if (m_Type == GraphObjectTypes::Path)
+        retval.include(inPathManager.GetBounds(*static_cast<const SPath *>(this)));
+    return retval;
+}
+
+NVBounds3 SNode::GetActiveChildBounds(IBufferManager &inManager, IPathManager &inPathManager,
+                                      IQt3DSRenderNodeFilter *inChildFilter) const
+{
+    NVBounds3 retval;
+    retval.setEmpty();
+    for (SNode *child = m_FirstChild; child != nullptr; child = child->m_NextSibling) {
+        if (child->m_Flags.IsActive()
+                && (inChildFilter == nullptr || inChildFilter->IncludeNode(*child))) {
+            NVBounds3 childBounds;
+            if (child->m_Flags.IsTransformDirty())
+                child->CalculateLocalTransform();
+            childBounds = child->GetActiveBounds(inManager, inPathManager);
+            if (childBounds.isEmpty() == false) {
+                // Transform the bounds into our local space.
+                childBounds.transform(child->m_LocalTransform);
+                retval.include(childBounds);
+            }
+        }
+    }
+    return retval;
+}
+
+void SNode::GetActiveBoundsList(QVector<QT3DSVec3> &points, IBufferManager &inManager,
+                                IPathManager &inPathManager,
+                                QT3DSMat44 localTransform,
+                                bool inIncludeChildren,
+                                IQt3DSRenderNodeFilter *inChildFilter) const
+{
+    if (inIncludeChildren)
+        GetActiveChildBoundsList(points, inManager, inPathManager, localTransform, inChildFilter);
+
+    NVBounds3 bounds;
+    bounds.setEmpty();
+    if (m_Type == GraphObjectTypes::Model)
+        bounds = static_cast<const SModel *>(this)->GetModelBounds(inManager);
+    else if (m_Type == GraphObjectTypes::Text)
+        bounds = static_cast<const SText *>(this)->GetTextBounds();
+    else if (m_Type == GraphObjectTypes::Path)
+        bounds = inPathManager.GetBounds(*static_cast<const SPath *>(this));
+    if (!bounds.isEmpty()) {
+        QT3DSVec3 newPoints[8];
+        newPoints[0] = bounds.minimum;
+        newPoints[1] = QT3DSVec3(bounds.minimum.x, bounds.maximum.y, bounds.minimum.z);
+        newPoints[2] = QT3DSVec3(bounds.maximum.x, bounds.maximum.y, bounds.minimum.z);
+        newPoints[3] = QT3DSVec3(bounds.maximum.x, bounds.minimum.y, bounds.minimum.z);
+        newPoints[4] = QT3DSVec3(bounds.minimum.x, bounds.minimum.y, bounds.maximum.z);
+        newPoints[5] = QT3DSVec3(bounds.minimum.x, bounds.maximum.y, bounds.maximum.z);
+        newPoints[6] = QT3DSVec3(bounds.maximum.x, bounds.minimum.y, bounds.maximum.z);
+        newPoints[7] = bounds.maximum;
+        for (int i = 0; i < 8; ++i) {
+            // Transform the bounds into our local space.
+            points += localTransform.transform(newPoints[i]);
+        }
+    }
+}
+
+void SNode::GetActiveChildBoundsList(QVector<QT3DSVec3> &points, IBufferManager &inManager,
+                                     IPathManager &inPathManager,
+                                     QT3DSMat44 localTransform,
+                                     IQt3DSRenderNodeFilter *inChildFilter) const
+{
+    for (SNode *child = m_FirstChild; child != nullptr; child = child->m_NextSibling) {
+        if (child->m_Flags.IsActive()
+                && (inChildFilter == nullptr || inChildFilter->IncludeNode(*child))) {
+            if (child->m_Flags.IsTransformDirty())
+                child->CalculateLocalTransform();
+            QT3DSMat44 nextTransform = localTransform * child->m_LocalTransform;
+            child->GetActiveBoundsList(points, inManager, inPathManager, nextTransform);
+        }
+    }
 }
 
 QT3DSVec3 SNode::GetGlobalPos() const

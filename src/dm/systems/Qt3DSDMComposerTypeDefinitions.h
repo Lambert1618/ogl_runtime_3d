@@ -208,6 +208,10 @@ class IPropertySystem;
     HANDLE_COMPOSER_PROPERTY_DUPLICATE(backgroundcolor, m_BackgroundColor, SFloat4,                \
                                        SFloat4(0, 0, 0, 1))                                        \
     HANDLE_COMPOSER_PROPERTY(blendtype, m_BlendType, TDataStrPtr, L"Normal")                       \
+    HANDLE_COMPOSER_PROPERTY(dynamicresize, m_DynamicResize, bool, false)                          \
+    HANDLE_COMPOSER_PROPERTY(dynamicpaddingunits, m_DynamicPaddingUnits, TDataStrPtr, L"percent")  \
+    HANDLE_COMPOSER_PROPERTY(dynamicpadding, m_DynamicPadding, float, 0)                           \
+    HANDLE_COMPOSER_PROPERTY(dynamiccombine, m_DynamicCombine, bool, false)                        \
     HANDLE_COMPOSER_PROPERTY(horzfields, m_HorizontalFieldValues, TDataStrPtr, L"Left/Width")      \
     HANDLE_COMPOSER_PROPERTY(left, m_Left, float, 0)                                               \
     HANDLE_COMPOSER_PROPERTY(leftunits, m_LeftUnits, TDataStrPtr, L"percent")                      \

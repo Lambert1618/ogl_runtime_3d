@@ -267,6 +267,11 @@ namespace render {
         TRenderableObjectList m_OpaqueObjects;
         TRenderableObjectList m_TransparentObjects;
         TRenderableObjectList m_GroupObjects;
+        QVector<QT3DSVec3> m_boundPoints;
+        NVRenderRectF m_dynamicSize;
+        NVRenderRectF m_unpaddedDynamicSize;
+        float m_lastDynamicPadding = 0;
+        LayerUnitTypes::Enum m_lastDynamicPaddingUnits = LayerUnitTypes::Percent;
         // Sorted lists of the rendered objects.  There may be other transforms applied so
         // it is simplest to duplicate the lists.
         TRenderableObjectList m_RenderedOpaqueObjects;
@@ -342,6 +347,8 @@ namespace render {
                                          const Option<SClippingFrustum> &inClipFrustum,
                                          QT3DSF32 inTextScaleFactor,
                                          SLayerRenderPreparationResultFlags &ioFlags);
+
+        void calculateDynamicLayerSize(SLayerRenderPreparationResult &prepResult);
 
         // returns true if this object will render something different than it rendered the last
         // time.

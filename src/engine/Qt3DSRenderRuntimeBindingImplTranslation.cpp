@@ -505,6 +505,10 @@ struct SRuntimePropertyParser
 #define Layer_BlendType ATTRIBUTE_BLENDTYPE
 #define Layer_ProgressiveAAMode ATTRIBUTE_PROGRESSIVEAA
 #define Layer_MultisampleAAMode ATTRIBUTE_MULTISAMPLEAA
+#define Layer_DynamicResize ATTRIBUTE_DYNAMICRESIZE
+#define Layer_DynamicPaddingUnits ATTRIBUTE_DYNAMICPADDINGUNITS
+#define Layer_DynamicPadding ATTRIBUTE_DYNAMICPADDING
+#define Layer_DynamicCombine ATTRIBUTE_DYNAMICCOMBINE
 #define Layer_HorizontalFieldValues ATTRIBUTE_HORZFIELDS
 #define Layer_Left ATTRIBUTE_LEFT
 #define Layer_LeftUnits ATTRIBUTE_LEFTUNITS

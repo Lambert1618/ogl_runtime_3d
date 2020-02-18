@@ -178,9 +178,9 @@ SLayerRenderHelper::SLayerRenderHelper(const NVRenderRectF &inPresentationViewpo
 
     m_Viewport.m_Width = NVMax(1.0f, m_Viewport.m_Width);
     m_Viewport.m_Height = NVMax(1.0f, m_Viewport.m_Height);
-    // Now force the viewport to be a multiple of four in width and height.  This is because
+    // Now force the viewport to be a multiple of four in width and height. This is because
     // when rendering to a texture we have to respect this and not forcing it causes scaling issues
-    // that are noticeable especially in situations where customers are using text and such.
+    // that are noticeable especially in situations where customers are using text.
     QT3DSF32 originalWidth = m_Viewport.m_Width;
     QT3DSF32 originalHeight = m_Viewport.m_Height;
 
@@ -191,6 +191,7 @@ SLayerRenderHelper::SLayerRenderHelper(const NVRenderRectF &inPresentationViewpo
     m_Viewport.m_X += (originalWidth - m_Viewport.m_Width) / 2.0f;
     m_Viewport.m_Y += (originalHeight - m_Viewport.m_Height) / 2.0f;
 
+    m_originalViewport = m_Viewport;
     m_Scissor = m_Viewport;
     m_Scissor.EnsureInBounds(inPresentationScissor);
     QT3DS_ASSERT(m_Scissor.m_Width >= 0.0f);
@@ -339,6 +340,30 @@ bool SLayerRenderHelper::IsLayerVisible() const
 bool SLayerRenderHelper::isStereoscopic() const
 {
     return m_StereoMode != StereoModes::Mono;
+}
+
+void SLayerRenderHelper::setViewport(const NVRenderRectF &viewport)
+{
+    m_Viewport = viewport;
+    m_Viewport.m_Width = NVMax(1.0f, m_Viewport.m_Width);
+    m_Viewport.m_Height = NVMax(1.0f, m_Viewport.m_Height);
+    // Now force the viewport to be a multiple of four in width and height. This is because
+    // when rendering to a texture we have to respect this and not forcing it causes scaling issues
+    // that are noticeable especially in situations where customers are using text.
+    QT3DSF32 originalWidth = m_Viewport.m_Width;
+    QT3DSF32 originalHeight = m_Viewport.m_Height;
+
+    m_Viewport.m_Width = (QT3DSF32)ITextRenderer::NextMultipleOf4((QT3DSU32)m_Viewport.m_Width);
+    m_Viewport.m_Height = (QT3DSF32)ITextRenderer::NextMultipleOf4((QT3DSU32)m_Viewport.m_Height);
+
+    // Now fudge the offsets to account for this slight difference
+    m_Viewport.m_X += (originalWidth - m_Viewport.m_Width) / 2.0f;
+    m_Viewport.m_Y += (originalHeight - m_Viewport.m_Height) / 2.0f;
+}
+
+NVRenderRectF SLayerRenderHelper::getOriginalLayerToPresentationViewport() const
+{
+    return m_originalViewport;
 }
 
 void SLayerRenderHelper::copyCameraProperties(SCamera *sourceCamera,

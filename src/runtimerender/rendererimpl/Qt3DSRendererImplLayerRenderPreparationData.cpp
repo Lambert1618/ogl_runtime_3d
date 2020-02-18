@@ -1220,6 +1220,181 @@ namespace render {
         }
     };
 
+    void SLayerRenderPreparationData::calculateDynamicLayerSize(
+            SLayerRenderPreparationResult &prepResult)
+    {
+        m_boundPoints.clear();
+        if (m_Layer.m_DynamicCombine) {
+            // Combine all bounds of the layer objects to one spanning the whole active scene
+            // Only needs 8 projections but has low accuracy
+            NVBounds3 layerBounds;
+            layerBounds.setEmpty();
+            for (SNode *child = m_Layer.m_FirstChild; child; child = child->m_NextSibling) {
+                if (child->m_Flags.IsActive()) {
+                    auto &context = m_Renderer.GetQt3DSContext();
+                    qt3ds::NVBounds3 childBounds = child->GetActiveBounds(
+                                context.GetBufferManager(), context.GetPathManager());
+                    if (childBounds.isEmpty() == false) {
+                        childBounds.transform(child->m_GlobalTransform);
+                        layerBounds.include(childBounds);
+                    }
+                }
+            }
+
+            m_boundPoints += QT3DSVec3(layerBounds.minimum.x, layerBounds.minimum.y,
+                                       layerBounds.minimum.z);
+            m_boundPoints += QT3DSVec3(layerBounds.maximum.x, layerBounds.minimum.y,
+                                       layerBounds.minimum.z);
+            m_boundPoints += QT3DSVec3(layerBounds.maximum.x, layerBounds.maximum.y,
+                                       layerBounds.minimum.z);
+            m_boundPoints += QT3DSVec3(layerBounds.minimum.x, layerBounds.maximum.y,
+                                       layerBounds.minimum.z);
+            m_boundPoints += QT3DSVec3(layerBounds.minimum.x, layerBounds.minimum.y,
+                                       layerBounds.maximum.z);
+            m_boundPoints += QT3DSVec3(layerBounds.maximum.x, layerBounds.minimum.y,
+                                       layerBounds.maximum.z);
+            m_boundPoints += QT3DSVec3(layerBounds.maximum.x, layerBounds.maximum.y,
+                                       layerBounds.maximum.z);
+            m_boundPoints += QT3DSVec3(layerBounds.minimum.x, layerBounds.maximum.y,
+                                       layerBounds.maximum.z);
+        } else {
+            // Add 8 points for each active object to the point list
+            // Provides accurate 2d bounds, but causes a lot of projections for large scenes
+            for (SNode *child = m_Layer.m_FirstChild; child; child = child->m_NextSibling) {
+                if (child->m_Flags.IsActive()) {
+                    auto &context = m_Renderer.GetQt3DSContext();
+                    child->GetActiveBoundsList(m_boundPoints, context.GetBufferManager(),
+                                               context.GetPathManager(), child->m_GlobalTransform);
+                }
+            }
+        }
+
+        auto layerViewport = prepResult.GetLayerToPresentationViewport();
+
+        QT3DSVec2 projectedMinimum(std::numeric_limits<float>::max(),
+                                   std::numeric_limits<float>::max());
+        QT3DSVec2 projectedMaximum(std::numeric_limits<float>::lowest(),
+                                   std::numeric_limits<float>::lowest());
+
+        for (const auto &point : qAsConst(m_boundPoints)) {
+            QT3DSVec4 projectedPoint = m_ViewProjection.transform(QT3DSVec4(point, 1.0f));
+            projectedPoint.x /= projectedPoint.w;
+            projectedPoint.y /= projectedPoint.w;
+            projectedPoint.x += 1.0f;
+            projectedPoint.y += 1.0f;
+            projectedPoint.x *= 0.5f;
+            projectedPoint.y *= 0.5f;
+
+            QT3DSVec2 dims(QT3DSF32(layerViewport.m_Width),
+                           QT3DSF32(layerViewport.m_Height));
+            projectedPoint.x *= dims.x;
+            projectedPoint.y *= dims.y;
+            projectedPoint.x += layerViewport.m_X;
+            projectedPoint.y += layerViewport.m_Y;
+
+            if (projectedPoint.x < projectedMinimum.x)
+                projectedMinimum.x = projectedPoint.x;
+            if (projectedPoint.y < projectedMinimum.y)
+                projectedMinimum.y = projectedPoint.y;
+            if (projectedPoint.x > projectedMaximum.x)
+                projectedMaximum.x = projectedPoint.x;
+            if (projectedPoint.y > projectedMaximum.y)
+                projectedMaximum.y = projectedPoint.y;
+        }
+
+        float boundsLeft = projectedMinimum.x;
+        float boundsBottom = projectedMinimum.y;
+        float boundsWidth = qAbs(projectedMaximum.x - projectedMinimum.x);
+        float boundsHeight = qAbs(projectedMaximum.y - projectedMinimum.y);
+
+        float paddedBoundsLeft = boundsLeft;
+        float paddedBoundsBottom = boundsBottom;
+        float paddedBoundsWidth = boundsWidth;
+        float paddedBoundsHeight = boundsHeight;
+
+        if (m_Layer.m_DynamicPadding > 0) {
+            float unpaddedBoundsLeft;
+            float unpaddedBoundsBottom;
+            float unpaddedBoundsWidth;
+            float unpaddedBoundsHeight;
+
+            if (m_Layer.m_DynamicPaddingUnits == LayerUnitTypes::Pixels) {
+                paddedBoundsLeft = boundsLeft - m_Layer.m_DynamicPadding;
+                paddedBoundsBottom = boundsBottom - m_Layer.m_DynamicPadding;
+                paddedBoundsWidth = boundsWidth + m_Layer.m_DynamicPadding * 2;
+                paddedBoundsHeight = boundsHeight + m_Layer.m_DynamicPadding * 2;
+
+                unpaddedBoundsLeft = boundsLeft + m_Layer.m_DynamicPadding;
+                unpaddedBoundsBottom = boundsBottom + m_Layer.m_DynamicPadding;
+                unpaddedBoundsWidth = boundsWidth - m_Layer.m_DynamicPadding * 2;
+                unpaddedBoundsHeight = boundsHeight - m_Layer.m_DynamicPadding * 2;
+            } else {
+                const float leftPadding = boundsWidth * m_Layer.m_DynamicPadding * 0.01f;
+                const float bottomPadding = boundsHeight * m_Layer.m_DynamicPadding * 0.01f;
+                const float widthPadding = m_Layer.m_DynamicPadding * 0.02f;
+                const float heightPadding = m_Layer.m_DynamicPadding * 0.02f;
+
+                paddedBoundsLeft = boundsLeft - leftPadding;
+                paddedBoundsBottom = boundsBottom - bottomPadding;
+                paddedBoundsWidth = boundsWidth * (1.0f + widthPadding);
+                paddedBoundsHeight = boundsHeight * (1.0f + heightPadding);
+
+                unpaddedBoundsLeft = boundsLeft + leftPadding;
+                unpaddedBoundsBottom = boundsBottom + bottomPadding;
+                unpaddedBoundsWidth = boundsWidth * (1.0f - widthPadding);
+                unpaddedBoundsHeight = boundsHeight * (1.0f - heightPadding);
+            }
+
+            // Both the padded and unpadded bounds are calculated
+            // Padded provides the upper bound when size has to be recalculated
+            // Unpadded provides the lower bound
+            // If the newly calculated bounds fit between the padded and unpadded ones
+            // use the previous calculations instead
+            if (m_Layer.m_DynamicPadding == m_lastDynamicPadding
+                    && m_Layer.m_DynamicPaddingUnits == m_lastDynamicPaddingUnits
+                    && m_unpaddedDynamicSize.m_X >= boundsLeft
+                    && m_unpaddedDynamicSize.m_Y >= boundsBottom
+                    && m_unpaddedDynamicSize.m_X + m_unpaddedDynamicSize.m_Width
+                    <= boundsLeft + boundsWidth
+                    && m_unpaddedDynamicSize.m_Y + m_unpaddedDynamicSize.m_Height
+                    <= boundsBottom + boundsHeight
+                    && m_dynamicSize.m_X <= boundsLeft
+                    && m_dynamicSize.m_Y <= boundsBottom
+                    && m_dynamicSize.m_X + m_dynamicSize.m_Width
+                    >= boundsLeft + boundsWidth
+                    && m_dynamicSize.m_Y + m_dynamicSize.m_Height
+                    >= boundsBottom + boundsHeight) {
+                paddedBoundsLeft = m_dynamicSize.m_X;
+                paddedBoundsBottom = m_dynamicSize.m_Y;
+                paddedBoundsWidth = m_dynamicSize.m_Width;
+                paddedBoundsHeight = m_dynamicSize.m_Height;
+            } else {
+                m_unpaddedDynamicSize = NVRenderRectF(unpaddedBoundsLeft,
+                                                      unpaddedBoundsBottom,
+                                                      unpaddedBoundsWidth,
+                                                      unpaddedBoundsHeight);
+                m_dynamicSize = NVRenderRectF(paddedBoundsLeft,
+                                              paddedBoundsBottom,
+                                              paddedBoundsWidth,
+                                              paddedBoundsHeight);
+            }
+            m_lastDynamicPadding = m_Layer.m_DynamicPadding;
+            m_lastDynamicPaddingUnits = m_Layer.m_DynamicPaddingUnits;
+        }
+
+        if (paddedBoundsLeft < layerViewport.m_X)
+            paddedBoundsLeft = layerViewport.m_X;
+        if (paddedBoundsBottom < layerViewport.m_Y)
+            paddedBoundsBottom = layerViewport.m_Y;
+        if (paddedBoundsWidth > layerViewport.m_Width)
+            paddedBoundsWidth = layerViewport.m_Width;
+        if (paddedBoundsHeight > layerViewport.m_Height)
+            paddedBoundsHeight = layerViewport.m_Height;
+
+        prepResult.setViewport(NVRenderRectF(paddedBoundsLeft, paddedBoundsBottom,
+                                             paddedBoundsWidth, paddedBoundsHeight));
+    }
+
     bool SLayerRenderPreparationData::PrepareForRender(const QSize &inViewportDimensions)
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
@@ -1497,6 +1672,10 @@ namespace render {
                 QT3DSF32 theTextScaleFactor = 1.0f;
                 if (m_Camera) {
                     m_Camera->CalculateViewProjectionMatrix(m_ViewProjection);
+
+                    if (m_Layer.m_DynamicResize)
+                        calculateDynamicLayerSize(thePrepResult);
+
                     theTextScaleFactor = m_Camera->GetTextScaleFactor(
                         thePrepResult.GetLayerToPresentationViewport(),
                         thePrepResult.GetPresentationDesignDimensions());

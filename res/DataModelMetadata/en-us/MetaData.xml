@@ -307,6 +307,16 @@
             <ShowIfEqual property="vertfields" value="Top/Bottom"/>
             <ShowIfEqual property="vertfields" value="Height/Bottom"/>
         </Property>
+        <Property name="dynamicresize" formalName="Dynamic Resize" description="Resize the layer dynamically\nbased on the content" type="Boolean" default="False" category="Size" />
+        <Property name="dynamicpadding" formalName="Padding" description="Pad the resized layer to prevent constant\nresizing when small changes are made." min="0" default="0" animatable="False" category="Size">
+            <ShowIfEqual property="dynamicresize" value="True"/>
+        </Property>
+        <Property name="dynamicpaddingunits" formalName="Padding Units" description="Padding is percent of overall\nwidth or absolute pixels" list="percent:pixels" default="percent" category="Size">
+            <ShowIfEqual property="dynamicresize" value="True"/>
+        </Property>
+        <Property name="dynamiccombine" formalName="Combine Bounds" description="Combine layer object bounds for faster\ncalculation, but lower accuracy." type="Boolean" default="False" category="Size">
+            <ShowIfEqual property="dynamicresize" value="True"/>
+        </Property>
 
         <!-- Ambient Occlusion -->
         <Property name="aoenabled" formalName="Ambient Occlusion" description="Use ambient occlusion" type="Boolean" default="False" category="Ambient Occlusion">

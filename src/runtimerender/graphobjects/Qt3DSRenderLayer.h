@@ -129,6 +129,11 @@ namespace render {
 
         LayerBlendTypes::Enum m_BlendType;
 
+        bool m_DynamicResize;
+        QT3DSF32 m_DynamicPadding;
+        LayerUnitTypes::Enum m_DynamicPaddingUnits;
+        bool m_DynamicCombine;
+
         HorizontalFieldValues::Enum m_HorizontalFieldValues;
         QT3DSF32 m_Left;
         LayerUnitTypes::Enum m_LeftUnits;

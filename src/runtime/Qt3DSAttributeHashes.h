@@ -175,6 +175,10 @@ enum EAttribute {
     ATTRIBUTE_MULTISAMPLEAA =        0x013D29FD, // multisampleaa
     ATTRIBUTE_TEMPORALAA =           0x00212AFE, // temporalaa
     ATTRIBUTE_BLENDTYPE =            0x0035B4F5, // blendtype
+    ATTRIBUTE_DYNAMICRESIZE =        0x030D218D, // dynamicresize
+    ATTRIBUTE_DYNAMICPADDINGUNITS =  0x01B34023, // dynamicpaddingunits
+    ATTRIBUTE_DYNAMICPADDING =       0x00A35EAE, // dynamicpadding
+    ATTRIBUTE_DYNAMICCOMBINE =       0x02CB0FC0, // dynamiccombine
     ATTRIBUTE_HORZFIELDS =           0x02B8A818, // horzfields
     ATTRIBUTE_LEFT =                 0x0196B9B9, // left
     ATTRIBUTE_LEFTUNITS =            0x02F9D2D8, // leftunits

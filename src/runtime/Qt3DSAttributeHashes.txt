@@ -141,6 +141,10 @@ progressiveaa
 multisampleaa
 temporalaa
 blendtype
+dynamicresize
+dynamicpaddingunits
+dynamicpadding
+dynamiccombine
 horzfields
 left
 leftunits

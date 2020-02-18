@@ -326,6 +326,10 @@ namespace render {
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Layer, BlendType, Dirty)                                       \
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Layer, Background, Dirty)                                      \
     HANDLE_QT3DS_RENDER_SOURCEPATH_PROPERTY(Layer, TexturePath, Dirty)                               \
+    HANDLE_QT3DS_RENDER_PROPERTY(Layer, DynamicResize, Dirty)                                        \
+    HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Layer, DynamicPaddingUnits, Dirty)                             \
+    HANDLE_QT3DS_RENDER_PROPERTY(Layer, DynamicPadding, Dirty)                                       \
+    HANDLE_QT3DS_RENDER_PROPERTY(Layer, DynamicCombine, Dirty)                                       \
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Layer, HorizontalFieldValues, Dirty)                           \
     HANDLE_QT3DS_RENDER_PROPERTY(Layer, Left, Dirty)                                                 \
     HANDLE_QT3DS_RENDER_ENUM_PROPERTY(Layer, LeftUnits, Dirty)                                       \

@@ -64,6 +64,7 @@ namespace render {
         SCamera *m_CameraRightEye;
         bool m_Offscreen;
 
+        NVRenderRectF m_originalViewport;
         NVRenderRectF m_Viewport;
         NVRenderRectF m_Scissor;
 
@@ -103,8 +104,10 @@ namespace render {
         QT3DSF32 getEyeSeparation() const { return m_StereoEyeSeparation; }
         void setEyeSeparation(QT3DSF32 separation) { m_StereoEyeSeparation = separation; }
 
+        void setViewport(const NVRenderRectF &viewport);
         // Does not differ whether offscreen or not, simply states how this layer maps to the
         // presentation
+        NVRenderRectF getOriginalLayerToPresentationViewport() const;
         NVRenderRectF GetLayerToPresentationViewport() const;
         // Does not differ whether offscreen or not, scissor rect of how this layer maps to
         // presentation.
