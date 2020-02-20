@@ -678,6 +678,7 @@ struct ShaderCache : public IShaderCache
             if (!theShader) {
                 qWarning() << __FUNCTION__ << "Failed to load a cached a shader:" << key;
                 m_Shaders.erase(theKey);
+                m_shadersInitializedFromCache = false;
             }
         }
     }

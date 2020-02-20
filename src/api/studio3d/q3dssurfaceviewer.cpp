@@ -657,6 +657,8 @@ bool Q3DSSurfaceViewerPrivate::initializeRuntime()
                 this->q_ptr, &Q3DSSurfaceViewer::presentationReady);
         connect(m_viewerApp, &Q3DSViewerApp::SigPresentationLoaded,
                 this->q_ptr, &Q3DSSurfaceViewer::presentationLoaded);
+        connect(m_viewerApp, &Q3DSViewerApp::SigLoadShaderCacheErrors,
+                m_presentation, &Q3DSPresentation::shaderCacheLoadErrors);
         Q_ASSERT(m_viewerApp);
     }
     if (!m_context->makeCurrent(m_surface)) {

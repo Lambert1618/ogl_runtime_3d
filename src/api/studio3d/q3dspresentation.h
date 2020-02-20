@@ -97,6 +97,10 @@ public:
                                                      bool binaryShaders);
     Q_REVISION(1) Q_INVOKABLE void exportShaderCache(bool binaryShaders);
     void exportShaderCache(QByteArray &cacheData, bool binaryShaders);
+    Q_REVISION(2) Q_INVOKABLE void exportShaderCache(const QUrl &shaderCacheFile,
+                                                     bool binaryShaders, int compressionLevel);
+    Q_REVISION(2) Q_INVOKABLE void exportShaderCache(bool binaryShaders, int compressionLevel);
+    void exportShaderCache(QByteArray &cacheData, bool binaryShaders, int compressionLevel);
     void setShaderCacheData(const QByteArray &shaderCache);
     QUrl shaderCacheFile() const;
 

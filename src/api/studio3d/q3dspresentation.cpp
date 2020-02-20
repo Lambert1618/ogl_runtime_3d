@@ -649,11 +649,7 @@ void Q3DSPresentation::unloadSlide(const QString &elementPath)
  */
 void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binaryShaders)
 {
-    d_ptr->exportShaderCache(binaryShaders, false);
-    if (d_ptr->m_commandQueue)
-        d_ptr->m_shaderCacheWritePending = shaderCacheFile;
-    else
-        d_ptr->writeShaderCache(shaderCacheFile);
+    exportShaderCache(shaderCacheFile, binaryShaders, -1);
 }
 
 /*!
@@ -705,7 +701,7 @@ void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binar
  */
 void Q3DSPresentation::exportShaderCache(bool binaryShaders)
 {
-    d_ptr->exportShaderCache(binaryShaders, true);
+    exportShaderCache(binaryShaders, -1);
 }
 
 /*!
@@ -726,7 +722,138 @@ void Q3DSPresentation::exportShaderCache(bool binaryShaders)
  */
 void Q3DSPresentation::exportShaderCache(QByteArray &cacheData, bool binaryShaders)
 {
-    d_ptr->exportShaderCache(binaryShaders, false);
+    exportShaderCache(cacheData, binaryShaders, -1);
+}
+
+/*!
+    \qmlmethod Presentation::exportShaderCache(url shaderCacheFile, bool binaryShaders, int compressionLevel)
+    \since QtStudio3D.OpenGL 2.7
+
+    Writes the shaders currently in use to the file specified by \a shaderCacheFile URL.
+    If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
+    compressed shader source code is exported.
+    The exported shaders are compressed using compression level specified by \a{compressionLevel}.
+    \c{-1} means default qCompress compression level. \c{0} means no compression.
+
+    Exporting shader cache is an asynchronous operation.
+    The shaderCacheExported signal is emitted when the export is complete.
+
+    Exporting shader cache should be done at the point of application execution where all the
+    shaders that should be initialized at application startup have been initialized.
+
+    \note Exporting shader cache is only supported if no shaders have been originally loaded
+    from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
+    with shaderCacheFile property allows shader generation.
+
+    \sa shaderCacheFile, shaderCacheExported, qCompress
+ */
+/*!
+    \since Qt 3D Studio 2.7
+    Writes the shaders currently in use to the file specified by \a shaderCacheFile URL.
+    If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
+    compressed shader source code is exported.
+    The exported shaders are compressed using compression level specified by \a{compressionLevel}.
+    \c{-1} means default qCompress compression level. \c{0} means no compression.
+
+    The shaderCacheExported signal is emitted when the export is complete.
+
+    Exporting shader cache should be done at the point of application execution where all the
+    shaders that should be initialized at application startup have been initialized.
+
+    \note Exporting shader cache is only supported if no shaders have been originally loaded
+    from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
+    with shaderCacheFile property allows shader generation.
+
+    \sa shaderCacheFile, shaderCacheExported, qCompress
+ */
+void Q3DSPresentation::exportShaderCache(const QUrl &shaderCacheFile, bool binaryShaders,
+                                         int compressionLevel)
+{
+    d_ptr->exportShaderCache(binaryShaders, false, compressionLevel);
+    if (d_ptr->m_commandQueue)
+        d_ptr->m_shaderCacheWritePending = shaderCacheFile;
+    else
+        d_ptr->writeShaderCache(shaderCacheFile);
+}
+
+/*!
+    \qmlmethod Presentation::exportShaderCache(bool binaryShaders, int compressionLevel)
+    \since QtStudio3D.OpenGL 2.7
+
+    Exports the shaders currently in use and dumps the resulting cache encoded with base64 into
+    stderr. This function is provided as a means to extract the shader cache from environments
+    without a writable disk. The base64 output needs to be converted back to binary
+    representation to be usable as a shader cache file. The Qt 3D Studio Viewer provides
+    a command line parameter \c --convert-shader-cache to do this conversion.
+
+    If \a binaryShaders property is \c{true}, precompiled shaders are exported.
+    Otherwise, compressed shader source code is exported.
+    The exported shaders are compressed using compression level specified by \a{compressionLevel}.
+    \c{-1} means default qCompress compression level. \c{0} means no compression.
+
+    Exporting shader cache is an asynchronous operation.
+    The shaderCacheExported signal is emitted when the export is complete.
+
+    Exporting shader cache should be done at the point of application execution where all the
+    shaders that should be initialized at application startup have been initialized.
+
+    \note Exporting shader cache is only supported if no shaders have been originally loaded
+    from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
+    with shaderCacheFile property allows shader generation.
+
+    \sa shaderCacheFile, shaderCacheExported, qCompress
+ */
+/*!
+    \since Qt 3D Studio 2.7
+    Exports the shaders currently in use and dumps the resulting cache encoded with base64 into
+    stderr. This function is provided as a means to extract the shader cache from environments
+    without a writable disk. The base64 output needs to be converted back to binary
+    representation to be usable as a shader cache file. The Qt 3D Studio Viewer provides
+    a command line parameter \c --convert-shader-cache to do this conversion.
+
+    If \a binaryShaders property is \c{true}, precompiled shaders are exported.
+    Otherwise, compressed shader source code is exported.
+    The exported shaders are compressed using compression level specified by \a{compressionLevel}.
+    \c{-1} means default qCompress compression level. \c{0} means no compression.
+
+    The shaderCacheExported signal is emitted when the export is complete.
+
+    Exporting shader cache should be done at the point of application execution where all the
+    shaders that should be initialized at application startup have been initialized.
+
+    \note Exporting shader cache is only supported if no shaders have been originally loaded
+    from a shader cache. Specifying no shader cache file or an empty or invalid shader cache file
+    with shaderCacheFile property allows shader generation.
+
+    \sa shaderCacheFile, shaderCacheExported, qCompress
+ */
+void Q3DSPresentation::exportShaderCache(bool binaryShaders, int compressionLevel)
+{
+    d_ptr->exportShaderCache(binaryShaders, true, compressionLevel);
+}
+
+/*!
+    \since Qt 3D Studio 2.7
+    Exports the shaders currently in use to a byte array specified by \a cacheData parameter.
+    If \a binaryShaders property is \c{true}, precompiled shaders are exported. Otherwise,
+    compressed shader source code is exported.
+    The exported shaders are compressed using compression level specified by \a{compressionLevel}.
+    \c{-1} means default qCompress compression level. \c{0} means no compression.
+
+    The shaderCacheExported signal is emitted when the export is complete.
+
+    Exporting shader cache should be done at the point of application execution where all the
+    shaders that should be initialized at application startup have been initialized.
+
+    \note Exporting shader cache is only supported if no shaders have been originally loaded
+    from a shader cache.
+
+    \sa setShaderCacheData, shaderCacheExported, qCompress
+ */
+void Q3DSPresentation::exportShaderCache(QByteArray &cacheData, bool binaryShaders,
+                                         int compressionLevel)
+{
+    d_ptr->exportShaderCache(binaryShaders, false, compressionLevel);
     d_ptr->getShaderCacheData(cacheData);
 }
 
@@ -1970,7 +2097,7 @@ void Q3DSPresentationPrivate::requestResponseHandler(CommandType commandType, vo
         if (response->size() > 0)
             m_shaderCacheExport = response->at(0).toByteArray();
         if (!m_shaderCacheExport.isEmpty())
-            m_shaderCacheExport = qCompress(m_shaderCacheExport);
+            m_shaderCacheExport = qCompress(m_shaderCacheExport, m_shaderCacheCompression);
         if (!m_shaderCacheWritePending.isEmpty()) {
             writeShaderCache(m_shaderCacheWritePending);
             m_shaderCacheWritePending.clear();
@@ -2022,31 +2149,43 @@ void Q3DSPresentationPrivate::getShaderCacheData(QByteArray &shaderCacheData)
 
 QByteArray Q3DSPresentationPrivate::loadShaderCache() const
 {
+    QString error;
     if (!m_shaderCacheFile.isEmpty()) {
         QFile file(Q3DSUtils::urlToLocalFileOrQrc(m_shaderCacheFile));
-        if (file.open(QIODevice::ReadOnly))
-            return qUncompress(file.readAll());
-
-        qWarning() << __FUNCTION__ << "Warning: Failed to read shader cache:"
-                   << m_shaderCacheFile << file.errorString();
+        if (file.open(QIODevice::ReadOnly)) {
+            const QByteArray data = qUncompress(file.readAll());
+            if (!data.isEmpty())
+                return data;
+        }
+        error = QStringLiteral("Failed to read or uncompress shader cache: %1 '%2'")
+                .arg(m_shaderCacheFile.toString()).arg(file.errorString());
     } else if (!m_shaderCacheImport.isEmpty()) {
-        return qUncompress(m_shaderCacheImport);
+        const QByteArray data = qUncompress(m_shaderCacheImport);
+        if (data.isEmpty())
+            error = QStringLiteral("Failed uncompress shader cache.");
+        else
+            return data;
     }
+
+    if (!error.isEmpty())
+        Q_EMIT q_ptr->shaderCacheLoadErrors(error);
 
     return {};
 }
 
-void Q3DSPresentationPrivate::exportShaderCache(bool binaryShaders, bool dumpCache)
+void Q3DSPresentationPrivate::exportShaderCache(bool binaryShaders, bool dumpCache,
+                                                int compression)
 {
     if (m_viewerApp) {
         m_shaderCacheExport = m_viewerApp->exportShaderCache(binaryShaders);
         if (!m_shaderCacheExport.isEmpty())
-            m_shaderCacheExport = qCompress(m_shaderCacheExport);
+            m_shaderCacheExport = qCompress(m_shaderCacheExport, compression);
         if (dumpCache)
             dumpShaderCache();
     } else if (m_commandQueue) {
         m_commandQueue->queueCommand(CommandType_RequestExportShaderCache, binaryShaders);
         m_shaderCacheDumpPending = dumpCache;
+        m_shaderCacheCompression = compression;
     }
 }
 

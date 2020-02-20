@@ -1222,9 +1222,8 @@ namespace render {
         bProgramIsValid = pProgram->link(format, &binary);
 
         if (!bProgramIsValid && pProgram) {
-            NVFoundationBase &foundation(context.GetFoundation());
             qCCritical(INTERNAL_ERROR, "Failed to link binary program!!");
-            WriteErrorMessage(foundation, "Program link output:", pProgram->GetErrorMessage());
+            result.errors = QStringLiteral("Binary program link failed");
 
             // delete program
             QT3DS_FREE(context.GetFoundation().getAllocator(), pProgram);

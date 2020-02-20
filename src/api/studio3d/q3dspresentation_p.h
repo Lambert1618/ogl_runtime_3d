@@ -104,7 +104,7 @@ public:
     void writeShaderCache(const QUrl &shaderCacheFile);
     void getShaderCacheData(QByteArray &shaderCacheData);
     QByteArray loadShaderCache() const;
-    void exportShaderCache(bool binaryShaders, bool dumpCache);
+    void exportShaderCache(bool binaryShaders, bool dumpCache, int compression);
     void dumpShaderCache();
 
 public Q_SLOTS:
@@ -136,6 +136,7 @@ private:
     QByteArray m_shaderCacheImport;
     QUrl m_shaderCacheWritePending;
     bool m_shaderCacheDumpPending = false;
+    bool m_shaderCacheCompression = -1;
     int m_dataInputCallIndex = 0;
 
     friend class Q3DSStudio3D;
