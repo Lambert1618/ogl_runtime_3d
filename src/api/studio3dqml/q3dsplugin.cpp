@@ -40,6 +40,7 @@
 #include "q3dsqmlsubpresentationsettings.h"
 #include "q3dssceneelement.h"
 #include "q3dsdatainput.h"
+#include "qtstudio3dversion.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,6 +63,9 @@ void Q3DSPlugin::registerTypes(const char *uri)
     qmlRegisterType<Q3DSStudio3D, 1>(uri, 2, 5, "Studio3D");
     qmlRegisterType<Q3DSViewerSettings, 1>(uri, 2, 5, "ViewerSettings");
     qmlRegisterType<Q3DSPresentationItem, 1>(uri, 2, 5, "Presentation");
+
+    // Automatically register the latest version
+    qmlRegisterModule(uri, ((QTSTUDIO3D_VERSION >> 16) & 0xff), ((QTSTUDIO3D_VERSION >> 8) & 0xff));
 }
 
 QT_END_NAMESPACE
