@@ -911,6 +911,7 @@ void SLayerRenderData::renderOrderedGroup(
     QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
     for (int i = 0; i < group.m_renderables.size(); ++i) {
         SRenderableObject &object(*group.m_renderables[i]);
+        const bool hasTransparency = object.m_RenderableFlags.HasTransparency();
         SetShaderFeature(m_CGLightingFeatureName, m_Lights.empty() == false);
         SScopedLightsListScope lightsScope(m_Lights, m_LightDirections,
                                            m_SourceLightDirections,
@@ -932,21 +933,27 @@ void SLayerRenderData::renderOrderedGroup(
         if (useBlendFallback)
             SetupDrawFB(true);
 #endif
-        if (object.m_RenderableFlags.hasAlphaTest()) {
+        if (object.m_RenderableFlags.hasAlphaTest() || hasTransparency) {
             theRenderContext.SetBlendingEnabled(false);
-            theRenderContext.SetDepthWriteEnabled(opaqueDepthWrite);
+            theRenderContext.SetDepthWriteEnabled(opaqueDepthWrite
+                                                  && object.m_RenderableFlags.hasAlphaTest());
             m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
             inRenderFn(*this, object, theCameraProps, GetShaderFeatureSet(), indexLight,
                        inCamera);
+            theRenderContext.SetDepthTestEnabled(false);
             theRenderContext.SetBlendingEnabled(inEnableBlending);
-            theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite);
+            theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite
+                                                  && object.m_RenderableFlags.hasAlphaTest());
             m_Renderer.setAlphaTest(true, -1.0f, 1.0f);
             inRenderFn(*this, object, theCameraProps, GetShaderFeatureSet(), indexLight,
                        inCamera);
             m_Renderer.setAlphaTest(false, 1.0, 1.0);
+            inRenderFn(*this, object, theCameraProps, GetShaderFeatureSet(), indexLight,
+                       inCamera);
         } else {
             const bool transparency
                     = object.m_RenderableFlags.HasTransparency() && inEnableBlending;
+            theRenderContext.SetDepthTestEnabled(opaqueDepthTest);
             theRenderContext.SetBlendingEnabled(transparency);
             theRenderContext.SetDepthWriteEnabled((!transparency && opaqueDepthWrite)
                                                   || inEnableTransparentDepthWrite);
