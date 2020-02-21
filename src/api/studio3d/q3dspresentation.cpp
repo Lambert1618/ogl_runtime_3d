@@ -1127,6 +1127,13 @@ void Q3DSPresentation::setDataInputValue(const QString &name, const QVariant &va
         di->d_ptr->m_forced = force;
 
     d_ptr->setDataInputDirty(name, true, d_ptr->m_dataInputCallIndex++);
+
+    // Do not pollute datainput value cache if we are not ready to accept attribute changes.
+    // Datainput will locally hold set value and is marked as dirty, but we do not yet allow
+    // updating the cached value that holds the value we have actually committed to the engine.
+    if (!d_ptr->m_viewerApp && !d_ptr->m_commandQueue)
+        return;
+
     // We batch datainput changes within a frame, so just tell the presentation that one
     // or more datainputs have changed value.
     d_ptr->m_dataInputsChanged = true;
