@@ -1429,14 +1429,12 @@ struct SApp : public IApplication
                     DataInputDef diDef;
                     const char8_t *name = "";
                     const char8_t *type = "";
-                    const char8_t *evaluator = "";
                     const char8_t *metadataStr = "";
                     diDef.value = QVariant::Invalid;
                     inReader.UnregisteredAtt("name", name);
                     inReader.UnregisteredAtt("type", type);
                     inReader.Att("min", diDef.min);
                     inReader.Att("max", diDef.max);
-                    inReader.UnregisteredAtt("evaluator", evaluator);
                     if (AreEqual(type, "Ranged Number"))
                         diDef.type = DataInOutTypeRangedNumber;
                     else if (AreEqual(type, "String"))
@@ -1453,11 +1451,6 @@ struct SApp : public IApplication
                         diDef.type = DataInOutTypeBoolean;
                     else if (AreEqual(type, "Variant"))
                         diDef.type = DataInOutTypeVariant;
-
-                    if (AreEqual(type, "Evaluator")) {
-                        diDef.type = DataInOutTypeEvaluator;
-                        diDef.evaluator = QString::fromUtf8(evaluator);
-                    }
 
                     inReader.UnregisteredAtt("metadata", metadataStr);
                     QString metaData = QString(metadataStr);
@@ -2319,9 +2312,6 @@ QDebug operator<<(QDebug debug, const DataInOutType &value)
     case DataInOutType::DataInOutTypeFloat:
         debug.nospace() << "DataInOutTypeFloat";
         break;
-    case DataInOutType::DataInOutTypeEvaluator:
-        debug.nospace() << "DataInOutTypeEvaluator";
-        break;
     case DataInOutType::DataInOutTypeBoolean:
         debug.nospace() << "DataInOutTypeBoolean";
         break;
@@ -2377,11 +2367,7 @@ QDebug operator<<(QDebug debug, const DataInputDef &value)
 
     debug.nospace() << "}, min:" << value.min;
     debug.nospace() << ", min:" << value.min << ", max:" << value.max;
-    debug.nospace() << ", evaluator:" << value.evaluator;
     debug.nospace() << ", value:" << value.value;
-    debug.nospace() << ", dependents:{";
-    for (auto dep : value.dependents)
-        debug << dep;
 
     debug.nospace() << "})";
     return debug;

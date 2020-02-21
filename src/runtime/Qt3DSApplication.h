@@ -101,7 +101,6 @@ enum DataInOutType {
     DataInOutTypeRangedNumber,
     DataInOutTypeString,
     DataInOutTypeFloat,
-    DataInOutTypeEvaluator,
     DataInOutTypeBoolean,
     DataInOutTypeVector4,
     DataInOutTypeVector3,
@@ -122,12 +121,7 @@ struct DataInputDef
     DataInOutType type = DataInOutTypeInvalid;
     float min = 0.0f;
     float max = 0.0f;
-    QString evaluator;
-    QJSValue evalFunc;  // keep both evaluator string and JS function
-                        // to avoid having to evaluate string several times
     QVariant value;     // most recently set value
-    // evaluator datainputs that need to re-evaluate when this datainput changes value
-    QVector<QString> dependents;
     QHash<QString, QString> metadata;
 };
 
