@@ -90,6 +90,8 @@ namespace render {
                 return sizeof(SApplyDepthValue);
             case CommandTypes::ApplyInstanceValue:
                 return sizeof(SApplyInstanceValue);
+            case CommandTypes::ApplyDepth:
+                return sizeof(SApplyDepth);
             case CommandTypes::ApplyBlending:
                 return sizeof(SApplyBlending);
             case CommandTypes::ApplyRenderState:
@@ -154,6 +156,9 @@ namespace render {
                 break;
             case CommandTypes::ApplyInstanceValue:
                 CopyConstructCommandT<SApplyInstanceValue>(inDataBuffer, inCommand, inStrTable);
+                break;
+            case CommandTypes::ApplyDepth:
+                CopyConstructCommandT<SApplyDepth>(inDataBuffer, inCommand, inStrTable);
                 break;
             case CommandTypes::ApplyBlending:
                 CopyConstructCommandT<SApplyBlending>(inDataBuffer, inCommand, inStrTable);

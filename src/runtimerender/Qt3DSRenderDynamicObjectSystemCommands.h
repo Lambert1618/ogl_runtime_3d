@@ -54,6 +54,7 @@ namespace render {
                 // Apply the depth buffer as an input texture.
                 ApplyDepthValue,
                 Render, // Render to current FBO
+                ApplyDepth,
                 ApplyBlending,
                 ApplyRenderState, // apply a render state
                 ApplyBlitFramebuffer,
@@ -486,6 +487,26 @@ namespace render {
             SApplyCulling(const SApplyCulling &inOther, IStringTable &)
                 : SCommand(CommandTypes::ApplyCulling)
                 , m_CullMode(inOther.m_CullMode)
+            {
+            }
+        };
+
+        struct SApplyDepth : public SCommand
+        {
+            NVRenderBoolOp::Enum m_depthFunc;
+            bool m_depthMask;
+
+            SApplyDepth(NVRenderBoolOp::Enum depthFunc, bool depthMask)
+                : SCommand(CommandTypes::ApplyDepth)
+                , m_depthFunc(depthFunc)
+                , m_depthMask(depthMask)
+            {
+            }
+
+            SApplyDepth(const SApplyDepth &other, IStringTable &)
+                : SCommand(CommandTypes::ApplyDepth)
+                , m_depthFunc(other.m_depthFunc)
+                , m_depthMask(other.m_depthMask)
             {
             }
         };

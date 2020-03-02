@@ -4045,6 +4045,21 @@ public:
                                                                        theDstBlendFuc));
                                         // if we have blending we have transparency
                                         theMaterial.m_HasTransparency = true;
+                                    } else if (AreEqual("Depth", inStream.GetNarrowElementName())) {
+                                        const char8_t *depthFuncStr = "";
+                                        const char8_t *depthMaskStr = "";
+                                        inStream.Att("func", depthFuncStr);
+                                        inStream.Att("mask", depthMaskStr);
+
+                                        qt3ds::render::NVRenderBoolOp::Enum depthFunc
+                                                = ParseBoolOp(depthFuncStr);
+                                        bool depthMask = true;
+
+                                        if (AreEqual("false", depthMaskStr))
+                                            depthMask = false;
+
+                                        theMaterial.m_CustomerMaterialCommands.push_back(
+                                                    new SApplyDepth(depthFunc, depthMask));
                                     } else if (AreEqual("RenderState",
                                                         inStream.GetNarrowElementName())) {
                                         const char8_t *name = "";

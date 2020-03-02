@@ -1381,6 +1381,13 @@ struct SMaterialSystem : public ICustomMaterialSystem
         }
     }
 
+    void ApplyDepth(const SApplyDepth &inCommand)
+    {
+        NVRenderContext &theContext(m_Context->GetRenderContext());
+        theContext.SetDepthFunction(inCommand.m_depthFunc);
+        theContext.SetDepthWriteEnabled(inCommand.m_depthMask);
+    }
+
     void ApplyBlending(const SApplyBlending &inCommand)
     {
         NVRenderContext &theContext(m_Context->GetRenderContext());
@@ -1847,6 +1854,9 @@ struct SMaterialSystem : public ICustomMaterialSystem
             case CommandTypes::ApplyBlending:
                 ApplyBlending(static_cast<const SApplyBlending &>(theCommand));
                 break;
+            case CommandTypes::ApplyDepth:
+                ApplyDepth(static_cast<const SApplyDepth &>(theCommand));
+                break;
             case CommandTypes::ApplyBufferValue:
                 if (theCurrentShader)
                     ApplyBufferValue(inMaterial, *theCurrentShader->m_Shader,
@@ -1870,6 +1880,8 @@ struct SMaterialSystem : public ICustomMaterialSystem
             theContext.CreateRasterizerState(0.0, 0.0, qt3ds::render::NVRenderFaces::Back);
         theContext.SetRasterizerState(state);
         theContext.SetCullingEnabled(true);
+        theContext.SetDepthFunction(NVRenderBoolOp::LessThanOrEqual);
+        theContext.SetDepthWriteEnabled(true);
 
         // Release any per-frame buffers
         for (QT3DSU32 idx = 0; idx < m_AllocatedBuffers.size(); ++idx) {
