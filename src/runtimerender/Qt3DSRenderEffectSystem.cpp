@@ -1082,9 +1082,10 @@ struct SEffectSystem : public IEffectSystem
                                 image->m_ImagePath = *theStrPtr;
                                 image->m_Flags.SetDirty(true);
                             } else {
-                                if (image->m_OffscreenRendererId.IsValid()) {
-                                    IOffscreenRenderManager &theOffscreenRenderer(
-                                                            m_Context->GetOffscreenRenderManager());
+                                IOffscreenRenderManager &theOffscreenRenderer(
+                                                        m_Context->GetOffscreenRenderManager());
+                                if (image->m_OffscreenRendererId.IsValid()
+                                        || theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr)) {
                                     SOffscreenRenderResult theResult
                                             = theOffscreenRenderer.GetRenderedItem(*theStrPtr);
                                     needsAlphaMultiply = false;

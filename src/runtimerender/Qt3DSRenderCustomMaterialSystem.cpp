@@ -1310,10 +1310,15 @@ struct SMaterialSystem : public ICustomMaterialSystem
                                 image->m_ImagePath = *theStrPtr;
                                 image->m_Flags.SetDirty(true);
                             } else {
-                                if (image->m_OffscreenRendererId.IsValid()) {
-                                    SetSubpresentation(inShader, inPropertyName,
-                                                       image->m_TextureData.m_Texture,
-                                                       &inDefinition);
+                                IOffscreenRenderManager &offscreenRenderer(
+                                    m_Context->GetOffscreenRenderManager());
+                                if (offscreenRenderer.HasOffscreenRenderer(*theStrPtr)) {
+                                    SOffscreenRenderResult result
+                                            = offscreenRenderer.GetRenderedItem(*theStrPtr);
+                                    if (result.m_Texture) {
+                                        SetSubpresentation(inShader, inPropertyName,
+                                                           result.m_Texture, &inDefinition);
+                                    }
                                 } else {
                                     SetTexture(inShader, inPropertyName,
                                                image->m_TextureData.m_Texture, &inDefinition,
@@ -1925,12 +1930,13 @@ struct SMaterialSystem : public ICustomMaterialSystem
                            applier);
     }
 
-    void renderSubpresentations(SCustomMaterial &inMaterial) override
+    bool renderSubpresentations(SCustomMaterial &inMaterial) override
     {
         SMaterialClass *theClass = GetMaterialClass(inMaterial.m_ClassName);
         if (!theClass)
-            return;
+            return false;
 
+        bool wasDirty = false;
         NVConstDataRef<SPropertyDefinition> theDefs = theClass->m_Class->GetProperties();
         for (QT3DSU32 idx = 0, end = theDefs.size(); idx < end; ++idx) {
             const SPropertyDefinition &theDefinition(theDefs[idx]);
@@ -1943,11 +1949,16 @@ struct SMaterialSystem : public ICustomMaterialSystem
                     m_Context->GetOffscreenRenderManager());
 
                 if (theStrPtr->IsValid()) {
-                    if (theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr))
-                        theOffscreenRenderer.GetRenderedItem(*theStrPtr);
+                    if (theOffscreenRenderer.HasOffscreenRenderer(*theStrPtr)) {
+                        SOffscreenRenderResult result
+                                = theOffscreenRenderer.GetRenderedItem(*theStrPtr);
+                        if (result.m_HasChangedSinceLastFrame)
+                            wasDirty = true;
+                    }
                 }
             }
         }
+        return wasDirty;
     }
 
     void clearCaches() override

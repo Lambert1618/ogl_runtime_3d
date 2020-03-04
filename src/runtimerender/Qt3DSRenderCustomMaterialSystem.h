@@ -127,7 +127,7 @@ namespace render {
         // apply property values
         virtual void ApplyShaderPropertyValues(const SCustomMaterial &inMaterial,
                                                NVRenderShaderProgram &inProgram) = 0;
-        virtual void renderSubpresentations(SCustomMaterial &inMaterial) = 0;
+        virtual bool renderSubpresentations(SCustomMaterial &inMaterial) = 0;
         virtual void clearCaches() = 0;
         virtual void setRequiresCompilation(const CRegisteredString &name, bool value) = 0;
         virtual bool requiresCompilation(const CRegisteredString &name) const = 0;

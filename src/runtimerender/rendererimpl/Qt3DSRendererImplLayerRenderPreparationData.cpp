@@ -859,7 +859,10 @@ namespace render {
 
         // If the custom material uses subpresentations, those have to be rendered before
         // the custom material itself
-        m_Renderer.GetQt3DSContext().GetCustomMaterialSystem().renderSubpresentations(inMaterial);
+        if (m_Renderer.GetQt3DSContext().GetCustomMaterialSystem()
+                .renderSubpresentations(inMaterial)) {
+            retval.m_Dirty = true;
+        }
 
         // set wireframe mode
         m_Renderer.DefaultMaterialShaderKeyProperties().m_WireframeMode.SetValue(
@@ -1046,6 +1049,7 @@ namespace render {
                                                        subsetOpacity, subsetDirty));
                     SShaderDefaultMaterialKey theGeneratedKey = theMaterialPrepResult.m_MaterialKey;
                     subsetOpacity = theMaterialPrepResult.m_Opacity;
+                    subsetDirty |= theMaterialPrepResult.m_Dirty;
                     SRenderableImage *firstImage(theMaterialPrepResult.m_FirstImage);
                     renderableFlags = theMaterialPrepResult.m_RenderableFlags;
 
