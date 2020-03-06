@@ -878,6 +878,7 @@ struct SNodeTranslator : public Qt3DSTranslator
         case Q3DStudio::ATTRIBUTE_ENDTIME:
         case Q3DStudio::ATTRIBUTE_IMPORTID:
         case Q3DStudio::ATTRIBUTE_EYEBALL:
+        case Q3DStudio::ATTRIBUTE_CONTROLLEDPROPERTY:
         // Groups have a source path property on them that we like to ignore.
         case Q3DStudio::ATTRIBUTE_SOURCEPATH:
             break;
