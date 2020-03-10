@@ -1266,6 +1266,9 @@ struct SMaterialSystem : public ICustomMaterialSystem
             if (theProgram) {
                 theInsertResult.first->second =
                     QT3DS_NEW(m_Allocator, SCustomMaterialShader)(*theProgram, theFlags);
+            } else {
+                // If a changed shader fails to compile, clean away the old result from cache
+                theInsertResult.first->second = NULL;
             }
         } else if (theInsertResult.first->second)
             theProgram = theInsertResult.first->second->m_Shader;
