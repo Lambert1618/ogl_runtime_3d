@@ -1551,10 +1551,12 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
                     aaFactorIndex = (m_ProgressiveAAPassIndex - 1);
                     theVertexOffsets = s_VertexOffsets[aaFactorIndex];
                 } else {
-                    if (temporalAATexture.GetTexture())
-                        theLastLayerTexture.StealTexture(temporalAATexture);
-                    else if (hadLayerTexture)
-                        theLastLayerTexture.StealTexture(m_LayerTexture);
+                    if (hadLayerTexture) {
+                        if (temporalAATexture.GetTexture())
+                            theLastLayerTexture.StealTexture(temporalAATexture);
+                        else
+                            theLastLayerTexture.StealTexture(m_LayerTexture);
+                    }
 
                     theVertexOffsets = s_TemporalVertexOffsets[m_TemporalAAPassIndex];
                     ++m_TemporalAAPassIndex;
