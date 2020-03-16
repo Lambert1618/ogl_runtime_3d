@@ -143,6 +143,7 @@ public:
     bool m_scaleModeChanged = false;
     bool m_stereoModeChanged = false;
     bool m_stereoEyeSeparationChanged = false;
+    bool m_stereoProgressiveEnabledChanged = false;
     bool m_shadeModeChanged = false;
     bool m_showRenderStatsChanged = false;
     bool m_matteColorChanged = false;
@@ -157,6 +158,7 @@ public:
     Q3DSViewerSettings::ScaleMode m_scaleMode = Q3DSViewerSettings::ScaleModeCenter;
     Q3DSViewerSettings::StereoMode m_stereoMode = Q3DSViewerSettings::StereoModeMono;
     double m_stereoEyeSeparation = 0.4;
+    bool m_stereoProgressiveEnabled = false;
     Q3DSViewerSettings::ShadeMode m_shadeMode = Q3DSViewerSettings::ShadeModeShaded;
     bool m_showRenderStats = false;
     QColor m_matteColor = QColor(Qt::black);

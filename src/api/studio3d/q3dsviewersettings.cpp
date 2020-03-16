@@ -332,6 +332,45 @@ void Q3DSViewerSettings::setStereoEyeSeparation(double separation)
 }
 
 /*!
+    \qmlproperty bool ViewerSettings::stereoProgressiveEnabled
+
+    \since QtStudio3D.OpenGL 2.7
+
+    Enables progressive rendering in stereoscopic modes. In this mode,
+    only single eye per frame is rendered. Left eye for odd frames and
+    right for even frames. This halves the maximum animation frame rate
+    (meaning e.g. 30fps on 60Hz screen) while decreasing CPU/GPU usage.
+
+    \note This property has only effect when stereo mode is set to
+    \c{StereoModeTopBottom} or \c{StereoModeLeftRight}.
+ */
+/*!
+    \property Q3DSViewerSettings::stereoProgressiveEnabled
+
+    \since Qt 3D Studio 2.7
+
+    Enables progressive rendering in stereoscopic modes. In this mode,
+    only single eye per frame is rendered. Left eye for odd frames and
+    right for even frames. This halves the maximum animation frame rate
+    (meaning e.g. 30fps on 60Hz screen) while decreasing CPU/GPU usage.
+
+    \note This property has only effect when stereo mode is set to
+    \c{StereoModeTopBottom} or \c{StereoModeLeftRight}.
+ */
+bool Q3DSViewerSettings::stereoProgressiveEnabled() const
+{
+    return d_ptr->m_stereoProgressiveEnabled;
+}
+
+void Q3DSViewerSettings::setStereoProgressiveEnabled(bool enabled)
+{
+    if (d_ptr->m_stereoProgressiveEnabled != enabled) {
+        d_ptr->setStereoProgressiveEnabled(enabled);
+        Q_EMIT stereoProgressiveEnabledChanged(enabled);
+    }
+}
+
+/*!
     \qmlproperty bool ViewerSettings::matteEnabled
 
     Specifies if the empty area around the presentation (applicable when
@@ -410,6 +449,7 @@ Q3DSViewerSettingsPrivate::Q3DSViewerSettingsPrivate(Q3DSViewerSettings *q)
     , m_scaleMode(Q3DSViewerSettings::ScaleModeCenter)
     , m_stereoMode(Q3DSViewerSettings::StereoModeMono)
     , m_stereoEyeSeparation(0.4)
+    , m_stereoProgressiveEnabled(false)
     , m_savedSettings(nullptr)
 {
 }
@@ -429,6 +469,7 @@ void Q3DSViewerSettingsPrivate::setViewerApp(Q3DSViewer::Q3DSViewerApp *app)
         setScaleMode(m_scaleMode);
         setStereoMode(m_stereoMode);
         setStereoEyeSeparation(m_stereoEyeSeparation);
+        setStereoProgressiveEnabled(m_stereoProgressiveEnabled);
     }
 }
 
@@ -443,6 +484,7 @@ void Q3DSViewerSettingsPrivate::setCommandQueue(CommandQueue *queue)
         setScaleMode(m_scaleMode);
         setStereoMode(m_stereoMode);
         setStereoEyeSeparation(m_stereoEyeSeparation);
+        setStereoProgressiveEnabled(m_stereoProgressiveEnabled);
     }
 }
 
@@ -475,6 +517,8 @@ void Q3DSViewerSettingsPrivate::load(const QString &group, const QString &organi
                              m_savedSettings->value(QStringLiteral("stereoMode")).toInt()));
     q_ptr->setStereoEyeSeparation(
                 m_savedSettings->value(QStringLiteral("stereoEyeSeparation")).toDouble());
+    q_ptr->setStereoProgressiveEnabled(
+                m_savedSettings->value(QStringLiteral("stereoProgressiveEnabled")).toBool());
     q_ptr->setMatteEnabled(m_savedSettings->value(QStringLiteral("matteEnabled")).toBool());
 }
 
@@ -569,6 +613,17 @@ void Q3DSViewerSettingsPrivate::setStereoEyeSeparation(double separation)
     } else if (m_commandQueue) {
         m_commandQueue->m_stereoEyeSeparation = separation;
         m_commandQueue->m_stereoEyeSeparationChanged = true;
+    }
+}
+
+void Q3DSViewerSettingsPrivate::setStereoProgressiveEnabled(bool enabled)
+{
+    m_stereoProgressiveEnabled = enabled;
+    if (m_viewerApp) {
+        m_viewerApp->SetStereoProgressiveEnabled(enabled);
+    } else if (m_commandQueue) {
+        m_commandQueue->m_stereoProgressiveEnabled = enabled;
+        m_commandQueue->m_stereoProgressiveEnabledChanged = true;
     }
 }
 

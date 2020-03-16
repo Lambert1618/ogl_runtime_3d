@@ -67,6 +67,7 @@ void Q3DSPlugin::registerTypes(const char *uri)
 
     // 2.7
     qmlRegisterType<Q3DSPresentationItem, 2>(uri, 2, 7, "Presentation");
+    qmlRegisterType<Q3DSViewerSettings, 2>(uri, 2, 7, "ViewerSettings");
     qmlRegisterRevision<Q3DSPresentation, 2>(uri, 2, 7);
 
     // Automatically register the latest version

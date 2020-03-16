@@ -69,6 +69,7 @@ public:
     void setScaleMode(Q3DSViewerSettings::ScaleMode mode);
     void setStereoMode(Q3DSViewerSettings::StereoMode mode);
     void setStereoEyeSeparation(double separation);
+    void setStereoProgressiveEnabled(bool enabled);
 
 public:
     Q3DSViewerSettings *q_ptr;
@@ -86,6 +87,7 @@ private:
     Q3DSViewerSettings::ScaleMode m_scaleMode;
     Q3DSViewerSettings::StereoMode m_stereoMode;
     double m_stereoEyeSeparation;
+    bool m_stereoProgressiveEnabled;
     QSettings *m_savedSettings;
 };
 

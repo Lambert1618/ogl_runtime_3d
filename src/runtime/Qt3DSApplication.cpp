@@ -638,6 +638,7 @@ struct SApp : public IApplication
     bool m_DisableState;
     bool m_ProfileLogging;
     bool m_LastRenderWasDirty;
+    bool m_ProgressiveLeftFrame;
     QT3DSU64 m_LastFrameStartTime;
     QT3DSU64 m_ThisFrameStartTime;
     double m_MillisecondsSinceLastFrame;
@@ -688,6 +689,7 @@ struct SApp : public IApplication
         , m_DisableState(true)
         , m_ProfileLogging(false)
         , m_LastRenderWasDirty(true)
+        , m_ProgressiveLeftFrame(true)
         , m_LastFrameStartTime(0)
         , m_ThisFrameStartTime(0)
         , m_MillisecondsSinceLastFrame(0)
@@ -1098,12 +1100,17 @@ struct SApp : public IApplication
                         .RenderPresentation(pres, m_initialFrame);
             } else {
                 // In stereoscopic mode, render 2 times for left & right eye
-                rc.SetStereoView(StereoViews::Left);
-                m_LastRenderWasDirty = m_RuntimeFactory->GetSceneManager()
-                        .RenderPresentation(pres, m_initialFrame);
-                rc.SetStereoView(StereoViews::Right);
-                m_RuntimeFactory->GetSceneManager()
-                        .RenderPresentation(pres, m_initialFrame);
+                if (!rc.GetStereoProgressiveEnabled() || m_ProgressiveLeftFrame) {
+                    rc.SetStereoView(StereoViews::Left);
+                    m_LastRenderWasDirty = m_RuntimeFactory->GetSceneManager()
+                            .RenderPresentation(pres, m_initialFrame);
+                }
+                if (!rc.GetStereoProgressiveEnabled() || !m_ProgressiveLeftFrame) {
+                    rc.SetStereoView(StereoViews::Right);
+                    m_RuntimeFactory->GetSceneManager()
+                            .RenderPresentation(pres, m_initialFrame);
+                }
+                m_ProgressiveLeftFrame = !m_ProgressiveLeftFrame;
             }
 
             m_initialFrame = false;

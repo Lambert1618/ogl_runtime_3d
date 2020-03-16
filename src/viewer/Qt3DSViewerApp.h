@@ -325,6 +325,9 @@ public:
     void SetStereoEyeSeparation(double separation);
     double GetStereoEyeSeparation() const;
 
+    void SetStereoProgressiveEnabled(bool enabled);
+    bool GetStereoProgressiveEnabled() const;
+
     void setMatteColor(const QColor &color);
     void setShowOnScreenStats(bool s);
 
