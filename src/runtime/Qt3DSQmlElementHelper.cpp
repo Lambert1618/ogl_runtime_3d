@@ -325,6 +325,13 @@ bool CQmlElementHelper::SetAttribute(TElement *theElement, const char *theAttNam
     else
         return false;
 
+    if (attributeAndValue.attribute.m_Hash == Q3DStudio::ATTRIBUTE_SUBPRESENTATION) {
+        auto presentation = theElement->GetBelongedPresentation();
+        auto stringValue = presentation->GetStringTable().HandleToStr(
+                    attributeAndValue.value.m_StringHandle);
+        presentation->GetApplication().LoadAndGetPresentationById(stringValue.c_str());
+    }
+
     return true;
 }
 

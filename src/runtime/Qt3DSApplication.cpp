@@ -1950,8 +1950,19 @@ struct SApp : public IApplication
             if (iter != m_AssetMap.end()
                     && iter->second->getType() == AssetValueTypes::Presentation) {
                 CPresentation *ret = iter->second->getData<SPresentationAsset>().m_Presentation;
-                if (!ret && load)
+                if (!ret && load) {
                     AssetHandlers::handlePresentation(*this, *iter->second);
+                    SPresentationAsset &thePresentationAsset
+                            = *iter->second->getDataPtr<SPresentationAsset>();
+                    CPresentation *thePresentation = thePresentationAsset.m_Presentation;
+                    if (thePresentation) {
+                        QT3DS_PERF_SCOPED_TIMER(m_CoreFactory->GetPerfTimer(),
+                                                "Application: SetActivityZone")
+                        thePresentation->SetActivityZone(
+                                  &m_ActivityZoneManager->CreateActivityZone(*thePresentation));
+                        thePresentation->SetActive(thePresentationAsset.m_Active);
+                    }
+                }
                 return iter->second->getData<SPresentationAsset>().m_Presentation;
             }
         }
