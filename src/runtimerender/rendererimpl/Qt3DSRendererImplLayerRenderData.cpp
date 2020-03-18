@@ -1890,6 +1890,16 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
         NVRenderTexture2D *theLayerColorTexture = m_LayerTexture;
         NVRenderTexture2D *theLayerDepthTexture = m_LayerDepthTexture;
 
+        if (m_LayerCachedTexture) {
+            STextureDetails details(theLayerColorTexture->GetTextureDetails());
+            STextureDetails cachedDetails(m_LayerCachedTexture->GetTextureDetails());
+            if (cachedDetails.m_Width != details.m_Width
+                    || cachedDetails.m_Height != details.m_Height) {
+                theResourceManager.Release(*m_LayerCachedTexture);
+                m_LayerCachedTexture = nullptr;
+            }
+        }
+
         if (!m_LayerCachedTexture) {
             STextureDetails details(theLayerColorTexture->GetTextureDetails());
             QT3DSU32 finalWidth = ITextRenderer::NextMultipleOf4((QT3DSU32)(details.m_Width));
