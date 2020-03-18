@@ -371,6 +371,44 @@ void Q3DSViewerSettings::setStereoProgressiveEnabled(bool enabled)
 }
 
 /*!
+    \qmlproperty int ViewerSettings::skipFramesInterval
+
+    \since QtStudio3D.OpenGL 2.7
+
+    Sets interval for skipping frame rendering. The default value is 0
+    meaning all frames are rendered. Setting this to 1 renders every
+    other frame (30fps on 60Hz screen), 2 every third frame (20fps on
+    60Hz screen) etc. This property allows slowing down 3D rendering
+    while keeping QtQuick UI rendering intact, decreasing the CPU/GPU
+    usage.
+ */
+/*!
+    \property Q3DSViewerSettings::skipFramesInterval
+
+    \since Qt 3D Studio 2.7
+
+    Sets interval for skipping frame rendering. The default value is 0
+    meaning all frames are rendered. Setting this to 1 renders every
+    other frame (30fps on 60Hz screen), 2 every third frame (20fps on
+    60Hz screen) etc. This property allows slowing down 3D rendering
+    while keeping QtQuick UI rendering intact, decreasing the CPU/GPU
+    usage.
+ */
+
+int Q3DSViewerSettings::skipFramesInterval() const
+{
+    return d_ptr->m_skipFramesInterval;
+}
+
+void Q3DSViewerSettings::setSkipFramesInterval(int interval)
+{
+    if (d_ptr->m_skipFramesInterval != interval) {
+        d_ptr->setSkipFramesInterval(interval);
+        Q_EMIT skipFramesIntervalChanged(interval);
+    }
+}
+
+/*!
     \qmlproperty bool ViewerSettings::matteEnabled
 
     Specifies if the empty area around the presentation (applicable when
@@ -450,6 +488,7 @@ Q3DSViewerSettingsPrivate::Q3DSViewerSettingsPrivate(Q3DSViewerSettings *q)
     , m_stereoMode(Q3DSViewerSettings::StereoModeMono)
     , m_stereoEyeSeparation(0.4)
     , m_stereoProgressiveEnabled(false)
+    , m_skipFramesInterval(0)
     , m_savedSettings(nullptr)
 {
 }
@@ -470,6 +509,7 @@ void Q3DSViewerSettingsPrivate::setViewerApp(Q3DSViewer::Q3DSViewerApp *app)
         setStereoMode(m_stereoMode);
         setStereoEyeSeparation(m_stereoEyeSeparation);
         setStereoProgressiveEnabled(m_stereoProgressiveEnabled);
+        setSkipFramesInterval(m_skipFramesInterval);
     }
 }
 
@@ -485,6 +525,7 @@ void Q3DSViewerSettingsPrivate::setCommandQueue(CommandQueue *queue)
         setStereoMode(m_stereoMode);
         setStereoEyeSeparation(m_stereoEyeSeparation);
         setStereoProgressiveEnabled(m_stereoProgressiveEnabled);
+        setSkipFramesInterval(m_skipFramesInterval);
     }
 }
 
@@ -519,6 +560,8 @@ void Q3DSViewerSettingsPrivate::load(const QString &group, const QString &organi
                 m_savedSettings->value(QStringLiteral("stereoEyeSeparation")).toDouble());
     q_ptr->setStereoProgressiveEnabled(
                 m_savedSettings->value(QStringLiteral("stereoProgressiveEnabled")).toBool());
+    q_ptr->setSkipFramesInterval(
+                m_savedSettings->value(QStringLiteral("skipFramesInterval")).toInt());
     q_ptr->setMatteEnabled(m_savedSettings->value(QStringLiteral("matteEnabled")).toBool());
 }
 
@@ -624,6 +667,17 @@ void Q3DSViewerSettingsPrivate::setStereoProgressiveEnabled(bool enabled)
     } else if (m_commandQueue) {
         m_commandQueue->m_stereoProgressiveEnabled = enabled;
         m_commandQueue->m_stereoProgressiveEnabledChanged = true;
+    }
+}
+
+void Q3DSViewerSettingsPrivate::setSkipFramesInterval(int interval)
+{
+    m_skipFramesInterval = interval;
+    if (m_viewerApp) {
+        m_viewerApp->SetSkipFramesInterval(interval);
+    } else if (m_commandQueue) {
+        m_commandQueue->m_skipFramesInterval = interval;
+        m_commandQueue->m_skipFramesIntervalChanged = true;
     }
 }
 

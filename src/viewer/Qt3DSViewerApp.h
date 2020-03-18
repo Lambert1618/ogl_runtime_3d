@@ -328,6 +328,8 @@ public:
     void SetStereoProgressiveEnabled(bool enabled);
     bool GetStereoProgressiveEnabled() const;
 
+    void SetSkipFramesInterval(int interval);
+
     void setMatteColor(const QColor &color);
     void setShowOnScreenStats(bool s);
 

@@ -249,6 +249,7 @@ struct SRenderContext : public IQt3DSRenderContext
     StereoViews::Enum m_StereoView;
     double m_StereoEyeSeparation;
     bool m_StereoProgressiveEnabled;
+    int m_SkipFramesInterval;
     bool m_WireframeMode;
     bool m_subPresentationRenderInLayer;
     Option<QT3DSVec4> m_SceneColor;
@@ -291,6 +292,7 @@ struct SRenderContext : public IQt3DSRenderContext
         , m_StereoView(StereoViews::Mono)
         , m_StereoEyeSeparation(0.4)
         , m_StereoProgressiveEnabled(false)
+        , m_SkipFramesInterval(0)
         , m_WireframeMode(false)
         , m_subPresentationRenderInLayer(false)
         , m_matteEnabled(false)
@@ -484,6 +486,15 @@ struct SRenderContext : public IQt3DSRenderContext
     bool GetStereoProgressiveEnabled() const override {
         return m_StereoProgressiveEnabled && (m_StereoMode == StereoModes::LeftRight
                                               || m_StereoMode == StereoModes::TopBottom);
+    }
+
+    void SetSkipFramesInterval(int interval) override
+    {
+        m_SkipFramesInterval = interval;
+    }
+
+    int GetSkipFramesInterval() const override {
+        return m_SkipFramesInterval;
     }
 
     void SetWireframeMode(bool inEnable) override { m_WireframeMode = inEnable; }

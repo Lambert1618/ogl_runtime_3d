@@ -886,6 +886,12 @@ bool Q3DSViewerApp::GetStereoProgressiveEnabled() const
     return 0;
 }
 
+void Q3DSViewerApp::SetSkipFramesInterval(int interval)
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
+        m_Impl.m_view->GetTegraRenderEngine()->SetSkipFramesInterval(interval);
+}
+
 void Q3DSViewerApp::setMatteColor(const QColor &color)
 {
     if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine()) {

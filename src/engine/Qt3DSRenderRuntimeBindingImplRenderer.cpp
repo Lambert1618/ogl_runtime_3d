@@ -172,6 +172,12 @@ struct SRenderer : public Q3DStudio::ITegraApplicationRenderEngine
         return false;
     }
 
+    void SetSkipFramesInterval(int interval) override
+    {
+        if (m_BindingCore && m_BindingCore->m_Context)
+            m_BindingCore->m_Context->SetSkipFramesInterval(interval);
+    }
+
     void SetShadeMode(Q3DStudio::TegraRenderShadeModes::Enum inShade) override
     {
         if (m_BindingCore && m_BindingCore->m_Context) {

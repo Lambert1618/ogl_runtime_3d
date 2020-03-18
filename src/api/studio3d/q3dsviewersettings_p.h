@@ -70,6 +70,7 @@ public:
     void setStereoMode(Q3DSViewerSettings::StereoMode mode);
     void setStereoEyeSeparation(double separation);
     void setStereoProgressiveEnabled(bool enabled);
+    void setSkipFramesInterval(int interval);
 
 public:
     Q3DSViewerSettings *q_ptr;
@@ -88,6 +89,7 @@ private:
     Q3DSViewerSettings::StereoMode m_stereoMode;
     double m_stereoEyeSeparation;
     bool m_stereoProgressiveEnabled;
+    int m_skipFramesInterval;
     QSettings *m_savedSettings;
 };
 
