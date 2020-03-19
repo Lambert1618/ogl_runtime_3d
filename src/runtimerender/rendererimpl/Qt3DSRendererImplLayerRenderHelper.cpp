@@ -300,7 +300,16 @@ Option<QT3DSVec2> SLayerRenderHelper::GetLayerMouseCoords(const QT3DSVec2 &inMou
     // First invert the y so we are dealing with numbers in a normal coordinate space.
     // Second, move into our layer's coordinate space
     QT3DSVec2 correctCoords(inMouseCoords.x, inWindowDimensions.y - inMouseCoords.y);
-    QT3DSVec2 theLocalMouse = m_Viewport.ToRectRelative(correctCoords);
+    QT3DSVec2 theLocalMouse;
+
+    if (m_Layer->m_DynamicResize) {
+        float widthRatio = m_Viewport.m_Width / m_originalViewport.m_Width;
+        float heightRatio = m_Viewport.m_Height / m_originalViewport.m_Height;
+        theLocalMouse = m_originalViewport.ToRectRelative(correctCoords);
+        theLocalMouse = QT3DSVec2(theLocalMouse.x * widthRatio, theLocalMouse.y * heightRatio);
+    } else {
+        theLocalMouse = m_Viewport.ToRectRelative(correctCoords);
+    }
 
     QT3DSF32 theRenderRectWidth = m_Viewport.m_Width;
     QT3DSF32 theRenderRectHeight = m_Viewport.m_Height;
