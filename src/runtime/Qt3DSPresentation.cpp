@@ -226,6 +226,7 @@ void CPresentation::PostUpdate(const TTimeUnit inGlobalTime)
     }
 
     m_PreviousGlobalTime = inGlobalTime;
+    m_ComponentManager.ClearGotoTimeQueue();
 }
 
 void CPresentation::NotifyDataOutputs()
@@ -473,6 +474,8 @@ void CPresentation::ProcessCommand(const SEventCommand &inCommand)
     } else if (inCommand.m_Type == COMMAND_PAUSE) {
         GetComponentManager().SetPause(inCommand.m_Target, true);
     } else if (inCommand.m_Type == COMMAND_GOTOTIME) {
+        GetComponentManager().SetupComponentGotoTimeCommand(inCommand.m_Target,
+                                                            inCommand.m_Arg1.m_INT32);
         GetComponentManager().GoToTime(inCommand.m_Target, inCommand.m_Arg1.m_INT32);
 
     // Slide		(Arg1 = slide index or slide name)

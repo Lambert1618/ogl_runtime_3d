@@ -1975,6 +1975,8 @@ void CQmlEngineImpl::GotoTime(const char *component, const Q3DStudio::FLOAT time
 
         TElement *theParentTarget = &theTarget->GetComponentParent();
 
+        thePresentation->GetComponentManager().SetupComponentGotoTimeCommand(theTarget,
+                                                                             theArg1.m_INT32);
         thePresentation->FireCommand(COMMAND_GOTOTIME, theParentTarget, &theArg1, &theArg2);
     }
 }

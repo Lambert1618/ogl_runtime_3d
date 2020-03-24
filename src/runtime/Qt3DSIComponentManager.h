@@ -136,6 +136,10 @@ public: // Slides
     virtual bool HasComponentGotoSlideCommand(TElement *inElement) = 0;
     virtual SComponentGotoSlideData GetComponentGotoSlideCommand(TElement *inElement) = 0;
     virtual void ReleaseComponentGotoSlideCommand(TElement *inElement) = 0;
+    virtual bool HasComponentGotoTimeCommand(TElement *inElement) = 0;
+    virtual void SetupComponentGotoTimeCommand(TElement *inElement, TTimeUnit time) = 0;
+    virtual void ReleaseComponentGotoTimeCommand(TElement *inElement) = 0;
+    virtual void ClearGotoTimeQueue() = 0;
 
 public: // Time
     virtual void GoToTime(TElement *inComponent, const TTimeUnit inTime) = 0;

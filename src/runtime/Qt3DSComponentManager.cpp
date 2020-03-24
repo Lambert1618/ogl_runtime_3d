@@ -126,8 +126,10 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
     }
 
     // Update dynamic keys to use current values before slide switching, with the exception of
-    // master slides because playback only starts from non-master slides.
-    if (theCurrentSlideIndex > 0) {
+    // master slides because playback only starts from non-master slides. Skip rollback
+    // if we are expecting a gototime command, as rollback overwrites the attribute changes
+    // caused by gototime.
+    if (theCurrentSlideIndex > 0 && !HasComponentGotoTimeCommand(theComponent)) {
         m_Presentation.GetSlideSystem().InitializeDynamicKeys(
             SSlideKey(*theComponent, (qt3ds::QT3DSU8)theGotoSlideData.m_Slide),
             m_Presentation.GetAnimationSystem());
@@ -135,7 +137,7 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
         m_Presentation.GetSlideSystem().RollbackSlide(
             SSlideKey(*inComponent, (qt3ds::QT3DSU8)theCurrentSlideIndex),
             m_Presentation.GetAnimationSystem(), m_Presentation.GetLogicSystem());
-    } else {
+    } else if (theCurrentSlideIndex == 0){
         m_Presentation.GetSlideSystem().ExecuteSlide(SSlideKey(*inComponent, 0),
                                                      m_Presentation.GetAnimationSystem(),
                                                      m_Presentation.GetLogicSystem());
@@ -176,7 +178,7 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
         theComponent->SetPlayThrough(true);
     }
 
-    // Reset time for component to 0
+    // Reset time for component to 0 (unless we have gototime in queue).
 
     if (theGotoSlideData.m_Paused.hasValue())
         thePolicy.SetPaused(*theGotoSlideData.m_Paused);
@@ -184,8 +186,12 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
     thePolicy.SetRate(theGotoSlideData.m_Rate);
     thePolicy.SetReverse(theGotoSlideData.m_Reverse);
 
-    if (theGotoSlideData.m_StartTime.hasValue())
-        thePolicy.SetTime(*theGotoSlideData.m_StartTime);
+    if (!HasComponentGotoTimeCommand(theComponent)) {
+        if (theGotoSlideData.m_StartTime.hasValue())
+            thePolicy.SetTime(*theGotoSlideData.m_StartTime);
+    } else {
+        thePolicy.SetTime(m_ComponentGotoTimeMap[theComponent]);
+    }
 
     inComponent->SetDirty();
     m_Presentation.FireEvent(EVENT_ONSLIDEENTER, inComponent);
@@ -193,9 +199,10 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
     if (theZone)
         theZone->OnSlideChange(*inComponent);
 
-     m_Presentation.GetApplication().ComponentSlideEntered(&m_Presentation, inComponent,
-                                                           elementPath, theGotoSlideData.m_Slide,
-                                                           GetCurrentSlideName(inComponent));
+    ReleaseComponentGotoTimeCommand(inComponent);
+    m_Presentation.GetApplication().ComponentSlideEntered(&m_Presentation, inComponent,
+                                                          elementPath, theGotoSlideData.m_Slide,
+                                                          GetCurrentSlideName(inComponent));
     // Signal current slide change
     m_Presentation.signalProxy()->SigSlideEntered(elementPath, GetCurrentSlide(inComponent),
                                                   GetCurrentSlideName(inComponent));
@@ -377,6 +384,7 @@ void CComponentManager::GoToTime(TElement *inComponent, const TTimeUnit inTime)
                 << "Runtime: Attempt to goto time on inactive component!";
         return;
     }
+    SetupComponentGotoTimeCommand(inComponent, inTime);
     m_Presentation.GetActivityZone()->GoToTime(*inComponent, inTime);
     inComponent->SetDirty();
 }
@@ -522,6 +530,28 @@ void CComponentManager::ReleaseComponentGotoSlideCommand(TElement *inElement)
     TComponentGotoSlideDataMap::iterator iter = m_ComponentGotoSlideMap.find(inElement);
     if (iter != m_ComponentGotoSlideMap.end())
         m_ComponentGotoSlideMap.erase(iter);
+}
+
+bool CComponentManager::HasComponentGotoTimeCommand(TElement *inElement)
+{
+    return m_ComponentGotoTimeMap.find(inElement) != m_ComponentGotoTimeMap.end();
+}
+
+void CComponentManager::ReleaseComponentGotoTimeCommand(TElement *inElement)
+{
+    TComponentGotoTimeMap::iterator iter = m_ComponentGotoTimeMap.find(inElement);
+    if (iter != m_ComponentGotoTimeMap.end())
+        m_ComponentGotoTimeMap.erase(iter);
+}
+
+void CComponentManager::ClearGotoTimeQueue()
+{
+    m_ComponentGotoTimeMap.clear();
+}
+
+void CComponentManager::SetupComponentGotoTimeCommand(TElement *inElement, TTimeUnit time)
+{
+    m_ComponentGotoTimeMap[inElement] = time;
 }
 
 } // namespace Q3DStudio

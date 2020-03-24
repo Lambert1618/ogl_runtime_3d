@@ -67,6 +67,7 @@ struct SComponentTimePolicyOverride
 };
 
 typedef eastl::hash_map<TElement *, SComponentGotoSlideData> TComponentGotoSlideDataMap;
+typedef eastl::hash_map<TElement *, TTimeUnit> TComponentGotoTimeMap;
 typedef eastl::hash_map<TElement *, Q3DStudio::INT32> TComponentIntMap;
 
 //==============================================================================
@@ -116,6 +117,11 @@ public: // Slide
     SComponentGotoSlideData GetComponentGotoSlideCommand(TElement *inElement) override;
     void ReleaseComponentGotoSlideCommand(TElement *inElement) override;
 
+    bool HasComponentGotoTimeCommand(TElement *inElement) override;
+    void SetupComponentGotoTimeCommand(TElement *inElement, Q3DStudio::TTimeUnit time) override;
+    void ReleaseComponentGotoTimeCommand(TElement *inElement) override;
+    void ClearGotoTimeQueue() override;
+
 public: // Time
     void GoToTime(TElement *inComponent, const TTimeUnit inTime) override;
     void SetPause(TElement *inComponent, const BOOL inPause) override;
@@ -136,6 +142,8 @@ private:
 
     TComponentGotoSlideDataMap m_ComponentInitialSlideMap;
     TComponentGotoSlideDataMap m_ComponentGotoSlideMap;
+    TComponentGotoTimeMap m_ComponentGotoTimeMap;
+
     TComponentIntMap m_PlaythroughOverrideMap;
 
     QHash<TElement *, QHash<TElement *, QHash<TAttributeHash, UVariant>>> m_queuedChanges;
