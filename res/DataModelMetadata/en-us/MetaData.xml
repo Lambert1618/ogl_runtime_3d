@@ -461,7 +461,7 @@
         <!-- Format -->
         <Property name="textstring" formalName="Text String" type="MultiLineString" default="Text"                 category="Format" description="Text String" controllable="True" />
         <Property name="textcolor"  formalName="Text Color"  type="Color"           default="1 1 1 1"              category="Format" description="Text Color"  controllable="True" />
-        <Property name="font"       formalName="Font"        type="Font"            default="TitilliumWeb-Regular" category="Format" description="Font" />
+        <Property name="font"       formalName="Font"        type="Font"            default="TitilliumWeb-Regular" category="Format" description="Font" controllable="True" />
         <!-- HW accelerated fonts not supported
             <Property name="enableacceleratedfont" formalName="Hardware accelerated font" description="Enabled hardware acclerated font" type="Boolean" default="false" category="Format" />
         -->
