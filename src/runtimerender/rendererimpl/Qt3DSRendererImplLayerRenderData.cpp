@@ -1861,6 +1861,8 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
                           qt3ds::render::NVRenderTextureOrRenderBuffer(), thFboAttachTarget);
             // Let natural scoping rules destroy the other stuff.
         }
+        if (m_Layer.m_DynamicResize)
+            theResourceManager.DestroyFreeSizedResources();
     }
 
     void SLayerRenderData::ApplyLayerPostEffects()
