@@ -125,8 +125,8 @@ void SDynamicObject::SetStrPropertyValueT(dynamic::SPropertyDefinition &inDefini
         if (inProjectDir == NULL)
             inProjectDir = "";
         if (CFileTools::RequiresCombineBaseAndRelative(inValue)) {
-            QString absolute = QDir(inProjectDir).filePath(inValue);
-            ioWorkspace.assign(absolute.toLatin1().constData());
+            QString path = QDir(inProjectDir).cleanPath(inValue);
+            ioWorkspace.assign(path.toLatin1().constData());
             SetPropertyValueT(inDefinition, inStrTable.RegisterStr(ioWorkspace.c_str()));
             // We also adjust the image path in the definition
             // I could not find a better place

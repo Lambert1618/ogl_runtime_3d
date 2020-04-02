@@ -1212,7 +1212,8 @@ void CUIPParserImpl::CacheGraphRequiredAttributes(qt3dsdm::IDOMReader &inReader)
         m_ParseElementManager.MarkAttributeAsReferenced(theData, "observedproperty");
 
         // Behaviors need all attributes possible on the object on them all the time.
-        if (AreEqual(theType, "Behavior") || AreEqual(theType, "RenderPlugin")) {
+        if (AreEqual(theType, "Behavior") || AreEqual(theType, "RenderPlugin")
+                || AreEqual(theType, "CustomMaterial")) {
             m_ParseElementManager.MarkAllAttributesAsReferenced(theData);
         }
 

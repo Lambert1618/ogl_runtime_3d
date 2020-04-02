@@ -399,16 +399,31 @@ struct SBufferManager : public IBufferManager
         if (!theLoadedImage) {
             if (QDir(inImagePath.c_str()).isRelative()) {
                 QString searchPath = inImagePath.c_str();
-                if (searchPath.startsWith(QLatin1String("./")))
-                    searchPath.prepend(QLatin1Char('.'));
-                int loops = 0;
-                while (!theLoadedImage && ++loops <= 3) {
+
+                // Trying relative to search directories.
+                if (searchPath.startsWith(QLatin1String("../"))) {
+                    auto searchPathRel = searchPath.right(searchPath.length() - 3);
                     theLoadedImage = SLoadedTexture::Load(
-                                searchPath.toUtf8(), m_Context->GetFoundation(),
+                                searchPathRel.toUtf8(), m_Context->GetFoundation(),
                                 *m_InputStreamFactory, true, false,
                                 m_Context->GetRenderContextType(), false, this);
-                    searchPath.prepend(QLatin1String("../"));
                 }
+
+                if (!theLoadedImage) {
+                    if (searchPath.startsWith(QLatin1String("./")))
+                        searchPath.prepend(QLatin1Char('.'));
+
+                    int loops = 0;
+                    while (!theLoadedImage && ++loops <= 3) {
+                        theLoadedImage = SLoadedTexture::Load(
+                                    searchPath.toUtf8(), m_Context->GetFoundation(),
+                                    *m_InputStreamFactory, true, false,
+                                    m_Context->GetRenderContextType(), false, this);
+                        searchPath.prepend(QLatin1String("../"));
+                    }
+                }
+
+
             } else {
                 // Some textures, for example environment maps for custom materials,
                 // have absolute path at this point. It points to the wrong place with
