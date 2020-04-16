@@ -157,6 +157,20 @@ struct SRenderer : public Q3DStudio::ITegraApplicationRenderEngine
         return 0;
     }
 
+    void SetStereoProgressiveEnabled(bool enabled) override
+    {
+        if (m_BindingCore && m_BindingCore->m_Context)
+            m_BindingCore->m_Context->SetStereoProgressiveEnabled(enabled);
+    }
+    bool GetStereoProgressiveEnabled() const override
+    {
+        if (m_BindingCore && m_BindingCore->m_Context) {
+            return const_cast<SRenderer &>(*this).m_BindingCore->
+                    m_Context->GetStereoProgressiveEnabled();
+        }
+        QT3DS_ASSERT(false);
+        return false;
+    }
 
     void SetShadeMode(Q3DStudio::TegraRenderShadeModes::Enum inShade) override
     {

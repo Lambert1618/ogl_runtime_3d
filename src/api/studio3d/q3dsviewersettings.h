@@ -52,6 +52,7 @@ class Q_STUDIO3D_EXPORT Q3DSViewerSettings : public QObject
     Q_PROPERTY(ScaleMode scaleMode READ scaleMode WRITE setScaleMode NOTIFY scaleModeChanged)
     Q_PROPERTY(StereoMode stereoMode READ stereoMode WRITE setStereoMode NOTIFY stereoModeChanged REVISION 1)
     Q_PROPERTY(double stereoEyeSeparation READ stereoEyeSeparation WRITE setStereoEyeSeparation NOTIFY stereoEyeSeparationChanged REVISION 1)
+    Q_PROPERTY(bool stereoProgressiveEnabled READ stereoProgressiveEnabled WRITE setStereoProgressiveEnabled NOTIFY stereoProgressiveEnabledChanged REVISION 2)
 
 public:
     enum ShadeMode {
@@ -82,6 +83,7 @@ public:
     ScaleMode scaleMode() const;
     StereoMode stereoMode() const;
     double stereoEyeSeparation() const;
+    Q_REVISION(2) bool stereoProgressiveEnabled() const;
 
     Q_INVOKABLE void save(const QString &group, const QString &organization = QString(),
                           const QString &application = QString());
@@ -95,6 +97,7 @@ public Q_SLOTS:
     void setScaleMode(ScaleMode mode);
     void setStereoMode(StereoMode mode);
     void setStereoEyeSeparation(double separation);
+    Q_REVISION(2) void setStereoProgressiveEnabled(bool enabled);
 
 Q_SIGNALS:
     void matteEnabledChanged(bool enabled);
@@ -104,6 +107,7 @@ Q_SIGNALS:
     void scaleModeChanged(ScaleMode mode);
     void stereoModeChanged(StereoMode mode);
     void stereoEyeSeparationChanged(double separation);
+    Q_REVISION(2) void stereoProgressiveEnabledChanged(bool enabled);
 
 private:
     Q_DISABLE_COPY(Q3DSViewerSettings)

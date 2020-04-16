@@ -872,6 +872,20 @@ double Q3DSViewerApp::GetStereoEyeSeparation() const
     return 0;
 }
 
+void Q3DSViewerApp::SetStereoProgressiveEnabled(bool enabled)
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
+        m_Impl.m_view->GetTegraRenderEngine()->SetStereoProgressiveEnabled(enabled);
+}
+
+bool Q3DSViewerApp::GetStereoProgressiveEnabled() const
+{
+    if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine())
+        return m_Impl.m_view->GetTegraRenderEngine()->GetStereoProgressiveEnabled();
+
+    return 0;
+}
+
 void Q3DSViewerApp::setMatteColor(const QColor &color)
 {
     if (m_Impl.m_view && m_Impl.m_view->GetTegraRenderEngine()) {

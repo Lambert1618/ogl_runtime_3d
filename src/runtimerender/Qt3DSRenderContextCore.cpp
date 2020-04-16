@@ -248,6 +248,7 @@ struct SRenderContext : public IQt3DSRenderContext
     StereoModes::Enum m_StereoMode;
     StereoViews::Enum m_StereoView;
     double m_StereoEyeSeparation;
+    bool m_StereoProgressiveEnabled;
     bool m_WireframeMode;
     bool m_subPresentationRenderInLayer;
     Option<QT3DSVec4> m_SceneColor;
@@ -289,6 +290,7 @@ struct SRenderContext : public IQt3DSRenderContext
         , m_StereoMode(StereoModes::Mono)
         , m_StereoView(StereoViews::Mono)
         , m_StereoEyeSeparation(0.4)
+        , m_StereoProgressiveEnabled(false)
         , m_WireframeMode(false)
         , m_subPresentationRenderInLayer(false)
         , m_matteEnabled(false)
@@ -473,6 +475,16 @@ struct SRenderContext : public IQt3DSRenderContext
     }
 
     double GetStereoEyeSeparation() const override { return m_StereoEyeSeparation; }
+
+    void SetStereoProgressiveEnabled(bool enabled) override
+    {
+        m_StereoProgressiveEnabled = enabled;
+    }
+
+    bool GetStereoProgressiveEnabled() const override {
+        return m_StereoProgressiveEnabled && (m_StereoMode == StereoModes::LeftRight
+                                              || m_StereoMode == StereoModes::TopBottom);
+    }
 
     void SetWireframeMode(bool inEnable) override { m_WireframeMode = inEnable; }
 
@@ -732,10 +744,38 @@ struct SRenderContext : public IQt3DSRenderContext
 
     QT3DSVec2 GetPresentationScaleFactor() const override { return m_PresentationScale; }
 
+    void adjustRectToStereoMode(NVRenderRect &rect)
+    {
+        if (m_StereoMode == StereoModes::LeftRight) {
+            if (m_StereoView == StereoViews::Left) {
+                rect = NVRenderRect(rect.m_X, rect.m_Y, rect.m_Width / 2,
+                                     rect.m_Height);
+            }
+            if (m_StereoView == StereoViews::Right) {
+                rect = NVRenderRect(rect.m_X + rect.m_Width / 2, rect.m_Y,
+                                     rect.m_Width / 2, rect.m_Height);
+            }
+        } else if (m_StereoMode == StereoModes::TopBottom) {
+            if (m_StereoView == StereoViews::Left) {
+                rect = NVRenderRect(rect.m_X, rect.m_Y + rect.m_Height / 2,
+                                     rect.m_Width, rect.m_Height / 2);
+            }
+            if (m_StereoView == StereoViews::Right) {
+                rect = NVRenderRect(rect.m_X, rect.m_Y,
+                                     rect.m_Width, rect.m_Height / 2);
+            }
+        }
+    }
+
     virtual void SetupRenderTarget()
     {
-        NVRenderRect theContextViewport(GetContextViewport());
-        if (m_Viewport.hasValue()) {
+        bool stereoProgressiveEnabled = GetStereoProgressiveEnabled();
+        // Clearing for matte / scene background
+        if (m_Viewport.hasValue() || stereoProgressiveEnabled) {
+            // With progressive stereoscopic rendering needs to be adjusted to viewport
+            NVRenderRect theContextViewport(GetContextViewport());
+            if (stereoProgressiveEnabled)
+                adjustRectToStereoMode(theContextViewport);
             m_RenderContext->SetScissorTestEnabled(true);
             m_RenderContext->SetScissorRect(theContextViewport);
         } else {
@@ -758,7 +798,10 @@ struct SRenderContext : public IQt3DSRenderContext
         }
         bool renderOffscreen = m_BeginFrameResult.m_RenderOffscreen;
         m_RenderContext->SetViewport(m_BeginFrameResult.m_Viewport);
-        m_RenderContext->SetScissorRect(m_BeginFrameResult.m_ScissorRect);
+        NVRenderRect scissorRect = m_BeginFrameResult.m_ScissorRect;
+        if (stereoProgressiveEnabled)
+            adjustRectToStereoMode(scissorRect);
+        m_RenderContext->SetScissorRect(scissorRect);
         m_RenderContext->SetScissorTestEnabled(m_BeginFrameResult.m_ScissorTestEnabled);
 
         if (m_PresentationViewport.m_Width > 0 && m_PresentationViewport.m_Height > 0) {
@@ -826,14 +869,20 @@ struct SRenderContext : public IQt3DSRenderContext
                 }
             }
         }
+        // Reset scissor rect to full viewport size
+        m_RenderContext->SetScissorRect(GetContextViewport());
+
     }
 
     void RunRenderTasks() override
     {
         m_RenderList->RunRenderTasks();
-        // Don't (re)setup when rendering stereoscopic second (right) eye
-        if (m_StereoView != StereoViews::Right)
+        // Don't (re)setup when rendering stereoscopic second (right) eye.
+        // Except in progressive mode, where each viewport needs to be cleared separately.
+        if (m_StereoView != StereoViews::Right
+                || GetStereoProgressiveEnabled()) {
             SetupRenderTarget();
+        }
     }
 
     // Note this runs before EndFrame

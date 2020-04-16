@@ -220,6 +220,9 @@ int main(int argc, char *argv[])
                       "The default value is 0.4"),
                       QCoreApplication::translate("main", "separation"),
                       QString::number(0.4)});
+    parser.addOption({"enableprogressivestereo",
+                      QCoreApplication::translate("main",
+                      "Enables progressive stereoscopic rendering.\n")});
     parser.addOption({"convert-shader-cache",
                       QCoreApplication::translate("main",
                       "Convert base64 dump to shader cache file."),
@@ -391,6 +394,8 @@ int main(int argc, char *argv[])
         if (ok)
             appWindow->setProperty("stereoEyeSeparation", separation);
     }
+    if (parser.isSet(QStringLiteral("enableprogressivestereo")))
+        appWindow->setProperty("stereoProgressiveEnabled", true);
 
     viewer.setVariantList(variantList);
 

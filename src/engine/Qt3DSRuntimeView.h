@@ -147,6 +147,8 @@ public:
     virtual TegraRenderStereoModes::Enum GetStereoMode() const = 0;
     virtual void SetStereoEyeSeparation(double separation) = 0;
     virtual double GetStereoEyeSeparation() const = 0;
+    virtual void SetStereoProgressiveEnabled(bool enabled) = 0;
+    virtual bool GetStereoProgressiveEnabled() const = 0;
 
     // TODO: To be removed, not used anywhere anymore
     void CycleScaleMode()

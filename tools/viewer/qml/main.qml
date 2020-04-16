@@ -31,7 +31,7 @@ import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Dialogs 1.2
 import Qt3DStudioViewer 1.0
-import QtStudio3D.OpenGL 2.5
+import QtStudio3D.OpenGL 2.7
 import QtQuick.Window 2.2
 
 ApplicationWindow {
@@ -52,6 +52,7 @@ ApplicationWindow {
     property int scaleMode: ViewerSettings.ScaleModeCenter
     property int stereoMode: ViewerSettings.StereoModeMono
     property double stereoEyeSeparation: 0.4
+    property bool stereoProgressiveEnabled: false
 
     function closeMenus() {
         fileMenu.close();
@@ -219,6 +220,7 @@ ApplicationWindow {
                 scaleMode: window.scaleMode
                 stereoMode: window.stereoMode
                 stereoEyeSeparation: window.stereoEyeSeparation
+                stereoProgressiveEnabled: window.stereoProgressiveEnabled
             }
 
             // Hider item keeps the Studio3D hidden until it starts running and we reset the
@@ -631,6 +633,17 @@ ApplicationWindow {
                                 onTriggered: {
                                     if (enabled)
                                         window.stereoMode = ViewerSettings.StereoModeAnaglyphGreenMagenta;
+                                }
+                            }
+                            StyledMenuItem {
+                                id: stereoProgressiveEnabled
+                                text: qsTr("Progressive Rendering")
+                                enabled: _viewerHelper.contentView === ViewerHelper.StudioView
+                                showCheckMark: window.stereoProgressiveEnabled
+                                shortcut: "Ctrl+Shift+P"
+                                onTriggered: {
+                                    if (enabled)
+                                        window.stereoProgressiveEnabled = !window.stereoProgressiveEnabled;
                                 }
                             }
                             StyledMenuItem {
