@@ -62,7 +62,6 @@ linux-clang {
 
 macos {
     DEFINES += _MACOSX _LINUXPLATFORM WIDE_IS_DIFFERENT_TYPE_THAN_CHAR16_T
-    INCLUDEPATH += /usr/local/include
 
 # macOS builds treat most warnings as errors to prevent slipping more warnings
 # in to the code
