@@ -661,7 +661,8 @@ protected:
                             ERuntimeAdditionalMetaDataType inAdditionalType,
                             CRegisteredString *inAttStrNames, qt3dsdm::SFloat4 &inValue);
     void AddStringAttribute(IPresentation &inPresentation, TPropertyDescAndValueList &outDescList,
-                            CRegisteredString inAttStrName, const char *inValue);
+                            CRegisteredString inAttStrName, const char *inValue,
+                            bool addSourceAsString = false);
     void AddElementRefAttribute(TPropertyDescAndValueList &outDescList,
                                 CRegisteredString inAttStrName, SElement *inElement);
 
