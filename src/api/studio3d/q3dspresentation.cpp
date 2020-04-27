@@ -943,6 +943,22 @@ void Q3DSPresentation::setShaderCacheFile(const QUrl &fileName)
  */
 
 /*!
+    \qmlsignal Presentation::shaderCacheLoadErrors(string errors)
+    \since QtStudio3D.OpenGL 2.7
+
+    Emitted when a shader cache loading fails. The parameter \a errors contains the error
+    message(s).
+ */
+
+/*!
+    \fn Q3DSPresentation::shaderCacheLoadErrors(const QString &errors)
+    \since Qt 3D Studio 2.7
+
+    Emitted when a shader cache loading fails. The parameter \a errors contains the error
+    message(s).
+ */
+
+/*!
     This function is for backwards compatibility. We recommend using \l{DataInput}s to control
     slide changes. \l{DataInput} provides stronger contract between the design and
     code as it avoids use of elementPath (a reference to design's internal structure).
