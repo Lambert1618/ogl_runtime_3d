@@ -1414,7 +1414,7 @@ namespace render {
         NVRenderRect theViewport(theGraph.GetViewport());
         NVRenderRect theScissor(theGraph.GetViewport());
         if (theGraph.IsScissorTestEnabled())
-            theScissor = m_Renderer.GetContext().GetScissorRect();
+            theScissor = theGraph.GetScissor();
         bool wasDirty = false;
         bool wasDataDirty = false;
         wasDirty = m_Layer.m_Flags.IsDirty();

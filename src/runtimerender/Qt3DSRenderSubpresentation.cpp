@@ -68,10 +68,7 @@ namespace render {
                                           QT3DSVec2 /*inPresScale*/,
                                           const SRenderInstanceId instanceId)
     {
-        NVRenderRect theViewportSize(m_RenderContext.GetRenderList().GetViewport());
-        bool wasDirty = m_Presentation.m_Scene->PrepareForRender(
-            QT3DSVec2((QT3DSF32)theViewportSize.m_Width, (QT3DSF32)theViewportSize.m_Height),
-            m_RenderContext, instanceId);
+        bool wasDirty = m_Presentation.m_Scene->PrepareForRender(m_RenderContext, instanceId);
         // Always transparent
         return SOffscreenRenderFlags(true, wasDirty);
     }

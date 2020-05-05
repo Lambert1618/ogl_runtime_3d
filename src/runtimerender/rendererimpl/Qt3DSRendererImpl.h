@@ -342,8 +342,8 @@ namespace render {
 
         // Calls prepare layer for render
         // and then do render layer.
-        bool PrepareLayerForRender(SLayer &inLayer, const QT3DSVec2 &inViewportDimensions,
-                                   bool inRenderSiblings, const SRenderInstanceId id) override;
+        bool PrepareLayerForRender(SLayer &inLayer, bool inRenderSiblings,
+                                   const SRenderInstanceId id) override;
         void RenderLayer(SLayer &inLayer, const QT3DSVec2 &inViewportDimensions,
                          bool clear, QT3DSVec4 clearColor, bool inRenderSiblings,
                          const SRenderInstanceId id) override;

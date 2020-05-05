@@ -233,11 +233,9 @@ namespace render {
     }
 
     bool Qt3DSRendererImpl::PrepareLayerForRender(SLayer &inLayer,
-                                                  const QT3DSVec2 &inViewportDimensions,
                                                   bool inRenderSiblings,
                                                   const SRenderInstanceId id)
     {
-        (void)inViewportDimensions;
         nvvector<SLayer *> renderableLayers(m_qt3dsContext.GetPerFrameAllocator(), "LayerVector");
         // Found by fair roll of the dice.
         renderableLayers.reserve(4);

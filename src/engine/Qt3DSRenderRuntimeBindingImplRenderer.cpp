@@ -210,10 +210,6 @@ struct SRenderer : public Q3DStudio::ITegraApplicationRenderEngine
         m_Viewport = NVRenderRect(inX, inY, inWidth, inHeight);
         m_BindingCore->m_RenderContext->SetViewport(m_Viewport);
     }
-    void SetApplicationViewport(const qt3ds::render::NVRenderRect &inViewport) override
-    {
-        m_BindingCore->m_Context->SetViewport(inViewport);
-    }
 
     void SetMatteColor(Option<QT3DSVec4> inColor) override { m_Context->SetMatteColor(inColor); }
     void setMatteEnabled(bool enabled) override { m_Context->setMatteEnabled(enabled); };

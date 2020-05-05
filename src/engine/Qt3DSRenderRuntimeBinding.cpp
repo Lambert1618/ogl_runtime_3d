@@ -293,10 +293,7 @@ struct Qt3DSRenderScene : public Q3DStudio::IScene
         TransferDirtyProperties();
         m_LastRenderViewport = m_Context->GetRenderList().GetViewport();
         if (m_Presentation && m_Presentation->m_Scene) {
-            NVRenderRect theViewportSize(m_LastRenderViewport);
-            return m_Presentation->m_Scene->PrepareForRender(
-                QT3DSVec2(QT3DSF32(theViewportSize.m_Width), QT3DSF32(theViewportSize.m_Height)),
-                *m_Context);
+            return m_Presentation->m_Scene->PrepareForRender(*m_Context);
         }
         return false;
     }

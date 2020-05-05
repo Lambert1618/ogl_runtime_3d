@@ -241,8 +241,7 @@ struct SRenderContext : public IQt3DSRenderContext
     NVScopedRefCounted<IRenderList> m_RenderList;
     QT3DSU32 m_FrameCount;
     volatile QT3DSI32 mRefCount;
-    // Viewport that this render context should use
-    Option<NVRenderRect> m_Viewport;
+
     QSize m_WindowDimensions;
     ScaleModes::Enum m_ScaleMode;
     StereoModes::Enum m_StereoMode;
@@ -501,9 +500,6 @@ struct SRenderContext : public IQt3DSRenderContext
 
     bool GetWireframeMode() override { return m_WireframeMode; }
 
-    void SetViewport(Option<NVRenderRect> inViewport) override { m_Viewport = inViewport; }
-    Option<NVRenderRect> GetViewport() const override { return m_Viewport; }
-
     IRenderWidgetContext &GetRenderWidgetContext() override
     {
         return m_Renderer->GetRenderWidgetContext();
@@ -556,11 +552,7 @@ struct SRenderContext : public IQt3DSRenderContext
     NVRenderRect GetContextViewport() const override
     {
         NVRenderRect retval;
-        if (m_Viewport.hasValue())
-            retval = *m_Viewport;
-        else
-            retval = NVRenderRect(0, 0, m_WindowDimensions.width(), m_WindowDimensions.height());
-
+        retval = NVRenderRect(0, 0, m_WindowDimensions.width(), m_WindowDimensions.height());
         return retval;
     }
 
@@ -697,12 +689,8 @@ struct SRenderContext : public IQt3DSRenderContext
             m_PerFrameAllocator.reset();
             IRenderList &theRenderList(*m_RenderList);
             theRenderList.BeginFrame();
-            if (m_Viewport.hasValue()) {
-                theRenderList.SetScissorTestEnabled(true);
-                theRenderList.SetScissorRect(theContextViewport);
-            } else {
-                theRenderList.SetScissorTestEnabled(false);
-            }
+            theRenderList.SetScissorRect(theContextViewport);
+            theRenderList.SetScissorTestEnabled(false);
             bool renderOffscreen = m_Rotation != RenderRotationValues::NoRotation;
             eastl::pair<NVRenderRect, NVRenderRect> thePresViewportAndOuterViewport =
                 GetPresentationViewportAndOuterViewport();
@@ -782,11 +770,10 @@ struct SRenderContext : public IQt3DSRenderContext
     {
         bool stereoProgressiveEnabled = GetStereoProgressiveEnabled();
         // Clearing for matte / scene background
-        if (m_Viewport.hasValue() || stereoProgressiveEnabled) {
+        if (stereoProgressiveEnabled) {
             // With progressive stereoscopic rendering needs to be adjusted to viewport
             NVRenderRect theContextViewport(GetContextViewport());
-            if (stereoProgressiveEnabled)
-                adjustRectToStereoMode(theContextViewport);
+            adjustRectToStereoMode(theContextViewport);
             m_RenderContext->SetScissorTestEnabled(true);
             m_RenderContext->SetScissorRect(theContextViewport);
         } else {

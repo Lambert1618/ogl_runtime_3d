@@ -184,11 +184,6 @@ namespace render {
         virtual void SetWindowDimensions(const QSize &inWindowDimensions) = 0;
         virtual QSize GetWindowDimensions() = 0;
 
-        // In addition to the window dimensions which really have to be set, you can optionally
-        // set the viewport which will force the entire viewer to render specifically to this
-        // viewport.
-        virtual void SetViewport(Option<NVRenderRect> inViewport) = 0;
-        virtual Option<NVRenderRect> GetViewport() const = 0;
         virtual NVRenderRect GetContextViewport() const = 0;
         // Only valid between calls to Begin,End.
         virtual NVRenderRect GetPresentationViewport() const = 0;
