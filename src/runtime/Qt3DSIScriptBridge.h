@@ -202,6 +202,7 @@ public: // Components
 public: // Presentation
     virtual void SetPresentationAttribute(const char *presId, const char *attName,
                                           const char *attValue) = 0;
+    virtual void initializePresentationDataInputsAndOutputs(CPresentation &presentation) = 0;
 
 public: // Multimedia
     virtual bool PlaySoundFile(const char *soundPath) = 0;

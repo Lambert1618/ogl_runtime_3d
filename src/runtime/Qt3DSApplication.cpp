@@ -2277,6 +2277,10 @@ bool AssetHandlers::handlePresentation(SApp &app, SAssetValue &asset, bool initI
                    thePathStr.c_str());
         return false;
     }
+
+    app.GetRuntimeFactory().GetScriptEngineQml()
+            .initializePresentationDataInputsAndOutputs(*thePresentationAsset.m_Presentation);
+
     return true;
 }
 

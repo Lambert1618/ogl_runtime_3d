@@ -460,6 +460,7 @@ public:
     void GotoSlideRelative(const char *, bool, bool, const SScriptEngineGotoSlideArgs &) override;
 
     void SetPresentationAttribute(const char *, const char *, const char *) override;
+    void initializePresentationDataInputsAndOutputs(CPresentation &presentation);
 
     // No need to implement here, as sound playing is done in Qt3DSViewerApp
     bool PlaySoundFile(const char *) override { return false; }
@@ -1917,6 +1918,12 @@ void CQmlEngineImpl::SetPresentationAttribute(const char *presId, const char *, 
     }
 }
 
+void CQmlEngineImpl::initializePresentationDataInputsAndOutputs(CPresentation &presentation)
+{
+    initializeDataInputsInPresentation(presentation, false);
+    initializeDataOutputsInPresentation(presentation, false);
+}
+
 void CQmlEngineImpl::GotoSlideIndex(const char *component, const Q3DStudio::INT32 slideIndex,
                                     const SScriptEngineGotoSlideArgs &inArgs)
 {
@@ -2135,6 +2142,9 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
                                                         bool isPrimary, bool isDynamicAdd,
                                                         QList<TElement *> inElements)
 {
+    if (!m_Application)
+        return;
+
     QList<TElement *> elements;
     if (!inElements.empty()) {
         elements = inElements;
@@ -2310,6 +2320,9 @@ void CQmlEngineImpl::initializeDataInputsInPresentation(CPresentation &presentat
 void CQmlEngineImpl::initializeDataOutputsInPresentation(CPresentation &presentation,
                                                          bool isPrimary)
 {
+    if (!m_Application)
+        return;
+
     TElement *parent = presentation.GetRoot();
     QList<TElement *> elements;
     listAllElements(parent, elements);
