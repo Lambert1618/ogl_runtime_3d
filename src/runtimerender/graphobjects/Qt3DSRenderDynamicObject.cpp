@@ -125,12 +125,25 @@ void SDynamicObject::SetStrPropertyValueT(dynamic::SPropertyDefinition &inDefini
         if (inProjectDir == NULL)
             inProjectDir = "";
         if (CFileTools::RequiresCombineBaseAndRelative(inValue)) {
-            QString path = QDir(inProjectDir).cleanPath(inValue);
-            ioWorkspace.assign(path.toLatin1().constData());
-            SetPropertyValueT(inDefinition, inStrTable.RegisterStr(ioWorkspace.c_str()));
-            // We also adjust the image path in the definition
-            // I could not find a better place
-            inDefinition.m_ImagePath = inStrTable.RegisterStr(ioWorkspace.c_str());
+            QString value(QDir::cleanPath(inValue));
+            QDir projectDir(inProjectDir);
+            QString path = projectDir.path() + QChar('/') + value;
+            if (QFileInfo(path).exists()) {
+                ioWorkspace.assign(path.toLatin1().constData());
+                SetPropertyValueT(inDefinition, inStrTable.RegisterStr(ioWorkspace.c_str()));
+                // We also adjust the image path in the definition
+                // I could not find a better place
+                inDefinition.m_ImagePath = inStrTable.RegisterStr(ioWorkspace.c_str());
+            } else if (value.startsWith("../")) {
+                path = projectDir.path() + QChar('/') + value.right(value.size() - 3);
+                if (QFileInfo(path).exists()) {
+                    ioWorkspace.assign(path.toLatin1().constData());
+                    SetPropertyValueT(inDefinition, inStrTable.RegisterStr(ioWorkspace.c_str()));
+                    // We also adjust the image path in the definition
+                    // I could not find a better place
+                    inDefinition.m_ImagePath = inStrTable.RegisterStr(ioWorkspace.c_str());
+                }
+            }
         } else {
             SetPropertyValueT(inDefinition, inStrTable.RegisterStr(inValue));
             // If the image path is not adjusted here, an invalid textures flashes for one frame
