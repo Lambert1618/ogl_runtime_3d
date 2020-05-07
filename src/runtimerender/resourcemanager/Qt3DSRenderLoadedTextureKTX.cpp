@@ -64,6 +64,8 @@ static inline int blockSizeForTextureFormat(int format)
 static inline int runtimeFormat(quint32 internalFormat)
 {
     switch (internalFormat) {
+    case QOpenGLTexture::RGBA8_ETC2_EAC:
+        return NVRenderTextureFormats::RGBA8_ETC2_EAC;
     case QOpenGLTexture::RGB8_ETC1:
         return NVRenderTextureFormats::RGB8_ETC1;
     case QOpenGLTexture::RGB8_ETC2:
