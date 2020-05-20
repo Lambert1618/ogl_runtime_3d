@@ -112,6 +112,13 @@ bool SImage::ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager
                     newImage.m_Texture = m_LoadedTextureData->m_Texture;
                     newImage.m_TextureFlags = m_LoadedTextureData->m_TextureFlags;
                     newImage.m_BSDFMipMap = m_LoadedTextureData->m_BSDFMipMap;
+                } else if (m_Flags.IsForceLoad()) {
+                    QSet<QString> ls;
+                    ls.insert(QString(m_ImagePath));
+                    inBufferManager.loadSet(ls);
+                    newImage.m_Texture = m_LoadedTextureData->m_Texture;
+                    newImage.m_TextureFlags = m_LoadedTextureData->m_TextureFlags;
+                    newImage.m_BSDFMipMap = m_LoadedTextureData->m_BSDFMipMap;
                 }
                 replaceTexture = m_TextureData.m_Texture != newImage.m_Texture;
             }
