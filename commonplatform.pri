@@ -261,7 +261,6 @@ clang {
 android {
     QMAKE_CXXFLAGS -= -fstack-protector-strong
     QMAKE_CFLAGS -= -fstack-protector-strong
-    INCLUDEPATH += $$(ANDROID_NDK_ROOT)/sysroot/usr/include
     DEFINES += __BITS_PER_LONG=32
 }
 
