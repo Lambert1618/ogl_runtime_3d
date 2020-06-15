@@ -8,7 +8,7 @@ integrity {
     CHECK_INTEGRITY_DIR = $$(INTEGRITY_DIR)
 }
 
-ios|tvos|watchos|winrt|wasm|*-icc*|contains(CHECK_INTEGRITY_DIR, .*int1144$)|contains(QMAKE_HOST.arch, mips64) {
+ios|tvos|watchos|winrt|wasm|*-icc*|contains(CHECK_INTEGRITY_DIR, .*int1144$)|contains(QMAKE_HOST.arch, mips64)|contains(QT_ARCH, mips64) {
     message("WARNING, target not supported by ogl-runtime")
     #Exclude non-working cross-compile targets, see:
     # QT3DS-3647 ogl-runtime doesn't compile on TvOS_ANY in CI
