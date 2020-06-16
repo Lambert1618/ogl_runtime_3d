@@ -36,7 +36,11 @@
 #include "foundation/Qt3DSAssert.h"
 
 #if (defined(QT3DS_WINDOWS) | defined(QT3DS_X360))
+#if _MSC_VER < 1920 // 1920+ = MSVC2019
 #include <typeinfo.h>
+#else
+#include <typeinfo>
+#endif
 #endif
 #if (defined(QT3DS_APPLE))
 #include <typeinfo>
