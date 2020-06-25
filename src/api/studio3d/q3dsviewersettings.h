@@ -53,6 +53,7 @@ class Q_STUDIO3D_EXPORT Q3DSViewerSettings : public QObject
     Q_PROPERTY(StereoMode stereoMode READ stereoMode WRITE setStereoMode NOTIFY stereoModeChanged REVISION 1)
     Q_PROPERTY(double stereoEyeSeparation READ stereoEyeSeparation WRITE setStereoEyeSeparation NOTIFY stereoEyeSeparationChanged REVISION 1)
     Q_PROPERTY(bool stereoProgressiveEnabled READ stereoProgressiveEnabled WRITE setStereoProgressiveEnabled NOTIFY stereoProgressiveEnabledChanged REVISION 2)
+    Q_PROPERTY(int skipFramesInterval READ skipFramesInterval WRITE setSkipFramesInterval NOTIFY skipFramesIntervalChanged REVISION 2)
 
 public:
     enum ShadeMode {
@@ -84,6 +85,7 @@ public:
     StereoMode stereoMode() const;
     double stereoEyeSeparation() const;
     Q_REVISION(2) bool stereoProgressiveEnabled() const;
+    Q_REVISION(2) int skipFramesInterval() const;
 
     Q_INVOKABLE void save(const QString &group, const QString &organization = QString(),
                           const QString &application = QString());
@@ -98,6 +100,7 @@ public Q_SLOTS:
     void setStereoMode(StereoMode mode);
     void setStereoEyeSeparation(double separation);
     Q_REVISION(2) void setStereoProgressiveEnabled(bool enabled);
+    Q_REVISION(2) void setSkipFramesInterval(int interval);
 
 Q_SIGNALS:
     void matteEnabledChanged(bool enabled);
@@ -108,6 +111,7 @@ Q_SIGNALS:
     void stereoModeChanged(StereoMode mode);
     void stereoEyeSeparationChanged(double separation);
     Q_REVISION(2) void stereoProgressiveEnabledChanged(bool enabled);
+    Q_REVISION(2) void skipFramesIntervalChanged(int interval);
 
 private:
     Q_DISABLE_COPY(Q3DSViewerSettings)

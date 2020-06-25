@@ -842,16 +842,19 @@ void CUIPParserImpl::AddFloat4Attribute(TPropertyDescAndValueList &outDescList,
 
 void CUIPParserImpl::AddStringAttribute(IPresentation &inPresentation,
                                         TPropertyDescAndValueList &outDescList,
-                                        CRegisteredString inAttStrName, const char *inValue)
+                                        CRegisteredString inAttStrName, const char *inValue,
+                                        bool addSourceAsString)
 {
     qt3ds::foundation::CStringHandle theString = inPresentation.GetStringTable().GetHandle(inValue);
     UVariant theValue;
     theValue.m_StringHandle = theString.handle();
     outDescList.push_back(
         eastl::make_pair(SPropertyDesc(inAttStrName, ATTRIBUTETYPE_STRING), theValue));
-    if (CHash::HashAttribute(inAttStrName.c_str()) == Q3DStudio::ATTRIBUTE_SOURCEPATH && inValue
-        && *inValue)
+    if ((addSourceAsString
+         || CHash::HashAttribute(inAttStrName.c_str()) == Q3DStudio::ATTRIBUTE_SOURCEPATH)
+            && inValue && *inValue) {
         AddSourcePath(inValue, false);
+    }
 }
 
 void CUIPParserImpl::AddElementRefAttribute(TPropertyDescAndValueList &outDescList,
@@ -944,7 +947,10 @@ void CUIPParserImpl::GetAttributeList(IPresentation &inPresentation,
         const char *theDataPtr = "";
         if (!IsTrivial(inValue))
             theReader.Read(theDataPtr);
-        AddStringAttribute(inPresentation, outDescList, inPropNameStrs[0], theDataPtr);
+        bool addSourceAsString = inAdditionalType
+                == ERuntimeAdditionalMetaDataType::ERuntimeAdditionalMetaDataTypeTexture;
+        AddStringAttribute(inPresentation, outDescList, inPropNameStrs[0], theDataPtr,
+                addSourceAsString);
         break;
     }
     case ERuntimeDataModelDataTypeLong4: {

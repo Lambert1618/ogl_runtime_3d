@@ -254,6 +254,24 @@ struct Qt3DSRenderScene : public Q3DStudio::IScene
                 Q3DStudio::UVariant value;
                 if (theElement.GetAttribute(ATTRIBUTE_SUBPRESENTATION, value))
                     subs.push_back(m_Context->GetStringTable().HandleToStr(value.m_StringHandle));
+            } else if (theTranslator && theTranslator->GetUIPType()
+                       == GraphObjectTypes::CustomMaterial) {
+                // Add custom material strings to the subpresentation list since any string
+                // property could be a texture with a subpresentation source.
+                // Non-subpresentation strings are filtered out by the function caller.
+                int numProperties = theElement.GetNumProperties();
+                for (int i = 0; i < numProperties; ++i) {
+                    auto property = theElement.GetPropertyByIndex(i);
+                    if (property.hasValue()) {
+                        auto value = property.getValue();
+                        if (value.first.type() == ATTRIBUTETYPE_STRING) {
+                            auto stringValue = m_Context->GetStringTable().HandleToStr(
+                                        value.second->m_StringHandle);
+                            if (stringValue.IsValid())
+                                subs.push_back(stringValue);
+                        }
+                    }
+                }
             }
         }
     }
@@ -275,10 +293,7 @@ struct Qt3DSRenderScene : public Q3DStudio::IScene
         TransferDirtyProperties();
         m_LastRenderViewport = m_Context->GetRenderList().GetViewport();
         if (m_Presentation && m_Presentation->m_Scene) {
-            NVRenderRect theViewportSize(m_LastRenderViewport);
-            return m_Presentation->m_Scene->PrepareForRender(
-                QT3DSVec2(QT3DSF32(theViewportSize.m_Width), QT3DSF32(theViewportSize.m_Height)),
-                *m_Context);
+            return m_Presentation->m_Scene->PrepareForRender(*m_Context);
         }
         return false;
     }

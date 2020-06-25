@@ -95,7 +95,8 @@ bool SImage::ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager
 
     if (newImage.m_Texture == nullptr) {
         m_LastFrameOffscreenRenderer = nullptr;
-        if (m_ImagePath.IsValid() && !m_OffscreenRendererId.IsValid()) {
+        if (m_ImagePath.IsValid() && !m_OffscreenRendererId.IsValid()
+                && !inRenderManager.HasOffscreenRenderer(m_ImagePath)) {
             // Image has sourcepath set
             if (!m_LoadedTextureData
                     || m_LoadedTextureData->m_path != QString::fromUtf8(m_ImagePath.c_str())) {
@@ -108,6 +109,13 @@ bool SImage::ClearDirty(IBufferManager &inBufferManager, IOffscreenRenderManager
             }
             if (m_LoadedTextureData) {
                 if (m_LoadedTextureData->m_loaded) {
+                    newImage.m_Texture = m_LoadedTextureData->m_Texture;
+                    newImage.m_TextureFlags = m_LoadedTextureData->m_TextureFlags;
+                    newImage.m_BSDFMipMap = m_LoadedTextureData->m_BSDFMipMap;
+                } else if (m_Flags.IsForceLoad()) {
+                    QSet<QString> ls;
+                    ls.insert(QString(m_ImagePath));
+                    inBufferManager.loadSet(ls);
                     newImage.m_Texture = m_LoadedTextureData->m_Texture;
                     newImage.m_TextureFlags = m_LoadedTextureData->m_TextureFlags;
                     newImage.m_BSDFMipMap = m_LoadedTextureData->m_BSDFMipMap;

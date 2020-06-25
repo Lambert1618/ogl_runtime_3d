@@ -65,7 +65,7 @@ SLayer *SScene::GetLastChild()
     return child;
 }
 
-bool SScene::PrepareForRender(const QT3DSVec2 &inViewportDimensions, IQt3DSRenderContext &inContext,
+bool SScene::PrepareForRender(IQt3DSRenderContext &inContext,
                               const SRenderInstanceId id)
 {
     // We need to iterate through the layers in reverse order and ask them to render.
@@ -74,7 +74,7 @@ bool SScene::PrepareForRender(const QT3DSVec2 &inViewportDimensions, IQt3DSRende
 
     if (m_FirstChild) {
         wasDirty |=
-            inContext.GetRenderer().PrepareLayerForRender(*m_FirstChild, inViewportDimensions,
+            inContext.GetRenderer().PrepareLayerForRender(*m_FirstChild,
                                                           true, id);
     }
     return wasDirty;

@@ -943,6 +943,22 @@ void Q3DSPresentation::setShaderCacheFile(const QUrl &fileName)
  */
 
 /*!
+    \qmlsignal Presentation::shaderCacheLoadErrors(string errors)
+    \since QtStudio3D.OpenGL 2.7
+
+    Emitted when a shader cache loading fails. The parameter \a errors contains the error
+    message(s).
+ */
+
+/*!
+    \fn Q3DSPresentation::shaderCacheLoadErrors(const QString &errors)
+    \since Qt 3D Studio 2.7
+
+    Emitted when a shader cache loading fails. The parameter \a errors contains the error
+    message(s).
+ */
+
+/*!
     This function is for backwards compatibility. We recommend using \l{DataInput}s to control
     slide changes. \l{DataInput} provides stronger contract between the design and
     code as it avoids use of elementPath (a reference to design's internal structure).
@@ -1126,6 +1142,30 @@ void Q3DSPresentation::setAttribute(const QString &elementPath, const QString &a
     "image://colors/blue" where "image://" tells the runtime to look for an
     image provider, "colors" is the image provider id and rest are the image
     id the provider uses to create the image.
+
+    Usage is similar to the examples in https://doc.qt.io/qt-5/qquickimageprovider.html
+
+    \badcode
+    // Example implementation of a request function
+    // This returns a 50 x 50 px size green texture as a QPixmap
+    QPixmap ImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
+    {
+        // Size needs to be more than 0,0 or nothing will be drawn
+        if (size)
+            *size = QSize(50, 50);
+
+        QPixmap pixmap(50, 50);
+        pixmap.fill(QColor("green"));
+        return pixmap;
+    }
+
+    // Image providers are added to the presentation after viewer creation
+    viewer.create(&window, &context);
+    viewer.presentation()->addImageProvider("green", new ImageProvider());
+
+    // Use as texture
+    viewer.presentation()->setAttribute("Scene.Layer.Rectangle.Material.diffusemap", "sourcepath", "image://green");
+    \endcode
 */
 void Q3DSPresentation::addImageProvider(const QString &providerId, QQmlImageProviderBase *provider)
 {

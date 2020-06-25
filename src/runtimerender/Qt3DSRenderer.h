@@ -132,7 +132,7 @@ namespace render {
         virtual void RenderPointsIndirect() = 0;
 
         // Returns true if this layer or a sibling was dirty.
-        virtual bool PrepareLayerForRender(SLayer &inLayer, const QT3DSVec2 &inViewportDimensions,
+        virtual bool PrepareLayerForRender(SLayer &inLayer,
                                            bool inRenderSiblings = true,
                                            const SRenderInstanceId id = nullptr) = 0;
         virtual void RenderLayer(SLayer &inLayer, const QT3DSVec2 &inViewportDimensions, bool clear,

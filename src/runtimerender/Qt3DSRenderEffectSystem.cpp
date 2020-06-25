@@ -1079,8 +1079,8 @@ struct SEffectSystem : public IEffectSystem
                         SImage *image = (*inEffect.m_imageMaps)[inPropertyName];
                         if (image) {
                             if (image->m_ImagePath != *theStrPtr) {
-                                image->m_ImagePath = *theStrPtr;
-                                image->m_Flags.SetDirty(true);
+                                // Should not happen
+                                QT3DS_ASSERT(false);
                             } else {
                                 IOffscreenRenderManager &theOffscreenRenderer(
                                                         m_Context->GetOffscreenRenderManager());
@@ -1928,10 +1928,12 @@ struct SEffectSystem : public IEffectSystem
 
                         if ((*inEffect.m_imageMaps)[theDefs[idx].m_Name] != pImage) {
                             (*inEffect.m_imageMaps)[theDefs[idx].m_Name] = pImage;
-                            pImage->m_ImagePath = theDefs[idx].m_ImagePath;
+                            pImage->m_ImagePath = *theStrPtr;
                             pImage->m_ImageShaderName = theDefs[idx].m_Name;
                             pImage->m_VerticalTilingMode = theDefs[idx].m_CoordOp;
                             pImage->m_HorizontalTilingMode = theDefs[idx].m_CoordOp;
+                            pImage->m_Flags.SetDirty(true);
+                            pImage->m_Flags.SetForceLoad(true);
                         }
                     }
                 } else {

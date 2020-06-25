@@ -219,6 +219,8 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
             = m_stereoEyeSeparationChanged || fromQueue.m_stereoEyeSeparationChanged;
     m_stereoProgressiveEnabledChanged
             = m_stereoProgressiveEnabledChanged || fromQueue.m_stereoProgressiveEnabledChanged;
+    m_skipFramesIntervalChanged
+            = m_skipFramesIntervalChanged || fromQueue.m_skipFramesIntervalChanged;
     m_shadeModeChanged = m_shadeModeChanged || fromQueue.m_shadeModeChanged;
     m_showRenderStatsChanged = m_showRenderStatsChanged || fromQueue.m_showRenderStatsChanged;
     m_matteColorChanged = m_matteColorChanged || fromQueue.m_matteColorChanged;
@@ -240,6 +242,8 @@ void CommandQueue::copyCommands(CommandQueue &fromQueue)
        m_stereoEyeSeparation = fromQueue.m_stereoEyeSeparation;
     if (fromQueue.m_stereoProgressiveEnabledChanged)
        m_stereoProgressiveEnabled = fromQueue.m_stereoProgressiveEnabled;
+    if (fromQueue.m_skipFramesIntervalChanged)
+       m_skipFramesInterval = fromQueue.m_skipFramesInterval;
     if (fromQueue.m_shadeModeChanged)
        m_shadeMode = fromQueue.m_shadeMode;
     if (fromQueue.m_showRenderStatsChanged)
@@ -343,6 +347,7 @@ void CommandQueue::clear(bool deleteCommandData)
     m_stereoModeChanged = false;
     m_stereoEyeSeparationChanged = false;
     m_stereoProgressiveEnabledChanged = false;
+    m_skipFramesIntervalChanged = false;
     m_shadeModeChanged = false;
     m_showRenderStatsChanged = false;
     m_matteColorChanged = false;

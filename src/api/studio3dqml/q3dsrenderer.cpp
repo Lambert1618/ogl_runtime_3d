@@ -353,6 +353,8 @@ void Q3DSRenderer::processCommands()
         m_settings->setStereoEyeSeparation(m_commands.m_stereoEyeSeparation);
     if (m_commands.m_stereoProgressiveEnabledChanged)
         m_settings->setStereoProgressiveEnabled(m_commands.m_stereoProgressiveEnabled);
+    if (m_commands.m_skipFramesIntervalChanged)
+        m_settings->setSkipFramesInterval(m_commands.m_skipFramesInterval);
     if (m_commands.m_shadeModeChanged)
         m_settings->setShadeMode(m_commands.m_shadeMode);
     if (m_commands.m_matteColorChanged)

@@ -62,7 +62,6 @@ linux-clang {
 
 macos {
     DEFINES += _MACOSX _LINUXPLATFORM WIDE_IS_DIFFERENT_TYPE_THAN_CHAR16_T
-    INCLUDEPATH += /usr/local/include
 
 # macOS builds treat most warnings as errors to prevent slipping more warnings
 # in to the code
@@ -262,7 +261,6 @@ clang {
 android {
     QMAKE_CXXFLAGS -= -fstack-protector-strong
     QMAKE_CFLAGS -= -fstack-protector-strong
-    INCLUDEPATH += $$(ANDROID_NDK_ROOT)/sysroot/usr/include
     DEFINES += __BITS_PER_LONG=32
 }
 

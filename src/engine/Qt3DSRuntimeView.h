@@ -132,7 +132,6 @@ protected:
 
 public:
     virtual void SetViewport(INT32 inX, INT32 inY, INT32 inWidth, INT32 inHeight) = 0;
-    virtual void SetApplicationViewport(const qt3ds::render::NVRenderRect &inViewport) = 0;
     virtual void ensureRenderTarget() = 0;
     virtual void CheckResize(bool inForce, IPresentation &inActivePresentation) = 0;
     virtual QByteArray exportShaderCache(bool binaryShaders) = 0;
@@ -149,6 +148,7 @@ public:
     virtual double GetStereoEyeSeparation() const = 0;
     virtual void SetStereoProgressiveEnabled(bool enabled) = 0;
     virtual bool GetStereoProgressiveEnabled() const = 0;
+    virtual void SetSkipFramesInterval(int interval) = 0;
 
     // TODO: To be removed, not used anywhere anymore
     void CycleScaleMode()

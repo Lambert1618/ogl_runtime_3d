@@ -555,17 +555,24 @@ struct STimeContext
 
             inScanBuffer.push_back(SScanBufferEntry(&inNode, parentActive));
         }
-
+        bool parentDiActiveChange = false;
         for (QT3DSU32 idx = 0, end = inScanBuffer.size(); idx < end; ++idx) {
             SScanBufferEntry theEntry(inScanBuffer[idx]);
             SElement *theScanNode = theEntry.m_Node;
             QT3DS_ASSERT(theScanNode->IsIndependent() == false);
             bool parentActive = theEntry.IsParentActive();
             bool wasActive = theScanNode->IsGlobalActive();
-
             bool isControlledByDi
                     = controlledList.contains(*theScanNode) && theScanNode->m_OnMaster;
-
+            if (!isControlledByDi && parentDiActiveChange && parentActive && !wasActive
+                    && !theScanNode->IsTimeActive() && theScanNode->IsExplicitActive()) {
+                // Set time active for datainput activated child nodes
+                theScanNode->m_ActivationManagerNode.m_Flags.SetTimeActive(true);
+            }
+            bool diActiveChange = isControlledByDi
+                    && (theScanNode->IsGlobalActive(parentActive)
+                        != theScanNode->IsControlledActive());
+            parentDiActiveChange |= diActiveChange;
             // Override visibility for master slide elements that have datainput eyeball controller.
             bool isActive = isControlledByDi ? theScanNode->IsControlledActive()
                                              : theScanNode->IsGlobalActive(parentActive);
@@ -576,9 +583,7 @@ struct STimeContext
             if (activateChange) {
                 HandleActivationChange(*theScanNode, activateBuffer, deactivateBuffer, scriptBuffer,
                                        inElementAccessMutex, scriptBufferRequiresSort, isActive);
-            } else if (isControlledByDi
-                       && (theScanNode->IsGlobalActive(parentActive)
-                           != theScanNode->IsControlledActive())) {
+            } else if (diActiveChange) {
                 // Notify only if datainput control actually disagreed with activity value
                 // coming from activity manager.
                 qCInfo(TRACE_INFO) << "Element" << theScanNode->name().c_str()
@@ -644,7 +649,7 @@ struct STimeContext
                 TElementNodePtrList &inTempDirtyList, TElementAndSortKeyList &activateBuffer,
                 TElementAndSortKeyList &deactivateBuffer, TElementAndSortKeyList &scriptBuffer,
                 bool &scriptBufferRequiresSort, Q3DStudio::CComponentManager &inComponentManager,
-                IPerfTimer &inPerfTimer, IActivityZone &inZone)
+                IPerfTimer &, IActivityZone &inZone)
     {
         SComponent &theContextNode = m_Component;
         bool parentActive = true;

@@ -312,6 +312,36 @@ namespace render {
     }
 
     namespace {
+        NVBounds3 calculateShadowCameraBoundingBox(const QT3DSVec3 *points,
+                                                   const QT3DSVec3 &forward,
+                                                   const QT3DSVec3 &up, const QT3DSVec3 &right)
+        {
+            float minDistanceZ = std::numeric_limits<float>::max();
+            float maxDistanceZ = -std::numeric_limits<float>::max();
+            float minDistanceY = std::numeric_limits<float>::max();
+            float maxDistanceY = -std::numeric_limits<float>::max();
+            float minDistanceX = std::numeric_limits<float>::max();
+            float maxDistanceX = -std::numeric_limits<float>::max();
+            for (int i = 0; i < 8; ++i) {
+                float distanceZ = points[i].dot(forward);
+                if (distanceZ < minDistanceZ)
+                    minDistanceZ = distanceZ;
+                if (distanceZ > maxDistanceZ)
+                    maxDistanceZ = distanceZ;
+                float distanceY = points[i].dot(up);
+                if (distanceY < minDistanceY)
+                    minDistanceY = distanceY;
+                if (distanceY > maxDistanceY)
+                    maxDistanceY = distanceY;
+                float distanceX = points[i].dot(right);
+                if (distanceX < minDistanceX)
+                    minDistanceX = distanceX;
+                if (distanceX > maxDistanceX)
+                    maxDistanceX = distanceX;
+            }
+            return NVBounds3(QT3DSVec3(minDistanceX, minDistanceY, minDistanceZ),
+                             QT3DSVec3(maxDistanceX, maxDistanceY, maxDistanceZ));
+        }
 
         void computeFrustumBounds(const SCamera &inCamera, const NVRenderRectF &inViewPort,
                                   QT3DSVec3 &ctrBound, QT3DSVec3 camVerts[8])
@@ -353,7 +383,8 @@ namespace render {
 
         void SetupCameraForShadowMap(const QT3DSVec2 &inCameraVec, NVRenderContext & /*inContext*/,
                                      const NVRenderRectF &inViewport, const SCamera &inCamera,
-                                     const SLight *inLight, SCamera &theCamera)
+                                     const SLight *inLight, SCamera &theCamera,
+                                     QT3DSVec3 *scenePoints = nullptr)
         {
             // setup light matrix
             QT3DSU32 mapRes = 1 << inLight->m_ShadowMapRes;
@@ -371,8 +402,15 @@ namespace render {
             theCamera.m_FOV = inLight->m_ShadowMapFov * QT3DS_DEGREES_TO_RADIANS;
 
             if (inLight->m_LightType == RenderLightTypes::Directional) {
-                QT3DSVec3 frustBounds[8], boundCtr;
-                computeFrustumBounds(inCamera, inViewport, boundCtr, frustBounds);
+                QT3DSVec3 frustumPoints[8], boundCtr, sceneCtr;
+                computeFrustumBounds(inCamera, inViewport, boundCtr, frustumPoints);
+
+                if (scenePoints) {
+                    sceneCtr = QT3DSVec3(0, 0, 0);
+                    for (int i = 0; i < 8; ++i)
+                        sceneCtr += scenePoints[i];
+                    sceneCtr *= 0.125f;
+                }
 
                 QT3DSVec3 forward = inLightDir;
                 forward.normalize();
@@ -382,37 +420,26 @@ namespace render {
                 up.normalize();
 
                 // Calculate bounding box of the scene camera frustum
-                float minDistanceZ = std::numeric_limits<float>::max();
-                float maxDistanceZ = -std::numeric_limits<float>::max();
-                float minDistanceY = std::numeric_limits<float>::max();
-                float maxDistanceY = -std::numeric_limits<float>::max();
-                float minDistanceX = std::numeric_limits<float>::max();
-                float maxDistanceX = -std::numeric_limits<float>::max();
-                for (int i = 0; i < 8; ++i) {
-                    float distanceZ = frustBounds[i].dot(forward);
-                    if (distanceZ < minDistanceZ)
-                        minDistanceZ = distanceZ;
-                    if (distanceZ > maxDistanceZ)
-                        maxDistanceZ = distanceZ;
-                    float distanceY = frustBounds[i].dot(up);
-                    if (distanceY < minDistanceY)
-                        minDistanceY = distanceY;
-                    if (distanceY > maxDistanceY)
-                        maxDistanceY = distanceY;
-                    float distanceX = frustBounds[i].dot(right);
-                    if (distanceX < minDistanceX)
-                        minDistanceX = distanceX;
-                    if (distanceX > maxDistanceX)
-                        maxDistanceX = distanceX;
+                NVBounds3 bounds = calculateShadowCameraBoundingBox(frustumPoints, forward, up,
+                                                                    right);
+                inLightPos = boundCtr;
+                if (scenePoints) {
+                    NVBounds3 sceneBounds = calculateShadowCameraBoundingBox(scenePoints, forward,
+                                                                             up, right);
+                    if (sceneBounds.getExtents().x * sceneBounds.getExtents().y
+                            * sceneBounds.getExtents().z < bounds.getExtents().x
+                            * bounds.getExtents().y * bounds.getExtents().z) {
+                        bounds = sceneBounds;
+                        inLightPos = sceneCtr;
+                    }
                 }
 
                 // Apply bounding box parameters to shadow map camera projection matrix
                 // so that the whole scene is fit inside the shadow map
-                inLightPos = boundCtr;
-                theViewport.m_Height = abs(maxDistanceY - minDistanceY);
-                theViewport.m_Width = abs(maxDistanceX - minDistanceX);
-                theCamera.m_ClipNear = -abs(maxDistanceZ - minDistanceZ);
-                theCamera.m_ClipFar = abs(maxDistanceZ - minDistanceZ);
+                theViewport.m_Height = bounds.getExtents().y * 2;
+                theViewport.m_Width = bounds.getExtents().x * 2;
+                theCamera.m_ClipNear = -bounds.getExtents().z * 2;
+                theCamera.m_ClipFar = bounds.getExtents().z * 2;
             }
 
             theCamera.m_Flags.SetLeftHanded(false);
@@ -710,6 +737,18 @@ namespace render {
                                                   | qt3ds::render::NVRenderClearValues::Stencil
                                                   | qt3ds::render::NVRenderClearValues::Color);
 
+        auto bounds = m_Camera->m_Parent->GetBounds(m_Renderer.GetQt3DSContext().GetBufferManager(),
+                                                    m_Renderer.GetQt3DSContext().GetPathManager());
+        QT3DSVec3 scenePoints[8];
+        scenePoints[0] = bounds.minimum;
+        scenePoints[1] = QT3DSVec3(bounds.maximum.x, bounds.minimum.y, bounds.minimum.z);
+        scenePoints[2] = QT3DSVec3(bounds.minimum.x, bounds.maximum.y, bounds.minimum.z);
+        scenePoints[3] = QT3DSVec3(bounds.maximum.x, bounds.maximum.y, bounds.minimum.z);
+        scenePoints[4] = QT3DSVec3(bounds.minimum.x, bounds.minimum.y, bounds.maximum.z);
+        scenePoints[5] = QT3DSVec3(bounds.maximum.x, bounds.minimum.y, bounds.maximum.z);
+        scenePoints[6] = QT3DSVec3(bounds.minimum.x, bounds.maximum.y, bounds.maximum.z);
+        scenePoints[7] = bounds.maximum;
+
         for (QT3DSU32 i = 0; i < m_Lights.size(); i++) {
             // don't render shadows when not casting
             if (m_Lights[i]->m_CastShadow == false)
@@ -721,7 +760,7 @@ namespace render {
                 QT3DSVec2 theCameraProps = QT3DSVec2(m_Camera->m_ClipNear, m_Camera->m_ClipFar);
                 SetupCameraForShadowMap(theCameraProps, m_Renderer.GetContext(),
                                         __viewport.m_InitialValue, *m_Camera,
-                                        m_Lights[i], theCamera);
+                                        m_Lights[i], theCamera, scenePoints);
                 // we need this matrix for the final rendering
                 theCamera.CalculateViewProjectionMatrix(pEntry->m_LightVP);
                 pEntry->m_LightView = theCamera.m_GlobalTransform.getInverse();

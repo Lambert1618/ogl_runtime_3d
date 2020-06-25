@@ -658,7 +658,7 @@ struct SApp : public IApplication
     DataOutputMap m_dataOutputDefs;
 
     bool m_initialFrame = true;
-
+    int m_skipFrameCount = 0;
     SSlideResourceCounter m_resourceCounter;
     QSet<QString> m_createSet;
 
@@ -1119,6 +1119,23 @@ struct SApp : public IApplication
 
     void ResetDirtyCounter() { m_DirtyCountdown = 5; }
 
+    // Returns true when skipping the frame, false when rendering it
+    bool checkSkipFrame()
+    {
+        auto &rc = m_RuntimeFactory->GetQt3DSRenderContext();
+        int skipFrames = rc.GetSkipFramesInterval();
+        if (skipFrames == 0)
+            return false;
+
+        if (m_skipFrameCount <= 0) {
+            m_skipFrameCount = skipFrames;
+            return false;
+        }
+
+        m_skipFrameCount--;
+        return true;
+    }
+
     // Update all the presentations and render them.
     bool UpdateAndRender() override
     {
@@ -1165,7 +1182,12 @@ struct SApp : public IApplication
         bool renderNextFrame = false;
         if (m_LastRenderWasDirty || dirty || m_initialFrame)
             renderNextFrame = true;
-        Render();
+
+        bool skip = checkSkipFrame();
+        // If we skip rendering this frame, mark next frame to be rendered
+        renderNextFrame |= skip;
+        if (!skip)
+            Render();
 
         m_InputEnginePtr->ClearInputFrame();
 
@@ -2255,6 +2277,10 @@ bool AssetHandlers::handlePresentation(SApp &app, SAssetValue &asset, bool initI
                    thePathStr.c_str());
         return false;
     }
+
+    app.GetRuntimeFactory().GetScriptEngineQml()
+            .initializePresentationDataInputsAndOutputs(*thePresentationAsset.m_Presentation);
+
     return true;
 }
 

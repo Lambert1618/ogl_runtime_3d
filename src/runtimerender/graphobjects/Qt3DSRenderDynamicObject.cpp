@@ -125,7 +125,25 @@ void SDynamicObject::SetStrPropertyValueT(dynamic::SPropertyDefinition &inDefini
         if (inProjectDir == NULL)
             inProjectDir = "";
         if (CFileTools::RequiresCombineBaseAndRelative(inValue)) {
-            QString path = QDir(inProjectDir).cleanPath(inValue);
+            QString value(QDir::cleanPath(inValue));
+            QString projectDir(inProjectDir);
+            QString path = value;
+
+            bool tryResolveRelativePath = !projectDir.startsWith(QStringLiteral(":/"));
+            if (tryResolveRelativePath)
+                path.prepend(projectDir + QChar('/'));
+
+            if (tryResolveRelativePath) {
+                bool exists = QFileInfo(path).exists();
+                if (!exists && value.startsWith("../")) {
+                    QString tryPath = projectDir + QChar('/') + value.right(value.size() - 3);
+                    exists = QFileInfo(tryPath).exists();
+                    if (exists)
+                        path = tryPath;
+                    else
+                        path = value; // reset back to initial value if resolve failed
+                }
+            }
             ioWorkspace.assign(path.toLatin1().constData());
             SetPropertyValueT(inDefinition, inStrTable.RegisterStr(ioWorkspace.c_str()));
             // We also adjust the image path in the definition

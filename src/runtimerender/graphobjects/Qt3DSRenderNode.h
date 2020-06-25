@@ -81,6 +81,7 @@ namespace render {
                                            ///mechanism.  This can be usefulf or caching purposes.
             IgnoreParentTransform = 1 << 13,
             LayerEnableDepthPrePass = 1 << 14, ///< True when we render a depth pass before
+            ForceLoad = 1 << 15,
         };
     };
 
@@ -177,6 +178,14 @@ namespace render {
         void SetLayerEnableDepthPrepass(bool value)
         {
             ClearOrSet(value, NodeFlagValues::LayerEnableDepthPrePass);
+        }
+        void SetForceLoad(bool value)
+        {
+            ClearOrSet(value, NodeFlagValues::ForceLoad);
+        }
+        bool IsForceLoad()
+        {
+            return this->operator&(NodeFlagValues::ForceLoad);
         }
     };
 
