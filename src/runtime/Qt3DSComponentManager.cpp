@@ -126,10 +126,8 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
     }
 
     // Update dynamic keys to use current values before slide switching, with the exception of
-    // master slides because playback only starts from non-master slides. Skip rollback
-    // if we are expecting a gototime command, as rollback overwrites the attribute changes
-    // caused by gototime.
-    if (theCurrentSlideIndex > 0 && !HasComponentGotoTimeCommand(theComponent)) {
+    // master slides because playback only starts from non-master slides.
+    if (theCurrentSlideIndex > 0) {
         m_Presentation.GetSlideSystem().InitializeDynamicKeys(
             SSlideKey(*theComponent, (qt3ds::QT3DSU8)theGotoSlideData.m_Slide),
             m_Presentation.GetAnimationSystem());
@@ -137,7 +135,7 @@ void CComponentManager::GotoSlideIndex(TElement *inComponent,
         m_Presentation.GetSlideSystem().RollbackSlide(
             SSlideKey(*inComponent, (qt3ds::QT3DSU8)theCurrentSlideIndex),
             m_Presentation.GetAnimationSystem(), m_Presentation.GetLogicSystem());
-    } else if (theCurrentSlideIndex == 0){
+    } else {
         m_Presentation.GetSlideSystem().ExecuteSlide(SSlideKey(*inComponent, 0),
                                                      m_Presentation.GetAnimationSystem(),
                                                      m_Presentation.GetLogicSystem());
