@@ -392,6 +392,17 @@ void Q3DSQmlStreamRenderer::updateSizes()
 {
     if (m_rootItem->width() > 0 && m_rootItem->height() > 0) {
         m_size = QSize(m_rootItem->width(), m_rootItem->height());
+        // Make the dimensions divisible by four; this prevents rendering artefacts
+        // In worst case scenario this increases the size by 3 pixels in each dimension
+        // TODO: Would it be possible to add transparent pixels around the original stream
+        // to meet the divisible by four -requirement, but render the original amount of pixels?
+        // That way the end result would still be pixel perfect, unlike with this implementation.
+        const int w = m_size.width();
+        const int h = m_size.height();
+        if (w % 4 != 0)
+            m_size.setWidth(w + 4 - w % 4);
+        if (h % 4 != 0)
+            m_size.setHeight(h + 4 - h % 4);
     } else {
         m_rootItem->setWidth(256);
         m_rootItem->setHeight(256);

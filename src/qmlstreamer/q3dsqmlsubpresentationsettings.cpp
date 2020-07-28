@@ -58,7 +58,7 @@ Q3DSSubPresentationSettings::~Q3DSSubPresentationSettings()
 }
 
 /*!
- * \qmlproperty variant SubPresentationSettings::qmlStream
+ * \qmlproperty variant SubPresentationSettings::qmlStreams
  * Contains the QML streams to be used as subpresentations.
  */
 /*!

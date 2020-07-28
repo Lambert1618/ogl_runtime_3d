@@ -74,10 +74,16 @@ QString Q3DSQmlStream::presentationId() const
 /*!
  * \qmlproperty Item QmlStream::item
  * Contains the Item to be streamed as subpresentation.
+ * \note The Item width and height will be scaled up to the nearest divisible-by-four number to
+ * avoid rendering artefacts. If you wish to have pixel perfect outcome, define your QML stream
+ * items to use size that already has dimensions that are divisible by four.
  */
 /*!
  * \property Q3DSQmlStream::item
  * Contains the QQuickItem to be streamed as subpresentation.
+ * \note The Item width and height will be scaled up to the nearest divisible-by-four number to
+ * avoid rendering artefacts. If you wish to have pixel perfect outcome, define your QML stream
+ * items to use size that already has dimensions that are divisible by four.
  */
 QQuickItem *Q3DSQmlStream::item() const
 {
