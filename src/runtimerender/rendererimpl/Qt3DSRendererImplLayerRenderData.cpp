@@ -979,7 +979,6 @@ void SLayerRenderData::renderOrderedGroup(
             m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
             inRenderFn(*this, object, theCameraProps, GetShaderFeatureSet(), indexLight,
                        inCamera);
-            theRenderContext.SetDepthTestEnabled(false);
             theRenderContext.SetBlendingEnabled(inEnableBlending);
             theRenderContext.SetDepthWriteEnabled(inEnableTransparentDepthWrite
                                                   && object.m_RenderableFlags.hasAlphaTest());
