@@ -1806,49 +1806,64 @@ void CQmlEngineImpl::deleteMeshes(const QStringList &meshNames,
 uint CQmlEngineImpl::textureId(const QString &elementPath,
                                qt3ds::render::IQt3DSRenderer *renderer)
 {
-    TElement *elem = getTarget(elementPath.toUtf8().constData());
-    if (elem) {
-        auto translator = static_cast<qt3ds::render::Qt3DSTranslator *>(elem->GetAssociation());
-        if (translator) {
-            qt3ds::render::GraphObjectTypes::Enum type = translator->GetUIPType();
-            if (type == qt3ds::render::GraphObjectTypes::Layer) {
-                auto layer = static_cast<qt3ds::render::SLayer *>(&translator->RenderObject());
-                return renderer->getLayerTextureId(*layer);
-            } else if (type == qt3ds::render::GraphObjectTypes::Image) {
-                auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
-                if (image->m_TextureData.m_Texture) {
-                    return static_cast<uint>(reinterpret_cast<size_t>(
-                                image->m_TextureData.m_Texture->GetTextureObjectHandle()));
-                }
-            }
-        }
-    }
-    return 0;
+    QSize size;
+    GLenum format;
+    return textureId(elementPath, renderer, size, format);
 }
 
 uint CQmlEngineImpl::textureId(const QString &elementPath, qt3ds::render::IQt3DSRenderer *renderer,
                                QSize &size, GLenum &format)
 {
-    TElement *elem = getTarget(elementPath.toUtf8().constData());
-    if (elem) {
-        auto translator = static_cast<qt3ds::render::Qt3DSTranslator *>(elem->GetAssociation());
-        if (translator) {
-            qt3ds::render::GraphObjectTypes::Enum elemType = translator->GetUIPType();
-            if (elemType == qt3ds::render::GraphObjectTypes::Layer) {
-                auto layer = static_cast<qt3ds::render::SLayer *>(&translator->RenderObject());
-                auto texdetails = renderer->getLayerTextureDetails(*layer);
-                size = QSize(texdetails.m_Width, texdetails.m_Height);
-                // Assume that NVRenderTextureFormats enums match GL texture format enums
-                format = renderer->getTextureGlFormat(texdetails.m_Format);
-                return renderer->getLayerTextureId(*layer);
-            } else if (elemType == qt3ds::render::GraphObjectTypes::Image) {
-                auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
-                if (image->m_TextureData.m_Texture) {
-                    auto texdetails = image->m_TextureData.m_Texture->GetTextureDetails();
+    auto subpresLayer = elementPath.split(QStringLiteral("::"));
+    if (subpresLayer.size() == 2) {
+        // This is true only for subpresentation layers
+        // First retrieve the main layer
+        TElement *mainPresentationLayer = getTarget(subpresLayer[0].toUtf8().constData());
+        if (!mainPresentationLayer)
+            return 0;
+        auto mainLayerTranslator = static_cast<qt3ds::render::Qt3DSTranslator *>(mainPresentationLayer->GetAssociation());
+        auto mainLayerTranslatorType = mainLayerTranslator->GetUIPType();
+        if (mainLayerTranslatorType != qt3ds::render::GraphObjectTypes::Layer)
+            return 0;
+        auto mainLayer = static_cast<qt3ds::render::SLayer *>(&mainLayerTranslator->RenderObject());
+
+        // Now retrieve the subpresentation layer being queried
+        TElement *subPresentationLayer = getTarget(subpresLayer[1].toUtf8().constData());
+        if (!subPresentationLayer)
+            return 0;
+        auto subpresLayerTranslator = static_cast<qt3ds::render::Qt3DSTranslator *>(subPresentationLayer->GetAssociation());
+        auto subpresLayerTranslatorType = subpresLayerTranslator->GetUIPType();
+        if (subpresLayerTranslatorType != qt3ds::render::GraphObjectTypes::Layer)
+            return 0;
+        auto subpresLayer = static_cast<qt3ds::render::SLayer *>(&subpresLayerTranslator->RenderObject());
+
+        auto texdetails = renderer->getLayerTextureDetails(*subpresLayer, mainLayer);
+        size = QSize(texdetails.m_Width, texdetails.m_Height);
+        // Assume that NVRenderTextureFormats enums match GL texture format enums
+        format = renderer->getTextureGlFormat(texdetails.m_Format);
+        return renderer->getLayerTextureId(*subpresLayer, mainLayer);
+    } else {
+        TElement *elem = getTarget(elementPath.toUtf8().constData());
+        if (elem) {
+            auto translator = static_cast<qt3ds::render::Qt3DSTranslator *>(elem->GetAssociation());
+            if (translator) {
+                qt3ds::render::GraphObjectTypes::Enum elemType = translator->GetUIPType();
+                if (elemType == qt3ds::render::GraphObjectTypes::Layer) {
+                    auto layer = static_cast<qt3ds::render::SLayer *>(&translator->RenderObject());
+                    auto texdetails = renderer->getLayerTextureDetails(*layer);
                     size = QSize(texdetails.m_Width, texdetails.m_Height);
+                    // Assume that NVRenderTextureFormats enums match GL texture format enums
                     format = renderer->getTextureGlFormat(texdetails.m_Format);
-                    return static_cast<uint>(reinterpret_cast<size_t>(
-                                image->m_TextureData.m_Texture->GetTextureObjectHandle()));
+                    return renderer->getLayerTextureId(*layer);
+                } else if (elemType == qt3ds::render::GraphObjectTypes::Image) {
+                    auto image = static_cast<qt3ds::render::SImage *>(&translator->RenderObject());
+                    if (image->m_TextureData.m_Texture) {
+                        auto texdetails = image->m_TextureData.m_Texture->GetTextureDetails();
+                        size = QSize(texdetails.m_Width, texdetails.m_Height);
+                        format = renderer->getTextureGlFormat(texdetails.m_Format);
+                        return static_cast<uint>(reinterpret_cast<size_t>(
+                                    image->m_TextureData.m_Texture->GetTextureObjectHandle()));
+                    }
                 }
             }
         }

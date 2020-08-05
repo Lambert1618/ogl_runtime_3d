@@ -170,11 +170,11 @@ namespace render {
                                           const QT3DSVec3 &inMouseVec) const = 0;
         virtual QT3DSVec3 ProjectPosition(SNode &inNode, const QT3DSVec3 &inPosition) const = 0;
 
-        virtual uint getLayerTextureId(SLayer &layer) = 0;
+        virtual uint getLayerTextureId(SLayer &layer, const SRenderInstanceId id = nullptr) = 0;
 
         virtual GLenum getTextureGlFormat(NVRenderTextureFormats::Enum internalFormat) = 0;
 
-        virtual STextureDetails getLayerTextureDetails(SLayer &layer) = 0;
+        virtual STextureDetails getLayerTextureDetails(SLayer &layer, const SRenderInstanceId id = nullptr) = 0;
 
         // Roughly equivalent of gluPickMatrix, allows users to setup a perspective transform that
         // will draw some sub component

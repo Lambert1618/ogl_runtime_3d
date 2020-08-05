@@ -386,9 +386,9 @@ namespace render {
                                           const QT3DSVec3 &inMouseVec) const override;
         QT3DSVec3 ProjectPosition(SNode &inNode, const QT3DSVec3 &inPosition) const override;
 
-        uint getLayerTextureId(SLayer &layer) override;
+        uint getLayerTextureId(SLayer &layer, const SRenderInstanceId id) override;
 
-        STextureDetails getLayerTextureDetails(SLayer &inLayer) override;
+        STextureDetails getLayerTextureDetails(SLayer &inLayer, const SRenderInstanceId id) override;
 
         GLenum getTextureGlFormat(NVRenderTextureFormats::Enum internalFormat) override;
 

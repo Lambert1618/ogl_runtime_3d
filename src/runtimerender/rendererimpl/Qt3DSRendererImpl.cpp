@@ -968,9 +968,9 @@ namespace render {
         return mouseVec;
     }
 
-    uint Qt3DSRendererImpl::getLayerTextureId(SLayer &layer)
+    uint Qt3DSRendererImpl::getLayerTextureId(SLayer &layer, const SRenderInstanceId id)
     {
-        SLayerRenderData *data = GetOrCreateLayerRenderDataForNode(layer);
+        SLayerRenderData *data = GetOrCreateLayerRenderDataForNode(layer, id);
         if (data->m_LayerCachedTexture) {
             return static_cast<uint>(reinterpret_cast<size_t>(
                                          data->m_LayerCachedTexture->GetTextureObjectHandle()));
@@ -1003,9 +1003,9 @@ namespace render {
         }
     }
 
-    STextureDetails Qt3DSRendererImpl::getLayerTextureDetails(SLayer &inLayer)
+    STextureDetails Qt3DSRendererImpl::getLayerTextureDetails(SLayer &inLayer, const SRenderInstanceId id)
     {
-        SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inLayer);
+        SLayerRenderData *theData = GetOrCreateLayerRenderDataForNode(inLayer, id);
 
         if (theData->m_LayerCachedTexture)
             return theData->m_LayerCachedTexture->GetTextureDetails();
