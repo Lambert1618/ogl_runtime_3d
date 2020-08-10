@@ -34,9 +34,36 @@
 #include "HandleSystemBase.h"
 #include "Qt3DSDMStringTable.h"
 #include "Qt3DSDMDataCore.h"
+#include <QtCore/qdebug.h>
+
 
 namespace qt3dsdm {
-typedef std::pair<Qt3DSDMInstanceHandle, Qt3DSDMPropertyHandle> TInstancePropertyPair;
+
+struct TInstancePropertyPair {
+    int first;
+    int second;
+    TInstancePropertyPair() : first(0), second(0) {
+
+    }
+    TInstancePropertyPair(int _first, int _second) : first(_first), second(_second) {
+
+    }
+    TInstancePropertyPair(const TInstancePropertyPair &pa)
+        : first(pa.first), second(pa.second)
+    {
+
+    }
+    friend bool operator == (const TInstancePropertyPair& pa1, const TInstancePropertyPair& pa2)
+    {
+        return pa1.first == pa2.first && pa1.second == pa2.second;
+    }
+    friend QDebug operator << (QDebug &debug, const TInstancePropertyPair &pair)
+    {
+        debug << pair.first << " " << pair.second;
+        return debug;
+    }
+};
+
 typedef std::vector<TInstancePropertyPair> TInstancePropertyPairList;
 
 // instance,property,value
@@ -234,6 +261,22 @@ public:
 };
 
 typedef std::shared_ptr<ISlideCore> TSlideCorePtr;
+}
+
+namespace std {
+
+template<> struct hash<qt3dsdm::TInstancePropertyPair >
+{
+    typedef qt3dsdm::TInstancePropertyPair argument_type;
+    typedef std::size_t result_type;
+    result_type operator()(argument_type const& pa) const
+    {
+        result_type const h1 ( std::hash<int>{}(pa.first) );
+        result_type const h2 ( std::hash<int>{}(pa.second) );
+        return h1 ^ (h2 << 1);
+    }
+};
+
 }
 
 #endif

@@ -203,7 +203,6 @@ struct HashMapDataValueInsertTransaction
     }
     void Do() override
     {
-        std::pair<int, int> theKey = m_Value.first;
         SValue theTempValue = m_Value.second.GetValue();
         TDataStrPtr theStrPtr;
         if (GetValueType(theTempValue) == DataModelDataType::String) {
@@ -223,7 +222,7 @@ inline void CSlideCoreProducer::DoForceSetInstancePropertyValue(Qt3DSDMSlideHand
     SInternValue theNewValue(inValue, m_Data->GetStringTable());
     SInternValue *theCurrentValue(theSlide->GetInstancePropertyValue(inHandle, inProperty));
 
-    std::pair<int, int> theKey(inHandle, inProperty);
+    const TInstancePropertyPair theKey(inHandle, inProperty);
     SlideInstancePropertyKey mergeMapKey(inSlide, inHandle, inProperty);
     TSlidePropertyMergeMap::iterator iter = m_PropertyMergeMap.find(mergeMapKey);
     if (iter != m_PropertyMergeMap.end()) {
@@ -322,7 +321,7 @@ inline void ClearValueWithTransactions(TTransactionConsumerPtr inConsumer,
     SInternValue *theCurrentValue(theSlide->GetInstancePropertyValue(inHandle, inProperty));
     if (theCurrentValue) {
         SValue theValue(theCurrentValue->GetValue());
-        std::pair<int, int> theKey(inHandle, inProperty);
+        TInstancePropertyPair theKey(inHandle, inProperty);
         CreateHashMapEraseTransaction(__FILE__, __LINE__, inConsumer,
                                       std::make_pair(theKey, *theCurrentValue),
                                       theSlide->m_Properties);

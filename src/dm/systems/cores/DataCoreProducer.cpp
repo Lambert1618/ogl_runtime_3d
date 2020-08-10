@@ -109,19 +109,6 @@ void CDataCoreProducer::GetInstancesDerivedFrom(TInstanceHandleList &outInstance
     m_Data->GetInstancesDerivedFrom(outInstances, inParentHandle);
 }
 
-struct ClearInstanceParentCacheTransaction : public ITransaction
-{
-    const CDataModelInstance &m_Instance;
-    ClearInstanceParentCacheTransaction(const char *inFile, int inLine,
-                                        const CDataModelInstance &inst)
-        : ITransaction(inFile, inLine)
-        , m_Instance(inst)
-    {
-    }
-    void Do() override { m_Instance.ClearParentCache(); }
-    void Undo() override { m_Instance.ClearParentCache(); }
-};
-
 void CDataCoreProducer::DeriveInstance(Qt3DSDMInstanceHandle inInstance,
                                        Qt3DSDMInstanceHandle inParent)
 {
@@ -134,9 +121,6 @@ void CDataCoreProducer::DeriveInstance(Qt3DSDMInstanceHandle inInstance,
             make_pair(inParent.GetHandleValue(),
                       CSimpleDataCore::GetInstanceNF(inParent, m_Data->m_Objects)),
             theInstance->m_Parents);
-        m_Consumer->OnTransaction(std::static_pointer_cast<ITransaction>(
-            std::make_shared<ClearInstanceParentCacheTransaction>(__FILE__, __LINE__,
-                                                                    *theInstance)));
     }
     GetDataCoreSender()->SignalInstanceDerived(inInstance, inParent);
 }

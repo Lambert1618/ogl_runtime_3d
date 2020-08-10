@@ -36,29 +36,10 @@
 #include <unordered_map>
 #include <QtCore/qdebug.h>
 
-namespace std {
-
-template<> struct hash<std::pair<int,int> >
-{
-    typedef std::pair<int,int> argument_type;
-    typedef std::size_t result_type;
-    result_type operator()(std::pair<int,int> const& pa) const
-    {
-        result_type const h1 ( std::hash<int>{}(pa.first) );
-        result_type const h2 ( std::hash<int>{}(pa.second) );
-        return h1 ^ (h2 << 1);
-    }
-};
-
-}
-
 namespace qt3dsdm {
 
-// The first revision of this
-typedef std::pair<int, int> TSlideInstancePropertyPair;
+typedef TInstancePropertyPair TSlideInstancePropertyPair;
 typedef std::unordered_map<TSlideInstancePropertyPair, SInternValue > TSlideEntryHash;
-
-using std::make_pair;
 
 // Abstract access to these objects a little bit because in the future we are going to
 // reorganize the data such that getting a defined set of properties for a single instance is
@@ -111,7 +92,7 @@ struct SSlide : public CHandleObject
     SInternValue *GetInstancePropertyValue(Qt3DSDMInstanceHandle inInstance,
                                            Qt3DSDMPropertyHandle inProperty) const
     {
-        TSlideInstancePropertyPair theKey(inInstance.GetHandleValue(), inProperty.GetHandleValue());
+        const TSlideInstancePropertyPair theKey(inInstance.GetHandleValue(), inProperty.GetHandleValue());
         TSlideEntryHash::const_iterator find(m_Properties.find(theKey));
         if (find != m_Properties.end())
             return const_cast<SInternValue *>(&find->second);
@@ -126,7 +107,7 @@ struct SSlide : public CHandleObject
              theIter != theEnd; ++theIter) {
             if (theIter->first.first == inInstance)
                 outProperties.push_back(
-                    make_pair(theIter->first.second, theIter->second.GetValue()));
+                    std::make_pair(theIter->first.second, theIter->second.GetValue()));
         }
     }
 
@@ -161,7 +142,7 @@ struct SSlide : public CHandleObject
     {
         for (size_t idx = 0, end = inList.size(); idx < end; ++idx)
             m_Properties.erase(
-                std::pair<int, int>(std::get<0>(inList[idx]), std::get<1>(inList[idx])));
+                TSlideInstancePropertyPair(std::get<0>(inList[idx]), std::get<1>(inList[idx])));
     }
 
     void InsertSlideEntries(const TSlideEntryList &inList, IStringTable &inStringTable)

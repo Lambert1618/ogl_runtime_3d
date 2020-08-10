@@ -139,7 +139,7 @@ void SetEntryValueIfNotReferenced(const TSlideEntry &inEntry,
     else
         inDestCore->ForceSetInstancePropertyValue(inDestSlide, get<0>(inEntry), get<1>(inEntry),
                                                   get<2>(inEntry));
-    CopyAnimationIfExist(inSource, inDestSlide, make_pair(get<0>(inEntry), get<1>(inEntry)),
+    CopyAnimationIfExist(inSource, inDestSlide, TInstancePropertyPair(get<0>(inEntry), get<1>(inEntry)),
                          inPropertySystem, inAnimationCore);
 }
 
@@ -614,7 +614,8 @@ void SSlideSystem::UnlinkProperty(Qt3DSDMInstanceHandle inInstance, Qt3DSDMPrope
                                       std::placeholders::_1,
                                       inInstance, inProperty, theValue));
         do_all(theChildren,
-               std::bind(CopyAnimationIfExist, theSlide, std::placeholders::_1, make_pair(inInstance, inProperty),
+               std::bind(CopyAnimationIfExist, theSlide, std::placeholders::_1,
+                         TInstancePropertyPair(inInstance, inProperty),
                            m_PropertySystem, m_AnimationCore));
     }
     GetSignalSender()->SendPropertyUnlinked(theSlide, inInstance, inProperty);

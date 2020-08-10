@@ -101,7 +101,6 @@ public:
     typedef std::unordered_map<int, bool> TInstanceParentMap;
 
     TInstancePairList m_Parents;
-    mutable TInstanceParentMap m_CachedParents;
     // Properties specific to this class
     TIntList m_Properties;
     TPropertyPairHash m_PropertyValues;
@@ -128,33 +127,20 @@ public:
             m_PropertyValues.insert(*iter);
     }
 
-    void ClearParentCache() const { m_CachedParents.clear(); }
+    void ClearParentCache() const { }
 
     bool IsDerivedFrom(Qt3DSDMInstanceHandle inParent) const
     {
-        std::pair<TInstanceParentMap::iterator, bool> theQueryResult =
-            m_CachedParents.insert(std::make_pair(inParent.GetHandleValue(), false));
-        // If the insert failed, returned what the hashtable already had in it
-        if (theQueryResult.second == false)
-            return theQueryResult.first->second;
-
-        // Else find a valid answer
         if (m_Parents.find(inParent.GetHandleValue()) != m_Parents.end()) {
-            theQueryResult.first->second = true;
+            return true;
         } else {
             for (TInstancePairList::const_iterator iter = m_Parents.begin(), end = m_Parents.end();
                  iter != end; ++iter) {
-                if (iter->second->IsDerivedFrom(inParent)) {
-                    theQueryResult.first->second = true;
-                    break;
-                }
+                if (iter->second->IsDerivedFrom(inParent))
+                    return true;
             }
         }
-
-        // Note that we inserted false to begin with.  This means that
-        // we can return the insert result here safely as if it wasn't
-        // supposed to be false, we would have set it above.
-        return theQueryResult.first->second;
+        return false;
     }
 
     void RemoveCachedValues()

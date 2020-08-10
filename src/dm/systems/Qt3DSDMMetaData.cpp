@@ -1429,8 +1429,9 @@ public:
     Qt3DSDMMetaDataPropertyHandle GetMetaDataProperty(Qt3DSDMInstanceHandle inInstance,
                                                       Qt3DSDMPropertyHandle inProperty) override
     {
-        Qt3DSDMPropertyDefinition propDef(m_DataCore->GetProperty(inProperty));
-        return GetMetaDataProperty(inInstance, propDef.m_Name);
+        const Qt3DSDMPropertyDefinition &propDef = m_DataCore->GetProperty(inProperty);
+        return FindItemByName<Qt3DSDMMetaDataPropertyHandle>(inInstance, Intern(propDef.m_Name),
+                                                             m_InstanceNameToProperties);
     }
     // Sets the value in the data core
     virtual Option<SMetaDataPropertyInfo>
