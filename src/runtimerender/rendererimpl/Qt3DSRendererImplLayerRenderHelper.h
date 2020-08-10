@@ -108,10 +108,10 @@ namespace render {
         // Does not differ whether offscreen or not, simply states how this layer maps to the
         // presentation
         NVRenderRectF getOriginalLayerToPresentationViewport() const;
-        NVRenderRectF GetLayerToPresentationViewport() const;
+        NVRenderRectF GetLayerToPresentationViewport(bool noStereo = false) const;
         // Does not differ whether offscreen or not, scissor rect of how this layer maps to
         // presentation.
-        NVRenderRectF GetLayerToPresentationScissorRect() const;
+        NVRenderRectF GetLayerToPresentationScissorRect(bool noStereo = false) const;
 
         QSize GetTextureDimensions() const;
 

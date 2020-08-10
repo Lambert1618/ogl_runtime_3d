@@ -81,6 +81,7 @@ namespace render {
                                           const SRenderInstanceId instanceId)
     {
         NVRenderRect theViewportSize(inRenderContext.GetViewport());
+        m_Presentation.m_Scene->m_IsSubPresentationScene = true;
         m_Presentation.m_Scene->Render(
             QT3DSVec2((QT3DSF32)theViewportSize.m_Width, (QT3DSF32)theViewportSize.m_Height),
             m_RenderContext, inClearColorBuffer, instanceId);
@@ -96,6 +97,7 @@ namespace render {
         Q_UNUSED(inEnvironment);
         Q_UNUSED(inPresScale);
         NVRenderRect theViewportSize(inRenderContext.GetViewport());
+        m_Presentation.m_Scene->m_IsSubPresentationScene = true;
         m_Presentation.m_Scene->RenderWithClear(
             QT3DSVec2((QT3DSF32)theViewportSize.m_Width, (QT3DSF32)theViewportSize.m_Height),
             m_RenderContext, inClearBuffer, inClearColor, id);

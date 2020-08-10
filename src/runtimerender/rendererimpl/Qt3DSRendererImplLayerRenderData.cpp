@@ -2090,10 +2090,12 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
             // transform.
             QT3DSMat44 theFinalMVP(QT3DSMat44::createIdentity());
             SCamera theTempCamera;
+            // When layer & scene are part of subpresentation, ignore stereoscopic viewport adjustments
+            bool noStereo = m_Layer.m_Scene && m_Layer.m_Scene->m_IsSubPresentationScene;
             NVRenderRect theLayerViewport(
-                thePrepResult.GetLayerToPresentationViewport().ToIntegerRect());
+                thePrepResult.GetLayerToPresentationViewport(noStereo).ToIntegerRect());
             NVRenderRect theLayerClip(
-                thePrepResult.GetLayerToPresentationScissorRect().ToIntegerRect());
+                thePrepResult.GetLayerToPresentationScissorRect(noStereo).ToIntegerRect());
 
             {
                 QT3DSMat33 ignored;

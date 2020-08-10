@@ -47,6 +47,7 @@ namespace render {
         QT3DSVec4 m_ClearColor;
         bool m_UseClearColor;
         bool m_Dirty;
+        bool m_IsSubPresentationScene;
 
         enum RenderClearCommand {
             ClearIsOptional = 0,

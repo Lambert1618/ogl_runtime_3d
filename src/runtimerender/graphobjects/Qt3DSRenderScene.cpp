@@ -42,6 +42,7 @@ SScene::SScene()
     , m_ClearColor(0.0f)
     , m_UseClearColor(true)
     , m_Dirty(true)
+    , m_IsSubPresentationScene(false)
 {
 }
 

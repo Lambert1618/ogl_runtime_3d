@@ -207,8 +207,11 @@ NVRenderRectF SLayerRenderHelper::GetLayerRenderViewport() const
         return m_Viewport;
 }
 
-NVRenderRectF SLayerRenderHelper::GetLayerToPresentationViewport() const
+NVRenderRectF SLayerRenderHelper::GetLayerToPresentationViewport(bool noStereo) const
 {
+    if (noStereo)
+        return m_Viewport;
+
     if (m_StereoMode == StereoModes::LeftRight) {
         if (m_StereoView == StereoViews::Left) {
             return NVRenderRectF(m_Viewport.m_X, m_Viewport.m_Y, m_Viewport.m_Width/2,
@@ -231,8 +234,11 @@ NVRenderRectF SLayerRenderHelper::GetLayerToPresentationViewport() const
     return m_Viewport;
 }
 
-NVRenderRectF SLayerRenderHelper::GetLayerToPresentationScissorRect() const
+NVRenderRectF SLayerRenderHelper::GetLayerToPresentationScissorRect(bool noStereo) const
 {
+    if (noStereo)
+        return m_Scissor;
+
     if (m_StereoMode == StereoModes::LeftRight) {
         if (m_StereoView == StereoViews::Left) {
             return NVRenderRectF(m_Scissor.m_X, m_Scissor.m_Y,
