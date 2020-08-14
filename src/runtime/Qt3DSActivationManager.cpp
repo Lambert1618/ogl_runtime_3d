@@ -649,7 +649,7 @@ struct STimeContext
                 TElementNodePtrList &inTempDirtyList, TElementAndSortKeyList &activateBuffer,
                 TElementAndSortKeyList &deactivateBuffer, TElementAndSortKeyList &scriptBuffer,
                 bool &scriptBufferRequiresSort, Q3DStudio::CComponentManager &inComponentManager,
-                IPerfTimer &, IActivityZone &inZone)
+                IPerfTimer &inPerfTimer, IActivityZone &inZone)
     {
         SComponent &theContextNode = m_Component;
         bool parentActive = true;
