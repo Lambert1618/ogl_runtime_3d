@@ -1559,8 +1559,9 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
                 m_Context->m_RenderContext->ResetBlendState();
         }
 
-        // How exactly does this work, I have no idea.
-        // Should we only render the first scene and not every scene, perhaps?
+        // Run render tasks before prepare step
+        m_Context->m_Context->RunRenderTasks();
+
         bool wasDirty = false;
         if (theFirstScene)
             wasDirty = theFirstScene->PrepareForRender();
@@ -1569,6 +1570,8 @@ struct Qt3DSRenderSceneManager : public Q3DStudio::ISceneManager,
             m_Context->m_RenderContext->Clear(qt3ds::render::NVRenderClearFlags(
                 NVRenderClearValues::Color | NVRenderClearValues::Depth));
         }
+
+        // Run render tasks after prepare step
         m_Context->m_Context->RunRenderTasks();
         if (theFirstScene)
             theFirstScene->Render();
