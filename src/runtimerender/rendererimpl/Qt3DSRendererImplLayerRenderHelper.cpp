@@ -408,6 +408,7 @@ void SLayerRenderHelper::copyCameraProperties(SCamera *sourceCamera,
     destinationCamera->m_RotationOrder = sourceCamera->m_RotationOrder;
     destinationCamera->m_LocalTransform = sourceCamera->m_LocalTransform;
     destinationCamera->m_GlobalTransform = sourceCamera->m_GlobalTransform;
+    destinationCamera->m_Parent = sourceCamera->m_Parent;
 }
 
 void SLayerRenderHelper::adjustCameraStereoSeparation()
