@@ -1566,6 +1566,31 @@ void tst_Q3DSSurfaceViewer::testTextureQuery()
 
     QCOMPARE(texsize, QSize(512,256));
     QCOMPARE(format, GL_RGBA8);
+
+    // Reset textureid and format
+    textureid = m_viewer->presentation()->textureId("Scene.Layer", texsize, format);
+    if (isWindow)
+        QCOMPARE(textureid, 6);
+    else
+        QCOMPARE(textureid, 7);
+
+    // Test setting sourcepath without the file extension.
+    // Loading should succeed finding the .hdr file.
+    m_viewer->presentation()->setAttribute("Scene.Layer.Rectangle.Default.diffusemap", "sourcepath",
+                                           "maps/OpenfootageNET_garage-512");
+
+    QGuiApplication::processEvents();
+
+    // Changed to HDR texture, studio-internally RGB8E but texture query should map to GL RGBA8
+    textureid = m_viewer->presentation()->textureId("Scene.Layer.Rectangle.Default.diffusemap",
+                                                    texsize, format);
+    if (isWindow)
+        QCOMPARE(textureid, 9);
+    else
+        QCOMPARE(textureid, 10);
+
+    QCOMPARE(texsize, QSize(512,256));
+    QCOMPARE(format, GL_RGBA8);
 }
 
 QTEST_MAIN(tst_Q3DSSurfaceViewer)

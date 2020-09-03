@@ -41,6 +41,7 @@
 #include <QtQuick/qquickimageprovider.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qopengltexture.h>
+#include <QtCore/qfileinfo.h>
 
 #include <private/qnumeric_p.h>
 
@@ -911,6 +912,41 @@ void SLoadedTexture::ReleaseDecompressedTexture(STextureData inImage)
 #define stricmp strcasecmp
 #endif
 
+// Locate existing file by adding a supported suffix to localFile.
+// If localFile already contains suffix or exiting file isn't found
+// returns localFile unchanged.
+static QString existingImageFileForPath(const QString &localFile, bool preferKTX)
+{
+    // Do nothing if given filepath exists or already has a suffix
+    QFileInfo fi(localFile);
+    if (!fi.suffix().isEmpty() || fi.exists())
+        return localFile;
+
+    // Lists of supported image formats in preferred-first order.
+    const QStringList compressedFormats {"ktx", "astc", "dds"};
+    const QStringList nonCompressedFormats {"hdr", "png", "jpg", "jpeg", "gif"};
+
+    // Depending on preferKTX, check compressed formats before or after non-compressed ones.
+    QStringList supportedFormats = preferKTX ? compressedFormats + nonCompressedFormats
+                                             :  nonCompressedFormats + compressedFormats;
+
+    // Check first if file exists from resources as that
+    // is common and optimal for integrity case.
+    for (const QString &suffix : supportedFormats) {
+        QString tryFile = ":/" + localFile + "." + suffix;
+        if (QFileInfo::exists(tryFile))
+            return tryFile;
+    }
+    // If not found, check still file path as-is
+    for (const QString &suffix : supportedFormats) {
+        QString tryFile = localFile + "." + suffix;
+        if (QFileInfo::exists(tryFile))
+            return tryFile;
+    }
+
+    return localFile;
+}
+
 SLoadedTexture *SLoadedTexture::Load(const QString &inPath, NVFoundationBase &inFoundation,
                                      IInputStreamFactory &inFactory, bool inFlipY,
                                      bool inFlipCompressed,
@@ -923,9 +959,11 @@ SLoadedTexture *SLoadedTexture::Load(const QString &inPath, NVFoundationBase &in
     if (QUrl(inPath).scheme() == QLatin1String("image"))
         return LoadQImage(inPath, inFlipY, inFoundation, renderContextType, bufferManager);
 
-    // Check KTX path first
-    QString path = inPath;
-    QString ktxSource = inPath;
+    // If inPath doesn't have suffix, try to find most optimal existing one
+    QString path = existingImageFileForPath(inPath, preferKTX);
+
+    // If preferKTX is true, always check KTX path first
+    QString ktxSource = path;
     if (preferKTX) {
         ktxSource = ktxSource.left(ktxSource.lastIndexOf(QLatin1Char('.')));
         ktxSource.append(QLatin1String(".ktx"));
@@ -935,10 +973,10 @@ SLoadedTexture *SLoadedTexture::Load(const QString &inPath, NVFoundationBase &in
     // We will get invalid error logs of files not found if we don't force quiet mode
     // If the file is actually missing, it will be logged later (loaded image is null)
     NVScopedRefCounted<IRefCountedInputStream> theStream(
-                inFactory.GetStreamForFile(preferKTX ? ktxSource : inPath, true));
+                inFactory.GetStreamForFile(preferKTX ? ktxSource : path, true));
     if (!theStream.mPtr) {
         if (preferKTX)
-            theStream = inFactory.GetStreamForFile(inPath, true);
+            theStream = inFactory.GetStreamForFile(path, true);
         else
             return nullptr;
     } else {
