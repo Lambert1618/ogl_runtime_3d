@@ -824,7 +824,8 @@ namespace render {
         // Enable alpha test, but only if the whole object opacity is full
         // so parts of the object might be fully opaque
         if (renderableFlags & RenderPreparationResultFlagValues::HasTransparency
-                && subsetOpacity >= 1.0f && transparencyImagesHaveOpaquePixels) {
+                && subsetOpacity >= 1.0f && transparencyImagesHaveOpaquePixels
+                && theMaterial->m_BlendMode != DefaultMaterialBlendMode::Screen) {
             m_Renderer.DefaultMaterialShaderKeyProperties()
                     .m_AlphaTestEnabled.SetValue(theGeneratedKey, true);
             renderableFlags.setAlphaTest(true);
