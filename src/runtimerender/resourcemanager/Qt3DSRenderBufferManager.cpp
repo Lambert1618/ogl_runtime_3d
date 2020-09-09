@@ -355,7 +355,12 @@ struct SBufferManager : public IBufferManager
                                                        bool inBsdfMipmaps,
                                                        bool flipCompressed) override
     {
+        // Remove schema and root from keys. To prevent loading twice file "qrc:///foo" and "foo"
         QString path = QString::fromLatin1(inSourcePath.c_str());
+        path = QUrl(path).path();
+        if (path.startsWith(QLatin1String("/")))
+            path = path.right(path.length() - 1);
+
         const bool inserted = m_reloadableTextures.contains(path);
         if (!inserted || (inserted && m_reloadableTextures[path]->m_initialized == false)) {
             if (!inserted)
