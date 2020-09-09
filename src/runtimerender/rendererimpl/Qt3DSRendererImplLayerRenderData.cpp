@@ -1186,16 +1186,16 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
         // transparent parts of transparent objects
         // does not render objects without alpha test enabled so
         // we need another pass without alpha test
-        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
-                                     inEnableDepthWrite, indexLight, inCamera, theFB);
+        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableDepthWrite,
+                                     inEnableTransparentDepthWrite, indexLight, inCamera, theFB);
     }
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
                                 "LayerRenderData: Render transparent pass3")
         m_Renderer.setAlphaTest(false, 1.0, 1.0);
         // transparent objects without alpha test
-        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableTransparentDepthWrite,
-                                     inEnableDepthWrite, indexLight, inCamera, theFB);
+        renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableDepthWrite,
+                                     inEnableTransparentDepthWrite, indexLight, inCamera, theFB);
     }
 }
 
