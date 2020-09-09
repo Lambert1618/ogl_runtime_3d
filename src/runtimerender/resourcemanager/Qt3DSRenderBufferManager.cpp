@@ -373,6 +373,20 @@ struct SBufferManager : public IBufferManager
 
             CRegisteredString imagePath = getImagePath(path);
             TImageMap::iterator theIter = m_ImageMap.find(imagePath);
+
+#ifndef NO_EXTERNAL_LOOKUP
+            // Failed to look up image from map, perhaps external of UIP/UIA image
+            // Try with full URI and load from filesystem.
+            if (theIter == m_ImageMap.end())
+                theIter =  m_ImageMap.find(getImagePath(QString::fromLatin1(inSourcePath.c_str())));
+            if (theIter == m_ImageMap.end()) {
+                loadTextureImage(*m_reloadableTextures[path], flipCompressed);
+                imagePath = getImagePath(path);
+                theIter = m_ImageMap.find(imagePath);
+                if (theIter == m_ImageMap.end())
+                    theIter =  m_ImageMap.find(getImagePath(QString::fromLatin1(inSourcePath.c_str())));
+            }
+#endif
             if (theIter != m_ImageMap.end()) {
                 SImageEntry textureData = theIter->second;
                 if (textureData.m_Loaded) {
