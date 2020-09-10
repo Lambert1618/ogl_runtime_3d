@@ -298,7 +298,7 @@ namespace render {
         m_RenderedTransparentObjects.assign(m_TransparentObjects.begin(),
                                             m_TransparentObjects.end());
 
-        if (!m_Layer.m_Flags.IsLayerEnableDepthTest()) {
+        if (m_Layer.m_Flags.IsLayerEnableDepthTest() == false) {
             m_RenderedTransparentObjects.insert(m_RenderedTransparentObjects.end(),
                                                 m_OpaqueObjects.begin(), m_OpaqueObjects.end());
             m_RenderedTransparentObjects.insert(m_RenderedTransparentObjects.end(),
@@ -314,7 +314,11 @@ namespace render {
                 SRenderableObject &theInfo = *m_RenderedTransparentObjects[idx];
                 QT3DSVec3 difference = theInfo.m_WorldCenterPoint - theCameraPosition;
                 theInfo.m_CameraDistanceSq = difference.dot(theCameraDirection);
+
+                if (m_Layer.m_Flags.IsLayerEnableDepthTest() == false)
+                    theInfo.m_RenderableFlags.setAlphaTest(0);
             }
+
             ForwardingAllocator alloc(m_Renderer.GetPerFrameAllocator(), "SortAllocations");
             // render furthest to nearest.
             eastl::merge_sort(m_RenderedTransparentObjects.begin(),

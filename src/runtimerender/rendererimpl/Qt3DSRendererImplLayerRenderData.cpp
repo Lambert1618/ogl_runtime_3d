@@ -874,7 +874,7 @@ namespace render {
             return;
 
         // Avoid running this method if possible.
-        if ((inEnableTransparentDepthWrite == false
+        if ((inEnableTransparentDepthWrite
              && ((m_GroupObjects.empty() && m_OpaqueObjects.empty() && m_TransparentObjects.empty())
                  || m_Layer.m_Flags.IsLayerEnableDepthPrepass() == false))
             || m_Layer.m_Flags.IsLayerEnableDepthTest() == false)
@@ -1165,7 +1165,6 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
                                 "LayerRenderData: Render transparent pass1")
-
         NVDataRef<SRenderableObject *> theTransparentObjects = GetTransparentRenderableObjects();
         // Also draw opaque parts of transparent objects
         m_Renderer.setAlphaTest(true, 1.0f, -1.0f + (1.0f / 255.0f));
@@ -1189,6 +1188,7 @@ void SLayerRenderData::RunRenderPass(TRenderRenderableFunction inRenderFn,
         renderTransparentObjectsPass(inRenderFn, inEnableBlending, inEnableDepthWrite,
                                      inEnableTransparentDepthWrite, indexLight, inCamera, theFB);
     }
+
     {
         QT3DS_PERF_SCOPED_TIMER(m_Renderer.GetQt3DSContext().GetPerfTimer(),
                                 "LayerRenderData: Render transparent pass3")
