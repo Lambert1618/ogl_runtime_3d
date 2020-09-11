@@ -1460,17 +1460,28 @@ struct SShaderGenerator : public IDefaultMaterialShaderGenerator
                     fragmentShader.Append("    global_diffuse_light *= texture_color;");
                     break;
                 case ImageMapTypes::Specular:
-
                     fragmentShader.AddUniform("material_specular", "vec4");
-                    if (fragmentHasSpecularAmount) {
-                        fragmentShader.Append("    global_specular_light.xyz += specularAmount * "
-                                              "specularColor * texture_color.xyz * "
-                                              "material_specular.xyz;");
+                    if (image->m_Image.m_TextureData.m_Texture->GetTextureDetails().m_Format != NVRenderTextureFormats::RGBE8) {
+                        if (fragmentHasSpecularAmount) {
+                            fragmentShader.Append("    global_specular_light.xyz += specularAmount * "
+                                                  "specularColor * texture_color.xyz * "
+                                                  "material_specular.xyz;");
+                        } else {
+                            fragmentShader.Append("    global_specular_light.xyz += texture_color.xyz * "
+                                                  "material_specular.xyz;");
+                        }
+                        fragmentShader.Append("    global_diffuse_light.a *= texture_color.a;");
                     } else {
-                        fragmentShader.Append("    global_specular_light.xyz += texture_color.xyz * "
-                                              "material_specular.xyz;");
+                        // RGBE map
+                        if (fragmentHasSpecularAmount) {
+                            fragmentShader.Append("    global_specular_light.xyz += specularAmount * "
+                                                  "specularColor * texture_color.xyz * pow(2.0, texture_color.a * 255.0 - 128.0);"
+                                                  "material_specular.xyz;");
+                        } else {
+                            fragmentShader.Append("    global_specular_light.xyz += texture_color.xyz * "
+                                                  "material_specular.xyz * pow(2.0, texture_color.a * 255.0 - 128.0);");
+                        }
                     }
-                    fragmentShader.Append("    global_diffuse_light.a *= texture_color.a;");
                     break;
                 case ImageMapTypes::Opacity:
                     fragmentShader.Append("    global_diffuse_light.a *= texture_color.a;");
