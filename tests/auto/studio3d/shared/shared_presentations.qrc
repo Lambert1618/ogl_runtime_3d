@@ -12,5 +12,6 @@
         <file alias="datainput.uia">presentation/datainput.uia</file>
         <file alias="datainput_sub.uip">presentation/datainput_sub.uip</file>
         <file>maps/OpenfootageNET_garage-512.hdr</file>
+        <file alias="activateactions.uip">presentation/activateactions.uip</file>
     </qresource>
 </RCC>

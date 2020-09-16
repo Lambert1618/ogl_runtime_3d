@@ -46,6 +46,7 @@
 #include "foundation/Qt3DSSync.h"
 #include "Qt3DSRenderThreadPool.h"
 #include "foundation/Qt3DSSimpleTypes.h"
+#include "Qt3DSInputEventTypes.h"
 
 using namespace qt3ds::runtime;
 using namespace qt3ds::runtime::element;
@@ -517,6 +518,15 @@ struct STimeContext
                                        Mutex &inElementAccessMutex, bool &scriptBufferRequiresSort,
                                        bool inIsActive)
     {
+
+        if (inNode.Flags().HasActivityAction() && inNode.GetBelongedPresentation()) {
+            // If node has activity changing actions enabled, fire them
+            if (inIsActive)
+                inNode.GetBelongedPresentation()->FireEvent(Q3DStudio::ON_ACTIVATE, &inNode);
+            else
+                inNode.GetBelongedPresentation()->FireEvent(Q3DStudio::ON_DEACTIVATE, &inNode);
+        }
+
         Mutex::ScopedLock __locker(inElementAccessMutex);
         TElementAndSortKey theKey(&inNode, inNode.Depth());
         if (inIsActive) {

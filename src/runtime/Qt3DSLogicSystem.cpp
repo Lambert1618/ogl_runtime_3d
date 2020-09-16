@@ -218,7 +218,7 @@ struct SLogicSystem : public ILogicSystem
             if (logicIter != m_LogicKeys.end()) {
                 for (TLogicDataList::iterator listIter = logicIter->second.begin(),
                                               listEnd = logicIter->second.end();
-                     listIter != listEnd; ++listIter)
+                     listIter != listEnd; ++listIter) {
                     if (listIter->m_Id == inActionIndex) {
                         listIter->m_Active = inActive;
                         if (IApplication::isPickingEvent(logicIter->first.m_CommandHash)) {
@@ -226,8 +226,16 @@ struct SLogicSystem : public ILogicSystem
                                 logicIter->first.m_ElementHandle);
                             if (theElement && inActive)
                                 theElement->SetFlag(Q3DStudio::ELEMENTFLAG_PICKENABLED, true);
+                        } else if (IApplication::isActivityEvent(logicIter->first.m_CommandHash)) {
+                            SElement *theElement = inElemAllocator.FindElementByHandle(
+                                logicIter->first.m_ElementHandle);
+                            if (theElement && inActive) {
+                                theElement->SetFlag(Q3DStudio::ELEMENTFLAG_ACTIVITYACTIONENABLED,
+                                                    true);
+                            }
                         }
                     }
+                }
             }
         }
     }

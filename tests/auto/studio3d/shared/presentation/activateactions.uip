@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<UIP version="6" >
+	<Project >
+		<ProjectSettings author="" company="" presentationWidth="800" presentationHeight="480" maintainAspect="False" preferKtx="False" flipCompressedTextures="False" >
+			<CustomColors count="16" >#969696 #780000 #ff0055 #ffffff #0a0a0a #ffffff #a0a8b2 #ffffff #ff643a #ffffff #4694ff #ffffff #ff0800 #ffffff #280000 #ffffff</CustomColors>
+		</ProjectSettings>
+		<Graph >
+			<Scene id="Scene_u31923" backgroundcolor="1 0 0 1" bgcolorenable="False" >
+				<Layer id="Layer_u40191" variants="" >
+					<Camera id="Camera_u60961" />
+					<Light id="Light_u46987" />
+					<Model id="Cube_u48840" variants="" >
+						<ReferencedMaterial id="Default_u50569" name="Default" />
+					</Model>
+					<Group id="Events1_u28102" variants="" />
+					<Group id="Events2_u17296" variants="" />
+				</Layer>
+				<Material id="__Container_u55481" >
+					<Material id="materials//Default_u19189" />
+				</Material>
+			</Scene>
+		</Graph>
+		<Logic >
+			<State name="Master Slide" component="#Scene_u31923" >
+				<Add ref="#Layer_u40191" />
+				<Add ref="#Camera_u60961" />
+				<Add ref="#Light_u46987" />
+				<Add ref="#__Container_u55481" name="__Container" />
+				<Add ref="#materials//Default_u19189" name="materials//Default" />
+				<State id="Scene-Slide1_u54514" name="Slide1" >
+					<Add ref="#Cube_u48840" name="Cube" rotation="20 360 20" sourcepath="#Cube" />
+					<Add ref="#Default_u50569" name="Default" referencedmaterial="#materials//Default_u19189" sourcepath="/Default" />
+					<Add ref="#Events1_u28102" name="Events1" endtime="3000" starttime="1000" >
+						<Action id="Events1-Action_u22921" eyeball="True" triggerObject="#Events1_u28102" event="onActivate" targetObject="#Scene_u31923" handler="Set Property" >
+							<HandlerArgument name="Property Name" type="String" argtype="Property" value="bgcolorenable" />
+							<HandlerArgument name="Property Value" type="Bool" argtype="Dependent" value="True" />
+						</Action>
+						<Action id="Events1-Action_u62890" eyeball="True" triggerObject="#Events1_u28102" event="onDeactivate" targetObject="#Scene_u31923" handler="Set Property" >
+							<HandlerArgument name="Property Name" type="String" argtype="Property" value="bgcolorenable" />
+							<HandlerArgument name="Property Value" type="Bool" argtype="Dependent" />
+						</Action>
+					</Add>
+					<Add ref="#Events2_u17296" name="Events2" endtime="3000" starttime="1000" >
+						<Action id="Events2-Action_u55956" eyeball="True" triggerObject="#Events2_u17296" event="onActivate" targetObject="#Events2_u17296" handler="Emit Signal" >
+							<HandlerArgument name="Signal Name" type="String" argtype="Signal" value="mySignal1" />
+						</Action>
+						<Action id="Events2-Action_u17879" eyeball="True" triggerObject="#Events2_u17296" event="onDeactivate" targetObject="#Events2_u17296" handler="Emit Signal" >
+							<HandlerArgument name="Signal Name" type="String" argtype="Signal" value="mySignal2" />
+						</Action>
+					</Add>
+				</State>
+			</State>
+		</Logic>
+	</Project>
+</UIP>

@@ -143,7 +143,10 @@ enum EElementFlag {
 
     // Flags used by the activation manager
     ELEMENTFLAG_AMGR_TIMEACTIVE = 1 << 13, ///< Is the element alive according to time information
-    ELEMENTFLAG_CONTROLLED_ACTIVE = 1 << 14 ///< Is the element alive based on datainput control
+    ELEMENTFLAG_CONTROLLED_ACTIVE = 1 << 14, ///< Is the element alive based on datainput control
+
+    ELEMENTFLAG_ACTIVITYACTIONENABLED = 1 << 15, ///< Activity changing action has been registered on this element
+
 };
 
 // Four byte aligned time unit structure.

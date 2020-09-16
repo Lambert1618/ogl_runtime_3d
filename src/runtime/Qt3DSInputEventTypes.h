@@ -46,6 +46,9 @@ const TEventCommandHash ON_MOUSEOUT = CHash::HashEventCommand("onMouseOut");
 const TEventCommandHash ON_GROUPEDMOUSEOVER = CHash::HashEventCommand("onGroupedMouseOver");
 const TEventCommandHash ON_GROUPEDMOUSEOUT = CHash::HashEventCommand("onGroupedMouseOut");
 
+const TEventCommandHash ON_ACTIVATE = CHash::HashEventCommand("onActivate");
+const TEventCommandHash ON_DEACTIVATE = CHash::HashEventCommand("onDeactivate");
+
 // Crude hack to pretend mouse events are gesture events, since gesture events are all you
 // can specify in studio.
 // TODO: Fix properly, preferably by bringing back gesture support

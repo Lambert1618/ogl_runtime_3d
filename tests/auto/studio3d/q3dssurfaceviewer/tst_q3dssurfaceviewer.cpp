@@ -61,6 +61,8 @@ private slots:
     void testBasics();
     void testSourceChange_data();
     void testSourceChange();
+    void testActivateActions_data();
+    void testActivateActions();
     void testSizeChange_data();
     void testSizeChange();
     void testUpdateInterval_data();
@@ -366,6 +368,40 @@ void tst_Q3DSSurfaceViewer::testSourceChange()
     QVERIFY(m_viewer->presentation()->source() == RED);
 
     checkPixel(m_viewer, Qt::red);
+}
+
+void tst_Q3DSSurfaceViewer::testActivateActions_data()
+{
+    testBasics_data();
+}
+
+void tst_Q3DSSurfaceViewer::testActivateActions()
+{
+    QFETCH(bool, isWindow);
+
+    if (isWindow)
+        createWindowAndViewer(m_viewer, ACTIVATEACTIONS);
+    else
+        createOffscreenAndViewer(m_viewer, ACTIVATEACTIONS);
+
+    QSignalSpy spy(m_viewer->presentation(), &Q3DSPresentation::customSignalEmitted);
+
+    QVERIFY(spy.isValid());
+
+    // This presentations sends custom signals at 1000ms and at 3000ms.
+    // At same times it also changes scene color using activate actions.
+    QCOMPARE(spy.count(), 0);
+    QImage image1 = m_viewer->grab();
+
+    QTest::qWait(2000);
+    QCOMPARE(spy.count(), 1);
+    QImage image2 = m_viewer->grab();
+    QVERIFY(image1 != image2);
+
+    QTest::qWait(2000);
+    QCOMPARE(spy.count(), 2);
+    QImage image3 = m_viewer->grab();
+    QVERIFY(image1 == image3);
 }
 
 void tst_Q3DSSurfaceViewer::testSizeChange_data()

@@ -2326,6 +2326,13 @@ bool IApplication::isPickingEvent(TEventCommandHash event)
             || event == ON_GROUPEDMOUSEOUT);
 }
 
+// Checks if the event comes from timeline becoming (de)active
+bool IApplication::isActivityEvent(TEventCommandHash event)
+{
+    return (event == ON_ACTIVATE
+            || event == ON_DEACTIVATE);
+}
+
 QDebug operator<<(QDebug debug, const DataInOutAttribute &value)
 {
     QDebugStateSaver saver(debug);

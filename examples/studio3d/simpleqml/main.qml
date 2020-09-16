@@ -77,7 +77,7 @@ Rectangle {
         Presentation {
             id: s3dpres
             source: "qrc:/presentation/barrel.uia"
-            onCustomSignalEmitted: customSignalName.text = Date.now() + ": " + name
+            onCustomSignalEmitted: customSignalName.text = Date.now() + ": customSignal:" + name
             onSlideEntered: slideEnter.text = "Entered slide " + name + "(index " + index + ") on " + elementPath
             onSlideExited: slideExit.text = "Exited slide " + name + "(index " + index + ") on " + elementPath
 
@@ -218,19 +218,19 @@ Rectangle {
         id: customSignalName
         anchors.bottom: parent.bottom
         anchors.left: fpsCount.right
-        anchors.leftMargin: 8
+        anchors.leftMargin: 30
     }
     Text {
         id: slideEnter
         anchors.bottom: parent.bottom
         anchors.left: customSignalName.right
-        anchors.leftMargin: 8
+        anchors.leftMargin: 30
     }
     Text {
         id: slideExit
         anchors.bottom: parent.bottom
         anchors.left: slideEnter.right
-        anchors.leftMargin: 8
+        anchors.leftMargin: 30
     }
     Button {
         id: nextSlideByIndex

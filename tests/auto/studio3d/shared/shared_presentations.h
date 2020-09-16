@@ -37,3 +37,4 @@ const QUrl SETTINGS = QUrl(QStringLiteral("qrc:/settings.uip"));
 const QUrl MULTISLIDE = QUrl(QStringLiteral("qrc:/multislide.uip"));
 const QUrl MOUSE = QUrl(QStringLiteral("qrc:/mouse.uip"));
 const QUrl DATAINPUT = QUrl(QStringLiteral("qrc:/datainput.uia"));
+const QUrl ACTIVATEACTIONS = QUrl(QStringLiteral("qrc:/activateactions.uip"));

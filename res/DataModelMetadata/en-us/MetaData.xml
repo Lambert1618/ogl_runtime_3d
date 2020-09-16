@@ -49,6 +49,8 @@
         <Event name="onPressureDown" category="Gesture" />
         <Event name="onPressureUp" category="Gesture" />
         <Event name="onTap" category="Gesture" />
+        <Event name="onActivate" category="Time" />
+        <Event name="onDeactivate" category="Time" />
         <!--
         <Event name="onDoubleTap" category="Gesture" />
         <Event name="onSingleTap" category="Gesture" />

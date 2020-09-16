@@ -246,6 +246,10 @@ namespace runtime {
             {
                 return this->operator&(Q3DStudio::ELEMENTFLAG_TIMELINE);
             }
+            bool HasActivityAction() const
+            {
+                return this->operator&(Q3DStudio::ELEMENTFLAG_ACTIVITYACTIONENABLED);
+            }
         };
 
         typedef eastl::pair<SPropertyDesc, Q3DStudio::UVariant *> TPropertyDescAndValuePtr;

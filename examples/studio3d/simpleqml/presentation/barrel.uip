@@ -1,47 +1,54 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <UIP version="6" >
 	<Project >
-		<ProjectSettings author="" company="" presentationWidth="800" presentationHeight="480" maintainAspect="False" preferKtx="False" >
+		<ProjectSettings author="" company="" presentationWidth="800" presentationHeight="480" maintainAspect="False" preferKtx="False" flipCompressedTextures="False" >
 			<CustomColors count="16" >#ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff #ffffff</CustomColors>
 		</ProjectSettings>
+		<BufferData >
+			<ImageBuffer sourcepath="maps/barrel_barrel_Diffuse.png" hasTransparency="False" hasOpaquePixels="True" />
+			<ImageBuffer sourcepath="maps/barrel_barrel_Emissive.png" hasTransparency="False" hasOpaquePixels="True" />
+			<ImageBuffer sourcepath="maps/barrel_barrel_Normal.png" hasTransparency="False" hasOpaquePixels="True" />
+			<ImageBuffer sourcepath="maps/barrel_barrel_Specular.png" hasTransparency="False" hasOpaquePixels="True" />
+		</BufferData>
 		<Graph >
-			<Scene id="Scene" >
-				<Layer id="Layer" variants="" >
-					<Camera id="Camera" />
-					<Light id="Light" />
-					<Model id="Barrel" variants="" >
-						<Material id="Material" >
-							<Image id="Material_diffusemap" />
-							<Image id="Material_normalmap" />
-							<Image id="Material_emissivemap" />
-							<Image id="Material_specularmap" />
+			<Scene id="Scene_u51457" >
+				<Layer id="Layer_u16894" variants="" >
+					<Camera id="Camera_u20801" />
+					<Light id="Light_u60375" />
+					<Model id="Barrel_u17933" variants="" >
+						<Material id="Material_u43207" >
+							<Image id="Material_diffusemap_u25218" />
+							<Image id="Material_normalmap_u31730" />
+							<Image id="Material_emissivemap_u20392" />
+							<Image id="Material_specularmap_u63189" />
 						</Material>
 					</Model>
-					<Text id="Text" variants="" />
-					<Text id="Text2" variants="" />
+					<Text id="Text_u12278" variants="" />
+					<Text id="Text2_u28451" variants="" />
+					<Group id="Group_u19473" variants="" />
 				</Layer>
 			</Scene>
 		</Graph>
 		<Logic >
-			<State name="Master Slide" component="#Scene" >
-				<Add ref="#Layer" />
-				<Add ref="#Camera" />
-				<Add ref="#Light" />
-				<State id="Scene-Slide1" name="Slide1" playmode="Looping" >
-					<Add ref="#Barrel" name="Barrel" position="0 -42 -483" rotation="90 0 0" scale="100 100 100" sourcepath=".\barrel\meshes\Barrel.mesh#1" >
+			<State name="Master Slide" component="#Scene_u51457" >
+				<Add ref="#Layer_u16894" />
+				<Add ref="#Camera_u20801" />
+				<Add ref="#Light_u60375" />
+				<State id="Scene-Slide1_u1119" name="Slide1" playmode="Looping" >
+					<Add ref="#Barrel_u17933" name="Barrel" position="0 -42 -483" rotation="90 0 0" scale="100 100 100" sourcepath=".\barrel\meshes\Barrel.mesh#1" >
 						<AnimationTrack property="opacity" type="EaseInOut" />
 						<AnimationTrack property="rotation.x" type="EaseInOut" >0 90 100 100 5 64 100 100 10 90 100 100</AnimationTrack>
 						<AnimationTrack property="rotation.y" type="EaseInOut" >0 0 100 100 5 -302 100 100 10 0 100 100</AnimationTrack>
 						<AnimationTrack property="rotation.z" type="EaseInOut" >0 0 100 100 5 0 100 100 10 0 100 100</AnimationTrack>
 					</Add>
-					<Add ref="#Material" bumpamount="0" diffuse="1 1 1 1" diffusemap="#Material_diffusemap" emissivemap="#Material_emissivemap" fresnelPower="25" normalmap="#Material_normalmap" specularamount="4" specularmap="#Material_specularmap" specularmodel="Default" specularroughness="0.001" >
+					<Add ref="#Material_u43207" bumpamount="0" diffuse="1 1 1 1" diffusemap="#Material_diffusemap_u25218" emissivemap="#Material_emissivemap_u20392" fresnelPower="25" normalmap="#Material_normalmap_u31730" specularamount="4" specularmap="#Material_specularmap_u63189" specularmodel="Default" specularroughness="0.001" >
 						<AnimationTrack property="bumpamount" type="EaseInOut" >0 0 100 100 5 1 100 100</AnimationTrack>
 					</Add>
-					<Add ref="#Material_diffusemap" sourcepath=".\maps\barrel_barrel_Diffuse.png" />
-					<Add ref="#Material_normalmap" sourcepath=".\maps\barrel_barrel_Normal.png" />
-					<Add ref="#Material_emissivemap" sourcepath=".\maps\barrel_barrel_Emissive.png" />
-					<Add ref="#Material_specularmap" sourcepath=".\maps\barrel_barrel_Specular.png" />
-					<Add ref="#Text" name="Text" font="Arimo-Regular" position="-486.418 297.128 50.5569" textcolor="0 1 0 1" textstring="Barrel!" tracking="0" >
+					<Add ref="#Material_diffusemap_u25218" sourcepath=".\maps\barrel_barrel_Diffuse.png" />
+					<Add ref="#Material_normalmap_u31730" sourcepath=".\maps\barrel_barrel_Normal.png" />
+					<Add ref="#Material_emissivemap_u20392" sourcepath=".\maps\barrel_barrel_Emissive.png" />
+					<Add ref="#Material_specularmap_u63189" sourcepath=".\maps\barrel_barrel_Specular.png" />
+					<Add ref="#Text_u12278" name="Text" font="Arimo-Regular" position="-486.418 297.128 50.5569" textcolor="0 1 0 1" textstring="Barrel!" tracking="0" >
 						<AnimationTrack property="opacity" type="EaseInOut" >0 100 100 100 5.009 43.75 100 100 10 100 100 100</AnimationTrack>
 						<AnimationTrack property="rotation.x" type="EaseInOut" >0 0 100 100 4.997 0 100 100 5.009 0 100 100 10 0 100 100</AnimationTrack>
 						<AnimationTrack property="rotation.y" type="EaseInOut" >0 0 100 100 4.997 0 100 100 5.009 0 100 100 10 360 100 100</AnimationTrack>
@@ -50,7 +57,15 @@
 						<AnimationTrack property="textcolor.y" type="EaseInOut" >0 1 100 100 5.009 0.235294 100 100 10 1 100 100</AnimationTrack>
 						<AnimationTrack property="textcolor.z" type="EaseInOut" >0 0 100 100 5.009 0.333333 100 100 10 0 100 100</AnimationTrack>
 					</Add>
-					<Add ref="#Text2" name="Text2" controlledproperty="$di_text textstring" font="Arimo-Regular" position="437.342 256.921 0" />
+					<Add ref="#Text2_u28451" name="Text2" controlledproperty="$di_text textstring" font="Arimo-Regular" position="437.342 256.921 0" />
+					<Add ref="#Group_u19473" name="Group" endtime="3083" starttime="1433" >
+						<Action id="Group-Action_u35574" eyeball="True" triggerObject="#Group_u19473" event="onActivate" targetObject="#Group_u19473" handler="Emit Signal" >
+							<HandlerArgument name="Signal Name" type="String" argtype="Signal" value="CustomTestSignal1" />
+						</Action>
+						<Action id="Group-Action_u20930" eyeball="True" triggerObject="#Group_u19473" event="onDeactivate" targetObject="#Group_u19473" handler="Emit Signal" >
+							<HandlerArgument name="Signal Name" type="String" argtype="Signal" />
+						</Action>
+					</Add>
 				</State>
 			</State>
 		</Logic>
