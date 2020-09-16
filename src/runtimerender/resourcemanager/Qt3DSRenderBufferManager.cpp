@@ -236,28 +236,6 @@ struct SBufferManager : public IBufferManager
         return m_StrTable->RegisterStr(qPrintable(path));
     }
 
-    static inline int wrapMod(int a, int base)
-    {
-        int ret = a % base;
-        if (ret < 0)
-            ret += base;
-        return ret;
-    }
-
-    static inline void getWrappedCoords(int &sX, int &sY, int width, int height)
-    {
-        if (sY < 0) {
-            sX -= width >> 1;
-            sY = -sY;
-        }
-        if (sY >= height) {
-            sX += width >> 1;
-            sY = height - sY;
-        }
-        sX = wrapMod(sX, width);
-        sY = wrapMod(sY, height);
-    }
-
     template <typename V, typename C>
     void iterateAll(const V &vv, C c)
     {
