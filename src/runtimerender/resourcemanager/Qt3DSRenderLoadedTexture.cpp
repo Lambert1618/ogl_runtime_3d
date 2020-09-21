@@ -908,10 +908,6 @@ void SLoadedTexture::ReleaseDecompressedTexture(STextureData inImage)
         m_Allocator.deallocate(inImage.data);
 }
 
-#ifndef EA_PLATFORM_WINDOWS
-#define stricmp strcasecmp
-#endif
-
 // Locate existing file by adding a supported suffix to localFile.
 // If localFile already contains suffix or exiting file isn't found
 // returns localFile unchanged.
